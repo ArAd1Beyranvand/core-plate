@@ -1,0 +1,16 @@
+name: plate_number_example
+description: Showcases the plate_number package with interactive controls.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.10.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  plate_number:
+    path: ../
+  flutter_bloc: ^8.1.4
+
+flutter:
+  uses-material-design: true

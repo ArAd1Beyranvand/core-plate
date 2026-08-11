@@ -4,7 +4,7 @@ version: 0.0.2
 homepage: https://github.com/ArAdBey/plate-number
 
 environment:
-  sdk: '>=	3.3.0 <4.0.0'
+  sdk: '>=3.10.0 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
@@ -17,6 +17,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  bloc_test: ^9.1.7
   flutter_lints: ^3.0.0
 
 flutter:
