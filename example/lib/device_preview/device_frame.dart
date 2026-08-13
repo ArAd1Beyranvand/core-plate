@@ -1,548 +1,389 @@
- import 'dart:math' as math;
- import 'package:flutter/material.dart';
- 
+import 'package:flutter/material.dart';
 
- enum DevicePreset {
-   smallPhone('Small Phone', 360, 640, 24, true),
-   largePhone('Large Phone', 414, 896, 28, true),
-   tablet('Tablet', 768, 1024, 20, false),
-   desktop('Desktop', 1280, 800, 8, false),
-   custom('Custom', 0, 0, 12, false);
- 
-   const DevicePreset(
-     this.label,
-     this.defaultWidth,
-     this.defaultHeight,
-     this.cornerRadius,
-     this.hasNotch,
-   );
- 
-   final String label;
-   final double defaultWidth;
-   final double defaultHeight;
-   final double cornerRadius;
-   final bool hasNotch;
- }
- 
- class DeviceFrame extends StatefulWidget {
-   const DeviceFrame({
-     super.key,
-     required this.child,
-    required this.device,
-    this.customWidth,
-    this.customHeight,
-    this.scale = 1.0,
+import 'device_config.dart';
+import 'device_painters.dart';
+import 'laptop_deck.dart';
+
+/// The three phases of a device change.
+enum DeviceTransitionPhase { idle, contentFadeOut, frameTransform, contentFadeIn }
+
+/// Durations for each phase. Fades default to 1800ms.
+@immutable
+class DeviceTransitionDurations {
+  const DeviceTransitionDurations({
+    this.contentFadeOut = const Duration(milliseconds: 1800),
+    this.frameTransform = const Duration(milliseconds: 1100),
+    this.contentFadeIn = const Duration(milliseconds: 1800),
+    this.blankHold = const Duration(milliseconds: 120),
   });
 
-  final Widget child;
-  final DevicePreset device;
-  final double? customWidth;
-  final double? customHeight;
-   final double scale;
- 
-   @override
-   State<DeviceFrame> createState() => _DeviceFrameState();
- }
- 
- class _DeviceFrameState extends State<DeviceFrame>
-     with SingleTickerProviderStateMixin {
-   late AnimationController _controller;
- 
-   // Source values (the device we are transitioning *from*).
-   late DevicePreset _fromDevice;
-   late double _fromWidth;
-   late double _fromHeight;
- 
-   // Target values (the device we are transitioning *to*).
-   // These are always kept in sync with the widget fields.
-   late DevicePreset _toDevice;
-   late double _toWidth;
-   late double _toHeight;
- 
-   @override
-   void initState() {
-     super.initState();
-     _toDevice = widget.device;
-     final targetSize = _effectiveSize(widget.device);
-     _toWidth = targetSize.$1;
-     _toHeight = targetSize.$2;
-     _fromDevice = _toDevice;
-     _fromWidth = _toWidth;
-     _fromHeight = _toHeight;
- 
-     _controller = AnimationController(
-       vsync: this,
-       duration: const Duration(milliseconds: 1500),
-     );
-     _controller.addListener(() => setState(() {}));
-     _controller.addStatusListener(_onControllerStatus);
-   }
- 
-   void _onControllerStatus(AnimationStatus status) {
-     if (status == AnimationStatus.completed) {
-       // The transition is finished — make the "from" equal the "to".
-       _fromDevice = _toDevice;
-       _fromWidth = _toWidth;
-       _fromHeight = _toHeight;
-       _controller.value = 0;
-     }
-   }
- 
-   @override
-   void didUpdateWidget(DeviceFrame oldWidget) {
-     super.didUpdateWidget(oldWidget);
-     final (newW, newH) = _effectiveSize(widget.device);
- 
-     if (widget.device != oldWidget.device ||
-         widget.customWidth != oldWidget.customWidth ||
-         widget.customHeight != oldWidget.customHeight) {
-       // Snapshot the *currently displayed* device as the "from".
-       if (_controller.isAnimating || _controller.isCompleted) {
-         _fromDevice = _toDevice;
-         _fromWidth = _toWidth;
-         _fromHeight = _toHeight;
-       }
-       _toDevice = widget.device;
-       _toWidth = newW;
-       _toHeight = newH;
-       _controller.forward(from: 0);
-     }
-   }
- 
-   @override
-   void dispose() {
-     _controller.dispose();
-     super.dispose();
-   }
- 
-   // ---- helpers -----------------------------------------------------------
- 
-   (double, double) _effectiveSize(DevicePreset preset) {
-     if (preset == DevicePreset.custom) {
-       return (widget.customWidth ?? 360, widget.customHeight ?? 640);
-     }
-     return (preset.defaultWidth, preset.defaultHeight);
-   }
- 
-   /// Compute the current frame dimensions by interpolating between
-   /// [_fromWidth/_fromHeight] and [_toWidth/_toHeight].
-   double _lerpFrameDimension(double fromVal, double toVal) {
-     final t = _controller.value;
-     if (t <= 0.25) return fromVal;
-     if (t >= 0.75) return toVal;
-     final p = Curves.easeInOut.transform((t - 0.25) / 0.5);
-     return fromVal + (toVal - fromVal) * p;
-   }
- 
-   /// The opacity of the inner screen content.
-   ///
-   /// 0.00 … 0.25 : 1 → 0   (fade-out)
-   /// 0.25 … 0.75 : 0       (blank while resizing)
-   /// 0.75 … 1.00 : 0 → 1   (fade-in)
-   double get _contentOpacity {
-     final t = _controller.value;
-     if (t < 0.25) return 1.0 - (t / 0.25);
-     if (t > 0.75) return (t - 0.75) / 0.25;
-     return 0.0;
-   }
- 
-   /// Which device preset the *frame* should visually represent.
-   /// During resize we keep the *from* shape; after resize we show the *to*.
-   DevicePreset get _framePreset {
-     return _controller.value >= 0.75 ? _toDevice : _fromDevice;
-   }
- 
-   /// Which device's content dimensions to use inside the frame.
-   bool get _useNewContent => _controller.value > 0.75;
- 
-   // ---- build -------------------------------------------------------------
- 
-   @override
-   Widget build(BuildContext context) {
-     final scale = widget.scale;
- 
-     final frameW = _lerpFrameDimension(_fromWidth, _toWidth) * scale;
-     final frameH = _lerpFrameDimension(_fromHeight, _toHeight) * scale;
- 
-     final contentW = _useNewContent ? _toWidth : _fromWidth;
-     final contentH = _useNewContent ? _toHeight : _fromHeight;
-     final contentDevice = _useNewContent ? _toDevice : _fromDevice;
- 
-     return Center(
-       child: _DeviceFrameWidget(
-         width: frameW,
-         height: frameH,
-         device: _framePreset,
-         child: Opacity(
-           opacity: _contentOpacity,
-           child: Stack(
-           children: [
-             SizedBox(
-               width: contentW,
-               height: contentH,
-               child: FittedBox(
-                 fit: BoxFit.contain,
-                 child: SizedBox(
-                   width: contentW,
-                   height: contentH,
-                   child: MediaQuery(
-                     data: MediaQuery.of(context).copyWith(
-                       size: Size(contentW, contentH),
-                     ),
-                     child: widget.child,
-                   ),
-                 ),
-               ),
-             ),
-             if (contentDevice != DevicePreset.desktop)
-               Positioned(
-                 top: 0,
-                 left: 0,
-                 right: 0,
-                 child: _ScreenTopDecorations(device: contentDevice),
-               ),
-             ],
-           ),
-         ),
-       ),
-     );
-   }
- }
- 
- // =========================================================================
- // Device-frame shell
- // =========================================================================
- 
- class _DeviceFrameWidget extends StatelessWidget {
-   const _DeviceFrameWidget({
-     required this.width,
-     required this.height,
-     required this.device,
-     required this.child,
-   });
- 
-   final double width;
-   final double height;
-   final DevicePreset device;
-   final Widget child;
- 
-   static double _bezel(DevicePreset d) {
-     switch (d) {
-       case DevicePreset.smallPhone:
-         return 7;
-       case DevicePreset.largePhone:
-         return 9;
-       case DevicePreset.tablet:
-         return 11;
-       case DevicePreset.desktop:
-         return 5;
-       case DevicePreset.custom:
-         return 8;
-     }
-   }
- 
-   static double _outerRadius(DevicePreset d) => d.cornerRadius + _bezel(d);
- 
-   @override
-   Widget build(BuildContext context) {
-     final bezel = _bezel(device);
-     final outerR = _outerRadius(device);
-     final hasDesktopStand = device == DevicePreset.desktop;
- 
-     // Desktop gets extra bottom padding for the stand.
-     final bottomPad = hasDesktopStand ? bezel + 28 : bezel;
- 
-   return Container(
-     width: width,
-     height: height,
-     decoration: BoxDecoration(
-       color: const Color(0xFFC0C0C0),
-       borderRadius: BorderRadius.circular(outerR),
-         boxShadow: [
-           BoxShadow(
-             color: Colors.black.withValues(alpha: 0.25),
-             blurRadius: 24,
-             offset: const Offset(0, 10),
-           ),
-         ],
-       ),
-       child: Stack(
-         clipBehavior: Clip.none,
-         children: [
-           // ---- screen area -----------------------------------------------
-           Positioned(
-             left: bezel,
-             top: bezel,
-             right: bezel,
-             bottom: bottomPad,
-             child: ClipPath(
-               clipper: _ScreenClipper(
-                 device: device,
-                 width: width - bezel * 2,
-                 height: height - bezel - bottomPad,
-               ),
-               child: child,
-             ),
-           ),
- 
-           // ---- top bezel shine ------------------------------------------
-           Positioned(
-             left: 0,
-             top: 0,
-             right: 0,
-             child: IgnorePointer(
-               child: Container(
-                 height: bezel,
-                 decoration: BoxDecoration(
-                   borderRadius: BorderRadius.vertical(
-                     top: Radius.circular(outerR),
-                   ),
-                 gradient: const LinearGradient(
-                   begin: Alignment.topCenter,
-                   end: Alignment.bottomCenter,
-                   colors: [Color(0xFFD8D8D8), Color(0xFFB0B0B0)],
-                 ),
-                 ),
-               ),
-             ),
-         ),
- 
-         // ---- desktop stand --------------------------------------------
-           if (hasDesktopStand)
-             Positioned(
-               bottom: -18,
-               left: 0,
-               right: 0,
-               child: IgnorePointer(
-                 child: CustomPaint(
-                   size: Size(width, 28),
-                   painter: _StandPainter(
-                     frameWidth: width,
-                     bezel: bezel,
-                     outerRadius: outerR,
-                   ),
-                 ),
-               ),
-             ),
-         ],
-       ),
-     );
-   }
- }
- 
- // =========================================================================
- // Screen clipper — clips the screen rectangle with device-specific shape
- // =========================================================================
- 
- class _ScreenClipper extends CustomClipper<Path> {
-   const _ScreenClipper({
-     required this.device,
-     required this.width,
-     required this.height,
-   });
- 
-   final DevicePreset device;
-   final double width;
-   final double height;
- 
-   @override
-   Path getClip(Size size) {
-     final r = device.cornerRadius;
-     final path = Path();
- 
-     if (device.hasNotch) {
-       _addPhoneScreen(path, r);
-     } else {
-       // Simple rounded rectangle.
-       path.addRRect(
-         RRect.fromRectAndRadius(
-           Rect.fromLTWH(0, 0, width, height),
-           Radius.circular(r),
-         ),
-       );
-     }
- 
-     return path;
-   }
- 
-   void _addPhoneScreen(Path path, double r) {
-     // A rounded rectangle with a Dynamic-Island-style pill at the top
-     // centre.  We draw left-to-right along the top edge, dipping down
-     // around the notch, then continue down the right / bottom / left.
- 
-     final notchW = math.min(width * 0.28, 120.0);
-     final notchH = 10.0;
-     final notchX = (width - notchW) / 2;
-     final notchRX = 18.0;
- 
-     // Start: top-left corner
-     path.moveTo(r, 0);
- 
-     // Top edge → notch-left
-     path.lineTo(notchX - notchRX, 0);
- 
-     // Notch left curve (entering the dip)
-     path.arcToPoint(
-       Offset(notchX, notchH),
-       radius: const Radius.circular(14),
-       clockwise: false,
-     );
- 
-     // Notch bottom edge
-     path.lineTo(notchX + notchW, notchH);
- 
-     // Notch right curve (exiting the dip)
-     path.arcToPoint(
-       Offset(notchX + notchW + notchRX, 0),
-       radius: const Radius.circular(14),
-       clockwise: false,
-     );
- 
-     // Top edge → top-right corner
-     path.lineTo(width - r, 0);
-     path.arcToPoint(
-       Offset(width, r),
-       radius: Radius.circular(r),
-       clockwise: true,
-     );
- 
-     // Right edge
-     path.lineTo(width, height - r);
-     path.arcToPoint(
-       Offset(width - r, height),
-       radius: Radius.circular(r),
-       clockwise: true,
-     );
- 
-     // Bottom edge
-     path.lineTo(r, height);
-     path.arcToPoint(
-       Offset(0, height - r),
-       radius: Radius.circular(r),
-       clockwise: true,
-     );
- 
-     // Left edge → close
-     path.arcToPoint(
-       Offset(r, 0),
-       radius: Radius.circular(r),
-       clockwise: true,
-     );
-     path.close();
-   }
- 
-   @override
-   bool shouldReclip(covariant _ScreenClipper oldClipper) {
-     return device != oldClipper.device ||
-         width != oldClipper.width ||
-         height != oldClipper.height;
-   }
+  final Duration contentFadeOut;
+
+  /// Body, bezel, camera, speaker, buttons and the laptop deck all morph here.
+  final Duration frameTransform;
+  final Duration contentFadeIn;
+
+  /// A beat of pure black either side of the morph, so the screen reads as
+  /// switched off rather than mid-fade.
+  final Duration blankHold;
+
+  Duration get total =>
+      contentFadeOut + blankHold + frameTransform + blankHold + contentFadeIn;
 }
- 
- // =========================================================================
- // Screen-top decorations — camera dot & speaker grille that fade with content
- // =========================================================================
- 
- class _ScreenTopDecorations extends StatelessWidget {
-   const _ScreenTopDecorations({required this.device});
- 
-   final DevicePreset device;
- 
-   @override
-   Widget build(BuildContext context) {
-     final isTablet = device == DevicePreset.tablet;
-     final hasSpeaker = device.hasNotch && device != DevicePreset.custom;
- 
-     return SizedBox(
-       height: 18,
-       child: Stack(
-         children: [
-           // Camera dot
-           Center(
-             child: Container(
-               margin: const EdgeInsets.only(top: 4),
-               width: isTablet ? 7 : 6,
-               height: isTablet ? 7 : 6,
-               decoration: BoxDecoration(
-                 color: const Color(0xFF444444),
-                 shape: BoxShape.circle,
-                 border: Border.all(
-                   color: const Color(0xFF222222),
-                   width: 0.5,
-                 ),
-               ),
-             ),
-           ),
-           // Speaker grille
-           if (hasSpeaker)
-             Center(
-               child: Container(
-                 margin: const EdgeInsets.only(top: 13),
-                 width: 40,
-                 height: 3,
-                 decoration: BoxDecoration(
-                   color: const Color(0xFF333333),
-                   borderRadius: BorderRadius.circular(2),
-                 ),
-               ),
-             ),
-         ],
-       ),
-     );
-   }
- }
- 
- // =========================================================================
- // Desktop stand painter
- // =========================================================================
- 
- class _StandPainter extends CustomPainter {
-   const _StandPainter({
-     required this.frameWidth,
-     required this.bezel,
-     required this.outerRadius,
-   });
- 
-   final double frameWidth;
-   final double bezel;
-   final double outerRadius;
- 
-   @override
-   void paint(Canvas canvas, Size size) {
-   final paint = Paint()
-     ..color = const Color(0xFFC0C0C0)
-     ..style = PaintingStyle.fill;
- 
-     final standW = frameWidth * 0.22;
-     final standLeft = (frameWidth - standW) / 2;
-     final standTop = bezel * 0.5;
- 
-     // Neck
-     final neckW = standW * 0.35;
-     final neckLeft = (frameWidth - neckW) / 2;
-     final neckPath = Path()
-       ..moveTo(neckLeft, standTop)
-       ..lineTo(neckLeft + neckW, standTop)
-       ..lineTo(standLeft + standW, size.height)
-       ..lineTo(standLeft, size.height)
-       ..close();
-     canvas.drawPath(neckPath, paint);
- 
-     // Base
-     final baseW = standW * 1.5;
-     final baseLeft = (frameWidth - baseW) / 2;
-     final baseRRect = RRect.fromRectAndRadius(
-       Rect.fromLTWH(baseLeft, size.height - 6, baseW, 6),
-       const Radius.circular(3),
-     );
-     canvas.drawRRect(baseRRect, paint);
-   }
- 
-   @override
-   bool shouldRepaint(covariant _StandPainter oldDelegate) {
-     return frameWidth != oldDelegate.frameWidth ||
-         bezel != oldDelegate.bezel ||
-         outerRadius != oldDelegate.outerRadius;
-   }
- }
- 
+
+/// A physical-feeling device shell that morphs between mobile, tablet and
+/// desktop while its content fades out, stays hidden, and fades back in.
+///
+/// The laptop deck is a real tilted plane: it unfolds out of the body as part
+/// of the same morph.
+class DeviceFrame extends StatefulWidget {
+  const DeviceFrame({
+    super.key,
+    required this.device,
+    required this.builder,
+    this.configResolver,
+    this.durations = const DeviceTransitionDurations(),
+    this.perspective = 900,
+    this.hingeAngle = 150,
+    this.scale,
+    this.curve = Curves.easeInOutCubic,
+    this.fadeCurve = Curves.easeInOut,
+    this.onPhaseChanged,
+  });
+
+  /// Target form factor. Changing it starts the three-phase transition.
+  final DeviceType device;
+
+  /// Builds the page shown on the glass for a given device config.
+  final Widget Function(BuildContext context, DeviceConfig config) builder;
+
+  /// Override the built-in presets.
+  final DeviceConfig Function(DeviceType type)? configResolver;
+
+  final DeviceTransitionDurations durations;
+
+  /// Viewer distance used to tilt the laptop deck and swing the lid.
+  final double perspective;
+
+  /// Hinge angle of the open laptop, in degrees: 0 is shut, 150 is the rest
+  /// position of a laptop on a desk.
+  final double hingeAngle;
+
+  /// Fixed scale; null fits the frame to its constraints.
+  final double? scale;
+
+  final Curve curve;
+  final Curve fadeCurve;
+  final ValueChanged<DeviceTransitionPhase>? onPhaseChanged;
+
+  @override
+  State<DeviceFrame> createState() => _DeviceFrameState();
+}
+
+class _DeviceFrameState extends State<DeviceFrame>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  late DeviceConfig _from;
+  late DeviceConfig _to;
+
+  late Animation<double> _fadeOut;
+  late Animation<double> _fadeIn;
+  late Animation<double> _morphRaw;
+
+  /// 0 = laptop open, 1 = shut (the keyboard folded flat against the screen).
+  double _closed = 0;
+
+  /// Scales the deck's depth: it grows out of, and retracts into, the body in
+  /// its own beat, after the body has finished resizing.
+  double _deckT = 1;
+
+  DeviceTransitionPhase _phase = DeviceTransitionPhase.idle;
+
+  DeviceConfig _resolve(DeviceType type) =>
+      widget.configResolver?.call(type) ?? DevicePresets.of(type);
+
+  @override
+  void initState() {
+    super.initState();
+    _from = _to = _resolve(widget.device);
+    _controller = AnimationController(vsync: this, duration: widget.durations.total)
+      ..addListener(_onTick);
+    _buildIntervals();
+    _controller.value = 1;
+  }
+
+  /// Splits the one controller into the three phases, so the timings stay
+  /// declarative and configurable.
+  void _buildIntervals() {
+    final d = widget.durations;
+    final total = d.total.inMicroseconds.toDouble();
+    double at(Duration x) => x.inMicroseconds / total;
+
+    final outEnd = at(d.contentFadeOut);
+    final morphStart = outEnd + at(d.blankHold);
+    final morphEnd = morphStart + at(d.frameTransform);
+    final inStart = morphEnd + at(d.blankHold);
+
+    _fadeOut = CurvedAnimation(
+        parent: _controller, curve: Interval(0, outEnd, curve: widget.fadeCurve));
+    _fadeIn = CurvedAnimation(
+        parent: _controller, curve: Interval(inStart, 1, curve: widget.fadeCurve));
+    _morphRaw =
+        CurvedAnimation(parent: _controller, curve: Interval(morphStart, morphEnd));
+  }
+
+  void _onTick() {
+    final next = _phaseFor();
+    if (next != _phase) {
+      _phase = next;
+      widget.onPhaseChanged?.call(next);
+    }
+    setState(() {});
+  }
+
+  DeviceTransitionPhase _phaseFor() {
+    if (!_controller.isAnimating) return DeviceTransitionPhase.idle;
+    if (_fadeOut.value < 1) return DeviceTransitionPhase.contentFadeOut;
+    if (_fadeIn.value > 0) return DeviceTransitionPhase.contentFadeIn;
+    return DeviceTransitionPhase.frameTransform;
+  }
+
+  @override
+  void didUpdateWidget(covariant DeviceFrame old) {
+    super.didUpdateWidget(old);
+    if (widget.durations.total != old.durations.total) {
+      _controller.duration = widget.durations.total;
+      _buildIntervals();
+    }
+    if (widget.device != old.device) {
+      // Whatever is on screen becomes the new starting point, so an
+      // interrupted transition never snaps.
+      _from = _currentConfig;
+      _to = _resolve(widget.device);
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onTick);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Morph progress and hinge state, choreographed so the laptop shuts before
+  /// it stops being a laptop and only opens once it has become one again. The
+  /// screen never rotates — only the keyboard swings on the hinge.
+  double get _morphT {
+    final mr = _morphRaw.value;
+    final wasLaptop = _from.type == DeviceType.desktop;
+    final willBeLaptop = _to.type == DeviceType.desktop;
+    // Three strictly sequential beats, so the body never resizes while the
+    // deck is moving: body geometry → deck depth → hinge.
+    if (wasLaptop && !willBeLaptop) {
+      _closed = Curves.easeInOut.transform((mr / 0.40).clamp(0.0, 1.0));
+      _deckT =
+          1 - Curves.easeInOut.transform(((mr - 0.40) / 0.16).clamp(0.0, 1.0));
+      return widget.curve.transform(((mr - 0.56) / 0.44).clamp(0.0, 1.0));
+    }
+    if (!wasLaptop && willBeLaptop) {
+      _deckT = Curves.easeInOut.transform(((mr - 0.44) / 0.16).clamp(0.0, 1.0));
+      _closed =
+          1 - Curves.easeInOut.transform(((mr - 0.60) / 0.40).clamp(0.0, 1.0));
+      return widget.curve.transform((mr / 0.44).clamp(0.0, 1.0));
+    }
+    _closed = 0;
+    _deckT = 1;
+    return widget.curve.transform(mr);
+  }
+
+  DeviceConfig get _currentConfig => DeviceConfig.lerp(_from, _to, _morphT);
+
+  /// 1 → 0 over the fade-out, pinned at 0 through the morph, 0 → 1 over the
+  /// fade-in: the plate is never visible while the geometry is moving.
+  double get _contentOpacity =>
+      _fadeIn.value > 0 ? _fadeIn.value : 1 - _fadeOut.value;
+
+  /// The old layout stays mounted until the morph's midpoint; after it, the
+  /// target layout is built and faded in.
+  DeviceConfig get _contentConfig => _morphRaw.value < 0.5 ? _from : _to;
+
+  @override
+  Widget build(BuildContext context) {
+    final config = _currentConfig;
+    final total = config.totalSize(widget.perspective);
+    final body = config.bodySize;
+    // A laptop's tilted deck projects far taller than its body, so fitting the
+    // whole bounding box would shrink the screen well below the tablet/mobile
+    // scale (their bodies are ~the same physical size as the laptop's). Fit on
+    // the body instead, so the screen matches the other devices, and let the
+    // deck extend below — clipped to the frame where there isn't room for it.
+    final hasDeck = config.deck.depth > 0.5;
+
+    return ClipRect(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final fit =
+              widget.scale ?? _fitScale(constraints, total.width, body.height);
+          return Align(
+            // Pin the laptop to the top so the deck fills the room below it;
+            // everything else stays centred as before.
+            alignment: hasDeck ? Alignment.topCenter : Alignment.center,
+            child: SizedBox(
+              width: total.width * fit,
+              height: body.height * fit,
+              child: OverflowBox(
+                alignment: Alignment.topCenter,
+                maxHeight: double.infinity,
+                child: SizedBox(
+                  width: total.width * fit,
+                  height: total.height * fit,
+                  child: FittedBox(
+                    fit: BoxFit.fill,
+                    child: SizedBox(
+                      width: total.width,
+                      height: total.height,
+                      child: _buildDevice(context, config),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  double _fitScale(BoxConstraints c, double w, double h) {
+    final maxW = c.hasBoundedWidth ? c.maxWidth : w;
+    final maxH = c.hasBoundedHeight ? c.maxHeight : h;
+    return ((maxW / w) < (maxH / h) ? maxW / w : maxH / h).clamp(0.05, 1.0);
+  }
+
+  Widget _buildDevice(BuildContext context, DeviceConfig config) {
+    final body = config.bodySize;
+    final screen = config.screenSize;
+    final opacity = _contentOpacity;
+    final deck = config.deck.scaledDepth(_deckT);
+    // hinge: 135° open, 0° shut. The deck sits at 180° - hinge from the screen.
+    final hinge = widget.hingeAngle * (1 - _closed);
+    final deckAngle = 180 - hinge;
+    final projected = deck.projectedHeightAt(deckAngle, widget.perspective);
+    // cross-fade the faces through edge-on so neither pops in or out
+    const band = 42.0;
+    final present = deck.opacity * (deck.depth / 26).clamp(0.0, 1.0);
+    final frontOpacity = ((90 - deckAngle) / band).clamp(0.0, 1.0) * present;
+    final backOpacity = ((deckAngle - 90) / band).clamp(0.0, 1.0) * present;
+
+    // folded past edge-on the deck sweeps up in FRONT of the screen
+    final deckOnTop = deckAngle > 90;
+    final deckLayer = <Widget>[
+      if (deck.depth > 0.5)
+          Positioned(
+            top: body.height - 1, // hinged on the screen's bottom edge
+            left: 0,
+            width: body.width,
+            height: projected < 0.5 ? 0.5 : projected,
+            child: OverflowBox(
+              alignment: Alignment.topCenter,
+              minHeight: deck.depth,
+              maxHeight: deck.depth,
+              child: Transform(
+                alignment: Alignment.topCenter,
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 1 / widget.perspective)
+                  ..rotateX(deckAngle * 3.1415926535 / 180),
+                child: SizedBox(
+                  width: body.width,
+                  height: deck.depth,
+                  child: LaptopDeck(
+                    frontOpacity: frontOpacity,
+                    backOpacity: backOpacity,
+                  ),
+                ),
+              ),
+            ),
+          ),
+    ];
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        if (!deckOnTop) ...deckLayer,
+        SizedBox(
+          width: body.width,
+          height: body.height,
+          child: CustomPaint(
+            painter: DeviceBodyPainter(config: config),
+            foregroundPainter: DeviceHardwarePainter(config: config),
+            isComplex: true,
+            willChange: _controller.isAnimating,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: config.bezel.left,
+                  top: config.bezel.top,
+                  width: screen.width,
+                  height: screen.height,
+                  child: ClipPath(
+                    clipper: DeviceScreenClipper(config: config),
+                    // The blank screen behind the content: while the frame
+                    // morphs, this is all that shows.
+                    child: ColoredBox(
+                      color: const Color(0xFF07080A),
+                      child: opacity <= 0.001
+                          ? const SizedBox.expand()
+                          : Opacity(
+                              opacity: opacity.clamp(0.0, 1.0),
+                              child: _ScreenContent(
+                                config: _contentConfig,
+                                builder: widget.builder,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (deckOnTop) ...deckLayer,
+      ],
+    );
+  }
+}
+
+/// Lays the page out at the target device's logical size and scales it into
+/// the current glass, so text and the plate never reflow mid-morph.
+class _ScreenContent extends StatelessWidget {
+  const _ScreenContent({required this.config, required this.builder});
+
+  final DeviceConfig config;
+  final Widget Function(BuildContext, DeviceConfig) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final logical = config.screenSize;
+    return FittedBox(
+      fit: BoxFit.cover,
+      clipBehavior: Clip.hardEdge,
+      child: SizedBox(
+        width: logical.width,
+        height: logical.height,
+        child: MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            size: logical,
+            padding: EdgeInsets.only(
+              top: config.notchSize.height,
+              bottom: config.homeIndicatorWidth > 0 ? 20 : 0,
+            ),
+          ),
+          child: RepaintBoundary(child: builder(context, config)),
+        ),
+      ),
+    );
+  }
+}
