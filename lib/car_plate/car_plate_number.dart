@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/plate_card_bloc.dart';
 import '../constants.dart';
 import '../tools.dart';
+import '../widgets/digit_row.dart';
 import '../widgets/plate_frame.dart';
 import '../widgets/plate_items.dart';
 import '../widgets/remove_button.dart';
@@ -142,14 +143,14 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
                         Row(
                           children: [
                             Container(width: widget.spacingScale),
-                            Row(
-                              children: [
+                            DigitRow(
+                              gap: widget.spacingScale / 1.5,
+                              items: [
                                 _digitItem(
                                   6,
                                   7,
                                   onCompleted: () => focusNodes[6].unfocus(),
                                 ),
-                                SizedBox(width: widget.spacingScale / 1.5),
                                 _digitItem(
                                   5,
                                   6,
@@ -172,26 +173,24 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
                       thickness: widget.spacingScale / 3,
                     ),
                     SizedBox(width: widget.spacingScale),
-                    Row(
-                      children: [
+                    DigitRow(
+                      gap: widget.spacingScale / 1.5,
+                      items: [
                         _digitItem(
                           4,
                           5,
                           onCompleted: () => focusNodes[5].requestFocus(),
                         ),
-                        SizedBox(width: widget.spacingScale / 1.5),
                         _digitItem(
                           3,
                           4,
                           onCompleted: () => focusNodes[4].requestFocus(),
                         ),
-                        SizedBox(width: widget.spacingScale / 1.5),
                         _digitItem(
                           2,
                           3,
                           onCompleted: () => focusNodes[3].requestFocus(),
                         ),
-                        SizedBox(width: widget.spacingScale / 1.5),
                         StringPlateItem(
                           width: (widget.spacingScale * 5).toInt(),
                           height: (widget.spacingScale * 10).toInt(),
@@ -207,7 +206,6 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
                                 }
                               : () => _pickLetter(context),
                         ),
-                        SizedBox(width: widget.spacingScale / 1.5),
                         _digitItem(
                           1,
                           1,
@@ -220,7 +218,6 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
                                   focusNodes[2].requestFocus();
                                 },
                         ),
-                        SizedBox(width: widget.spacingScale / 1.5),
                         _digitItem(
                           0,
                           0,
