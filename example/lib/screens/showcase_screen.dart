@@ -79,7 +79,16 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
         _buildHeader(),
         Expanded(
           child: Container(
-            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Theme.of(context).colorScheme.surfaceContainerLowest,
+                  Theme.of(context).colorScheme.surface,
+                ],
+              ),
+            ),
             padding: const EdgeInsets.all(16),
             // Isolate the device + plate in its own layer. It is expensive to
             // raster (perspective transform, nested FittedBoxes, clips and live
