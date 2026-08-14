@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/plate_card_bloc.dart';
 import '../tools.dart';
+import '../widgets/digit_row.dart';
 import '../widgets/plate_frame.dart';
 import '../widgets/plate_items.dart';
 import '../widgets/remove_button.dart';
@@ -70,8 +71,6 @@ class _BicyclePlateNumberState extends State<BicyclePlateNumber> {
     );
   }
 
-  Widget get _digitGap => SizedBox(width: widget.spacingScale * 2);
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
@@ -104,18 +103,17 @@ class _BicyclePlateNumberState extends State<BicyclePlateNumber> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         SizedBox(height: widget.spacingScale),
-                        Row(
-                          children: [
+                        DigitRow(
+                          gap: widget.spacingScale * 2,
+                          items: [
                             _digitItem(
                               2,
                               onCompleted: () => focusNodes[3].requestFocus(),
                             ),
-                            _digitGap,
                             _digitItem(
                               1,
                               onCompleted: () => focusNodes[2].requestFocus(),
                             ),
-                            _digitGap,
                             _digitItem(
                               0,
                               onCompleted: () => focusNodes[1].requestFocus(),
@@ -123,28 +121,25 @@ class _BicyclePlateNumberState extends State<BicyclePlateNumber> {
                           ],
                         ),
                         SizedBox(height: widget.spacingScale / 2),
-                        Row(
-                          children: [
+                        DigitRow(
+                          gap: widget.spacingScale * 2,
+                          items: [
                             _digitItem(
                               7,
                               onCompleted: () => focusNodes[7].unfocus(),
                             ),
-                            _digitGap,
                             _digitItem(
                               6,
                               onCompleted: () => focusNodes[7].requestFocus(),
                             ),
-                            _digitGap,
                             _digitItem(
                               5,
                               onCompleted: () => focusNodes[6].requestFocus(),
                             ),
-                            _digitGap,
                             _digitItem(
                               4,
                               onCompleted: () => focusNodes[5].requestFocus(),
                             ),
-                            _digitGap,
                             BlocBuilder<PlateCardBloc, PlateCardState>(
                               builder: (BuildContext context, state) {
                                 return _digitItem(
