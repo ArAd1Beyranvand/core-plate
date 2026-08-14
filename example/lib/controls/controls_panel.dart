@@ -217,7 +217,7 @@ class ShowcaseSettings {
     device: DeviceType.mobile,
     spacingScale: 6,
     mode: ShowcaseMode.input,
-    isDark: false,
+    isDark: true,
     activeColor: Colors.blueAccent,
   );
 
