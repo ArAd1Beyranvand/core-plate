@@ -85,6 +85,27 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
     bloc.add(ValueIsChanged(index: 2, value: selectedValue));
   }
 
+  Widget _digitItem(
+    int controllerIndex,
+    int position, {
+    required VoidCallback onCompleted,
+  }) {
+    final bloc = BlocProvider.of<PlateCardBloc>(context);
+    return IntegerPlateItem(
+      backgroundColor: widget.backgroundColor,
+      inactiveColor: widget.inactiveColor,
+      activeColor: widget.activeColor,
+      borderRadius: widget.itemBorderRadius,
+      textStyle: widget.numberTextStyle,
+      focusNode: focusNodes[controllerIndex],
+      controller: controllers[controllerIndex],
+      onCompleted: onCompleted,
+      onChanged: (value) =>
+          bloc.add(ValueIsChanged(index: position, value: value)),
+      onRemoved: () => bloc.add(ValueIsChanged(index: position, value: '')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PlateCardBloc>(context);
@@ -123,51 +144,17 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
                             Container(width: widget.spacingScale),
                             Row(
                               children: [
-                                IntegerPlateItem(
-                                  backgroundColor: widget.backgroundColor,
-                                  inactiveColor: widget.inactiveColor,
-                                  activeColor: widget.activeColor,
-                                  borderRadius: widget.itemBorderRadius,
-                                  textStyle: widget.numberTextStyle,
-                                  focusNode: focusNodes[6],
-                                  controller: controllers[6],
+                                _digitItem(
+                                  6,
+                                  7,
                                   onCompleted: () => focusNodes[6].unfocus(),
-                                  onChanged: (value) =>
-                                      BlocProvider.of<PlateCardBloc>(
-                                        context,
-                                      ).add(
-                                        ValueIsChanged(index: 7, value: value),
-                                      ),
-                                  onRemoved: () =>
-                                      BlocProvider.of<PlateCardBloc>(
-                                        context,
-                                      ).add(
-                                        ValueIsChanged(index: 7, value: ''),
-                                      ),
                                 ),
                                 SizedBox(width: widget.spacingScale / 1.5),
-                                IntegerPlateItem(
-                                  backgroundColor: widget.backgroundColor,
-                                  inactiveColor: widget.inactiveColor,
-                                  activeColor: widget.activeColor,
-                                  borderRadius: widget.itemBorderRadius,
-                                  textStyle: widget.numberTextStyle,
-                                  focusNode: focusNodes[5],
-                                  controller: controllers[5],
+                                _digitItem(
+                                  5,
+                                  6,
                                   onCompleted: () =>
                                       focusNodes[6].requestFocus(),
-                                  onChanged: (value) =>
-                                      BlocProvider.of<PlateCardBloc>(
-                                        context,
-                                      ).add(
-                                        ValueIsChanged(index: 6, value: value),
-                                      ),
-                                  onRemoved: () =>
-                                      BlocProvider.of<PlateCardBloc>(
-                                        context,
-                                      ).add(
-                                        ValueIsChanged(index: 6, value: ''),
-                                      ),
                                 ),
                               ],
                             ),
@@ -187,49 +174,22 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
                     SizedBox(width: widget.spacingScale),
                     Row(
                       children: [
-                        IntegerPlateItem(
-                          backgroundColor: widget.backgroundColor,
-                          inactiveColor: widget.inactiveColor,
-                          activeColor: widget.activeColor,
-                          borderRadius: widget.itemBorderRadius,
-                          focusNode: focusNodes[4],
-                          controller: controllers[4],
-                          textStyle: widget.numberTextStyle,
+                        _digitItem(
+                          4,
+                          5,
                           onCompleted: () => focusNodes[5].requestFocus(),
-                          onChanged: (value) =>
-                              bloc.add(ValueIsChanged(index: 5, value: value)),
-                          onRemoved: () =>
-                              bloc.add(ValueIsChanged(index: 5, value: '')),
                         ),
                         SizedBox(width: widget.spacingScale / 1.5),
-                        IntegerPlateItem(
-                          backgroundColor: widget.backgroundColor,
-                          inactiveColor: widget.inactiveColor,
-                          activeColor: widget.activeColor,
-                          borderRadius: widget.itemBorderRadius,
-                          focusNode: focusNodes[3],
-                          controller: controllers[3],
+                        _digitItem(
+                          3,
+                          4,
                           onCompleted: () => focusNodes[4].requestFocus(),
-                          onChanged: (value) =>
-                              bloc.add(ValueIsChanged(index: 4, value: value)),
-                          onRemoved: () =>
-                              bloc.add(ValueIsChanged(index: 4, value: '')),
-                          textStyle: widget.numberTextStyle,
                         ),
                         SizedBox(width: widget.spacingScale / 1.5),
-                        IntegerPlateItem(
-                          backgroundColor: widget.backgroundColor,
-                          inactiveColor: widget.inactiveColor,
-                          activeColor: widget.activeColor,
-                          borderRadius: widget.itemBorderRadius,
-                          focusNode: focusNodes[2],
-                          controller: controllers[2],
+                        _digitItem(
+                          2,
+                          3,
                           onCompleted: () => focusNodes[3].requestFocus(),
-                          onChanged: (value) =>
-                              bloc.add(ValueIsChanged(index: 3, value: value)),
-                          textStyle: widget.numberTextStyle,
-                          onRemoved: () =>
-                              bloc.add(ValueIsChanged(index: 3, value: '')),
                         ),
                         SizedBox(width: widget.spacingScale / 1.5),
                         StringPlateItem(
@@ -248,14 +208,9 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
                               : () => _pickLetter(context),
                         ),
                         SizedBox(width: widget.spacingScale / 1.5),
-                        IntegerPlateItem(
-                          backgroundColor: widget.backgroundColor,
-                          inactiveColor: widget.inactiveColor,
-                          activeColor: widget.activeColor,
-                          borderRadius: widget.itemBorderRadius,
-                          textStyle: widget.numberTextStyle,
-                          focusNode: focusNodes[1],
-                          controller: controllers[1],
+                        _digitItem(
+                          1,
+                          1,
                           onCompleted: widget.onChooseLetter != null
                               ? () {
                                   widget.onChooseLetter!(focusNodes[2]);
@@ -264,25 +219,12 @@ class _CarPlateNumberState extends State<CarPlateNumber> {
                                   await _pickLetter(context);
                                   focusNodes[2].requestFocus();
                                 },
-                          onChanged: (value) =>
-                              bloc.add(ValueIsChanged(index: 1, value: value)),
-                          onRemoved: () =>
-                              bloc.add(ValueIsChanged(index: 1, value: '')),
                         ),
                         SizedBox(width: widget.spacingScale / 1.5),
-                        IntegerPlateItem(
-                          backgroundColor: widget.backgroundColor,
-                          inactiveColor: widget.inactiveColor,
-                          activeColor: widget.activeColor,
-                          borderRadius: widget.itemBorderRadius,
-                          textStyle: widget.numberTextStyle,
-                          focusNode: focusNodes[0],
-                          controller: controllers[0],
+                        _digitItem(
+                          0,
+                          0,
                           onCompleted: () => focusNodes[1].requestFocus(),
-                          onChanged: (value) =>
-                              bloc.add(ValueIsChanged(index: 0, value: value)),
-                          onRemoved: () =>
-                              bloc.add(ValueIsChanged(index: 0, value: '')),
                         ),
                       ],
                     ),
