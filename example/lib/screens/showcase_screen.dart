@@ -20,7 +20,13 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
     final isWide = screenWidth >= 840;
 
     return Theme(
-      data: _settings.isDark ? ThemeData.dark() : ThemeData.light(),
+      data: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: _settings.activeColor,
+          brightness: _settings.isDark ? Brightness.dark : Brightness.light,
+        ),
+        useMaterial3: true,
+      ),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Plate Number Showcase'),
