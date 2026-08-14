@@ -82,10 +82,7 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
       padding: const EdgeInsets.all(16),
       child: DeviceFrame(
         device: _settings.device,
-        customWidth: _settings.customWidth,
-        customHeight: _settings.customHeight,
-        scale: _settings.scale,
-        child: PlateDisplay(
+        builder: (context, config) => PlateDisplay(
           plateType: _settings.plateType,
           mode: _settings.mode,
           activeColor: _settings.activeColor,
