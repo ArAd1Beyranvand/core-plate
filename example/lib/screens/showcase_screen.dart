@@ -28,18 +28,9 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
         useMaterial3: true,
       ),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plate Number Showcase'),
-          centerTitle: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.info_outline),
-              tooltip: 'About',
-              onPressed: () => _showAboutDialog(context),
-            ),
-          ],
+        body: SafeArea(
+          child: isWide ? _buildWideLayout() : _buildNarrowLayout(),
         ),
-        body: isWide ? _buildWideLayout() : _buildNarrowLayout(),
       ),
     );
   }
@@ -83,55 +74,102 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
   }
 
   Widget _buildPreviewArea() {
-    return Container(
-      color: Theme.of(context).colorScheme.surfaceContainerLowest,
-      padding: const EdgeInsets.all(16),
-      // Isolate the device + plate in its own layer. It is expensive to raster
-      // (perspective transform, nested FittedBoxes, clips and live TextFields),
-      // and on Linux an instant window maximise that forces a full re-raster of
-      // it can miss the GL embedder's frame deadline and crash the app with
-      // "Timed out waiting for OpenGL frame". A RepaintBoundary lets the resize
-      // composite the cached layer instead of re-rendering it from scratch.
-      child: RepaintBoundary(
-        child: DeviceFrame(
-          device: _settings.device,
-          builder: (context, config) => PlateDisplay(
-            plateType: _settings.plateType,
-            mode: _settings.mode,
-            activeColor: _settings.activeColor,
-            spacingScale: _settings.spacingScale,
+    return Column(
+      children: [
+        _buildHeader(),
+        Expanded(
+          child: Container(
+            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+            padding: const EdgeInsets.all(16),
+            // Isolate the device + plate in its own layer. It is expensive to
+            // raster (perspective transform, nested FittedBoxes, clips and live
+            // TextFields), and on Linux an instant window maximise that forces a
+            // full re-raster of it can miss the GL embedder's frame deadline and
+            // crash the app with "Timed out waiting for OpenGL frame". A
+            // RepaintBoundary lets the resize composite the cached layer instead
+            // of re-rendering it from scratch.
+            child: RepaintBoundary(
+              child: DeviceFrame(
+                device: _settings.device,
+                builder: (context, config) => PlateDisplay(
+                  plateType: _settings.plateType,
+                  mode: _settings.mode,
+                  activeColor: _settings.activeColor,
+                  spacingScale: _settings.spacingScale,
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Plate Number Package'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'A Flutter package for capturing and displaying '
-              'Iranian vehicle plate numbers.',
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Supports car and motorcycle plates with '
-              'customizable styling and interactive input.',
-            ),
-          ],
+  Widget _buildHeader() {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'plate_number',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Iranian vehicle plate capture & display for Flutter',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _CapabilityChip('Car & motorcycle plates'),
+              _CapabilityChip('Customizable styling'),
+              _CapabilityChip('Interactive input'),
+            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CapabilityChip extends StatelessWidget {
+  const _CapabilityChip(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: accent,
+        ),
       ),
     );
   }
