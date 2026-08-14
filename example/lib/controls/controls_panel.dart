@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:plate_number/model/plate_number.dart';
 
-import '../device_preview/device_frame.dart';
+import '../device_preview/device_config.dart';
 import '../widgets/plate_display.dart';
+
+extension on DeviceType {
+  String get label => switch (this) {
+        DeviceType.mobile => 'Mobile',
+        DeviceType.tablet => 'Tablet',
+        DeviceType.desktop => 'Laptop',
+      };
+}
 
 class ShowcaseControls extends StatefulWidget {
   const ShowcaseControls({
@@ -65,7 +73,7 @@ class _ShowcaseControlsState extends State<ShowcaseControls> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: DevicePreset.values.map((preset) {
+            children: DeviceType.values.map((preset) {
               final isSelected = _settings.device == preset;
               return ChoiceChip(
                 label: Text(preset.label),
@@ -75,73 +83,6 @@ class _ShowcaseControlsState extends State<ShowcaseControls> {
                 },
               );
             }).toList(),
-          ),
-          if (_settings.device == DevicePreset.custom) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Width',
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    controller: TextEditingController(
-                      text: _settings.customWidth?.toStringAsFixed(0) ?? '360',
-                    ),
-                    onChanged: (v) {
-                      final w = double.tryParse(v);
-                      if (w != null) {
-                        _update((s) => s.copyWith(customWidth: w));
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Height',
-                      isDense: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.number,
-                    controller: TextEditingController(
-                      text: _settings.customHeight?.toStringAsFixed(0) ?? '640',
-                    ),
-                    onChanged: (v) {
-                      final h = double.tryParse(v);
-                      if (h != null) {
-                        _update((s) => s.copyWith(customHeight: h));
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 20),
-          _sectionHeader('Scale'),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Text('0.5'),
-              Expanded(
-                child: Slider(
-                  value: _settings.scale,
-                  min: 0.5,
-                  max: 1.5,
-                  divisions: 20,
-                  label: _settings.scale.toStringAsFixed(2),
-                  onChanged: (v) {
-                    _update((s) => s.copyWith(scale: v));
-                  },
-                ),
-              ),
-              const Text('1.5'),
-            ],
           ),
           const SizedBox(height: 20),
           _sectionHeader('Spacing Scale'),
@@ -256,10 +197,7 @@ class _ShowcaseControlsState extends State<ShowcaseControls> {
 
 class ShowcaseSettings {
   final PlateType plateType;
-  final DevicePreset device;
-  final double? customWidth;
-  final double? customHeight;
-  final double scale;
+  final DeviceType device;
   final double spacingScale;
   final ShowcaseMode mode;
   final bool isDark;
@@ -268,9 +206,6 @@ class ShowcaseSettings {
   const ShowcaseSettings({
     required this.plateType,
     required this.device,
-    this.customWidth,
-    this.customHeight,
-    required this.scale,
     required this.spacingScale,
     required this.mode,
     required this.isDark,
@@ -279,8 +214,7 @@ class ShowcaseSettings {
 
   static const defaults = ShowcaseSettings(
     plateType: PlateType.irCar,
-    device: DevicePreset.largePhone,
-    scale: 1.0,
+    device: DeviceType.mobile,
     spacingScale: 6,
     mode: ShowcaseMode.input,
     isDark: false,
@@ -289,10 +223,7 @@ class ShowcaseSettings {
 
   ShowcaseSettings copyWith({
     PlateType? plateType,
-    DevicePreset? device,
-    double? customWidth,
-    double? customHeight,
-    double? scale,
+    DeviceType? device,
     double? spacingScale,
     ShowcaseMode? mode,
     bool? isDark,
@@ -301,9 +232,6 @@ class ShowcaseSettings {
     return ShowcaseSettings(
       plateType: plateType ?? this.plateType,
       device: device ?? this.device,
-      customWidth: customWidth ?? this.customWidth,
-      customHeight: customHeight ?? this.customHeight,
-      scale: scale ?? this.scale,
       spacingScale: spacingScale ?? this.spacingScale,
       mode: mode ?? this.mode,
       isDark: isDark ?? this.isDark,
