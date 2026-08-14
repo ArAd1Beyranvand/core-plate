@@ -50,6 +50,28 @@ class _BicyclePlateNumberState extends State<BicyclePlateNumber> {
     }
   }
 
+  Widget _digitItem(int index, {required VoidCallback onCompleted}) {
+    return IntegerPlateItem(
+      activeColor: widget.activeColor,
+      inactiveColor: widget.inactiveColor,
+      borderRadius: widget.itemBorderRadius,
+      textStyle: widget.textStyle,
+      focusNode: focusNodes[index],
+      controller: controllers[index],
+      onCompleted: onCompleted,
+      onChanged: (value) => BlocProvider.of<PlateCardBloc>(
+        context,
+      ).add(ValueIsChanged(index: index, value: value)),
+      onRemoved: () {
+        BlocProvider.of<PlateCardBloc>(
+          context,
+        ).add(ValueIsChanged(index: index, value: ''));
+      },
+    );
+  }
+
+  Widget get _digitGap => SizedBox(width: widget.spacingScale * 2);
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
@@ -84,165 +106,51 @@ class _BicyclePlateNumberState extends State<BicyclePlateNumber> {
                         SizedBox(height: widget.spacingScale),
                         Row(
                           children: [
-                            IntegerPlateItem(
-                              activeColor: widget.activeColor,
-                              inactiveColor: widget.inactiveColor,
-                              borderRadius: widget.itemBorderRadius,
-                              textStyle: widget.textStyle,
-                              focusNode: focusNodes[2],
-                              controller: controllers[2],
+                            _digitItem(
+                              2,
                               onCompleted: () => focusNodes[3].requestFocus(),
-                              onChanged: (value) =>
-                                  BlocProvider.of<PlateCardBloc>(
-                                    context,
-                                  ).add(ValueIsChanged(index: 2, value: value)),
-                              onRemoved: () {
-                                BlocProvider.of<PlateCardBloc>(
-                                  context,
-                                ).add(ValueIsChanged(index: 2, value: ''));
-                              },
                             ),
-                            SizedBox(width: widget.spacingScale * 2),
-                            IntegerPlateItem(
-                              activeColor: widget.activeColor,
-                              inactiveColor: widget.inactiveColor,
-                              borderRadius: widget.itemBorderRadius,
-                              textStyle: widget.textStyle,
-                              focusNode: focusNodes[1],
-                              controller: controllers[1],
+                            _digitGap,
+                            _digitItem(
+                              1,
                               onCompleted: () => focusNodes[2].requestFocus(),
-                              onChanged: (value) =>
-                                  BlocProvider.of<PlateCardBloc>(
-                                    context,
-                                  ).add(ValueIsChanged(index: 1, value: value)),
-                              onRemoved: () {
-                                BlocProvider.of<PlateCardBloc>(
-                                  context,
-                                ).add(ValueIsChanged(index: 1, value: ''));
-                              },
                             ),
-                            SizedBox(width: widget.spacingScale * 2),
-                            IntegerPlateItem(
-                              activeColor: widget.activeColor,
-                              inactiveColor: widget.inactiveColor,
-                              borderRadius: widget.itemBorderRadius,
-                              textStyle: widget.textStyle,
-                              focusNode: focusNodes[0],
-                              controller: controllers[0],
+                            _digitGap,
+                            _digitItem(
+                              0,
                               onCompleted: () => focusNodes[1].requestFocus(),
-                              onChanged: (value) =>
-                                  BlocProvider.of<PlateCardBloc>(
-                                    context,
-                                  ).add(ValueIsChanged(index: 0, value: value)),
-                              onRemoved: () {
-                                BlocProvider.of<PlateCardBloc>(
-                                  context,
-                                ).add(ValueIsChanged(index: 0, value: ''));
-                              },
                             ),
                           ],
                         ),
                         SizedBox(height: widget.spacingScale / 2),
                         Row(
                           children: [
-                            IntegerPlateItem(
-                              activeColor: widget.activeColor,
-                              inactiveColor: widget.inactiveColor,
-                              borderRadius: widget.itemBorderRadius,
-                              textStyle: widget.textStyle,
-                              focusNode: focusNodes[7],
-                              controller: controllers[7],
+                            _digitItem(
+                              7,
                               onCompleted: () => focusNodes[7].unfocus(),
-                              onChanged: (value) =>
-                                  BlocProvider.of<PlateCardBloc>(
-                                    context,
-                                  ).add(ValueIsChanged(index: 7, value: value)),
-                              onRemoved: () {
-                                BlocProvider.of<PlateCardBloc>(
-                                  context,
-                                ).add(ValueIsChanged(index: 7, value: ''));
-                              },
                             ),
-                            SizedBox(width: widget.spacingScale * 2),
-                            IntegerPlateItem(
-                              activeColor: widget.activeColor,
-                              inactiveColor: widget.inactiveColor,
-                              borderRadius: widget.itemBorderRadius,
-                              textStyle: widget.textStyle,
-                              focusNode: focusNodes[6],
-                              controller: controllers[6],
+                            _digitGap,
+                            _digitItem(
+                              6,
                               onCompleted: () => focusNodes[7].requestFocus(),
-                              onChanged: (value) =>
-                                  BlocProvider.of<PlateCardBloc>(
-                                    context,
-                                  ).add(ValueIsChanged(index: 6, value: value)),
-                              onRemoved: () {
-                                BlocProvider.of<PlateCardBloc>(
-                                  context,
-                                ).add(ValueIsChanged(index: 6, value: ''));
-                              },
                             ),
-                            SizedBox(width: widget.spacingScale * 2),
-                            IntegerPlateItem(
-                              activeColor: widget.activeColor,
-                              inactiveColor: widget.inactiveColor,
-                              borderRadius: widget.itemBorderRadius,
-                              textStyle: widget.textStyle,
-                              focusNode: focusNodes[5],
-                              controller: controllers[5],
+                            _digitGap,
+                            _digitItem(
+                              5,
                               onCompleted: () => focusNodes[6].requestFocus(),
-                              onChanged: (value) =>
-                                  BlocProvider.of<PlateCardBloc>(
-                                    context,
-                                  ).add(ValueIsChanged(index: 5, value: value)),
-                              onRemoved: () {
-                                BlocProvider.of<PlateCardBloc>(
-                                  context,
-                                ).add(ValueIsChanged(index: 5, value: ''));
-                              },
                             ),
-                            SizedBox(width: widget.spacingScale * 2),
-                            IntegerPlateItem(
-                              activeColor: widget.activeColor,
-                              inactiveColor: widget.inactiveColor,
-                              borderRadius: widget.itemBorderRadius,
-                              textStyle: widget.textStyle,
-                              focusNode: focusNodes[4],
-                              controller: controllers[4],
+                            _digitGap,
+                            _digitItem(
+                              4,
                               onCompleted: () => focusNodes[5].requestFocus(),
-                              onChanged: (value) =>
-                                  BlocProvider.of<PlateCardBloc>(
-                                    context,
-                                  ).add(ValueIsChanged(index: 4, value: value)),
-                              onRemoved: () {
-                                BlocProvider.of<PlateCardBloc>(
-                                  context,
-                                ).add(ValueIsChanged(index: 4, value: ''));
-                              },
                             ),
-                            SizedBox(width: widget.spacingScale * 2),
+                            _digitGap,
                             BlocBuilder<PlateCardBloc, PlateCardState>(
                               builder: (BuildContext context, state) {
-                                return IntegerPlateItem(
-                                  activeColor: widget.activeColor,
-                                  inactiveColor: widget.inactiveColor,
-                                  borderRadius: widget.itemBorderRadius,
-                                  textStyle: widget.textStyle,
-                                  focusNode: focusNodes[3],
-                                  controller: controllers[3],
+                                return _digitItem(
+                                  3,
                                   onCompleted: () =>
                                       focusNodes[4].requestFocus(),
-                                  onChanged: (value) =>
-                                      BlocProvider.of<PlateCardBloc>(
-                                        context,
-                                      ).add(
-                                        ValueIsChanged(index: 3, value: value),
-                                      ),
-                                  onRemoved: () {
-                                    BlocProvider.of<PlateCardBloc>(
-                                      context,
-                                    ).add(ValueIsChanged(index: 3, value: ''));
-                                  },
                                 );
                               },
                             ),
