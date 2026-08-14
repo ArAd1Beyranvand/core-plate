@@ -80,13 +80,21 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
     return Container(
       color: Theme.of(context).colorScheme.surfaceContainerLowest,
       padding: const EdgeInsets.all(16),
-      child: DeviceFrame(
-        device: _settings.device,
-        builder: (context, config) => PlateDisplay(
-          plateType: _settings.plateType,
-          mode: _settings.mode,
-          activeColor: _settings.activeColor,
-          spacingScale: _settings.spacingScale,
+      // Isolate the device + plate in its own layer. It is expensive to raster
+      // (perspective transform, nested FittedBoxes, clips and live TextFields),
+      // and on Linux an instant window maximise that forces a full re-raster of
+      // it can miss the GL embedder's frame deadline and crash the app with
+      // "Timed out waiting for OpenGL frame". A RepaintBoundary lets the resize
+      // composite the cached layer instead of re-rendering it from scratch.
+      child: RepaintBoundary(
+        child: DeviceFrame(
+          device: _settings.device,
+          builder: (context, config) => PlateDisplay(
+            plateType: _settings.plateType,
+            mode: _settings.mode,
+            activeColor: _settings.activeColor,
+            spacingScale: _settings.spacingScale,
+          ),
         ),
       ),
     );
