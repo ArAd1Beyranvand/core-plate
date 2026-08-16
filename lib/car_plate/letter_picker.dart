@@ -28,7 +28,7 @@ class _LetterPickerState extends State<LetterPicker> {
     controller = FixedExtentScrollController(
         initialItem: persianCarPlateLetters
             .indexOf(widget.initial ?? persianCarPlateLetters[0]));
-    widget.onSelectedItemChanged!(persianCarPlateLetters
+    widget.onSelectedItemChanged?.call(persianCarPlateLetters
         .indexOf(widget.initial ?? persianCarPlateLetters[0]));
     super.initState();
   }

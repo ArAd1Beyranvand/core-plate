@@ -13,6 +13,7 @@ dependencies:
   flutter_bloc: ^8.1.4
   bloc_concurrency: ^0.2.2
   bloc: ^8.1.4
+  country_flags: ^4.1.2
 
 dev_dependencies:
   flutter_test:
