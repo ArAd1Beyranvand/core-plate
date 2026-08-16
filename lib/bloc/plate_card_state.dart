@@ -25,14 +25,14 @@ class PlateCardState {
         plateNumber: PlateNumber(
           values: const [null, null, null, null, null, null, null, null],
           valueTypes: const [
-            Int,
-            Int,
+            SelectableInt,
+            SelectableInt,
             SelectableString,
-            Int,
-            Int,
-            Int,
-            Int,
-            Int
+            SelectableInt,
+            SelectableInt,
+            SelectableInt,
+            SelectableInt,
+            SelectableInt
           ],
         ),
         plateType: PlateType.irCar,
@@ -42,7 +42,7 @@ class PlateCardState {
       return PlateCardState(
         plateNumber: PlateNumber(
           values: const [null, null, null, null, null, null, null, null],
-          valueTypes: const [Int, Int, Int, Int, Int, Int, Int, Int],
+          valueTypes: const [SelectableInt, SelectableInt, SelectableInt, SelectableInt, SelectableInt, SelectableInt, SelectableInt, SelectableInt],
         ),
         plateType: PlateType.irBicycle,
       );
