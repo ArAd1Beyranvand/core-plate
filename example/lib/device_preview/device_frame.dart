@@ -23,6 +23,9 @@ class DeviceFrame extends StatefulWidget {
     this.curve = Curves.easeInOutCubic,
     this.fadeCurve = Curves.easeInOut,
     this.onPhaseChanged,
+    this.onContentSwap,
+    this.deckPressedKey,
+    this.onDeckKey,
   });
 
   /// Target form factor. Changing it starts the three-phase transition.
@@ -50,6 +53,19 @@ class DeviceFrame extends StatefulWidget {
   final Curve fadeCurve;
   final ValueChanged<DeviceTransitionPhase>? onPhaseChanged;
 
+  /// Fired once per transition during the blank hold after the frame has
+  /// finished morphing, while content opacity is pinned at zero and before the
+  /// fade-in starts. This is the moment to swap the page's backing state (e.g.
+  /// a plate's bloc), so the incoming content is never seen crossing the
+  /// outgoing one.
+  final VoidCallback? onContentSwap;
+
+  /// Label of a laptop key to render as held down.
+  final String? deckPressedKey;
+
+  /// Called with the tapped laptop key's reported label.
+  final ValueChanged<String>? onDeckKey;
+
   @override
   State<DeviceFrame> createState() => _DeviceFrameState();
 }
@@ -73,6 +89,10 @@ class _DeviceFrameState extends State<DeviceFrame>
   double _deckT = 1;
 
   DeviceTransitionPhase _phase = DeviceTransitionPhase.idle;
+
+  /// False while a started transition still owes an [onContentSwap]; true once
+  /// it has fired (or when idle). Reset when a new device arrives.
+  bool _contentSwapped = true;
 
   DeviceConfig _resolve(DeviceType type) =>
       widget.configResolver?.call(type) ?? DevicePresets.of(type);
@@ -108,6 +128,13 @@ class _DeviceFrameState extends State<DeviceFrame>
   }
 
   void _onTick() {
+    // The frame morph is done once _morphRaw saturates; the blank hold before
+    // the fade-in runs from here, so this is the safe, invisible moment to hand
+    // the page's content over to the incoming device.
+    if (!_contentSwapped && _morphRaw.value >= 1) {
+      _contentSwapped = true;
+      widget.onContentSwap?.call();
+    }
     final next = _phaseFor();
     if (next != _phase) {
       _phase = next;
@@ -135,6 +162,7 @@ class _DeviceFrameState extends State<DeviceFrame>
       // interrupted transition never snaps.
       _from = _currentConfig;
       _to = _resolve(widget.device);
+      _contentSwapped = false;
       _controller.forward(from: 0);
     }
   }
@@ -188,25 +216,22 @@ class _DeviceFrameState extends State<DeviceFrame>
     final config = _currentConfig;
     final total = config.totalSize(widget.perspective);
     final body = config.bodySize;
-    // A laptop's tilted deck projects far taller than its body, so fitting the
-    // whole bounding box would shrink the screen well below the tablet/mobile
-    // scale (their bodies are ~the same physical size as the laptop's). Fit on
-    // the body instead, so the screen matches the other devices, and let the
-    // deck extend below — clipped to the frame where there isn't room for it.
     final hasDeck = config.deck.depth > 0.5;
+    // Laptops must fit their full projected height (body + deck) so the
+    // keyboard isn't clipped; other devices have no deck, so this is just
+    // their body height.
+    final fitHeight = hasDeck ? total.height : body.height;
 
     return ClipRect(
       child: LayoutBuilder(
         builder: (context, constraints) {
           final fit =
-              widget.scale ?? _fitScale(constraints, total.width, body.height);
+              widget.scale ?? _fitScale(constraints, total.width, fitHeight);
           return Align(
-            // Pin the laptop to the top so the deck fills the room below it;
-            // everything else stays centred as before.
-            alignment: hasDeck ? Alignment.topCenter : Alignment.center,
+            alignment: Alignment.center,
             child: SizedBox(
               width: total.width * fit,
-              height: body.height * fit,
+              height: fitHeight * fit,
               child: OverflowBox(
                 alignment: Alignment.topCenter,
                 maxHeight: double.infinity,
@@ -241,10 +266,20 @@ class _DeviceFrameState extends State<DeviceFrame>
     final screen = config.screenSize;
     final opacity = _contentOpacity;
     final deck = config.deck.scaledDepth(_deckT);
+    // As the laptop folds shut, stretch the rendered deck toward the lid height
+    // so the back panel exactly spans the screen when flat against it. At
+    // _closed == 0 (open) render == deck, so nothing changes. Only the sizing
+    // and projection below use render; the faces' opacity still keys off the
+    // real deck, and totalSize/projectedHeight elsewhere still return 0 when
+    // shut, so the frame's reserved space is unchanged.
+    final renderDepth = deck.depth + (body.height - deck.depth) * _closed;
+    final render = deck.depth <= 0
+        ? deck
+        : deck.scaledDepth(renderDepth / deck.depth);
     // hinge: 135° open, 0° shut. The deck sits at 180° - hinge from the screen.
     final hinge = widget.hingeAngle * (1 - _closed);
     final deckAngle = 180 - hinge;
-    final projected = deck.projectedHeightAt(deckAngle, widget.perspective);
+    final projected = render.projectedHeightAt(deckAngle, widget.perspective);
     // cross-fade the faces through edge-on so neither pops in or out
     const band = 42.0;
     final present = deck.opacity * (deck.depth / 26).clamp(0.0, 1.0);
@@ -262,19 +297,21 @@ class _DeviceFrameState extends State<DeviceFrame>
             height: projected < 0.5 ? 0.5 : projected,
             child: OverflowBox(
               alignment: Alignment.topCenter,
-              minHeight: deck.depth,
-              maxHeight: deck.depth,
+              minHeight: render.depth,
+              maxHeight: render.depth,
               child: Transform(
                 alignment: Alignment.topCenter,
                 transform: Matrix4.identity()
                   ..setEntry(3, 2, 1 / widget.perspective)
-                  ..rotateX(deckAngle * 3.1415926535 / 180),
+                  ..rotateX(-deckAngle * 3.1415926535 / 180),
                 child: SizedBox(
                   width: body.width,
-                  height: deck.depth,
+                  height: render.depth,
                   child: LaptopDeck(
                     frontOpacity: frontOpacity,
                     backOpacity: backOpacity,
+                    pressedKey: widget.deckPressedKey,
+                    onKey: widget.onDeckKey,
                   ),
                 ),
               ),

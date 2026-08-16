@@ -12,5 +12,9 @@ dependencies:
     path: ../
   flutter_bloc: ^8.1.4
 
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
 flutter:
   uses-material-design: true

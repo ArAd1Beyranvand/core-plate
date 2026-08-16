@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plate_number/showcase/theme/poster_tokens.dart';
 
 import '../screens/showcase_screen.dart';
 
@@ -11,16 +12,11 @@ class PlateNumberShowcaseApp extends StatelessWidget {
       title: 'Plate Number Showcase',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: Colors.blue,
-        brightness: Brightness.light,
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: Colors.blue,
+        colorSchemeSeed: PosterTokens.accent,
         brightness: Brightness.dark,
+        scaffoldBackgroundColor: PosterTokens.bg,
         useMaterial3: true,
       ),
-      themeMode: ThemeMode.system,
       home: const ShowcaseScreen(),
     );
   }

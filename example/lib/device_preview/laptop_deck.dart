@@ -39,14 +39,16 @@ final deckRows = <DeckRow>[
   ]),
 ];
 
-/// The laptop base: milled aluminium, a recessed keyboard well with keycaps,
-/// and a trackpad. Laid out at its full physical depth — [DeviceFrame] tilts it
+/// The laptop base: milled aluminium and a recessed keyboard well with
+/// keycaps. Laid out at its full physical depth — [DeviceFrame] tilts it
 /// into perspective, so it unfolds out of the body as the frame morphs.
 class LaptopDeck extends StatelessWidget {
   const LaptopDeck({
     super.key,
     required this.frontOpacity,
     required this.backOpacity,
+    this.onKey,
+    this.pressedKey,
   });
 
   /// Keyboard side, facing us while the laptop is open.
@@ -55,6 +57,13 @@ class LaptopDeck extends StatelessWidget {
   /// Underside, seen once the deck has swung past edge-on. The two cross-fade
   /// through the fold, so neither ever pops.
   final double backOpacity;
+
+  /// Called with the tapped key's reported label, e.g. "A", "BACKSPACE".
+  final ValueChanged<String>? onKey;
+
+  /// Label of a key to render as held down, e.g. from a hardware keypress.
+  /// Applies to the deck rows only, not the numpad.
+  final String? pressedKey;
 
   @override
   Widget build(BuildContext context) {
@@ -83,68 +92,54 @@ class LaptopDeck extends StatelessWidget {
             opacity: frontOpacity.clamp(0, 1),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(40, 22, 40, 16),
-              child: Column(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 77,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xFF0B0D10), Color(0xFF14171C)],
-                            ),
-                            boxShadow: const [
-                              BoxShadow(color: Color(0xB3000000), blurRadius: 14, offset: Offset(0, 4)),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              for (final row in deckRows) ...[
-                                SizedBox(
-                                  height: row.height,
-                                  child: Row(
-                                    children: [
-                                      for (var i = 0; i < row.keys.length; i++) ...[
-                                        if (i > 0) const SizedBox(width: 8),
-                                        Expanded(
-                                          flex: (row.keys[i].flex * 100).round(),
-                                          child: _Key(label: row.keys[i].label),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      const Expanded(flex: 23, child: _Numpad()),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  FractionallySizedBox(
-                    widthFactor: 0.32,
+                  Expanded(
+                    flex: 77,
                     child: Container(
-                      height: 190,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                         gradient: const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [Color(0xFF171A1F), Color(0xFF22262C)],
+                          colors: [Color(0xFF0B0D10), Color(0xFF14171C)],
                         ),
+                        boxShadow: const [
+                          BoxShadow(color: Color(0xB3000000), blurRadius: 14, offset: Offset(0, 4)),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          for (final row in deckRows) ...[
+                            SizedBox(
+                              height: row.height,
+                              child: Row(
+                                children: [
+                                  for (var i = 0; i < row.keys.length; i++) ...[
+                                    if (i > 0) const SizedBox(width: 8),
+                                    Expanded(
+                                      flex: (row.keys[i].flex * 100).round(),
+                                      child: _Key(
+                                        label: row.keys[i].label,
+                                        icon: _iconFor(row.keys[i].label),
+                                        onKey: onKey,
+                                        pressedLabel: pressedKey,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: _rowGap),
+                          ],
+                        ],
                       ),
                     ),
                   ),
+                  const SizedBox(width: 14),
+                  Expanded(flex: 23, child: _Numpad(onKey: onKey)),
                 ],
               ),
             ),

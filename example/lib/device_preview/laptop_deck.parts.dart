@@ -1,9 +1,29 @@
 part of 'laptop_deck.dart';
 
+/// Vertical gap left below every keyboard/numpad row.
+const _rowGap = 10.0;
+
+/// The inner height of the main keyboard well: every deck row plus the gap
+/// that follows it. The numpad derives its row height from this so both
+/// columns end flush, even if [deckRows] changes.
+double get _deckWellHeight =>
+    deckRows.fold<double>(0, (h, r) => h + r.height) +
+    _rowGap * deckRows.length;
+
+/// The Material icon a keycap renders in place of its glyph label, if any.
+/// The label itself stays the reporting identity, so highlighting and the
+/// [_report] contract are unaffected.
+IconData? _iconFor(String label) => switch (label) {
+      '⌫' => Icons.backspace_outlined,
+      '⌧' => Icons.calculate_outlined,
+      _ => null,
+    };
+
 /// The number pad to the right of the keyboard — decorative, like the rest of
 /// the deck.
 class _Numpad extends StatelessWidget {
-  const _Numpad();
+  const _Numpad({this.onKey});
+  final ValueChanged<String>? onKey;
 
   static const _rows = <List<String>>[
     ['⌧', '÷', '×', '⌫'],
@@ -15,6 +35,10 @@ class _Numpad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Match the keyboard well's inner height so both columns end flush at the
+    // bottom, then back out an even row height from the number of numpad rows.
+    final rowHeight =
+        (_deckWellHeight - _rowGap * _rows.length) / _rows.length;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -32,7 +56,7 @@ class _Numpad extends StatelessWidget {
         children: [
           for (final row in _rows) ...[
             SizedBox(
-              height: 52,
+              height: rowHeight,
               child: Row(
                 children: [
                   for (var i = 0; i < row.length; i++) ...[
@@ -40,13 +64,17 @@ class _Numpad extends StatelessWidget {
                     Expanded(
                       // the zero key spans two columns, as on a real numpad
                       flex: row[i] == '0' ? 208 : 100,
-                      child: _Key(label: row[i]),
+                      child: _Key(
+                        label: row[i],
+                        icon: _iconFor(row[i]),
+                        onKey: onKey,
+                      ),
                     ),
                   ],
                 ],
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: _rowGap),
           ],
         ],
       ),
@@ -160,37 +188,94 @@ class _VentPainter extends CustomPainter {
   bool shouldRepaint(covariant _VentPainter oldDelegate) => false;
 }
 
-/// A static keycap — decorative, no press state.
-class _Key extends StatelessWidget {
-  const _Key({required this.label});
+/// Keys that don't report a character — modifiers, function row, arrows.
+const _nonReportingKeys = <String>{
+  'esc', '⇧', '⇪', '⇥', 'fn', '⌃', '⌥', '⌘', '⏻', '⌧',
+  '◂', '▴', '▾', '▸',
+  'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+};
+
+/// A tappable keycap: presses down and springs back, reporting its label.
+class _Key extends StatefulWidget {
+  const _Key({required this.label, this.icon, this.onKey, this.pressedLabel});
   final String label;
+
+  /// Rendered instead of [label] when set; [label] is still the reporting
+  /// identity, so [_report] and highlighting are unchanged.
+  final IconData? icon;
+  final ValueChanged<String>? onKey;
+  final String? pressedLabel;
+
+  @override
+  State<_Key> createState() => _KeyState();
+}
+
+class _KeyState extends State<_Key> {
+  bool _pressed = false;
+
+  void _setPressed(bool pressed) {
+    if (_pressed == pressed) return;
+    setState(() => _pressed = pressed);
+  }
+
+  void _report() {
+    final label = widget.label;
+    if (label.isEmpty || _nonReportingKeys.contains(label)) return;
+    if (label == '⌫') {
+      widget.onKey?.call('BACKSPACE');
+    } else if (label == '⏎') {
+      widget.onKey?.call('ENTER');
+    } else {
+      widget.onKey?.call(label);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFFDFEFF), Color(0xFFEBEEF2), Color(0xFFCFD5DD)],
-          stops: [0, .45, 1],
-        ),
-        border: const Border(
-          top: BorderSide(color: Color(0xE6FFFFFF)),
-        ),
-        boxShadow: const [
-          BoxShadow(color: Color(0xFF9AA1AA), offset: Offset(0, 5)),
-          BoxShadow(color: Color(0xFF6C737B), offset: Offset(0, 7)),
-          BoxShadow(color: Color(0x99000000), blurRadius: 16, offset: Offset(0, 13)),
-        ],
-      ),
-      child: FittedBox(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: Text(
-            label,
-            style: const TextStyle(color: Color(0xFF171A1F), fontSize: 18, fontWeight: FontWeight.w600),
+    final pressed = _pressed ||
+        (widget.pressedLabel != null && widget.pressedLabel == widget.label);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
+      onTap: _report,
+      child: AnimatedScale(
+        scale: pressed ? 0.94 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        curve: pressed ? Curves.easeOut : Curves.elasticOut,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFFDFEFF), Color(0xFFEBEEF2), Color(0xFFCFD5DD)],
+              stops: [0, .45, 1],
+            ),
+            border: const Border(
+              top: BorderSide(color: Color(0xE6FFFFFF)),
+            ),
+            boxShadow: pressed
+                ? const [
+                    BoxShadow(color: Color(0x99000000), blurRadius: 10, offset: Offset(0, 4)),
+                  ]
+                : const [
+                    BoxShadow(color: Color(0xFF9AA1AA), offset: Offset(0, 5)),
+                    BoxShadow(color: Color(0xFF6C737B), offset: Offset(0, 7)),
+                    BoxShadow(color: Color(0x99000000), blurRadius: 16, offset: Offset(0, 13)),
+                  ],
+          ),
+          child: FittedBox(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: widget.icon != null
+                  ? Icon(widget.icon, size: 18, color: const Color(0xFF171A1F))
+                  : Text(
+                      widget.label,
+                      style: const TextStyle(color: Color(0xFF171A1F), fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+            ),
           ),
         ),
       ),
