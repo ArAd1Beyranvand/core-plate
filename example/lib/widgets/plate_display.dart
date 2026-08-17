@@ -14,10 +14,15 @@ class PlateDisplay extends StatelessWidget {
     this.bloc,
     this.letterInputMode,
     this.onActiveSlotChanged,
+    this.controller,
   });
 
   final PlateSpec spec;
   final PlateMode mode;
+
+  /// Lets a host drive character entry from outside the plate (e.g. a custom
+  /// on-screen keypad). Forwarded straight to [PlateCanvas].
+  final PlateInputController? controller;
 
   /// How the car plate letter is entered. Null lets the plate resolve the
   /// platform default; pass [LetterInputMode.hostKeypad] when an app-supplied
@@ -104,6 +109,7 @@ class PlateDisplay extends StatelessWidget {
       spec: spec,
       letterInputMode: letterInputMode,
       onActiveSlotChanged: onActiveSlotChanged,
+      controller: controller,
     );
 
     return PlateThemeScope(theme: theme, child: plate);

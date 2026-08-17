@@ -1,7 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:plate_number/plate_number.dart';
 
 import '../poster/poster_tokens.dart';
+
+/// Backspace's key label; not a character any alphabet accepts.
+const String kBackspaceKey = 'BACKSPACE';
 
 /// Duration of the letters-pad slide in/out. Public because the showcase's
 /// typist awaits this same constant to sync with the animation.
@@ -9,7 +14,7 @@ const Duration kLetterPadSlide = Duration(milliseconds: 260);
 
 /// A fake soft keyboard drawn inside the device screen, below the plate.
 ///
-/// Purely decorative: taps do nothing, but a key can be flashed
+/// Taps report through [onKey] when set; a key can also be flashed
 /// programmatically by passing its label as [highlightedKey].
 class VirtualKeypad extends StatefulWidget {
   const VirtualKeypad({
@@ -20,6 +25,7 @@ class VirtualKeypad extends StatefulWidget {
     this.onKey,
     this.digitAlphabet = PlateAlphabet.persianDigits,
     this.letterAlphabet = PlateAlphabet.persianPlateLetters,
+    this.activeAlphabet,
   });
 
   /// Label of the key to flash; null flashes nothing.
@@ -39,6 +45,11 @@ class VirtualKeypad extends StatefulWidget {
 
   /// Alphabet used to render the letters pad's labels.
   final PlateAlphabet letterAlphabet;
+
+  /// The focused slot's alphabet. Keys outside it render disabled — submit()
+  /// would reject them anyway — since it may be a subset of [digitAlphabet]
+  /// or [letterAlphabet]. Null disables no keys (e.g. no slot is focused).
+  final PlateAlphabet? activeAlphabet;
 
   @override
   State<VirtualKeypad> createState() => _VirtualKeypadState();
@@ -112,14 +123,7 @@ class _VirtualKeypadState extends State<VirtualKeypad>
                       children: [
                         for (var c = 0; c < _rows[r].length; c++) ...[
                           if (c > 0) const SizedBox(width: 6),
-                          Expanded(
-                            child: _Key(
-                              label: _rows[r][c],
-                              highlighted: _rows[r][c].isNotEmpty &&
-                                  _rows[r][c] == widget.highlightedKey,
-                              digitAlphabet: widget.digitAlphabet,
-                            ),
-                          ),
+                          Expanded(child: _buildDigitKey(_rows[r][c])),
                         ],
                       ],
                     ),
@@ -134,17 +138,48 @@ class _VirtualKeypadState extends State<VirtualKeypad>
     );
   }
 
+  /// Whether [key] should accept taps: always true for backspace, otherwise
+  /// only when it is in [PlateAlphabet.characters] for the alphabet driving
+  /// the pad it belongs to (the focused slot's alphabet when known, else the
+  /// pad's own alphabet) — submit() would reject anything else.
+  bool _keyEnabled(String key, PlateAlphabet ownAlphabet) {
+    if (key.isEmpty) return false;
+    if (key == kBackspaceKey) return true;
+    return (widget.activeAlphabet ?? ownAlphabet).accepts(key);
+  }
+
+  Widget _buildDigitKey(String rawLabel) {
+    final bool isBackspace = rawLabel == '⌫';
+    final String key = isBackspace ? kBackspaceKey : rawLabel;
+    final bool enabled = _keyEnabled(key, widget.digitAlphabet);
+    return GestureDetector(
+      onTap: enabled ? () => widget.onKey?.call(key) : null,
+      child: Opacity(
+        opacity: enabled ? 1.0 : 0.35,
+        child: _Key(
+          label: rawLabel,
+          highlighted: rawLabel.isNotEmpty && rawLabel == widget.highlightedKey,
+          digitAlphabet: widget.digitAlphabet,
+        ),
+      ),
+    );
+  }
+
   Widget _buildLettersLayer(double innerHeight) {
     final List<String> alphabetLetters = widget.letterAlphabet.characters;
-    final int rowCount = (alphabetLetters.length / 4).ceil();
+    // A roughly square grid, its width derived from how many letters there
+    // are rather than fixed, so a 16-letter and a 26-letter alphabet both
+    // lay out sensibly.
+    final int columns = math.sqrt(alphabetLetters.length).ceil();
+    final int rowCount = (alphabetLetters.length / columns).ceil();
     // Divide the fixed inner height (minus the gaps between rows) so the
     // letters pad always ends flush with the digit pad.
     final double rowHeight =
         (innerHeight - 6 * (rowCount - 1)) / rowCount;
 
-    // Pad the final row with blank spacers so every row has 4 columns.
+    // Pad the final row with blank spacers so every row has the same width.
     final List<String> letters = [...alphabetLetters];
-    while (letters.length < rowCount * 4) {
+    while (letters.length < rowCount * columns) {
       letters.add('');
     }
 
@@ -169,18 +204,25 @@ class _VirtualKeypadState extends State<VirtualKeypad>
                 height: rowHeight,
                 child: Row(
                   children: [
-                    for (var c = 0; c < 4; c++) ...[
+                    for (var c = 0; c < columns; c++) ...[
                       if (c > 0) const SizedBox(width: 6),
                       Expanded(
                         child: Builder(
                           builder: (context) {
-                            final letter = letters[r * 4 + c];
+                            final letter = letters[r * columns + c];
+                            final enabled =
+                                _keyEnabled(letter, widget.letterAlphabet);
                             return GestureDetector(
-                              onTap: () => widget.onKey?.call(letter),
-                              child: _Key(
-                                label: letter,
-                                highlighted: letter.isNotEmpty &&
-                                    letter == widget.highlightedKey,
+                              onTap: enabled
+                                  ? () => widget.onKey?.call(letter)
+                                  : null,
+                              child: Opacity(
+                                opacity: enabled ? 1.0 : 0.35,
+                                child: _Key(
+                                  label: letter,
+                                  highlighted: letter.isNotEmpty &&
+                                      letter == widget.highlightedKey,
+                                ),
                               ),
                             );
                           },

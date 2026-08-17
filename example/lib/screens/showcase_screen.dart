@@ -231,6 +231,11 @@ class _DeviceStageState extends State<_DeviceStage> {
   /// starts blank. [PlateDisplay] renders from it via its `bloc` param.
   late PlateCardBloc _bloc = PlateCardBloc(specFor(_contentDevice));
 
+  /// Drives character entry from the tablet's [VirtualKeypad] into the
+  /// attached [PlateCanvas], without either side knowing the active slot's
+  /// index.
+  final PlateInputController _plateInput = PlateInputController();
+
   /// Bumped on every device hop; captured by pending awaits so a stale run
   /// (a delayed typist start from a device we already left) bails out.
   int _generation = 0;
@@ -239,8 +244,8 @@ class _DeviceStageState extends State<_DeviceStage> {
   /// idle phase for the same device doesn't start a second run.
   int _startedGen = -1;
 
-  /// Which plate slot currently holds focus (its index 2 is the letter slot),
-  /// driving the tablet's letters pad. Null when focus is off the plate.
+  /// Which plate slot currently holds focus, driving the tablet's letters
+  /// pad via its alphabet. Null when focus is off the plate.
   PlateSlot? _activeSlot;
 
   /// Latest validation of the German plate's typed value, or null when nothing
@@ -305,6 +310,7 @@ class _DeviceStageState extends State<_DeviceStage> {
     _blocSub?.cancel();
     _bloc.close();
     _controller.dispose();
+    _plateInput.dispose();
     super.dispose();
   }
 
@@ -404,6 +410,12 @@ class _DeviceStageState extends State<_DeviceStage> {
     // [_contentDevice] until the swap, so the outgoing plate keeps rendering
     // through its fade-out instead of being replaced the instant the hop fires.
     final contentDevice = _contentDevice;
+    // The active slot's alphabet, not its position, decides whether the
+    // tablet's letters pad shows: a digit-only alphabet keeps the digit grid,
+    // anything else slides the letters layer in.
+    final activeAlphabet = _activeSlot?.alphabet;
+    final showLetters = activeAlphabet != null &&
+        !activeAlphabet.characters.every((c) => c.isDigit());
     return DeviceFrame(
       device: frameDevice,
       onPhaseChanged: _onPhase,
@@ -429,24 +441,20 @@ class _DeviceStageState extends State<_DeviceStage> {
             : null,
         onActiveSlotChanged:
             contentDevice == DeviceType.tablet ? _setActiveSlot : null,
+        controller: contentDevice == DeviceType.tablet ? _plateInput : null,
         keyboard: contentDevice == DeviceType.desktop
             ? null
             : contentDevice == DeviceType.tablet
                 ? VirtualKeypad(
                     highlightedKey: _typist.activeKey,
                     compact: false,
-                    // FIXME(K5): hard-coded letter-slot index 2.
-                    showLetters: _activeSlot?.index == 2,
+                    showLetters: showLetters,
                     digitAlphabet: PlateAlphabet.latinDigits,
                     letterAlphabet: PlateAlphabet.latinUppercase,
-                    // index: 2 works for both scripts today only by coincidence
-                    // — PlateSpecs.irCar and PlateSpecs.deCar both happen to put
-                    // their single letter slot at index 2. If a future PlateSpec
-                    // places its letter slot elsewhere, this must read the active
-                    // spec's slot list instead of the literal 2.
-                    // FIXME(K5): hard-coded letter-slot index 2.
-                    onKey: (letter) =>
-                        _bloc.add(ValueIsChanged(index: 2, value: letter)),
+                    activeAlphabet: activeAlphabet,
+                    onKey: (key) => key == kBackspaceKey
+                        ? _plateInput.backspace()
+                        : _plateInput.submit(key),
                   )
                 : VirtualKeypad(
                     highlightedKey: _typist.activeKey,
