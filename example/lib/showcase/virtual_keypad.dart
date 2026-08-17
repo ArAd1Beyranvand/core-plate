@@ -26,6 +26,7 @@ class VirtualKeypad extends StatefulWidget {
     this.digitAlphabet = PlateAlphabet.persianDigits,
     this.letterAlphabet = PlateAlphabet.persianPlateLetters,
     this.activeAlphabet,
+    this.unavailableKeys = const {},
   });
 
   /// Label of the key to flash; null flashes nothing.
@@ -50,6 +51,11 @@ class VirtualKeypad extends StatefulWidget {
   /// would reject them anyway — since it may be a subset of [digitAlphabet]
   /// or [letterAlphabet]. Null disables no keys (e.g. no slot is focused).
   final PlateAlphabet? activeAlphabet;
+
+  /// Keys that are currently barred by a validation rule (e.g. a forbidden
+  /// letter pair). They stay in the grid at the same position; they render
+  /// disabled and swallow taps. Never affects layout.
+  final Set<String> unavailableKeys;
 
   @override
   State<VirtualKeypad> createState() => _VirtualKeypadState();
@@ -141,11 +147,13 @@ class _VirtualKeypadState extends State<VirtualKeypad>
   /// Whether [key] should accept taps: always true for backspace, otherwise
   /// only when it is in [PlateAlphabet.characters] for the alphabet driving
   /// the pad it belongs to (the focused slot's alphabet when known, else the
-  /// pad's own alphabet) — submit() would reject anything else.
+  /// pad's own alphabet) — submit() would reject anything else — and not
+  /// currently barred by [VirtualKeypad.unavailableKeys].
   bool _keyEnabled(String key, PlateAlphabet ownAlphabet) {
     if (key.isEmpty) return false;
     if (key == kBackspaceKey) return true;
-    return (widget.activeAlphabet ?? ownAlphabet).accepts(key);
+    return (widget.activeAlphabet ?? ownAlphabet).accepts(key) &&
+        !widget.unavailableKeys.contains(key);
   }
 
   Widget _buildDigitKey(String rawLabel) {
@@ -154,13 +162,11 @@ class _VirtualKeypadState extends State<VirtualKeypad>
     final bool enabled = _keyEnabled(key, widget.digitAlphabet);
     return GestureDetector(
       onTap: enabled ? () => widget.onKey?.call(key) : null,
-      child: Opacity(
-        opacity: enabled ? 1.0 : 0.35,
-        child: _Key(
-          label: rawLabel,
-          highlighted: rawLabel.isNotEmpty && rawLabel == widget.highlightedKey,
-          digitAlphabet: widget.digitAlphabet,
-        ),
+      child: _Key(
+        label: rawLabel,
+        highlighted: rawLabel.isNotEmpty && rawLabel == widget.highlightedKey,
+        enabled: enabled,
+        digitAlphabet: widget.digitAlphabet,
       ),
     );
   }
@@ -170,6 +176,12 @@ class _VirtualKeypadState extends State<VirtualKeypad>
     // A roughly square grid, its width derived from how many letters there
     // are rather than fixed, so a 16-letter and a 26-letter alphabet both
     // lay out sensibly.
+    //
+    // Layout invariant: columns/rowCount are derived from
+    // letterAlphabet.characters.length only. activeAlphabet and
+    // unavailableKeys must never narrow the list the grid is built from —
+    // they only affect whether an already-placed key renders enabled — or
+    // the pad would reflow when a validation rule fires.
     final int columns = math.sqrt(alphabetLetters.length).ceil();
     final int rowCount = (alphabetLetters.length / columns).ceil();
     // Divide the fixed inner height (minus the gaps between rows) so the
@@ -216,13 +228,11 @@ class _VirtualKeypadState extends State<VirtualKeypad>
                               onTap: enabled
                                   ? () => widget.onKey?.call(letter)
                                   : null,
-                              child: Opacity(
-                                opacity: enabled ? 1.0 : 0.35,
-                                child: _Key(
-                                  label: letter,
-                                  highlighted: letter.isNotEmpty &&
-                                      letter == widget.highlightedKey,
-                                ),
+                              child: _Key(
+                                label: letter,
+                                highlighted: letter.isNotEmpty &&
+                                    letter == widget.highlightedKey,
+                                enabled: enabled,
                               ),
                             );
                           },
@@ -263,11 +273,18 @@ class _Key extends StatelessWidget {
   const _Key({
     required this.label,
     required this.highlighted,
+    required this.enabled,
     this.digitAlphabet,
   });
 
   final String label;
   final bool highlighted;
+
+  /// Barred by a validation rule (or outside the active alphabet) when
+  /// false. Stays in the grid at the same position; a disabled key is never
+  /// highlighted — [highlighted] always wins visually because a barred key
+  /// can't be tapped in the first place, so the two never conflict.
+  final bool enabled;
 
   /// When set, [label] is rendered through this alphabet (digit grid keys).
   /// When null, [label] is shown verbatim (letters grid keys, backspace).
@@ -280,21 +297,38 @@ class _Key extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final Color ink = highlighted ? const Color(0xFF05080B) : Colors.white;
+    final Color ink = highlighted
+        ? const Color(0xFF05080B)
+        : enabled
+            ? Colors.white
+            : Colors.white.withValues(alpha: 0.30);
+
+    // Highlight presses stay quick (90ms in / 160ms out); an enabled<->
+    // disabled transition tweens a bit slower (180ms) so the grey-out reads
+    // as a deliberate fade rather than a snap.
+    final Duration duration = Duration(
+      milliseconds: highlighted ? 90 : (enabled ? 160 : 180),
+    );
 
     return AnimatedScale(
       scale: highlighted ? 0.94 : 1.0,
-      duration: Duration(milliseconds: highlighted ? 90 : 160),
+      duration: duration,
       curve: Curves.easeOut,
       child: AnimatedContainer(
-        duration: Duration(milliseconds: highlighted ? 90 : 160),
+        duration: duration,
         curve: Curves.easeOut,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: highlighted ? PosterTokens.accent : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: highlighted ? PosterTokens.accent : PosterTokens.hairline,
+            color: highlighted
+                ? PosterTokens.accent
+                : enabled
+                    ? PosterTokens.hairline
+                    : PosterTokens.hairline.withValues(
+                        alpha: PosterTokens.hairline.a * 0.5,
+                      ),
             width: 1,
           ),
         ),

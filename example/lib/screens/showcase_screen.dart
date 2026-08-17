@@ -356,6 +356,8 @@ class _DeviceStageState extends State<_DeviceStage> {
     final device = _contentDevice;
     await _typist.run(
       bloc: _bloc,
+      spec: specFor(device),
+      controller: _plateInput,
       steps: switch (device) {
         DeviceType.mobile => bicycleScript,
         DeviceType.tablet => germanCarScript,
@@ -452,6 +454,13 @@ class _DeviceStageState extends State<_DeviceStage> {
                     digitAlphabet: PlateAlphabet.latinDigits,
                     letterAlphabet: PlateAlphabet.latinUppercase,
                     activeAlphabet: activeAlphabet,
+                    // GermanPlateValidator only exposes a whole-plate
+                    // validate() (district + letters + digits in, one
+                    // isValid/reason out) — no per-character ban set to
+                    // derive individual barred keys from, so there is
+                    // nothing to grey out yet. See the doc comment on
+                    // _germanValidation.
+                    unavailableKeys: const {},
                     onKey: (key) => key == kBackspaceKey
                         ? _plateInput.backspace()
                         : _plateInput.submit(key),
