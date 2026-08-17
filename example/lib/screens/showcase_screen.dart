@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:plate_number/plate_number.dart';
-import 'package:plate_number/model/plate_spec.dart';
 
 import '../device_preview/device_config.dart';
 import '../device_preview/device_frame.dart';

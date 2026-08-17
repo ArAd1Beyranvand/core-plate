@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:plate_number/plate_number.dart';
-import 'package:plate_number/model/plate_spec.dart';
 import 'package:plate_number/widgets/plate_canvas.dart';
 
 class PlateDisplay extends StatelessWidget {

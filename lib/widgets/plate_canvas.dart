@@ -12,6 +12,7 @@ import 'plate_items.dart';
 import 'plate_frame.dart';
 import 'country_panel.dart';
 import '../car_plate/letter_picker.dart';
+import '../input/plate_input_controller.dart';
 
 class PlateCanvas extends StatefulWidget {
   const PlateCanvas({
@@ -24,6 +25,7 @@ class PlateCanvas extends StatefulWidget {
     this.onActiveSlotChanged,
     this.onRemove,
     this.showRemoveButton = false,
+    this.controller,
   });
 
   final PlateSpec spec;
@@ -34,12 +36,13 @@ class PlateCanvas extends StatefulWidget {
   final ValueChanged<PlateSlot?>? onActiveSlotChanged;
   final VoidCallback? onRemove;
   final bool showRemoveButton;
+  final PlateInputController? controller;
 
   @override
   State<PlateCanvas> createState() => _PlateCanvasState();
 }
 
-class _PlateCanvasState extends State<PlateCanvas> {
+class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
   final Map<int, FocusNode> _focusNodes = {};
   final Map<int, TextEditingController> _controllers = {};
 
@@ -56,10 +59,21 @@ class _PlateCanvasState extends State<PlateCanvas> {
         _controllers[slot.index] = TextEditingController();
       }
     }
+    widget.controller?.attach(this);
+  }
+
+  @override
+  void didUpdateWidget(PlateCanvas oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.detach(this);
+      widget.controller?.attach(this);
+    }
   }
 
   @override
   void dispose() {
+    widget.controller?.detach(this);
     for (final c in _controllers.values) {
       c.dispose();
     }
@@ -82,6 +96,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     if (active?.index != _activeSlot?.index) {
       _activeSlot = active;
       widget.onActiveSlotChanged?.call(active);
+      widget.controller?.notifyActiveSlotChanged();
     }
   }
 
@@ -112,6 +127,49 @@ class _PlateCanvasState extends State<PlateCanvas> {
     if (chosen == null) return;
     bloc.add(ValueIsChanged(index: slot.index, value: chosen));
     if (slot.next != null) _focusNodes[slot.next!]?.requestFocus();
+  }
+
+  @override
+  PlateSlot? get activeSlot => _activeSlot;
+
+  @override
+  void submitCharacter(String c) {
+    final slot = _activeSlot;
+    if (slot == null || !slot.alphabet.accepts(c)) return;
+    context.read<PlateCardBloc>().add(ValueIsChanged(index: slot.index, value: c));
+    _advance(slot);
+  }
+
+  @override
+  void backspaceCharacter() {
+    final slot = _activeSlot;
+    if (slot == null) return;
+    final values = context.read<PlateCardBloc>().state.plateNumber.values;
+    final current = values[slot.index];
+    final target = (current == null || current.isEmpty) ? _previousSlot(slot) : slot;
+    if (target == null) return;
+    context.read<PlateCardBloc>().add(ValueIsChanged(index: target.index, value: ''));
+    _focusNodes[target.index]?.requestFocus();
+  }
+
+  PlateSlot? _previousSlot(PlateSlot slot) {
+    for (final s in widget.spec.slots) {
+      if (s.next == slot.index) return s;
+    }
+    return null;
+  }
+
+  @override
+  void focusFirstEmptySlot() {
+    final values = context.read<PlateCardBloc>().state.plateNumber.values;
+    for (final s in widget.spec.slots) {
+      final v = values[s.index];
+      if (v == null || v.isEmpty) {
+        _focusNodes[s.index]?.requestFocus();
+        return;
+      }
+    }
+    _focusNodes[widget.spec.slots.first.index]?.requestFocus();
   }
 
   @override
