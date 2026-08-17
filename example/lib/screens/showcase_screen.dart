@@ -214,22 +214,9 @@ class _DeviceStage extends StatefulWidget {
   State<_DeviceStage> createState() => _DeviceStageState();
 }
 
-class _DeviceStageState extends State<_DeviceStage> with WidgetsBindingObserver {
+class _DeviceStageState extends State<_DeviceStage> {
   final DeviceCycleController _controller = DeviceCycleController();
   final PlateTypist _typist = PlateTypist();
-
-  /// True from the first window-metrics change until [_resizeSettleDelay]
-  /// after the last one. The demo keeps re-flashing keys and morphing the
-  /// device shell on a timer, which keeps the raster thread busy; on Linux
-  /// GTK gives it only 100ms to produce a frame at the new window size once a
-  /// resize (e.g. clicking maximize) lands; if that frame is still queued
-  /// behind an in-flight animation frame it misses the deadline and the GL
-  /// compositor can crash instead of degrading gracefully. Pausing the demo
-  /// for the duration of a resize keeps the raster thread free to prioritise
-  /// that frame.
-  bool _resizing = false;
-  Timer? _resizeSettleTimer;
-  static const _resizeSettleDelay = Duration(milliseconds: 400);
 
   /// Drives the frame's geometry morph; flips the instant a hop starts so the
   /// shell begins reshaping toward the incoming device.
@@ -264,33 +251,13 @@ class _DeviceStageState extends State<_DeviceStage> with WidgetsBindingObserver 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     // The first device never fires a transition phase, so kick it off directly
     // once the tree is laid out.
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeStartTyping());
   }
 
   @override
-  void didChangeMetrics() {
-    // Fires for every step of an interactive resize, not just its end,
-    // so re-arming this timer on each call is what makes it "settle".
-    _resizeSettleTimer?.cancel();
-    if (!_resizing) {
-      _resizing = true;
-      _generation++;
-      _typist.cancel();
-    }
-    _resizeSettleTimer = Timer(_resizeSettleDelay, () {
-      if (!mounted) return;
-      _resizing = false;
-      _maybeStartTyping();
-    });
-  }
-
-  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _resizeSettleTimer?.cancel();
     _typist.dispose();
     _bloc.close();
     _controller.dispose();

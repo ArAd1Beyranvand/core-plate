@@ -1,12 +1,21 @@
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-/// A national flag rendered from a proper SVG vector source (via the
-/// `country_flags` package / jovial_svg), sized to fill its parent.
+/// A national flag rendered from a proper SVG vector source, sized to fill its
+/// parent.
 ///
 /// Flags are looked up by ISO 3166-1 alpha-2 code (e.g. `ir`). The intrinsic
 /// aspect ratio of each flag is preserved, so at plate scale (~20px tall) the
 /// artwork stays crisp instead of the hand-drawn approximation it replaces.
+///
+/// Where we ship our own high-fidelity SVG for a country (see [_svgAssets]) it
+/// is rendered directly with `flutter_svg`, which rasterises the live vector at
+/// the exact device-pixel size. Everything else falls back to the
+/// `country_flags` package, which pre-compiles each flag to a quantized binary
+/// (`.si`) format ahead of time — fine for simple tricolours, but coarse enough
+/// on a detailed emblem (Iran's, its Kufic-script border) to read as pixelation
+/// at plate scale. Shipping the raw SVG for those sidesteps the quantization.
 class PlateFlag extends StatelessWidget {
   const PlateFlag({super.key, required this.countryCode, this.borderRadius});
 
@@ -17,54 +26,44 @@ class PlateFlag extends StatelessWidget {
   /// as a plain rectangle.
   final double? borderRadius;
 
-  /// Below this width, flags are rendered at [_supersampleWidth] and scaled
-  /// down instead of being asked to draw at their true (tiny) size.
-  ///
-  /// `country_flags` compiles each SVG to a quantized binary format ahead of
-  /// time; on a detailed flag (Iran's emblem, its Kufic-script border) that
-  /// quantization is coarse enough relative to a ~20px-tall plate flag to
-  /// read as pixelation rather than fine detail. Rendering at a larger fixed
-  /// size and letting [FittedBox] downscale the result keeps the same
-  /// vector draw (so the quantization step size is unchanged) but shrinks it
-  /// with filtering, which hides the artefact the way downsampling a raster
-  /// image would.
-  static const double _supersampleWidth = 96;
+  /// Country codes (lower-case) we ship a crisp SVG asset for, mapped to the
+  /// asset path inside this package.
+  static const Map<String, String> _svgAssets = {
+    'ir': 'assets/flags/Flag_of_Iran.svg',
+  };
 
   @override
   Widget build(BuildContext context) {
-    // country_flags requires an explicit size; let the parent decide it and
-    // preserve the flag's intrinsic aspect ratio.
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = _resolveSize(constraints);
-        final shape = borderRadius == null
-            ? const Rectangle()
-            : RoundedRectangle(borderRadius!);
-        if (size.width >= _supersampleWidth) {
-          return CountryFlag.fromCountryCode(
-            countryCode,
-            theme: ImageTheme(width: size.width, height: size.height, shape: shape),
+
+        final asset = _svgAssets[countryCode.toLowerCase()];
+        if (asset != null) {
+          final flag = SvgPicture.asset(
+            asset,
+            package: 'plate_number',
+            width: size.width,
+            height: size.height,
+            fit: BoxFit.fill,
+          );
+          if (borderRadius == null) return flag;
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(borderRadius!),
+            child: flag,
           );
         }
-        final renderSize = Size(
-          _supersampleWidth,
-          _supersampleWidth * size.height / size.width,
-        );
-        return SizedBox.fromSize(
-          size: size,
-          child: FittedBox(
-            fit: BoxFit.fill,
-            child: SizedBox.fromSize(
-              size: renderSize,
-              child: CountryFlag.fromCountryCode(
-                countryCode,
-                theme: ImageTheme(
-                  width: renderSize.width,
-                  height: renderSize.height,
-                  shape: shape,
-                ),
-              ),
-            ),
+
+        // country_flags requires an explicit size; let the parent decide it and
+        // preserve the flag's intrinsic aspect ratio.
+        return CountryFlag.fromCountryCode(
+          countryCode,
+          theme: ImageTheme(
+            width: size.width,
+            height: size.height,
+            shape: borderRadius == null
+                ? const Rectangle()
+                : RoundedRectangle(borderRadius!),
           ),
         );
       },

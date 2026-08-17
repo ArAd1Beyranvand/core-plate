@@ -14,6 +14,7 @@ dependencies:
   bloc_concurrency: ^0.2.2
   bloc: ^8.1.4
   country_flags: ^4.1.2
+  flutter_svg: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -25,3 +26,4 @@ flutter:
   assets:
     - assets/de_inspection_sticker.png
     - assets/de_state_seal.png
+    - assets/flags/Flag_of_Iran.svg
