@@ -1,7 +1,15 @@
 library plate_number;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'model/plate_number.dart';
+export 'model/plate_country.dart';
+export 'bloc/plate_card_bloc.dart';
+export 'theme/plate_theme.dart';
+export 'car_plate/car_plate_number.dart';
+export 'bicycle_plate/bicycle_plate_number.dart';
+export 'widgets/show_plate.dart';
+export 'widgets/plate_items.dart';
+export 'widgets/country_panel.dart';
+export 'widgets/plate_flag.dart';
+export 'widgets/remove_button.dart';
+export 'tools.dart';
+export 'constants.dart';

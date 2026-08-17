@@ -81,8 +81,11 @@ class _DeviceFrameState extends State<DeviceFrame>
   late Animation<double> _fadeIn;
   late Animation<double> _morphRaw;
 
-  /// 0 = laptop open, 1 = shut (the keyboard folded flat against the screen).
-  double _closed = 0;
+  /// Opacity of the laptop deck: 1 = fully visible, 0 = faded out. Closing
+  /// fades the keyboard away in place (rather than folding it shut) so the
+  /// screen is revealed before it resizes; opening fades it back in last,
+  /// after the screen has already morphed into the laptop's shape.
+  double _deckFade = 1;
 
   /// Scales the deck's depth: it grows out of, and retracts into, the body in
   /// its own beat, after the body has finished resizing.
@@ -174,28 +177,30 @@ class _DeviceFrameState extends State<DeviceFrame>
     super.dispose();
   }
 
-  /// Morph progress and hinge state, choreographed so the laptop shuts before
-  /// it stops being a laptop and only opens once it has become one again. The
-  /// screen never rotates — only the keyboard swings on the hinge.
+  /// Morph progress and deck fade, choreographed so the keyboard fades away
+  /// before the body stops being a laptop, and only fades back in once the
+  /// body has already become one again. The screen never rotates — the
+  /// keyboard's hinge tilt stays fixed; only its opacity and depth animate.
   double get _morphT {
     final mr = _morphRaw.value;
     final wasLaptop = _from.type == DeviceType.desktop;
     final willBeLaptop = _to.type == DeviceType.desktop;
     // Three strictly sequential beats, so the body never resizes while the
-    // deck is moving: body geometry → deck depth → hinge.
+    // deck is moving: deck fade → deck depth → body geometry.
     if (wasLaptop && !willBeLaptop) {
-      _closed = Curves.easeInOut.transform((mr / 0.40).clamp(0.0, 1.0));
+      _deckFade =
+          1 - Curves.easeInOut.transform((mr / 0.40).clamp(0.0, 1.0));
       _deckT =
           1 - Curves.easeInOut.transform(((mr - 0.40) / 0.16).clamp(0.0, 1.0));
       return widget.curve.transform(((mr - 0.56) / 0.44).clamp(0.0, 1.0));
     }
     if (!wasLaptop && willBeLaptop) {
       _deckT = Curves.easeInOut.transform(((mr - 0.44) / 0.16).clamp(0.0, 1.0));
-      _closed =
-          1 - Curves.easeInOut.transform(((mr - 0.60) / 0.40).clamp(0.0, 1.0));
+      _deckFade =
+          Curves.easeInOut.transform(((mr - 0.60) / 0.40).clamp(0.0, 1.0));
       return widget.curve.transform((mr / 0.44).clamp(0.0, 1.0));
     }
-    _closed = 0;
+    _deckFade = 1;
     _deckT = 1;
     return widget.curve.transform(mr);
   }
@@ -266,23 +271,24 @@ class _DeviceFrameState extends State<DeviceFrame>
     final screen = config.screenSize;
     final opacity = _contentOpacity;
     final deck = config.deck.scaledDepth(_deckT);
-    // As the laptop folds shut, stretch the rendered deck toward the lid height
-    // so the back panel exactly spans the screen when flat against it. At
-    // _closed == 0 (open) render == deck, so nothing changes. Only the sizing
-    // and projection below use render; the faces' opacity still keys off the
-    // real deck, and totalSize/projectedHeight elsewhere still return 0 when
-    // shut, so the frame's reserved space is unchanged.
-    final renderDepth = deck.depth + (body.height - deck.depth) * _closed;
-    final render = deck.depth <= 0
-        ? deck
-        : deck.scaledDepth(renderDepth / deck.depth);
-    // hinge: 135° open, 0° shut. The deck sits at 180° - hinge from the screen.
-    final hinge = widget.hingeAngle * (1 - _closed);
+    // The hinge tilt never changes — closing and opening only fade and
+    // retract the deck in place, so its rendered geometry is just the deck
+    // itself. Only the sizing and projection below use render; the faces'
+    // opacity still keys off the real deck, and totalSize/projectedHeight
+    // elsewhere still return 0 once depth hits 0, so the frame's reserved
+    // space is unchanged.
+    final render = deck;
+    // hinge: rest tilt at full fade, unmoving otherwise. The deck sits at
+    // 180° - hinge from the screen.
+    final hinge = widget.hingeAngle;
     final deckAngle = 180 - hinge;
     final projected = render.projectedHeightAt(deckAngle, widget.perspective);
-    // cross-fade the faces through edge-on so neither pops in or out
+    // cross-fade the faces through edge-on so neither pops in or out; gated
+    // by _deckFade so closing/opening fades the whole deck rather than
+    // swinging it through the screen.
     const band = 42.0;
-    final present = deck.opacity * (deck.depth / 26).clamp(0.0, 1.0);
+    final present =
+        deck.opacity * (deck.depth / 26).clamp(0.0, 1.0) * _deckFade;
     final frontOpacity = ((90 - deckAngle) / band).clamp(0.0, 1.0) * present;
     final backOpacity = ((deckAngle - 90) / band).clamp(0.0, 1.0) * present;
 

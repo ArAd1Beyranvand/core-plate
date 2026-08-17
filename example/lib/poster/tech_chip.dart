@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/poster_tokens.dart';
+import 'poster_tokens.dart';
 
 /// Bordered hairline chip used to tag technologies in the poster footer.
 class TechChip extends StatelessWidget {

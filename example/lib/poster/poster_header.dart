@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/poster_tokens.dart';
+import 'poster_tokens.dart';
 
 /// Poster masthead: name + role on the left, eyebrow tag on the right.
 class PosterHeader extends StatelessWidget {

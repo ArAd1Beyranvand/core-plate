@@ -11,18 +11,9 @@ import '../theme/plate_theme.dart';
 class PlateFrame extends StatelessWidget {
   const PlateFrame({
     super.key,
-    required this.aspectRatio,
-    required this.child,
     this.theme,
     this.isCompleted = false,
-    this.screwSlots = const [],
   });
-
-  /// Width / height of the plate face.
-  final double aspectRatio;
-
-  /// Content painted over the white face.
-  final Widget child;
 
   /// Colours and ratios. Falls back to [PlateTheme.of] / standard when null.
   final PlateTheme? theme;
@@ -31,52 +22,24 @@ class PlateFrame extends StatelessWidget {
   /// the plate face or content.
   final bool isCompleted;
 
-  /// Horizontal slots (x ∈ [-1, 1]) at which to draw a screw dot, vertically
-  /// centred. Empty means no screws. Callers enable/disable individual screws
-  /// by including or omitting their x.
-  final List<double> screwSlots;
-
   @override
-  Widget build(BuildContext context) {
-    final effectiveTheme = theme ?? PlateTheme.of(context);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return AspectRatio(
-          aspectRatio: aspectRatio,
-          child: CustomPaint(
-            painter: _PlateFramePainter(
-              theme: effectiveTheme,
-              isCompleted: isCompleted,
-              screwSlots: screwSlots,
-            ),
-            child: LayoutBuilder(
-              builder: (context, inner) {
-                // Inset the child by the border thickness so content sits on
-                // the white face, not under the black frame.
-                final border = effectiveTheme.borderWidthRatio * inner.maxHeight;
-                return Padding(
-                  padding: EdgeInsets.all(border),
-                  child: child,
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
+  Widget build(BuildContext context) => CustomPaint(
+        painter: _PlateFramePainter(
+          theme: theme ?? PlateTheme.of(context),
+          isCompleted: isCompleted,
+        ),
+        child: const SizedBox.expand(),
+      );
 }
 
 class _PlateFramePainter extends CustomPainter {
   _PlateFramePainter({
     required this.theme,
     required this.isCompleted,
-    required this.screwSlots,
   });
 
   final PlateTheme theme;
   final bool isCompleted;
-  final List<double> screwSlots;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -103,8 +66,6 @@ class _PlateFramePainter extends CustomPainter {
       innerRRect,
       Paint()..color = theme.plateBackground,
     );
-
-    _paintScrews(canvas, size, border);
   }
 
   /// isCompleted shifts the border ~2% lighter (never recolours the plate).
@@ -114,31 +75,8 @@ class _PlateFramePainter extends CustomPainter {
         theme.plateBorder;
   }
 
-  void _paintScrews(Canvas canvas, Size size, double border) {
-    if (screwSlots.isEmpty) return;
-    final radius = size.height * 0.05;
-    final cy = size.height / 2;
-    // Keep screws clear of the rounded corners by insetting from the edges.
-    final margin = border + radius * 1.4;
-    final usable = size.width - margin * 2;
-
-    final outer = Paint()..color = theme.screwColor;
-    final inner = Paint()
-      ..color = Color.lerp(theme.screwColor, theme.plateBorder, 0.45) ??
-          theme.screwColor;
-
-    for (final slot in screwSlots) {
-      final t = (slot.clamp(-1.0, 1.0) + 1) / 2; // -1..1 -> 0..1
-      final cx = margin + usable * t;
-      final center = Offset(cx, cy);
-      canvas.drawCircle(center, radius, outer);
-      canvas.drawCircle(center, radius * 0.5, inner);
-    }
-  }
-
   @override
   bool shouldRepaint(_PlateFramePainter old) =>
       old.theme != theme ||
-      old.isCompleted != isCompleted ||
-      old.screwSlots != screwSlots;
+      old.isCompleted != isCompleted;
 }

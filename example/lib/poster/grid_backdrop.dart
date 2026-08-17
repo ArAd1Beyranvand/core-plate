@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/poster_tokens.dart';
+import 'poster_tokens.dart';
 
 /// Paints the poster background: a subtle vertical gradient, a faint square
 /// grid, and a soft radial vignette darkening the corners.

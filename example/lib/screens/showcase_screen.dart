@@ -1,18 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:plate_number/car_plate/index.dart';
-import 'package:plate_number/model/plate_number.dart';
-import 'package:plate_number/showcase/theme/poster_tokens.dart';
-import 'package:plate_number/showcase/widgets/annotation_callout.dart';
-import 'package:plate_number/showcase/widgets/corner_brackets.dart';
-import 'package:plate_number/showcase/widgets/grid_backdrop.dart';
-import 'package:plate_number/showcase/widgets/poster_footer.dart';
-import 'package:plate_number/showcase/widgets/poster_header.dart';
+import 'package:plate_number/plate_number.dart';
 
 import '../device_preview/device_config.dart';
 import '../device_preview/device_frame.dart';
 import '../device_preview/device_transition.dart';
+import '../poster/poster_tokens.dart';
+import '../poster/annotation_callout.dart';
+import '../poster/corner_brackets.dart';
+import '../poster/grid_backdrop.dart';
+import '../poster/poster_footer.dart';
+import '../poster/poster_header.dart';
 import '../showcase/device_cycle.dart';
 import '../showcase/plate_typist.dart';
 import '../showcase/virtual_keypad.dart';
@@ -215,9 +214,22 @@ class _DeviceStage extends StatefulWidget {
   State<_DeviceStage> createState() => _DeviceStageState();
 }
 
-class _DeviceStageState extends State<_DeviceStage> {
+class _DeviceStageState extends State<_DeviceStage> with WidgetsBindingObserver {
   final DeviceCycleController _controller = DeviceCycleController();
   final PlateTypist _typist = PlateTypist();
+
+  /// True from the first window-metrics change until [_resizeSettleDelay]
+  /// after the last one. The demo keeps re-flashing keys and morphing the
+  /// device shell on a timer, which keeps the raster thread busy; on Linux
+  /// GTK gives it only 100ms to produce a frame at the new window size once a
+  /// resize (e.g. clicking maximize) lands; if that frame is still queued
+  /// behind an in-flight animation frame it misses the deadline and the GL
+  /// compositor can crash instead of degrading gracefully. Pausing the demo
+  /// for the duration of a resize keeps the raster thread free to prioritise
+  /// that frame.
+  bool _resizing = false;
+  Timer? _resizeSettleTimer;
+  static const _resizeSettleDelay = Duration(milliseconds: 400);
 
   /// Drives the frame's geometry morph; flips the instant a hop starts so the
   /// shell begins reshaping toward the incoming device.
@@ -230,7 +242,7 @@ class _DeviceStageState extends State<_DeviceStage> {
 
   /// Bloc for the content device, recreated on every content swap so each plate
   /// starts blank. [PlateDisplay] renders from it via its `bloc` param.
-  late PlateCardBloc _bloc = PlateCardBloc(plateTypeFor(_contentDevice));
+  late PlateCardBloc _bloc = PlateCardBloc(specFor(_contentDevice));
 
   /// Bumped on every device hop; captured by pending awaits so a stale run
   /// (a delayed typist start from a device we already left) bails out.
@@ -240,16 +252,45 @@ class _DeviceStageState extends State<_DeviceStage> {
   /// idle phase for the same device doesn't start a second run.
   int _startedGen = -1;
 
+  /// Which plate slot currently holds focus (2 is the letter slot), driving the
+  /// tablet's letters pad. Null when focus is off the plate.
+  int? _activeSlot;
+
+  void _setActiveSlot(int? slot) {
+    if (_activeSlot == slot) return;
+    setState(() => _activeSlot = slot);
+  }
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // The first device never fires a transition phase, so kick it off directly
     // once the tree is laid out.
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeStartTyping());
   }
 
   @override
+  void didChangeMetrics() {
+    // Fires for every step of an interactive resize, not just its end,
+    // so re-arming this timer on each call is what makes it "settle".
+    _resizeSettleTimer?.cancel();
+    if (!_resizing) {
+      _resizing = true;
+      _generation++;
+      _typist.cancel();
+    }
+    _resizeSettleTimer = Timer(_resizeSettleDelay, () {
+      if (!mounted) return;
+      _resizing = false;
+      _maybeStartTyping();
+    });
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _resizeSettleTimer?.cancel();
     _typist.dispose();
     _bloc.close();
     _controller.dispose();
@@ -273,7 +314,8 @@ class _DeviceStageState extends State<_DeviceStage> {
     if (!mounted) return;
     _bloc.close();
     _contentDevice = _frameDevice;
-    _bloc = PlateCardBloc(plateTypeFor(_contentDevice));
+    _bloc = PlateCardBloc(specFor(_contentDevice));
+    _activeSlot = null;
     setState(() {});
   }
 
@@ -295,8 +337,13 @@ class _DeviceStageState extends State<_DeviceStage> {
     final device = _contentDevice;
     await _typist.run(
       bloc: _bloc,
-      steps: device == DeviceType.mobile ? bicycleScript : carScript,
-      useLetterPicker: device == DeviceType.tablet,
+      steps: switch (device) {
+        DeviceType.mobile => bicycleScript,
+        DeviceType.tablet => germanCarScript,
+        DeviceType.desktop => carScript,
+      },
+      useLetterPicker: false,
+      onSlotChanged: device == DeviceType.tablet ? _setActiveSlot : null,
       context: context,
     );
     if (!mounted || gen != _generation) return;
@@ -343,22 +390,33 @@ class _DeviceStageState extends State<_DeviceStage> {
       onContentSwap: _onContentSwap,
       deckPressedKey: _typist.activeKey,
       builder: (context, config) => PlateDisplay(
-        plateType: plateTypeFor(contentDevice),
+        spec: specFor(contentDevice),
         mode: PlateMode.input,
         activeColor: PosterTokens.accent,
         bloc: _bloc,
         // The laptop deck already carries letter keys, so its letter comes in
         // through the library's on-screen-keypad mode instead of the modal
         // picker. Other devices keep their platform default.
-        letterInputMode: contentDevice == DeviceType.desktop
+        letterInputMode: contentDevice == DeviceType.desktop ||
+                contentDevice == DeviceType.tablet
             ? LetterInputMode.hostKeypad
             : null,
+        onActiveSlotChanged:
+            contentDevice == DeviceType.tablet ? _setActiveSlot : null,
         keyboard: contentDevice == DeviceType.desktop
             ? null
-            : VirtualKeypad(
-                highlightedKey: _typist.activeKey,
-                compact: contentDevice == DeviceType.mobile,
-              ),
+            : contentDevice == DeviceType.tablet
+                ? VirtualKeypad(
+                    highlightedKey: _typist.activeKey,
+                    compact: false,
+                    showLetters: _activeSlot == 2,
+                    onKey: (letter) =>
+                        _bloc.add(ValueIsChanged(index: 2, value: letter)),
+                  )
+                : VirtualKeypad(
+                    highlightedKey: _typist.activeKey,
+                    compact: contentDevice == DeviceType.mobile,
+                  ),
       ),
     );
   }

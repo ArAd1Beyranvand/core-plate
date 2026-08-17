@@ -37,6 +37,15 @@ class PlateCountry {
     panelTextColor: Color(0xFFFFFFFF),
   );
 
+  /// Germany, as it appears on a standard EU plate: a blue panel with a white
+  /// "D" identifier beside the flag.
+  static const PlateCountry germany = PlateCountry(
+    code: 'de',
+    captionLines: ['D'],
+    panelColor: Color(0xFF003399),
+    panelTextColor: Color(0xFFFFFFFF),
+  );
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

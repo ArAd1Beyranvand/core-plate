@@ -17,6 +17,19 @@ class PlateFlag extends StatelessWidget {
   /// as a plain rectangle.
   final double? borderRadius;
 
+  /// Below this width, flags are rendered at [_supersampleWidth] and scaled
+  /// down instead of being asked to draw at their true (tiny) size.
+  ///
+  /// `country_flags` compiles each SVG to a quantized binary format ahead of
+  /// time; on a detailed flag (Iran's emblem, its Kufic-script border) that
+  /// quantization is coarse enough relative to a ~20px-tall plate flag to
+  /// read as pixelation rather than fine detail. Rendering at a larger fixed
+  /// size and letting [FittedBox] downscale the result keeps the same
+  /// vector draw (so the quantization step size is unchanged) but shrinks it
+  /// with filtering, which hides the artefact the way downsampling a raster
+  /// image would.
+  static const double _supersampleWidth = 96;
+
   @override
   Widget build(BuildContext context) {
     // country_flags requires an explicit size; let the parent decide it and
@@ -24,14 +37,34 @@ class PlateFlag extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = _resolveSize(constraints);
-        return CountryFlag.fromCountryCode(
-          countryCode,
-          theme: ImageTheme(
-            width: size.width,
-            height: size.height,
-            shape: borderRadius == null
-                ? const Rectangle()
-                : RoundedRectangle(borderRadius!),
+        final shape = borderRadius == null
+            ? const Rectangle()
+            : RoundedRectangle(borderRadius!);
+        if (size.width >= _supersampleWidth) {
+          return CountryFlag.fromCountryCode(
+            countryCode,
+            theme: ImageTheme(width: size.width, height: size.height, shape: shape),
+          );
+        }
+        final renderSize = Size(
+          _supersampleWidth,
+          _supersampleWidth * size.height / size.width,
+        );
+        return SizedBox.fromSize(
+          size: size,
+          child: FittedBox(
+            fit: BoxFit.fill,
+            child: SizedBox.fromSize(
+              size: renderSize,
+              child: CountryFlag.fromCountryCode(
+                countryCode,
+                theme: ImageTheme(
+                  width: renderSize.width,
+                  height: renderSize.height,
+                  shape: shape,
+                ),
+              ),
+            ),
           ),
         );
       },
@@ -50,17 +83,4 @@ class PlateFlag extends StatelessWidget {
     if (!height.isFinite) height = width * 4 / 7;
     return Size(width, height);
   }
-}
-
-/// Deprecated thin alias for the Iranian flag. Use
-/// `PlateFlag(countryCode: 'ir')` instead.
-@Deprecated('Use PlateFlag(countryCode: "ir") instead. '
-    'IranFlag will be removed in a future release.')
-class IranFlag extends StatelessWidget {
-  @Deprecated('Use PlateFlag(countryCode: "ir") instead.')
-  const IranFlag({super.key});
-
-  @override
-  Widget build(BuildContext context) =>
-      const PlateFlag(countryCode: 'ir');
 }

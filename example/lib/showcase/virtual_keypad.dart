@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:plate_number/showcase/theme/poster_tokens.dart';
-import 'package:plate_number/tools.dart';
+import 'package:plate_number/plate_number.dart';
+
+import '../poster/poster_tokens.dart';
+
+/// Duration of the letters-pad slide in/out. Public because the showcase's
+/// typist awaits this same constant to sync with the animation.
+const Duration kLetterPadSlide = Duration(milliseconds: 260);
 
 /// A fake soft keyboard drawn inside the device screen, below the plate.
 ///
 /// Purely decorative: taps do nothing, but a key can be flashed
 /// programmatically by passing its label as [highlightedKey].
-class VirtualKeypad extends StatelessWidget {
+class VirtualKeypad extends StatefulWidget {
   const VirtualKeypad({
     super.key,
     required this.highlightedKey,
     this.compact = false,
+    this.showLetters = false,
+    this.onKey,
   });
 
   /// Label of the key to flash; null flashes nothing.
@@ -18,6 +25,23 @@ class VirtualKeypad extends StatelessWidget {
 
   /// true on mobile (shorter keys), false on tablet.
   final bool compact;
+
+  /// When true, the letters pad slides in over the digit pad.
+  final bool showLetters;
+
+  /// Fires with the tapped letter from the letters pad.
+  final ValueChanged<String>? onKey;
+
+  @override
+  State<VirtualKeypad> createState() => _VirtualKeypadState();
+}
+
+class _VirtualKeypadState extends State<VirtualKeypad>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: kLetterPadSlide,
+  );
 
   static const List<List<String>> _rows = [
     ['1', '2', '3'],
@@ -27,8 +51,37 @@ class VirtualKeypad extends StatelessWidget {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.showLetters) {
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant VirtualKeypad oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.showLetters != oldWidget.showLetters) {
+      if (widget.showLetters) {
+        _controller.forward();
+      } else {
+        _controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final double keyHeight = compact ? 44 : 56;
+    final double keyHeight = widget.compact ? 44 : 56;
+    // Fixed inner height so the pad never resizes when the letters layer
+    // appears: 4 digit rows plus the three 6px gaps between them.
+    final double innerHeight = _rows.length * keyHeight + 3 * 6;
 
     return Container(
       padding: const EdgeInsets.all(8),
@@ -36,31 +89,115 @@ class VirtualKeypad extends StatelessWidget {
         color: const Color(0xFF1C1F26),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
         children: [
-          for (var r = 0; r < _rows.length; r++) ...[
-            if (r > 0) const SizedBox(height: 6),
-            SizedBox(
-              height: keyHeight,
-              child: Row(
-                children: [
-                  for (var c = 0; c < _rows[r].length; c++) ...[
-                    if (c > 0) const SizedBox(width: 6),
-                    Expanded(
-                      child: _Key(
-                        label: _rows[r][c],
-                        highlighted: _rows[r][c].isNotEmpty &&
-                            _rows[r][c] == highlightedKey,
-                      ),
+          SizedBox(
+            height: innerHeight,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var r = 0; r < _rows.length; r++) ...[
+                  if (r > 0) const SizedBox(height: 6),
+                  SizedBox(
+                    height: keyHeight,
+                    child: Row(
+                      children: [
+                        for (var c = 0; c < _rows[r].length; c++) ...[
+                          if (c > 0) const SizedBox(width: 6),
+                          Expanded(
+                            child: _Key(
+                              label: _rows[r][c],
+                              highlighted: _rows[r][c].isNotEmpty &&
+                                  _rows[r][c] == widget.highlightedKey,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
+                  ),
                 ],
-              ),
+              ],
             ),
-          ],
+          ),
+          Positioned.fill(child: _buildLettersLayer(innerHeight)),
         ],
       ),
+    );
+  }
+
+  Widget _buildLettersLayer(double innerHeight) {
+    final int rowCount = (persianCarPlateLetters.length / 4).ceil();
+    // Divide the fixed inner height (minus the gaps between rows) so the
+    // letters pad always ends flush with the digit pad.
+    final double rowHeight =
+        (innerHeight - 6 * (rowCount - 1)) / rowCount;
+
+    // Pad the final row with blank spacers so every row has 4 columns.
+    final List<String> letters = [...persianCarPlateLetters];
+    while (letters.length < rowCount * 4) {
+      letters.add('');
+    }
+
+    final Widget grid = Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1F26),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var r = 0; r < rowCount; r++) ...[
+              if (r > 0) const SizedBox(height: 6),
+              SizedBox(
+                height: rowHeight,
+                child: Row(
+                  children: [
+                    for (var c = 0; c < 4; c++) ...[
+                      if (c > 0) const SizedBox(width: 6),
+                      Expanded(
+                        child: Builder(
+                          builder: (context) {
+                            final letter = letters[r * 4 + c];
+                            return GestureDetector(
+                              onTap: () => widget.onKey?.call(letter),
+                              child: _Key(
+                                label: letter,
+                                highlighted: letter.isNotEmpty &&
+                                    letter == widget.highlightedKey,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    final slide = SlideTransition(
+      position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.easeOutCubic,
+        ),
+      ),
+      child: grid,
+    );
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) => IgnorePointer(
+        ignoring: _controller.isDismissed,
+        child: child,
+      ),
+      child: slide,
     );
   }
 }

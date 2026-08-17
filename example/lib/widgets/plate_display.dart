@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:plate_number/bicycle_plate/index.dart';
-import 'package:plate_number/car_plate/index.dart';
-import 'package:plate_number/theme/plate_theme.dart';
-import 'package:plate_number/widgets/show_plate.dart';
+import 'package:plate_number/plate_number.dart';
+import 'package:plate_number/model/plate_spec.dart';
+import 'package:plate_number/widgets/plate_canvas.dart';
 
 class PlateDisplay extends StatelessWidget {
   const PlateDisplay({
     super.key,
-    required this.plateType,
+    required this.spec,
     required this.mode,
     this.activeColor,
     this.inactiveColor,
     this.keyboard,
     this.bloc,
     this.letterInputMode,
+    this.onActiveSlotChanged,
   });
 
-  final PlateType plateType;
+  final PlateSpec spec;
   final PlateMode mode;
 
   /// How the car plate letter is entered. Null lets the plate resolve the
   /// platform default; pass [LetterInputMode.hostKeypad] when an app-supplied
   /// pad (e.g. the laptop deck's letter keys) feeds the letter in.
   final LetterInputMode? letterInputMode;
+
+  /// Fires when the focused plate slot changes, reporting the plate index that
+  /// now holds focus (2 is the letter slot) or null when focus leaves the
+  /// plate. Forwarded to CarPlateNumber; ignored by the bicycle plate.
+  final ValueChanged<int?>? onActiveSlotChanged;
 
   /// An externally-owned bloc to drive the plate. When null, this widget
   /// creates and owns its own, keeping today's self-contained behaviour.
@@ -47,7 +52,7 @@ class PlateDisplay extends StatelessWidget {
       return BlocProvider.value(value: bloc!, child: child);
     }
     return BlocProvider(
-      create: (_) => PlateCardBloc(plateType),
+      create: (_) => PlateCardBloc(spec),
       child: child,
     );
   }
@@ -96,15 +101,11 @@ class PlateDisplay extends StatelessWidget {
       inactiveColor: inactiveColor ?? base.inactiveColor,
     );
 
-    final Widget plate;
-    switch (plateType) {
-      case PlateType.irCar:
-        plate = CarPlateNumber(letterInputMode: letterInputMode);
-        break;
-      case PlateType.irBicycle:
-        plate = const BicyclePlateNumber();
-        break;
-    }
+    final plate = PlateCanvas(
+      spec: spec,
+      letterInputMode: letterInputMode,
+      onActiveSlotChanged: onActiveSlotChanged,
+    );
 
     return PlateThemeScope(theme: theme, child: plate);
   }

@@ -1,30 +1,15 @@
 import 'package:flutter/foundation.dart';
 
 class PlateNumber {
-  final List values;
-  final List valueTypes;
+  final List<String?> values;
 
-  PlateNumber({required this.values, required this.valueTypes});
+  PlateNumber({required this.values});
 
-  PlateNumber copyWith({List? values, List? valueTypes}) {
+  PlateNumber copyWith({List<String?>? values}) {
     return PlateNumber(
       values: values ?? this.values,
-      valueTypes: valueTypes ?? this.valueTypes,
     );
   }
-}
-
-abstract final class SelectableString {
-  const SelectableString();
-}
-
-abstract final class SelectableInt {
-  const SelectableInt();
-}
-
-enum PlateType {
-  irBicycle,
-  irCar,
 }
 
 /// How the plate letter is entered: a modal [picker] on touch platforms,
@@ -56,24 +41,4 @@ LetterInputMode defaultLetterInputMode() {
 enum PlateMode {
   input,
   display,
-}
-
-extension Tool on PlateType {
-  String vehicleType() {
-    switch (this) {
-      case PlateType.irBicycle:
-        return 'bicycle';
-      case PlateType.irCar:
-        return 'car';
-    }
-  }
-
-  String parseToString() {
-    switch (this) {
-      case PlateType.irBicycle:
-        return 'irBicycle';
-      case PlateType.irCar:
-        return 'irCar';
-    }
-  }
 }

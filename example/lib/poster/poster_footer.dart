@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/poster_tokens.dart';
+import 'poster_tokens.dart';
 import 'tech_chip.dart';
 
 /// Poster footer: tech chips on the left, credentials on the right.

@@ -2,51 +2,25 @@ part of 'plate_card_bloc.dart';
 
 class PlateCardState {
   final PlateNumber plateNumber;
-  final PlateType plateType;
+  final PlateSpec spec;
 
   PlateCardState({
     required this.plateNumber,
-    required this.plateType,
+    required this.spec,
   });
 
   PlateCardState copyWith({
-    final PlateType? plateType,
+    final PlateSpec? spec,
     final PlateNumber? plateNumber,
   }) {
     return PlateCardState(
       plateNumber: plateNumber ?? this.plateNumber,
-      plateType: plateType ?? this.plateType,
+      spec: spec ?? this.spec,
     );
   }
 
-  static PlateCardState emptyPlateCardState(PlateType plateType) {
-    if (plateType == PlateType.irCar) {
-      return PlateCardState(
-        plateNumber: PlateNumber(
-          values: const [null, null, null, null, null, null, null, null],
-          valueTypes: const [
-            SelectableInt,
-            SelectableInt,
-            SelectableString,
-            SelectableInt,
-            SelectableInt,
-            SelectableInt,
-            SelectableInt,
-            SelectableInt
-          ],
-        ),
-        plateType: PlateType.irCar,
+  static PlateCardState empty(PlateSpec spec) => PlateCardState(
+        plateNumber: PlateNumber(values: List<String?>.filled(spec.slotCount, null)),
+        spec: spec,
       );
-    }
-    if (plateType == PlateType.irBicycle) {
-      return PlateCardState(
-        plateNumber: PlateNumber(
-          values: const [null, null, null, null, null, null, null, null],
-          valueTypes: const [SelectableInt, SelectableInt, SelectableInt, SelectableInt, SelectableInt, SelectableInt, SelectableInt, SelectableInt],
-        ),
-        plateType: PlateType.irBicycle,
-      );
-    }
-    throw Error();
-  }
 }

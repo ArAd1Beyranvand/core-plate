@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:plate_number/showcase/theme/poster_tokens.dart';
 
+import '../poster/poster_tokens.dart';
 import '../screens/showcase_screen.dart';
 
 class PlateNumberShowcaseApp extends StatelessWidget {

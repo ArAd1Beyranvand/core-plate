@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bicycle_plate/bicycle_plate_number.dart';
 import '../bloc/plate_card_bloc.dart';
-import '../car_plate/car_plate_number.dart';
 import '../model/plate_number.dart';
+import '../model/plate_spec.dart';
 import '../tools.dart';
+import 'plate_canvas.dart';
 
 /// Read-only plate view. Renders the real graphical plate (pixel-identical to
 /// the input widget) driven straight off [PlateCardBloc] state, in
@@ -28,37 +28,9 @@ class ShowPlate extends StatelessWidget {
                 style: TextStyle(fontSize: 18),
               );
         }
-        if (state.plateType == PlateType.irCar) {
-          return const IrCarShow();
-        }
-        if (state.plateType == PlateType.irBicycle) {
-          return const IrBicycleShow();
-        }
-        return const Placeholder();
+        return PlateCanvas(spec: state.spec, mode: PlateMode.display);
       },
     );
-  }
-}
-
-/// The read-only car plate: the real plate face in [PlateMode.display], driven
-/// off the ambient [PlateCardBloc].
-class IrCarShow extends StatelessWidget {
-  const IrCarShow({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const CarPlateNumber(mode: PlateMode.display);
-  }
-}
-
-/// The read-only bicycle plate: the real plate face in [PlateMode.display],
-/// driven off the ambient [PlateCardBloc].
-class IrBicycleShow extends StatelessWidget {
-  const IrBicycleShow({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const BicyclePlateNumber(mode: PlateMode.display);
   }
 }
 
@@ -82,13 +54,13 @@ class PlateText extends StatelessWidget {
                 style: TextStyle(fontSize: 18),
               );
         }
-        if (state.plateType == PlateType.irCar) {
+        if (state.spec.id == PlateSpecs.irCar.id) {
           return IrCarText(
             values: state.plateNumber.values,
             textStyle: textStyle,
           );
         }
-        if (state.plateType == PlateType.irBicycle) {
+        if (state.spec.id == PlateSpecs.irBicycle.id) {
           return IrBicycleText(
             values: state.plateNumber.values,
             textStyle: textStyle,

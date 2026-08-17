@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/poster_tokens.dart';
+import 'poster_tokens.dart';
 
 /// Which side of the device a callout sits on.
 enum CalloutSide { left, right }
@@ -40,10 +40,7 @@ class AnnotationCallout extends StatelessWidget {
         const SizedBox(height: 10),
         Text(title, style: PosterTokens.sectionTitle, textAlign: textAlign),
         const SizedBox(height: 12),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 300),
-          child: Text(body, style: PosterTokens.body, textAlign: textAlign),
-        ),
+        Text(body, style: PosterTokens.body, textAlign: textAlign),
       ],
     );
   }
@@ -85,8 +82,8 @@ class ConnectorLine extends StatelessWidget {
       child: Container(height: 1, color: PosterTokens.accentDim),
     );
 
-    return SizedBox(
-      width: length,
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: 40, maxWidth: length),
       child: Row(
         children: dotOnRight ? [line, dot] : [dot, line],
       ),
@@ -122,12 +119,21 @@ class CalloutWithConnector extends StatelessWidget {
       child: ConnectorLine(side: callout.side, length: connectorLength),
     );
 
+    final Widget flexibleConnector = Flexible(
+      fit: FlexFit.loose,
+      child: connector,
+    );
+    final Widget flexibleCallout = Flexible(
+      fit: FlexFit.tight,
+      child: callout,
+    );
+
     final List<Widget> children = callout.side == CalloutSide.left
-        ? [callout, connector]
-        : [connector, callout];
+        ? [flexibleCallout, flexibleConnector]
+        : [flexibleConnector, flexibleCallout];
 
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: MainAxisSize.max,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: children,
     );

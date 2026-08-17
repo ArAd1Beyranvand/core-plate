@@ -2,31 +2,56 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:plate_number/car_plate/index.dart';
+import 'package:plate_number/plate_number.dart';
 
-/// The keystrokes for the car plate: two digits, the letter, then the serial
-/// and province digits. `(index, char)` maps a plate slot to the value typed.
-const List<(int, String)> carScript = [
-  (0, '1'),
-  (1, '2'),
-  (2, 'ص'),
-  (3, '3'),
-  (4, '4'),
-  (5, '5'),
-  (6, '6'),
-  (7, '7'),
+import 'virtual_keypad.dart' show kLetterPadSlide;
+
+/// One keystroke: which slot, what char, and whether to pause afterwards.
+///
+/// `pauseAfter: true` marks a natural break (a burst just finished, or a
+/// letter was just entered) — the typist waits the slower [PlateTypist.gap]
+/// there. Everywhere else it waits the quick [PlateTypist.burstGap], so a
+/// run reads as bursts of digits rather than one evenly-spaced drip.
+typedef Keystroke = (int index, String char, bool pauseAfter);
+
+/// The keystrokes for the car plate ("91-ه-886-40"): '9' and '1' typed as a
+/// quick burst, a pause, the letter, another pause, then '886' and '40' as
+/// two more quick bursts.
+const List<Keystroke> carScript = [
+  (0, '9', false),
+  (1, '1', true),
+  (2, 'ه', true),
+  (3, '8', false),
+  (4, '8', false),
+  (5, '6', true),
+  (6, '4', false),
+  (7, '0', false),
 ];
 
-/// The keystrokes for the bicycle plate: eight straight digits, no letter.
-const List<(int, String)> bicycleScript = [
-  (0, '1'),
-  (1, '2'),
-  (2, '3'),
-  (3, '4'),
-  (4, '5'),
-  (5, '6'),
-  (6, '7'),
-  (7, '8'),
+/// The keystrokes for the German car plate ("DA X1953"): the two district
+/// letters, then the identifier's letter and its four serial digits, evenly
+/// spaced.
+const List<Keystroke> germanCarScript = [
+  (0, 'D', true),
+  (1, 'A', true),
+  (2, 'X', true),
+  (3, '1', true),
+  (4, '9', true),
+  (5, '5', true),
+  (6, '3', true),
+];
+
+/// The keystrokes for the bicycle plate: eight straight digits, no letter,
+/// evenly spaced.
+const List<Keystroke> bicycleScript = [
+  (0, '9', true),
+  (1, '1', true),
+  (2, '8', true),
+  (3, '8', true),
+  (4, '6', true),
+  (5, '4', true),
+  (6, '0', true),
+  (7, '4', true),
 ];
 
 /// Auto-types a plate one slot at a time, flashing each key as it goes.
@@ -45,27 +70,53 @@ class PlateTypist extends ChangeNotifier {
 
   bool get isRunning => _running;
 
-  /// Walks [steps] in order against [bloc], flashing each key for [flash] and
-  /// pausing [gap] between them. When [useLetterPicker] is true the letter slot
-  /// (index 2, 'ص') is entered through the modal picker instead of a flash.
+  /// Walks [steps] in order against [bloc], flashing each key for [flash].
+  /// After a key, pauses [gap] if its step is marked `pauseAfter`, otherwise
+  /// the quicker [burstGap] — so consecutive digits within a burst land fast
+  /// and only natural breaks (before/after the letter, between groups) wait.
+  /// When [useLetterPicker] is true the letter slot (index 2, 'ص') is entered
+  /// through the modal picker instead of a flash.
   Future<void> run({
     required PlateCardBloc bloc,
-    required List<(int index, String char)> steps,
+    required List<Keystroke> steps,
     required bool useLetterPicker,
     required BuildContext context,
     Duration gap = const Duration(milliseconds: 320),
+    Duration burstGap = const Duration(milliseconds: 90),
     Duration flash = const Duration(milliseconds: 140),
+    ValueChanged<int?>? onSlotChanged,
   }) async {
     _cancelled = false;
     _running = true;
-    for (final (index, char) in steps) {
+    for (final (index, char, pauseAfter) in steps) {
       if (_cancelled) break;
 
-      if (useLetterPicker && index == 2 && char == 'ص') {
-        await _pickLetter(bloc: bloc, context: context, char: char);
-        if (_cancelled) break;
-        if (!await _sleep(gap)) break;
-        continue;
+      if (index == 2 && char == 'ص') {
+        if (useLetterPicker) {
+          await _pickLetter(bloc: bloc, context: context, char: char);
+          if (_cancelled) break;
+          if (!await _sleep(gap)) break;
+          continue;
+        }
+        if (onSlotChanged != null) {
+          onSlotChanged(2);
+          if (!await _sleep(kLetterPadSlide + const Duration(milliseconds: 80))) {
+            onSlotChanged(null);
+            break;
+          }
+          activeKey = char;
+          _notify();
+          if (!await _sleep(flash)) {
+            onSlotChanged(null);
+            break;
+          }
+          bloc.add(ValueIsChanged(index: index, value: char));
+          activeKey = null;
+          _notify();
+          onSlotChanged(null);
+          if (!await _sleep(gap)) break;
+          continue;
+        }
       }
 
       // Press the key.
@@ -78,7 +129,7 @@ class PlateTypist extends ChangeNotifier {
       // Release it.
       activeKey = null;
       _notify();
-      if (!await _sleep(gap)) break;
+      if (!await _sleep(pauseAfter ? gap : burstGap)) break;
     }
 
     _running = false;

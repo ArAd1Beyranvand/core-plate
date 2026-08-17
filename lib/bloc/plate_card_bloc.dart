@@ -2,39 +2,25 @@
 import 'package:bloc/bloc.dart';
 
 import '../model/plate_number.dart';
+import '../model/plate_spec.dart';
 
 part 'plate_card_event.dart';
 
 part 'plate_card_state.dart';
 
 class PlateCardBloc extends Bloc<PlateCardEvent, PlateCardState> {
-  final PlateType plateType;
+  final PlateSpec spec;
 
-  PlateCardBloc(this.plateType)
-      : super(PlateCardState.emptyPlateCardState(plateType)) {
+  PlateCardBloc(this.spec) : super(PlateCardState.empty(spec)) {
     on<ValueIsChanged>((ValueIsChanged event, Emitter emit) {
-      final previousPlate = state.plateNumber;
-      List newValues = [];
-      for (int i = 0; i < previousPlate.values.length; i++) {
-        if (i == event.index) {
-          newValues.add(event.value);
-        } else {
-          newValues.add(previousPlate.values[i]);
-        }
-      }
-      emit(
-        state.copyWith(
-          plateNumber: previousPlate.copyWith(
-            values: newValues,
-          ),
-        ),
-      );
+      final values = List<String?>.of(state.plateNumber.values)..[event.index] = event.value;
+      emit(state.copyWith(plateNumber: state.plateNumber.copyWith(values: values)));
     });
     on<RemovePlateCard>((RemovePlateCard event, Emitter emit) {
-      emit(PlateCardState.emptyPlateCardState(state.plateType));
+      emit(PlateCardState.empty(state.spec));
     });
-    on<TypeIsChanged>((TypeIsChanged event, Emitter emit) {
-      emit(PlateCardState.emptyPlateCardState(event.type));
+    on<SpecIsChanged>((SpecIsChanged event, Emitter emit) {
+      emit(PlateCardState.empty(event.spec));
     });
   }
 }

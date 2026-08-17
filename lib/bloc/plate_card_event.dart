@@ -11,8 +11,8 @@ class ValueIsChanged extends PlateCardEvent {
 
 class RemovePlateCard extends PlateCardEvent {}
 
-class TypeIsChanged extends PlateCardEvent {
-  final PlateType type;
+class SpecIsChanged extends PlateCardEvent {
+  final PlateSpec spec;
 
-  TypeIsChanged(this.type);
+  SpecIsChanged(this.spec);
 }

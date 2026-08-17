@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:plate_number/model/plate_number.dart';
+import 'package:plate_number/model/plate_spec.dart';
 
 import '../device_preview/device_config.dart';
 
@@ -12,11 +12,14 @@ class DeviceCycleController extends ChangeNotifier {
   void advance() => notifyListeners();
 }
 
-/// The [PlateType] a given [device] should show: mobile demos the bicycle
-/// plate, everything else demos the car plate.
-PlateType plateTypeFor(DeviceType device) => device == DeviceType.mobile
-    ? PlateType.irBicycle
-    : PlateType.irCar;
+/// The [PlateSpec] a given [device] should show: mobile demos the Iranian
+/// bicycle plate, the tablet demos the German car plate, and the laptop demos
+/// the Iranian car plate.
+PlateSpec specFor(DeviceType device) => switch (device) {
+      DeviceType.mobile => PlateSpecs.irBicycle,
+      DeviceType.tablet => PlateSpecs.deCar,
+      DeviceType.desktop => PlateSpecs.irCar,
+    };
 
 /// Cycles through a sequence of [DeviceType]s on demand, rebuilding [builder]
 /// each time the active device changes.

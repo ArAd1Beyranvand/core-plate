@@ -197,7 +197,7 @@ class StringPlateItem extends StatelessWidget {
 
     return BlocBuilder<PlateCardBloc, PlateCardState>(
       builder: (BuildContext context, PlateCardState state) {
-        final value = state.plateNumber.values[indexInPlateTypes] as String?;
+        final value = state.plateNumber.values[indexInPlateTypes];
         final isEmpty = value == null || value.isEmpty;
 
         if (mode == PlateMode.display) {
