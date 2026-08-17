@@ -47,3 +47,8 @@ windows/flutter/ephemeral/
 
 # Other
 all_dart_files_with_headers.txt
+all_dart_files.txt
+.scratch/
+example/tmp/
+example/test/widget_test.dart
+REFACTOR_MANIFEST.md

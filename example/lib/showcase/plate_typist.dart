@@ -209,11 +209,14 @@ class PlateTypist extends ChangeNotifier {
           onSlotChanged(keyStep.index);
           padState.shown = keyStep.index;
           if (!padAlreadyUp) {
-            if (!await _sleep(kLetterPadSlide + const Duration(milliseconds: 80))) {
+            if (!await _sleep(
+              kLetterPadSlide + const Duration(milliseconds: 80),
+            )) {
               return false;
             }
           }
         }
+        controller.focusSlot(keyStep.index);
         activeKey = keyStep.char;
         _notify();
         if (!await _sleep(flash)) return false;
@@ -231,6 +234,7 @@ class PlateTypist extends ChangeNotifier {
     }
 
     // Press the key.
+    controller.focusSlot(keyStep.index);
     activeKey = keyStep.char;
     _notify();
     if (!await _sleep(flash)) return false;
@@ -240,9 +244,7 @@ class PlateTypist extends ChangeNotifier {
     // Release it.
     activeKey = null;
     _notify();
-    return _sleep(
-      keyStep.holdAfter ?? (keyStep.pauseAfter ? gap : burstGap),
-    );
+    return _sleep(keyStep.holdAfter ?? (keyStep.pauseAfter ? gap : burstGap));
   }
 
   /// Opens the letter-picker sheet and scrolls it to the fifth entry
@@ -272,7 +274,9 @@ class PlateTypist extends ChangeNotifier {
                 onSelectedItemChanged: (_) {},
                 children: [
                   for (final letter in persianCarPlateLetters)
-                    Center(child: Text(letter, style: const TextStyle(fontSize: 22))),
+                    Center(
+                      child: Text(letter, style: const TextStyle(fontSize: 22)),
+                    ),
                 ],
               ),
             ),

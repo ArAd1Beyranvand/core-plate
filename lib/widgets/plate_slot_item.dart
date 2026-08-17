@@ -93,8 +93,9 @@ class PlateSlotItem extends StatelessWidget {
     // a two-way TextInputFormatter that displays Persian while storing ASCII is
     // fiddly to get right (cursor/selection), so the field shows ASCII for now.
     final isEmpty = field.text.isEmpty;
-    final underlineColor =
-        isEmpty ? effectiveTheme.inactiveColor : effectiveTheme.activeColor;
+    final underlineColor = isEmpty
+        ? effectiveTheme.inactiveColor
+        : effectiveTheme.activeColor;
 
     // Digits get the numeric keyboard; any other typed alphabet gets text.
     final isNumeric = slot.alphabet.characters.every((c) => c.isDigit());
@@ -110,40 +111,49 @@ class PlateSlotItem extends StatelessWidget {
             selectionHandleColor: effectiveTheme.activeColor,
           ),
         ),
-        child: TextField(
-          controller: field,
-          focusNode: focusNode,
-          textAlign: TextAlign.center,
-          style: PlateDigit.styleFor(slot.height, effectiveTheme.ink),
-          cursorColor: effectiveTheme.activeColor,
-          decoration: InputDecoration(
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: slot.height * 0.12),
-            filled: false,
-            counterText: '',
-            border: UnderlineInputBorder(
-              borderSide: BorderSide(color: effectiveTheme.inactiveColor),
+        child: ListenableBuilder(
+          listenable: focusNode,
+          builder: (context, _) => TextField(
+            controller: field,
+            focusNode: focusNode,
+            readOnly: letterInputMode == LetterInputMode.hostKeypad,
+            showCursor: letterInputMode == LetterInputMode.hostKeypad
+                ? focusNode.hasFocus
+                : null,
+            textAlign: TextAlign.center,
+            style: PlateDigit.styleFor(slot.height, effectiveTheme.ink),
+            cursorColor: effectiveTheme.activeColor,
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: slot.height * 0.12,
+              ),
+              filled: false,
+              counterText: '',
+              border: UnderlineInputBorder(
+                borderSide: BorderSide(color: effectiveTheme.inactiveColor),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: underlineColor),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: effectiveTheme.activeColor),
+              ),
             ),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: underlineColor),
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: effectiveTheme.activeColor),
-            ),
-          ),
-          onChanged: (typed) {
-            if (slot.alphabet.accepts(typed)) {
-              onChanged(typed);
-              if (typed != '') {
-                if (onCompleted != null) onCompleted!();
+            onChanged: (typed) {
+              if (slot.alphabet.accepts(typed)) {
+                onChanged(typed);
+                if (typed != '') {
+                  if (onCompleted != null) onCompleted!();
+                }
+              } else {
+                field.text = '';
+                onChanged('');
               }
-            } else {
-              field.text = '';
-              onChanged('');
-            }
-          },
-          maxLength: 1,
-          keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+            },
+            maxLength: 1,
+            keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+          ),
         ),
       ),
     );
@@ -158,8 +168,10 @@ class PlateSlotItem extends StatelessWidget {
         ? Text(
             '؟',
             textAlign: TextAlign.center,
-            style:
-                PlateDigit.styleFor(slot.height, effectiveTheme.inactiveColor),
+            style: PlateDigit.styleFor(
+              slot.height,
+              effectiveTheme.inactiveColor,
+            ),
           )
         : Text(
             slot.alphabet.render(value!),
@@ -168,20 +180,19 @@ class PlateSlotItem extends StatelessWidget {
           );
 
     Widget slotBox(Color underlineColor) => SizedBox(
-          width: slot.width,
-          height: slot.height,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: underlineColor),
-              ),
-            ),
-            child: Center(child: letter),
-          ),
-        );
+      width: slot.width,
+      height: slot.height,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: underlineColor)),
+        ),
+        child: Center(child: letter),
+      ),
+    );
 
-    final restingColor =
-        isEmpty ? effectiveTheme.inactiveColor : effectiveTheme.activeColor;
+    final restingColor = isEmpty
+        ? effectiveTheme.inactiveColor
+        : effectiveTheme.activeColor;
 
     // Both keyboard and hostKeypad make the slot focusable and drive the
     // underline off focus rather than opening a sheet. Only keyboard mode
@@ -200,9 +211,7 @@ class PlateSlotItem extends StatelessWidget {
                   return KeyEventResult.handled;
                 }
                 final ch = event.character;
-                if (ch != null &&
-                    ch.length == 1 &&
-                    slot.alphabet.accepts(ch)) {
+                if (ch != null && ch.length == 1 && slot.alphabet.accepts(ch)) {
                   onChanged(ch);
                   return KeyEventResult.handled;
                 }
@@ -224,9 +233,6 @@ class PlateSlotItem extends StatelessWidget {
       );
     }
 
-    return InkWell(
-      onTap: onPressed,
-      child: slotBox(restingColor),
-    );
+    return InkWell(onTap: onPressed, child: slotBox(restingColor));
   }
 }

@@ -13,14 +13,15 @@ class PlateNumber {
 }
 
 /// How the plate letter is entered: a modal [picker] on touch platforms,
-/// direct [keyboard] typing on desktop, or an app-supplied on-screen letter pad
+/// direct [keyboard] typing on desktop, or an app-supplied on-screen pad
 /// ([hostKeypad]).
 ///
-/// In [hostKeypad] mode the letter slot behaves like [picker] visually — it is
-/// focusable and shows the active-slot underline — but tapping it never opens
-/// the modal sheet. The slot only reports that it is now the active slot; the
-/// host app renders its own letter pad and feeds the chosen letter back through
-/// the usual bloc path.
+/// [hostKeypad] means the host supplies every character for this plate, not
+/// just the letter: chosen slots behave like [picker] visually — focusable,
+/// showing the active-slot underline, but tapping never opens the modal sheet
+/// — and typed slots (e.g. digits) render read-only so the platform keyboard
+/// never appears. Either way the slot only claims focus; the host app renders
+/// its own pad and feeds every character back through the usual bloc path.
 enum LetterInputMode { picker, keyboard, hostKeypad }
 
 /// The default letter input mode for the current platform: keyboard on

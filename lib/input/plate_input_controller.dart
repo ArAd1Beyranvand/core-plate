@@ -11,6 +11,7 @@ abstract class PlateInputTarget {
   void submitCharacter(String character);
   void backspaceCharacter();
   void focusFirstEmptySlot();
+  void focusSlot(int index);
 }
 
 /// A handle a host app holds to drive character entry on a [PlateCanvas]
@@ -64,4 +65,10 @@ class PlateInputController extends ChangeNotifier {
   /// Focus the first slot with a null/empty value, or the first slot if the
   /// plate is empty. Used to (re)enter the plate programmatically.
   void focusFirstEmpty() => _target?.focusFirstEmptySlot();
+
+  /// Focus the slot at [index] directly, without regard to its value. Used by
+  /// hosts that drive character entry programmatically (e.g. a scripted
+  /// demo) and need the visible focus/cursor to track the slot being written
+  /// to, the way it would if the user had tapped there.
+  void focusSlot(int index) => _target?.focusSlot(index);
 }

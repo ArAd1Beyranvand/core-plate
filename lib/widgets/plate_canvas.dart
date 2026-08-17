@@ -136,7 +136,9 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
   void submitCharacter(String c) {
     final slot = _activeSlot;
     if (slot == null || !slot.alphabet.accepts(c)) return;
-    context.read<PlateCardBloc>().add(ValueIsChanged(index: slot.index, value: c));
+    context.read<PlateCardBloc>().add(
+      ValueIsChanged(index: slot.index, value: c),
+    );
     _advance(slot);
   }
 
@@ -146,9 +148,13 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     if (slot == null) return;
     final values = context.read<PlateCardBloc>().state.plateNumber.values;
     final current = values[slot.index];
-    final target = (current == null || current.isEmpty) ? _previousSlot(slot) : slot;
+    final target = (current == null || current.isEmpty)
+        ? _previousSlot(slot)
+        : slot;
     if (target == null) return;
-    context.read<PlateCardBloc>().add(ValueIsChanged(index: target.index, value: ''));
+    context.read<PlateCardBloc>().add(
+      ValueIsChanged(index: target.index, value: ''),
+    );
     _focusNodes[target.index]?.requestFocus();
   }
 
@@ -173,6 +179,11 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
   }
 
   @override
+  void focusSlot(int index) {
+    _focusNodes[index]?.requestFocus();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final spec = widget.spec;
     var theme = widget.theme ?? PlateTheme.of(context);
@@ -181,8 +192,9 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     }
     _letterInputMode = widget.letterInputMode ?? defaultLetterInputMode();
 
-    final plate =
-        context.select<PlateCardBloc, PlateNumber>((b) => b.state.plateNumber);
+    final plate = context.select<PlateCardBloc, PlateNumber>(
+      (b) => b.state.plateNumber,
+    );
     final bloc = context.read<PlateCardBloc>();
 
     for (final slot in spec.slots) {
@@ -269,7 +281,8 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                       onCompleted: widget.mode == PlateMode.input
                           ? () => _advance(s)
                           : null,
-                      onPressed: (widget.mode == PlateMode.input &&
+                      onPressed:
+                          (widget.mode == PlateMode.input &&
                               s.alphabet.input == AlphabetInput.chosen &&
                               _letterInputMode == LetterInputMode.picker)
                           ? () => _openPicker(s)
@@ -289,10 +302,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
       mainAxisSize: MainAxisSize.min,
       children: [
         fitted,
-        IconButton(
-          onPressed: widget.onRemove,
-          icon: const Icon(Icons.close),
-        ),
+        IconButton(onPressed: widget.onRemove, icon: const Icon(Icons.close)),
       ],
     );
   }
@@ -318,9 +328,7 @@ class _CharacterPickerSheetState extends State<_CharacterPickerSheet> {
         children: [
           SizedBox(
             height: 180,
-            child: LetterPicker(
-              onSelectedItemChanged: (i) => _index = i,
-            ),
+            child: LetterPicker(onSelectedItemChanged: (i) => _index = i),
           ),
           TextButton(
             onPressed: () =>
