@@ -16,6 +16,10 @@ class PosterTokens {
   static const Color accentDim = Color(0x666EE7B7); // 40%
   static const Color accentGlow = Color(0x2E6EE7B7); // 18%
 
+  /// Signal colour for a filled-but-invalid field (e.g. a forbidden German
+  /// plate combination). Sits in for [accent] on the active-field underline.
+  static const Color invalid = Color(0xFFF87171);
+
   // --- Text & lines ---------------------------------------------------------
   static const Color titleColor = Color(0xFFFFFFFF);
   static const Color bodyColor = Color(0xFF97A3AF);

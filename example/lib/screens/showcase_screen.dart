@@ -243,14 +243,57 @@ class _DeviceStageState extends State<_DeviceStage> {
   /// tablet's letters pad. Null when focus is off the plate.
   int? _activeSlot;
 
+  /// Latest validation of the German plate's typed value, or null when nothing
+  /// has been flagged yet (empty letter slot, or a non-German device is shown).
+  /// Drives the tablet plate's active-field colour: red when invalid. Reset on
+  /// every content swap, same as [_activeSlot].
+  GermanPlateValidationResult? _germanValidation;
+
+  /// Watches [_bloc]'s state so typed German values can be re-validated. Re-
+  /// subscribed on every content swap because [_bloc] is recreated there.
+  StreamSubscription<PlateCardState>? _blocSub;
+
   void _setActiveSlot(int? slot) {
     if (_activeSlot == slot) return;
     setState(() => _activeSlot = slot);
   }
 
+  /// Subscribes [_validateGermanPlate] to the current [_bloc], dropping any
+  /// subscription to a previous (now-closed) bloc first.
+  void _listenToBloc() {
+    _blocSub?.cancel();
+    _blocSub = _bloc.stream.listen(_validateGermanPlate);
+  }
+
+  /// Re-derives [_germanValidation] from a fresh plate state. Only meaningful
+  /// while the German plate is on screen; a no-op for other devices.
+  void _validateGermanPlate(PlateCardState state) {
+    if (!mounted || _contentDevice != DeviceType.tablet) return;
+    // deCar's slots: district = [0]+[1], identifier letter = [2], serial digits
+    // = [3..6]. Treat unset slots as empty strings.
+    final values = state.plateNumber.values;
+    String at(int i) => (i < values.length ? values[i] : null) ?? '';
+    final identifierLetters = at(2);
+    // Don't flag anything red while the identifier letter is still blank — an
+    // empty letter always fails the regex, which would be noise, not signal.
+    if (identifierLetters.isEmpty) {
+      if (_germanValidation != null) {
+        setState(() => _germanValidation = null);
+      }
+      return;
+    }
+    final result = GermanPlateValidator.validate(
+      district: at(0) + at(1),
+      identifierLetters: identifierLetters,
+      identifierDigits: at(3) + at(4) + at(5) + at(6),
+    );
+    setState(() => _germanValidation = result);
+  }
+
   @override
   void initState() {
     super.initState();
+    _listenToBloc();
     // The first device never fires a transition phase, so kick it off directly
     // once the tree is laid out.
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeStartTyping());
@@ -259,6 +302,7 @@ class _DeviceStageState extends State<_DeviceStage> {
   @override
   void dispose() {
     _typist.dispose();
+    _blocSub?.cancel();
     _bloc.close();
     _controller.dispose();
     super.dispose();
@@ -283,6 +327,8 @@ class _DeviceStageState extends State<_DeviceStage> {
     _contentDevice = _frameDevice;
     _bloc = PlateCardBloc(specFor(_contentDevice));
     _activeSlot = null;
+    _germanValidation = null;
+    _listenToBloc();
     setState(() {});
   }
 
@@ -359,7 +405,13 @@ class _DeviceStageState extends State<_DeviceStage> {
       builder: (context, config) => PlateDisplay(
         spec: specFor(contentDevice),
         mode: PlateMode.input,
-        activeColor: PosterTokens.accent,
+        // activeColor is the completed-field underline colour; swap it to red
+        // for the tablet's German plate when the typed value is invalid (e.g. a
+        // forbidden letter combination). Other devices keep the accent.
+        activeColor: contentDevice == DeviceType.tablet &&
+                _germanValidation?.isValid == false
+            ? PosterTokens.invalid
+            : PosterTokens.accent,
         bloc: _bloc,
         // The laptop deck already carries letter keys, so its letter comes in
         // through the library's on-screen-keypad mode instead of the modal
@@ -379,6 +431,11 @@ class _DeviceStageState extends State<_DeviceStage> {
                     showLetters: _activeSlot == 2,
                     digitAlphabet: PlateAlphabet.latinDigits,
                     letterAlphabet: PlateAlphabet.latinUppercase,
+                    // index: 2 works for both scripts today only by coincidence
+                    // — PlateSpecs.irCar and PlateSpecs.deCar both happen to put
+                    // their single letter slot at index 2. If a future PlateSpec
+                    // places its letter slot elsewhere, this must read the active
+                    // spec's slot list instead of the literal 2.
                     onKey: (letter) =>
                         _bloc.add(ValueIsChanged(index: 2, value: letter)),
                   )
