@@ -2,6 +2,7 @@ library plate_number;
 
 export 'model/plate_number.dart';
 export 'model/plate_country.dart';
+export 'model/plate_alphabet.dart';
 export 'bloc/plate_card_bloc.dart';
 export 'theme/plate_theme.dart';
 export 'car_plate/car_plate_number.dart';

@@ -377,6 +377,8 @@ class _DeviceStageState extends State<_DeviceStage> {
                     highlightedKey: _typist.activeKey,
                     compact: false,
                     showLetters: _activeSlot == 2,
+                    digitAlphabet: PlateAlphabet.latinDigits,
+                    letterAlphabet: PlateAlphabet.latinUppercase,
                     onKey: (letter) =>
                         _bloc.add(ValueIsChanged(index: 2, value: letter)),
                   )

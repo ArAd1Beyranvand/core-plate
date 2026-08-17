@@ -18,6 +18,8 @@ class VirtualKeypad extends StatefulWidget {
     this.compact = false,
     this.showLetters = false,
     this.onKey,
+    this.digitAlphabet = PlateAlphabet.persianDigits,
+    this.letterAlphabet = PlateAlphabet.persianPlateLetters,
   });
 
   /// Label of the key to flash; null flashes nothing.
@@ -31,6 +33,12 @@ class VirtualKeypad extends StatefulWidget {
 
   /// Fires with the tapped letter from the letters pad.
   final ValueChanged<String>? onKey;
+
+  /// Alphabet used to render the digit grid's labels.
+  final PlateAlphabet digitAlphabet;
+
+  /// Alphabet used to render the letters pad's labels.
+  final PlateAlphabet letterAlphabet;
 
   @override
   State<VirtualKeypad> createState() => _VirtualKeypadState();
@@ -109,6 +117,7 @@ class _VirtualKeypadState extends State<VirtualKeypad>
                               label: _rows[r][c],
                               highlighted: _rows[r][c].isNotEmpty &&
                                   _rows[r][c] == widget.highlightedKey,
+                              digitAlphabet: widget.digitAlphabet,
                             ),
                           ),
                         ],
@@ -126,17 +135,23 @@ class _VirtualKeypadState extends State<VirtualKeypad>
   }
 
   Widget _buildLettersLayer(double innerHeight) {
-    final int rowCount = (persianCarPlateLetters.length / 4).ceil();
+    final List<String> alphabetLetters = widget.letterAlphabet.characters;
+    final int rowCount = (alphabetLetters.length / 4).ceil();
     // Divide the fixed inner height (minus the gaps between rows) so the
     // letters pad always ends flush with the digit pad.
     final double rowHeight =
         (innerHeight - 6 * (rowCount - 1)) / rowCount;
 
     // Pad the final row with blank spacers so every row has 4 columns.
-    final List<String> letters = [...persianCarPlateLetters];
+    final List<String> letters = [...alphabetLetters];
     while (letters.length < rowCount * 4) {
       letters.add('');
     }
+
+    final TextDirection direction =
+        widget.letterAlphabet == PlateAlphabet.persianPlateLetters
+            ? TextDirection.rtl
+            : TextDirection.ltr;
 
     final Widget grid = Container(
       decoration: BoxDecoration(
@@ -144,7 +159,7 @@ class _VirtualKeypadState extends State<VirtualKeypad>
         borderRadius: BorderRadius.circular(12),
       ),
       child: Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: direction,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -203,10 +218,18 @@ class _VirtualKeypadState extends State<VirtualKeypad>
 }
 
 class _Key extends StatelessWidget {
-  const _Key({required this.label, required this.highlighted});
+  const _Key({
+    required this.label,
+    required this.highlighted,
+    this.digitAlphabet,
+  });
 
   final String label;
   final bool highlighted;
+
+  /// When set, [label] is rendered through this alphabet (digit grid keys).
+  /// When null, [label] is shown verbatim (letters grid keys, backspace).
+  final PlateAlphabet? digitAlphabet;
 
   @override
   Widget build(BuildContext context) {
@@ -234,7 +257,9 @@ class _Key extends StatelessWidget {
           ),
         ),
         child: Text(
-          label == '⌫' ? '⌫' : toPersianDigits(label),
+          label == '⌫' || digitAlphabet == null
+              ? label
+              : digitAlphabet!.render(label),
           style: TextStyle(
             color: ink,
             fontSize: 18,
