@@ -13,3 +13,4 @@ export 'widgets/plate_flag.dart';
 export 'widgets/remove_button.dart';
 export 'tools.dart';
 export 'constants.dart';
+export 'validators/german_plate_validator.dart';
