@@ -25,10 +25,10 @@ class PlateDisplay extends StatelessWidget {
   /// pad (e.g. the laptop deck's letter keys) feeds the letter in.
   final LetterInputMode? letterInputMode;
 
-  /// Fires when the focused plate slot changes, reporting the plate index that
-  /// now holds focus (2 is the letter slot) or null when focus leaves the
-  /// plate. Forwarded to CarPlateNumber; ignored by the bicycle plate.
-  final ValueChanged<int?>? onActiveSlotChanged;
+  /// Fires when the focused plate slot changes, reporting the active slot —
+  /// including its alphabet, not just its position — or null when focus leaves
+  /// the plate. Forwarded to CarPlateNumber; ignored by the bicycle plate.
+  final ValueChanged<PlateSlot?>? onActiveSlotChanged;
 
   /// An externally-owned bloc to drive the plate. When null, this widget
   /// creates and owns its own, keeping today's self-contained behaviour.

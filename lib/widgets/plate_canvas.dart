@@ -31,7 +31,7 @@ class PlateCanvas extends StatefulWidget {
   final PlateTheme? theme;
   final LetterInputMode? letterInputMode;
   final Future<String?> Function(PlateAlphabet alphabet)? onChooseCharacter;
-  final ValueChanged<int?>? onActiveSlotChanged;
+  final ValueChanged<PlateSlot?>? onActiveSlotChanged;
   final VoidCallback? onRemove;
   final bool showRemoveButton;
 
@@ -43,7 +43,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
   final Map<int, FocusNode> _focusNodes = {};
   final Map<int, TextEditingController> _controllers = {};
 
-  int? _activeSlot;
+  PlateSlot? _activeSlot;
   late LetterInputMode _letterInputMode;
 
   @override
@@ -71,14 +71,15 @@ class _PlateCanvasState extends State<PlateCanvas> {
   }
 
   void _handleFocusChange() {
-    int? active;
+    PlateSlot? active;
     for (final entry in _focusNodes.entries) {
       if (entry.value.hasFocus) {
-        active = entry.key;
+        active = widget.spec.slotAt(entry.key);
         break;
       }
     }
-    if (active != _activeSlot) {
+    // PlateSlot has no == override, so compare by index identity.
+    if (active?.index != _activeSlot?.index) {
       _activeSlot = active;
       widget.onActiveSlotChanged?.call(active);
     }

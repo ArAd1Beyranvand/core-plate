@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:plate_number/plate_number.dart';
+import 'package:plate_number/model/plate_spec.dart';
 
 import '../device_preview/device_config.dart';
 import '../device_preview/device_frame.dart';
@@ -239,9 +240,9 @@ class _DeviceStageState extends State<_DeviceStage> {
   /// idle phase for the same device doesn't start a second run.
   int _startedGen = -1;
 
-  /// Which plate slot currently holds focus (2 is the letter slot), driving the
-  /// tablet's letters pad. Null when focus is off the plate.
-  int? _activeSlot;
+  /// Which plate slot currently holds focus (its index 2 is the letter slot),
+  /// driving the tablet's letters pad. Null when focus is off the plate.
+  PlateSlot? _activeSlot;
 
   /// Latest validation of the German plate's typed value, or null when nothing
   /// has been flagged yet (empty letter slot, or a non-German device is shown).
@@ -253,8 +254,8 @@ class _DeviceStageState extends State<_DeviceStage> {
   /// subscribed on every content swap because [_bloc] is recreated there.
   StreamSubscription<PlateCardState>? _blocSub;
 
-  void _setActiveSlot(int? slot) {
-    if (_activeSlot == slot) return;
+  void _setActiveSlot(PlateSlot? slot) {
+    if (_activeSlot?.index == slot?.index) return;
     setState(() => _activeSlot = slot);
   }
 
@@ -356,7 +357,14 @@ class _DeviceStageState extends State<_DeviceStage> {
         DeviceType.desktop => carScript,
       },
       useLetterPicker: false,
-      onSlotChanged: device == DeviceType.tablet ? _setActiveSlot : null,
+      // The typist (out of scope here) still reports a bare index; resolve it to
+      // the matching PlateSlot so _setActiveSlot sees the same type the canvas
+      // callback now delivers.
+      onSlotChanged: device == DeviceType.tablet
+          ? (i) => _setActiveSlot(
+                i == null ? null : specFor(_contentDevice).slotAt(i),
+              )
+          : null,
       context: context,
     );
     if (!mounted || gen != _generation) return;
@@ -428,7 +436,8 @@ class _DeviceStageState extends State<_DeviceStage> {
                 ? VirtualKeypad(
                     highlightedKey: _typist.activeKey,
                     compact: false,
-                    showLetters: _activeSlot == 2,
+                    // FIXME(K5): hard-coded letter-slot index 2.
+                    showLetters: _activeSlot?.index == 2,
                     digitAlphabet: PlateAlphabet.latinDigits,
                     letterAlphabet: PlateAlphabet.latinUppercase,
                     // index: 2 works for both scripts today only by coincidence
@@ -436,6 +445,7 @@ class _DeviceStageState extends State<_DeviceStage> {
                     // their single letter slot at index 2. If a future PlateSpec
                     // places its letter slot elsewhere, this must read the active
                     // spec's slot list instead of the literal 2.
+                    // FIXME(K5): hard-coded letter-slot index 2.
                     onKey: (letter) =>
                         _bloc.add(ValueIsChanged(index: 2, value: letter)),
                   )

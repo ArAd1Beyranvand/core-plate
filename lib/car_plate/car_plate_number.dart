@@ -29,13 +29,13 @@ class CarPlateNumber extends StatelessWidget {
   /// [defaultLetterInputMode] for the current platform.
   final LetterInputMode? letterInputMode;
 
-  /// Fires whenever the active (focused) slot changes, reporting the plate
-  /// index that now holds focus, or null when focus leaves the plate. Primarily
-  /// for [LetterInputMode.hostKeypad], so an app-supplied letter pad can show
-  /// itself when the letter slot (index 2) becomes active — including when the
-  /// focus chain lands there after the first digit group completes — and hide
-  /// itself when focus moves on.
-  final ValueChanged<int?>? onActiveSlotChanged;
+  /// Fires whenever the active (focused) slot changes, reporting the active
+  /// slot — including its alphabet, not just its position — or null when focus
+  /// leaves the plate. Primarily for [LetterInputMode.hostKeypad], so an
+  /// app-supplied letter pad can show itself when the letter slot becomes
+  /// active — including when the focus chain lands there after the first digit
+  /// group completes — and hide itself when focus moves on.
+  final ValueChanged<PlateSlot?>? onActiveSlotChanged;
 
   /// Optional escape hatch to override the default letter-picker sheet.
   final Future<String?> Function()? onChooseLetter;
