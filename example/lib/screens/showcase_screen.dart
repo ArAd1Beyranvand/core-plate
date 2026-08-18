@@ -24,27 +24,38 @@ class ShowcaseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = _isAndroidMobile(context);
+
     return Scaffold(
       backgroundColor: PosterTokens.bg,
       body: Stack(
-        children: const [
-          Positioned.fill(child: GridBackdrop()),
-          Positioned.fill(child: CornerBrackets()),
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 56, vertical: 44),
-              child: Column(
-                children: [
-                  PosterHeader(),
-                  Expanded(child: _PosterBody()),
-                  PosterFooter(),
-                ],
+        children: [
+          if (!isMobile) const Positioned.fill(child: GridBackdrop()),
+          if (!isMobile) const Positioned.fill(child: CornerBrackets()),
+          if (isMobile)
+            const Center(child: _DeviceStage())
+          else
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 44),
+                child: Column(
+                  children: const [
+                    PosterHeader(),
+                    Expanded(child: _PosterBody()),
+                    PosterFooter(),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
+  }
+
+  static bool _isAndroidMobile(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isSmallScreen = mediaQuery.size.width < 600;
+    return isSmallScreen;
   }
 }
 
@@ -444,6 +455,7 @@ class _DeviceStageState extends State<_DeviceStage> {
         onActiveSlotChanged:
             contentDevice == DeviceType.tablet ? _setActiveSlot : null,
         controller: contentDevice == DeviceType.tablet ? _plateInput : null,
+        showBackdrop: true,
         keyboard: contentDevice == DeviceType.desktop
             ? null
             : contentDevice == DeviceType.tablet

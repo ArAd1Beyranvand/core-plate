@@ -59,7 +59,22 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
         _controllers[slot.index] = TextEditingController();
       }
     }
+    // Seed the active slot to the first one before any focus lands, so a host
+    // that renders its own keypad off [activeSlot] (e.g. picking a digit vs.
+    // letters pad from the slot's alphabet) starts on the alphabet the first
+    // slot actually takes — instead of defaulting to one type and visibly
+    // switching the instant focus reaches slot 0. Reported after the first
+    // frame so listeners are attached; a later focus change overrides it.
+    _activeSlot =
+        widget.spec.slots.isNotEmpty ? widget.spec.slots.first : null;
     widget.controller?.attach(this);
+    if (_activeSlot != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.onActiveSlotChanged?.call(_activeSlot);
+        widget.controller?.notifyActiveSlotChanged();
+      });
+    }
   }
 
   @override
@@ -209,6 +224,15 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
       }
     }
 
+    // The rounded white face, so content (e.g. the blue country panel) is
+    // clipped to the same corner radius the frame paints instead of poking
+    // square corners into the rounded plate. Kept in sync with PlateFrame's
+    // own geometry: border thickness and inner radius both derive from the
+    // plate height.
+    final border = theme.borderWidthRatio * spec.canvasHeight;
+    final outerRadius = theme.plateRadiusRatio * spec.canvasHeight;
+    final innerRadius = (outerRadius - border).clamp(0.0, outerRadius);
+
     final fitted = FittedBox(
       fit: BoxFit.contain,
       child: SizedBox(
@@ -224,72 +248,92 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                   theme: theme,
                 ),
               ),
-              Positioned(
-                left: spec.panelLeft,
-                top: spec.panelTop,
-                width: spec.panelWidth,
-                height: spec.panelHeight,
-                child: CountryPanel(country: spec.country, theme: theme),
+              Positioned.fill(
+                child: ClipRRect(
+                  clipper: _PlateFaceClipper(
+                    border: border,
+                    radius: innerRadius,
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: spec.panelLeft,
+                        top: spec.panelTop,
+                        width: spec.panelWidth,
+                        height: spec.panelHeight,
+                        child:
+                            CountryPanel(
+                              country: spec.country,
+                              theme: theme,
+                              flagScale: spec.flagScale,
+                              captionScale: spec.captionScale,
+                              padding: spec.panelPadding,
+                            ),
+                      ),
+                      for (final r in spec.rules)
+                        Positioned(
+                          left: r.left,
+                          top: r.top,
+                          width: r.width,
+                          height: r.height,
+                          child: ColoredBox(color: theme.dividerColor),
+                        ),
+                      for (final l in spec.labels)
+                        Positioned(
+                          left: l.left,
+                          top: l.top,
+                          width: l.width,
+                          height: l.height,
+                          child: Text(
+                            l.text,
+                            textAlign: TextAlign.center,
+                            style: PlateDigit.styleFor(l.glyphHeight, theme.ink),
+                          ),
+                        ),
+                      for (final d in spec.decals)
+                        Positioned(
+                          left: d.left,
+                          top: d.top,
+                          width: d.width,
+                          height: d.height,
+                          child: Image(image: d.image, fit: BoxFit.contain),
+                        ),
+                      for (final s in spec.slots)
+                        Positioned(
+                          left: s.left,
+                          top: s.top,
+                          width: s.width,
+                          height: s.height,
+                          child: Center(
+                            child: PlateSlotItem(
+                              slot: s,
+                              mode: widget.mode,
+                              theme: theme,
+                              value: plate.values[s.index],
+                              controller: _controllers[s.index],
+                              focusNode: _focusNodes[s.index]!,
+                              letterInputMode: widget.mode == PlateMode.input
+                                  ? _letterInputMode
+                                  : LetterInputMode.picker,
+                              onChanged: (v) => bloc
+                                  .add(ValueIsChanged(index: s.index, value: v)),
+                              onCompleted: widget.mode == PlateMode.input
+                                  ? () => _advance(s)
+                                  : null,
+                              onPressed:
+                                  (widget.mode == PlateMode.input &&
+                                      s.alphabet.input ==
+                                          AlphabetInput.chosen &&
+                                      _letterInputMode == LetterInputMode.picker)
+                                  ? () => _openPicker(s)
+                                  : null,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
-              for (final r in spec.rules)
-                Positioned(
-                  left: r.left,
-                  top: r.top,
-                  width: r.width,
-                  height: r.height,
-                  child: ColoredBox(color: theme.dividerColor),
-                ),
-              for (final l in spec.labels)
-                Positioned(
-                  left: l.left,
-                  top: l.top,
-                  width: l.width,
-                  height: l.height,
-                  child: Text(
-                    l.text,
-                    textAlign: TextAlign.center,
-                    style: PlateDigit.styleFor(l.glyphHeight, theme.ink),
-                  ),
-                ),
-              for (final d in spec.decals)
-                Positioned(
-                  left: d.left,
-                  top: d.top,
-                  width: d.width,
-                  height: d.height,
-                  child: Image(image: d.image, fit: BoxFit.contain),
-                ),
-              for (final s in spec.slots)
-                Positioned(
-                  left: s.left,
-                  top: s.top,
-                  width: s.width,
-                  height: s.height,
-                  child: Center(
-                    child: PlateSlotItem(
-                      slot: s,
-                      mode: widget.mode,
-                      theme: theme,
-                      value: plate.values[s.index],
-                      controller: _controllers[s.index],
-                      focusNode: _focusNodes[s.index]!,
-                      letterInputMode: widget.mode == PlateMode.input
-                          ? _letterInputMode
-                          : LetterInputMode.picker,
-                      onChanged: (v) =>
-                          bloc.add(ValueIsChanged(index: s.index, value: v)),
-                      onCompleted: widget.mode == PlateMode.input
-                          ? () => _advance(s)
-                          : null,
-                      onPressed:
-                          (widget.mode == PlateMode.input &&
-                              s.alphabet.input == AlphabetInput.chosen &&
-                              _letterInputMode == LetterInputMode.picker)
-                          ? () => _openPicker(s)
-                          : null,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -306,6 +350,37 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
       ],
     );
   }
+}
+
+/// Clips plate content to the white face's rounded rectangle: the plate rect
+/// inset by the border thickness, rounded by the inner corner radius. Geometry
+/// mirrors [PlateFrame]'s painter so the clip and the painted face stay aligned.
+class _PlateFaceClipper extends CustomClipper<RRect> {
+  const _PlateFaceClipper({required this.border, required this.radius});
+
+  final double border;
+  final double radius;
+
+  @override
+  RRect getClip(Size size) {
+    // Deflate slightly less than the border thickness: the content layer
+    // (country panel, dividers, slots) is painted on top of PlateFrame's own
+    // white face, which is deflated by the *full* border. Clipping content to
+    // that exact same rect leaves a hairline white seam at the border/panel
+    // boundary once the whole plate is scaled by the outer FittedBox — the
+    // two independently-rasterised anti-aliased edges don't composite
+    // pixel-for-pixel. Letting content bleed `_overlap` further out (under
+    // the border paint, which stays on top of nothing — it's the same
+    // layer's edge) removes the seam with no visible change to border width.
+    final inner = (Offset.zero & size).deflate(border - _overlap);
+    return RRect.fromRectAndRadius(inner, Radius.circular(radius));
+  }
+
+  static const _overlap = 0.75;
+
+  @override
+  bool shouldReclip(_PlateFaceClipper old) =>
+      old.border != border || old.radius != radius;
 }
 
 class _CharacterPickerSheet extends StatefulWidget {

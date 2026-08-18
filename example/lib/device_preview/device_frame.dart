@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'device_config.dart';
 import 'device_painters.dart';
+import 'pixel_dissolve.dart';
 import 'laptop_deck.dart';
 import 'device_transition.dart';
 
@@ -81,15 +84,24 @@ class _DeviceFrameState extends State<DeviceFrame>
   late Animation<double> _fadeIn;
   late Animation<double> _morphRaw;
 
-  /// Opacity of the laptop deck: 1 = fully visible, 0 = faded out. Closing
-  /// fades the keyboard away in place (rather than folding it shut) so the
-  /// screen is revealed before it resizes; opening fades it back in last,
-  /// after the screen has already morphed into the laptop's shape.
-  double _deckFade = 1;
+  /// How much of the deck is revealed by the pixel dissolve: 1 = fully present,
+  /// 0 = fully dissolved away. Closing folds the deck shut onto the screen then
+  /// runs this 1 → 0; opening runs it 0 → 1 (still shut) once the screen has
+  /// morphed, then swings the deck open.
+  double _deckReveal = 1;
 
   /// Scales the deck's depth: it grows out of, and retracts into, the body in
   /// its own beat, after the body has finished resizing.
   double _deckT = 1;
+
+  /// Live tilt of the deck, in degrees from the screen plane: the deck's rest
+  /// position (open) is `180 - hingeAngle`, and 180° is folded flat shut onto
+  /// the screen. Animated during the fold/unfold beats.
+  late double _deckAngle = 180 - widget.hingeAngle;
+
+  /// Bumped every animating tick so the pixel dissolve's wavefront reseeds per
+  /// frame, giving the fizzing edge instead of a clean sweep.
+  int _dissolveSeed = 0;
 
   DeviceTransitionPhase _phase = DeviceTransitionPhase.idle;
 
@@ -138,6 +150,9 @@ class _DeviceFrameState extends State<DeviceFrame>
       _contentSwapped = true;
       widget.onContentSwap?.call();
     }
+    // Reseed the dissolve wavefront while a dissolve is mid-run, so its edge
+    // fizzes frame to frame.
+    if (_deckReveal > 0.001 && _deckReveal < 0.999) _dissolveSeed++;
     final next = _phaseFor();
     if (next != _phase) {
       _phase = next;
@@ -177,31 +192,44 @@ class _DeviceFrameState extends State<DeviceFrame>
     super.dispose();
   }
 
-  /// Morph progress and deck fade, choreographed so the keyboard fades away
-  /// before the body stops being a laptop, and only fades back in once the
-  /// body has already become one again. The screen never rotates — the
-  /// keyboard's hinge tilt stays fixed; only its opacity and depth animate.
+  /// Morph progress and deck choreography. The laptop deck now physically folds
+  /// rather than sliding: closing swings it shut onto the screen, glitch-
+  /// dissolves it, then resizes the body; opening resizes first, glitches the
+  /// shut deck back into being, then swings it open. The three beats stay
+  /// strictly sequential so the body never resizes while the deck is moving.
   double get _morphT {
     final mr = _morphRaw.value;
     final wasLaptop = _from.type == DeviceType.desktop;
     final willBeLaptop = _to.type == DeviceType.desktop;
-    // Three strictly sequential beats, so the body never resizes while the
-    // deck is moving: deck fade → deck depth → body geometry.
+
+    // Rest tilt (open) vs. folded flat shut onto the screen.
+    final openAngle = 180 - widget.hingeAngle;
+    const shutAngle = 180.0;
+    double angle(double t) => openAngle + (shutAngle - openAngle) * t;
+
     if (wasLaptop && !willBeLaptop) {
-      _deckFade =
-          1 - Curves.easeInOut.transform((mr / 0.40).clamp(0.0, 1.0));
+      // OUTRO: fold shut → pixel-dissolve out → resize.
+      final fold = Curves.easeInOut.transform((mr / 0.34).clamp(0.0, 1.0));
+      _deckAngle = angle(fold);
+      // Linear so the blocks vanish at a steady rate across the ~0.4s beat.
+      _deckReveal = 1 - ((mr - 0.34) / 0.28).clamp(0.0, 1.0);
       _deckT =
-          1 - Curves.easeInOut.transform(((mr - 0.40) / 0.16).clamp(0.0, 1.0));
-      return widget.curve.transform(((mr - 0.56) / 0.44).clamp(0.0, 1.0));
+          1 - Curves.easeInOut.transform(((mr - 0.62) / 0.38).clamp(0.0, 1.0));
+      return widget.curve.transform(((mr - 0.62) / 0.38).clamp(0.0, 1.0));
     }
     if (!wasLaptop && willBeLaptop) {
-      _deckT = Curves.easeInOut.transform(((mr - 0.44) / 0.16).clamp(0.0, 1.0));
-      _deckFade =
-          Curves.easeInOut.transform(((mr - 0.60) / 0.40).clamp(0.0, 1.0));
-      return widget.curve.transform((mr / 0.44).clamp(0.0, 1.0));
+      // INTRO: resize → pixel-dissolve the shut deck in → swing open.
+      final body = widget.curve.transform((mr / 0.38).clamp(0.0, 1.0));
+      _deckT = 1;
+      _deckReveal = ((mr - 0.38) / 0.28).clamp(0.0, 1.0);
+      final open = Curves.easeInOut.transform(((mr - 0.66) / 0.34).clamp(0.0, 1.0));
+      _deckAngle = angle(1 - open);
+      return body;
     }
-    _deckFade = 1;
+
+    _deckReveal = 1;
     _deckT = 1;
+    _deckAngle = openAngle;
     return widget.curve.transform(mr);
   }
 
@@ -271,24 +299,20 @@ class _DeviceFrameState extends State<DeviceFrame>
     final screen = config.screenSize;
     final opacity = _contentOpacity;
     final deck = config.deck.scaledDepth(_deckT);
-    // The hinge tilt never changes — closing and opening only fade and
-    // retract the deck in place, so its rendered geometry is just the deck
-    // itself. Only the sizing and projection below use render; the faces'
-    // opacity still keys off the real deck, and totalSize/projectedHeight
-    // elsewhere still return 0 once depth hits 0, so the frame's reserved
-    // space is unchanged.
-    final render = deck;
-    // hinge: rest tilt at full fade, unmoving otherwise. The deck sits at
-    // 180° - hinge from the screen.
-    final hinge = widget.hingeAngle;
-    final deckAngle = 180 - hinge;
-    final projected = render.projectedHeightAt(deckAngle, widget.perspective);
-    // cross-fade the faces through edge-on so neither pops in or out; gated
-    // by _deckFade so closing/opening fades the whole deck rather than
-    // swinging it through the screen.
+    // Live fold angle: 180° - hinge when open (rest), 180° when folded shut
+    // flat onto the screen. Driven by the fold/unfold beats in [_morphT].
+    final deckAngle = _deckAngle;
+    // The keyboard's own depth is shallower than the screen, so a lid folded at
+    // that depth wouldn't cover it. Once past edge-on (where only the plain back
+    // face shows) grow the depth to at least the body height, so the shut deck
+    // blankets the whole screen for the dissolve.
+    final coverT = ((deckAngle - 90) / 90).clamp(0.0, 1.0);
+    final renderDepth =
+        deck.depth + (math.max(deck.depth, body.height) - deck.depth) * coverT;
+    final projected = deck.projectedHeightAt(deckAngle, widget.perspective);
+    // cross-fade the faces through edge-on so neither pops in or out.
     const band = 42.0;
-    final present =
-        deck.opacity * (deck.depth / 26).clamp(0.0, 1.0) * _deckFade;
+    final present = deck.opacity * (deck.depth / 26).clamp(0.0, 1.0);
     final frontOpacity = ((90 - deckAngle) / band).clamp(0.0, 1.0) * present;
     final backOpacity = ((deckAngle - 90) / band).clamp(0.0, 1.0) * present;
 
@@ -303,8 +327,8 @@ class _DeviceFrameState extends State<DeviceFrame>
             height: projected < 0.5 ? 0.5 : projected,
             child: OverflowBox(
               alignment: Alignment.topCenter,
-              minHeight: render.depth,
-              maxHeight: render.depth,
+              minHeight: renderDepth,
+              maxHeight: renderDepth,
               child: Transform(
                 alignment: Alignment.topCenter,
                 transform: Matrix4.identity()
@@ -312,12 +336,27 @@ class _DeviceFrameState extends State<DeviceFrame>
                   ..rotateX(-deckAngle * 3.1415926535 / 180),
                 child: SizedBox(
                   width: body.width,
-                  height: render.depth,
-                  child: LaptopDeck(
-                    frontOpacity: frontOpacity,
-                    backOpacity: backOpacity,
-                    pressedKey: widget.deckPressedKey,
-                    onKey: widget.onDeckKey,
+                  height: renderDepth,
+                  // The chassis rim sits on top of, and outside, the dissolve:
+                  // it reads as opaque body from the first intro frame, rather
+                  // than waiting on the pixel-reveal to glitch it into view.
+                  child: Stack(
+                    children: [
+                      PixelDissolve(
+                        progress: _deckReveal,
+                        seed: _dissolveSeed,
+                        // Blocks that haven't revealed read as the blank screen
+                        // behind the deck.
+                        coverColor: const Color(0xFF07080A),
+                        child: LaptopDeck(
+                          frontOpacity: frontOpacity,
+                          backOpacity: backOpacity,
+                          pressedKey: widget.deckPressedKey,
+                          onKey: widget.onDeckKey,
+                        ),
+                      ),
+                      const Positioned.fill(child: LaptopChassisEdge()),
+                    ],
                   ),
                 ),
               ),

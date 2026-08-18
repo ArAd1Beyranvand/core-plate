@@ -2,6 +2,33 @@ import 'package:flutter/material.dart';
 
 part 'laptop_deck.parts.dart';
 
+/// Width of the milled-aluminium chassis edge painted by [LaptopChassisEdge].
+const laptopEdgeWidth = 8.0;
+
+const _edgeColor = Color(0xFF565C68);
+const _edgeRadius = BorderRadius.vertical(bottom: Radius.circular(26));
+
+/// The chassis rim around the laptop deck: a thin gray-metal ring matching
+/// the body's own frame. [DeviceFrame] stacks this on top of the deck's
+/// pixel-dissolve reveal, outside it, so the rim reads as opaque body from
+/// the very first frame of the intro — never waiting on the dissolve to
+/// "glitch" it into view.
+class LaptopChassisEdge extends StatelessWidget {
+  const LaptopChassisEdge({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.fromBorderSide(
+          BorderSide(color: _edgeColor, width: laptopEdgeWidth),
+        ),
+        borderRadius: _edgeRadius,
+      ),
+    );
+  }
+}
+
 /// One row of the laptop keyboard: a height and a list of (label, flex) keys.
 class DeckRow {
   const DeckRow(this.height, this.keys);
@@ -75,7 +102,7 @@ class LaptopDeck extends StatelessWidget {
           colors: [Color(0xFF1E2126), Color(0xFF2A2E35), Color(0xFF1A1D22), Color(0xFF0C0E11)],
           stops: [0, .22, .62, 1],
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(26)),
+        borderRadius: _edgeRadius,
         boxShadow: [
           BoxShadow(color: Color(0x9E000000), blurRadius: 40, offset: Offset(0, 26)),
         ],

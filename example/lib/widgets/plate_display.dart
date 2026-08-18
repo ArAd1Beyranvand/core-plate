@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:plate_number/plate_number.dart';
 import 'package:plate_number/widgets/plate_canvas.dart';
 
+import '../poster/plate_backdrop.dart';
+
 class PlateDisplay extends StatelessWidget {
   const PlateDisplay({
     super.key,
@@ -15,6 +17,7 @@ class PlateDisplay extends StatelessWidget {
     this.letterInputMode,
     this.onActiveSlotChanged,
     this.controller,
+    this.showBackdrop = false,
   });
 
   final PlateSpec spec;
@@ -49,6 +52,10 @@ class PlateDisplay extends StatelessWidget {
   /// Accent for an empty/in-progress input-field underline.
   final Color? inactiveColor;
 
+  /// Paints an ambient [PlateBackdrop] behind the plate content. Off by
+  /// default, so existing call sites keep today's plain-glass look.
+  final bool showBackdrop;
+
   @override
   Widget build(BuildContext context) {
     final child = Builder(builder: _buildContent);
@@ -64,8 +71,9 @@ class PlateDisplay extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     final bloc = context.read<PlateCardBloc>();
 
+    Widget body;
     if (mode == PlateMode.display) {
-      return Padding(
+      body = Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -82,17 +90,22 @@ class PlateDisplay extends StatelessWidget {
           ],
         ),
       );
+    } else {
+      final content = _buildInputWidget();
+      body = keyboard == null
+          ? content
+          : Column(
+              children: [
+                Expanded(child: content),
+                keyboard!,
+              ],
+            );
     }
 
-    final content = _buildInputWidget();
-    if (keyboard == null) {
-      return content;
-    }
-    return Column(
-      children: [
-        Expanded(child: content),
-        keyboard!,
-      ],
+    if (!showBackdrop) return body;
+    return Stack(
+      fit: StackFit.expand,
+      children: [const Positioned.fill(child: PlateBackdrop()), body],
     );
   }
 

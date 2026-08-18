@@ -8,7 +8,7 @@ enum DeviceTransitionPhase { idle, contentFadeOut, frameTransform, contentFadeIn
 class DeviceTransitionDurations {
   const DeviceTransitionDurations({
     this.contentFadeOut = const Duration(milliseconds: 1800),
-    this.frameTransform = const Duration(milliseconds: 1100),
+    this.frameTransform = const Duration(milliseconds: 1500),
     this.contentFadeIn = const Duration(milliseconds: 1800),
     this.blankHold = const Duration(milliseconds: 120),
   });

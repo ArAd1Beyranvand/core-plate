@@ -94,6 +94,9 @@ class PlateSpec {
     this.decals = const <PlateDecal>[],
     this.textDirection = TextDirection.ltr,
     this.borderWidthRatioOverride,
+    this.flagScale = 1.0,
+    this.captionScale = 1.0,
+    this.panelPadding,
   });
 
   /// Stable identifier, e.g. 'ir.car'. Used for equality and persistence.
@@ -113,6 +116,20 @@ class PlateSpec {
 
   /// Applied via theme.copyWith when non-null.
   final double? borderWidthRatioOverride;
+
+  /// Scale factor applied to the flag inside the country panel. Defaults to
+  /// 1.0 (full size). Use a smaller value (e.g. 0.4) for compact plates where
+  /// the panel is too shallow to display a full-size flag legibly.
+  final double flagScale;
+
+  /// Scale factor applied to the country caption inside the panel. Defaults
+  /// to 1.0 (full size). Use a smaller value on compact plates where a
+  /// bigger flag needs the caption to give up some room.
+  final double captionScale;
+
+  /// Padding around the flag + caption inside the country panel. Null keeps
+  /// the default: a uniform inset of 10% of the panel's height on all sides.
+  final EdgeInsets? panelPadding;
 
   /// How many values this plate stores. Derived, never hard-coded.
   int get slotCount => slots.length;
@@ -146,10 +163,17 @@ class PlateSpecs {
     country: PlateCountry.iran,
     canvasWidth: 520,
     canvasHeight: 110,
-    panelLeft: 5,
-    panelTop: 5,
-    panelWidth: 52,
-    panelHeight: 100,
+    // Overlap the border on the three touching edges (left/top/bottom) instead
+    // of sitting flush at the border thickness (0.04 * canvasHeight = 4.4). The
+    // panel is clipped back to the rounded plate face by _PlateFaceClipper, so
+    // extending it under the frame just makes the blue paint right up to the
+    // clip boundary — killing the thin white seam that a flush edge leaves when
+    // the FittedBox scale lands the panel edge and the border edge on different
+    // physical pixels. Right edge (56.4) stays interior and is unchanged.
+    panelLeft: 0,
+    panelTop: 0,
+    panelWidth: 56.4,
+    panelHeight: 110,
     textDirection: TextDirection.rtl,
     slots: [
       PlateSlot(index: 0, alphabet: PlateAlphabet.persianDigits, left: 65, top: 17, width: 47, height: 76, next: 1),
@@ -162,7 +186,9 @@ class PlateSpecs {
       PlateSlot(index: 7, alphabet: PlateAlphabet.persianDigits, left: 466, top: 40, width: 32, height: 52, next: null),
     ],
     rules: [
-      PlateRule(left: 404, top: 14, width: 5, height: 82),
+      // The province divider runs the full height of the plate face (top edge
+      // to bottom edge), meeting the border at both ends — no empty gaps.
+      PlateRule(left: 404, top: 4.4, width: 5, height: 101.2),
     ],
     labels: [
       PlateLabel(text: 'ایران', left: 412, top: 18, width: 103, height: 16, glyphHeight: 16),
@@ -174,12 +200,28 @@ class PlateSpecs {
     country: PlateCountry.iran,
     canvasWidth: 175,
     canvasHeight: 110,
-    panelLeft: 8,
-    panelTop: 8,
-    panelWidth: 56,
-    panelHeight: 46,
+    // Overlap the border on the two touching edges (left/top) instead of
+    // sitting flush at the border thickness (0.07 * canvasHeight = 7.7); the
+    // panel is clipped back to the plate face, so this kills the thin white
+    // seam a flush edge leaves. See irCar. Right (63.7) and bottom (53.7) edges
+    // are interior and unchanged.
+    panelLeft: 0,
+    panelTop: 0,
+    // Panel width is sized to wrap the flag (the widest element) plus the
+    // left/right margins below, instead of a slack fraction: flagScale is 1.0
+    // so the flag fills its box exactly and panelWidth = padding + flag width.
+    panelWidth: 47,
+    panelHeight: 53.7,
     textDirection: TextDirection.rtl,
     borderWidthRatioOverride: 0.07,
+    flagScale: 1.0,
+    captionScale: 0.25,
+    // Bigger left margin than top/bottom: matches a real bicycle plate's
+    // panel, where the flag+caption block sits clear of the frame on the
+    // left but only needs breathing room, not a deep inset, top and bottom.
+    // Extra margin all around keeps the smaller flag/caption clear of the
+    // panel edges instead of crowding the blue block.
+    panelPadding: EdgeInsets.fromLTRB(15, 16, 6, 6),
     slots: [
       PlateSlot(index: 0, alphabet: PlateAlphabet.persianDigits, left: 74, top: 13, width: 22, height: 36, next: 1),
       PlateSlot(index: 1, alphabet: PlateAlphabet.persianDigits, left: 104, top: 13, width: 22, height: 36, next: 2),
@@ -202,10 +244,11 @@ class PlateSpecs {
     country: PlateCountry.germany,
     canvasWidth: 520,
     canvasHeight: 110,
-    panelLeft: 5,
-    panelTop: 5,
-    panelWidth: 52,
-    panelHeight: 100,
+    // Overlap the border on the three touching edges — see irCar.
+    panelLeft: 0,
+    panelTop: 0,
+    panelWidth: 56.4,
+    panelHeight: 110,
     textDirection: TextDirection.ltr,
     slots: [
       // District code, e.g. "DA".

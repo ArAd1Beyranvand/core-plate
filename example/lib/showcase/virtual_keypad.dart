@@ -164,7 +164,7 @@ class _VirtualKeypadState extends State<VirtualKeypad>
       onTap: enabled ? () => widget.onKey?.call(key) : null,
       child: _Key(
         label: rawLabel,
-        highlighted: rawLabel.isNotEmpty && rawLabel == widget.highlightedKey,
+        highlighted: rawLabel.isNotEmpty && key == widget.highlightedKey,
         enabled: enabled,
         digitAlphabet: widget.digitAlphabet,
       ),

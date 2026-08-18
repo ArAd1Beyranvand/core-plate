@@ -59,11 +59,11 @@ class PlateTheme {
   factory PlateTheme.standard() {
     return const PlateTheme(
       plateBackground: Color(0xFFFFFFFF),
-      plateBorder: Color(0xFF111111),
+      plateBorder: Color(0xFF000000),
       ink: Color(0xFF0A0A0A),
-      dividerColor: Color(0xFF111111),
+      dividerColor: Color(0xFF000000),
       borderWidthRatio: 0.04,
-      plateRadiusRatio: 0.09,
+      plateRadiusRatio: 0.12,
       carAspect: 520 / 110,
       motorcycleAspect: 175 / 110,
       activeColor: Color(0xFF0A0A0A),
