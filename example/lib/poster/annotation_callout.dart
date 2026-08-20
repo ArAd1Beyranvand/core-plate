@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'connector_motion.dart';
 import 'poster_tokens.dart';
 
 /// Which side of the device a callout sits on.
@@ -100,11 +101,15 @@ class CalloutWithConnector extends StatelessWidget {
     this.connectorLength = 150,
     this.connectorTop = 34,
     this.showConnector = true,
+    this.connectorAnimation,
+    this.connectorEntering = true,
   });
 
   final AnnotationCallout callout;
   final double connectorLength;
   final double connectorTop;
+  final Animation<double>? connectorAnimation;
+  final bool connectorEntering;
 
   /// When false the callout is shown on its own, with no connector line — used
   /// by the stacked layout where callouts no longer point at the device.
@@ -116,7 +121,12 @@ class CalloutWithConnector extends StatelessWidget {
 
     final Widget connector = Padding(
       padding: EdgeInsets.only(top: connectorTop),
-      child: ConnectorLine(side: callout.side, length: connectorLength),
+      child: AnimatedConnectorLine(
+        side: callout.side,
+        length: connectorLength,
+        animation: connectorAnimation,
+        entering: connectorEntering,
+      ),
     );
 
     final Widget flexibleConnector = Flexible(
