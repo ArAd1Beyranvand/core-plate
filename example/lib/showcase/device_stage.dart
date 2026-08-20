@@ -98,24 +98,17 @@ class _DeviceStageState extends State<DeviceStage> {
   /// while the German plate is on screen; a no-op for other devices.
   void _validateGermanPlate(PlateCardState state) {
     if (!mounted || _contentDevice != DeviceType.tablet) return;
-    // deCar's slots: district = [0]+[1], identifier letter = [2], serial digits
-    // = [3..6]. Treat unset slots as empty strings.
+    final spec = specFor(DeviceType.tablet);
     final values = state.plateNumber.values;
-    String at(int i) => (i < values.length ? values[i] : null) ?? '';
-    final identifierLetters = at(2);
     // Don't flag anything red while the identifier letter is still blank — an
     // empty letter always fails the regex, which would be noise, not signal.
-    if (identifierLetters.isEmpty) {
+    if (spec.valueOfGroup('letters', values).isEmpty) {
       if (_germanValidation != null) {
         setState(() => _germanValidation = null);
       }
       return;
     }
-    final result = GermanPlateValidator.validate(
-      district: at(0) + at(1),
-      identifierLetters: identifierLetters,
-      identifierDigits: at(3) + at(4) + at(5) + at(6),
-    );
+    final result = GermanPlateValidator.validateValues(spec, values);
     setState(() => _germanValidation = result);
   }
 
