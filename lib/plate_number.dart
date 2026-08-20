@@ -1,6 +1,7 @@
 library plate_number;
 
 export 'model/plate_number.dart';
+export 'model/plate_input_source.dart';
 export 'model/plate_country.dart';
 export 'model/plate_alphabet.dart';
 export 'model/plate_spec.dart';
