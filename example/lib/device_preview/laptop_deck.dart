@@ -137,31 +137,54 @@ class LaptopDeck extends StatelessWidget {
                           BoxShadow(color: Color(0xB3000000), blurRadius: 14, offset: Offset(0, 4)),
                         ],
                       ),
-                      child: Column(
-                        children: [
-                          for (final row in deckRows) ...[
-                            SizedBox(
-                              height: row.height,
-                              child: Row(
-                                children: [
-                                  for (var i = 0; i < row.keys.length; i++) ...[
-                                    if (i > 0) const SizedBox(width: 8),
-                                    Expanded(
-                                      flex: (row.keys[i].flex * 100).round(),
-                                      child: _Key(
-                                        label: row.keys[i].label,
-                                        icon: _iconFor(row.keys[i].label),
-                                        onKey: onKey,
-                                        pressedLabel: pressedKey,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: _rowGap),
-                          ],
-                        ],
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // The deck's box shrinks during fold/unfold beats and
+                          // whenever the frame is scaled down to fit tight
+                          // constraints (e.g. a maximised window mid-resize), so
+                          // the well can be handed less height than the rows'
+                          // natural total. Scale every row and gap down to fit
+                          // rather than overflowing — an overflow here forces an
+                          // expensive error-render on the busiest possible frame
+                          // and has crashed the GL embedder on Linux.
+                          final scale = constraints.hasBoundedHeight
+                              ? (constraints.maxHeight / _deckWellHeight).clamp(
+                                  0.0,
+                                  1.0,
+                                )
+                              : 1.0;
+                          return Column(
+                            children: [
+                              for (final row in deckRows) ...[
+                                SizedBox(
+                                  height: row.height * scale,
+                                  child: Row(
+                                    children: [
+                                      for (
+                                        var i = 0;
+                                        i < row.keys.length;
+                                        i++
+                                      ) ...[
+                                        if (i > 0) const SizedBox(width: 8),
+                                        Expanded(
+                                          flex: (row.keys[i].flex * 100)
+                                              .round(),
+                                          child: _Key(
+                                            label: row.keys[i].label,
+                                            icon: _iconFor(row.keys[i].label),
+                                            onKey: onKey,
+                                            pressedLabel: pressedKey,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: _rowGap * scale),
+                              ],
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ),

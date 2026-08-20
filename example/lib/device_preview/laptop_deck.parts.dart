@@ -35,10 +35,6 @@ class _Numpad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Match the keyboard well's inner height so both columns end flush at the
-    // bottom, then back out an even row height from the number of numpad rows.
-    final rowHeight =
-        (_deckWellHeight - _rowGap * _rows.length) / _rows.length;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -52,31 +48,47 @@ class _Numpad extends StatelessWidget {
           BoxShadow(color: Color(0xB3000000), blurRadius: 14, offset: Offset(0, 4)),
         ],
       ),
-      child: Column(
-        children: [
-          for (final row in _rows) ...[
-            SizedBox(
-              height: rowHeight,
-              child: Row(
-                children: [
-                  for (var i = 0; i < row.length; i++) ...[
-                    if (i > 0) const SizedBox(width: 8),
-                    Expanded(
-                      // the zero key spans two columns, as on a real numpad
-                      flex: row[i] == '0' ? 208 : 100,
-                      child: _Key(
-                        label: row[i],
-                        icon: _iconFor(row[i]),
-                        onKey: onKey,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: _rowGap),
-          ],
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Mirrors the keyboard well's own shrink-to-fit scale (see
+          // LaptopDeck's Column) so both columns keep ending flush even when
+          // the deck is handed less height than its natural well.
+          final scale = constraints.hasBoundedHeight
+              ? (constraints.maxHeight / _deckWellHeight).clamp(0.0, 1.0)
+              : 1.0;
+          // Match the keyboard well's inner height so both columns end flush
+          // at the bottom, then back out an even row height from the number
+          // of numpad rows.
+          final rowHeight =
+              (_deckWellHeight - _rowGap * _rows.length) / _rows.length *
+              scale;
+          return Column(
+            children: [
+              for (final row in _rows) ...[
+                SizedBox(
+                  height: rowHeight,
+                  child: Row(
+                    children: [
+                      for (var i = 0; i < row.length; i++) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        Expanded(
+                          // the zero key spans two columns, as on a real numpad
+                          flex: row[i] == '0' ? 208 : 100,
+                          child: _Key(
+                            label: row[i],
+                            icon: _iconFor(row[i]),
+                            onKey: onKey,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                SizedBox(height: _rowGap * scale),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
