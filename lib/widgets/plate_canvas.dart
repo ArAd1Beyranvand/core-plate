@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../model/plate_number.dart';
@@ -11,7 +12,6 @@ import 'plate_slot_item.dart';
 import 'plate_items.dart';
 import 'plate_frame.dart';
 import 'country_panel.dart';
-import '../car_plate/letter_picker.dart';
 import '../input/plate_input_controller.dart';
 
 class PlateCanvas extends StatefulWidget {
@@ -403,7 +403,14 @@ class _CharacterPickerSheetState extends State<_CharacterPickerSheet> {
         children: [
           SizedBox(
             height: 180,
-            child: LetterPicker(onSelectedItemChanged: (i) => _index = i),
+            child: CupertinoPicker(
+              itemExtent: 44,
+              onSelectedItemChanged: (i) => _index = i,
+              children: [
+                for (final c in widget.alphabet.characters)
+                  Center(child: Text(widget.alphabet.render(c), style: const TextStyle(fontSize: 22))),
+              ],
+            ),
           ),
           TextButton(
             onPressed: () =>
