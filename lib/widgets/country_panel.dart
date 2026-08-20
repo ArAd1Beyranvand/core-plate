@@ -49,9 +49,15 @@ class CountryPanel extends StatelessWidget {
             final resolvedPadding = padding ?? EdgeInsets.all(uniformPad);
             final innerW = constraints.maxWidth - resolvedPadding.horizontal;
             final innerH = constraints.maxHeight - resolvedPadding.vertical;
-            // Flag: scale the width by flagScale; height follows 7:4 ratio.
-            final flagW = innerW * flagScale;
-            final flagH = flagW * 4 / 7;
+            // Flag: scale the width by flagScale; height follows the
+            // country's flag aspect ratio, clamped to the available height so
+            // small panels never overflow.
+            var flagW = innerW * flagScale;
+            var flagH = flagW / country.flagAspectRatio;
+            if (flagH > innerH) {
+              flagH = innerH;
+              flagW = flagH * country.flagAspectRatio;
+            }
             final captionH = (innerH - flagH).clamp(0.0, innerH);
             return Padding(
               padding: resolvedPadding,

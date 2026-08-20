@@ -72,6 +72,10 @@ class PlateFlag extends StatelessWidget {
 
   /// Picks a finite width/height from [constraints], falling back to a sensible
   /// default when a dimension is unbounded.
+  ///
+  /// The 7:4 fallback below is only used when both dimensions are unbounded;
+  /// callers that know the country should size this widget from
+  /// [PlateCountry.flagAspectRatio] instead of relying on this default.
   Size _resolveSize(BoxConstraints constraints) {
     var width = constraints.maxWidth;
     var height = constraints.maxHeight;

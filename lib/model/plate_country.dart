@@ -13,6 +13,7 @@ class PlateCountry {
     required this.captionLines,
     required this.panelColor,
     required this.panelTextColor,
+    this.flagAspectRatio = 7 / 4,
   });
 
   /// ISO 3166-1 alpha-2 country code (e.g. `ir`), used to look up the flag.
@@ -28,6 +29,10 @@ class PlateCountry {
   /// Text colour on the [panelColor] block.
   final Color panelTextColor;
 
+  /// Width/height ratio of this country's flag, used to size it within
+  /// [CountryPanel] without distortion or overflow.
+  final double flagAspectRatio;
+
   /// The Islamic Republic of Iran, as it appears on a standard plate: a blue
   /// panel with white "I.R." / "IRAN" text beside the flag.
   static const PlateCountry iran = PlateCountry(
@@ -35,6 +40,7 @@ class PlateCountry {
     captionLines: ['I.R.', 'IRAN'],
     panelColor: Color(0xFF16479D),
     panelTextColor: Color(0xFFFFFFFF),
+    flagAspectRatio: 7 / 4,
   );
 
   /// Germany, as it appears on a standard EU plate: a blue panel with a white
@@ -44,6 +50,7 @@ class PlateCountry {
     captionLines: ['D'],
     panelColor: Color(0xFF003399),
     panelTextColor: Color(0xFFFFFFFF),
+    flagAspectRatio: 5 / 3,
   );
 
   @override
@@ -53,7 +60,8 @@ class PlateCountry {
         other.code == code &&
         _listEquals(other.captionLines, captionLines) &&
         other.panelColor == panelColor &&
-        other.panelTextColor == panelTextColor;
+        other.panelTextColor == panelTextColor &&
+        other.flagAspectRatio == flagAspectRatio;
   }
 
   @override
@@ -62,6 +70,7 @@ class PlateCountry {
         Object.hashAll(captionLines),
         panelColor,
         panelTextColor,
+        flagAspectRatio,
       );
 
   static bool _listEquals(List<String> a, List<String> b) {
