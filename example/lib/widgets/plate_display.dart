@@ -35,7 +35,7 @@ class PlateDisplay extends StatelessWidget {
 
   /// Fires when the focused plate slot changes, reporting the active slot —
   /// including its alphabet, not just its position — or null when focus leaves
-  /// the plate. Forwarded to CarPlateNumber; ignored by the bicycle plate.
+  /// the plate. Forwarded straight to [PlateCanvas].
   final ValueChanged<PlateSlot?>? onActiveSlotChanged;
 
   /// An externally-owned bloc to drive the plate. When null, this widget

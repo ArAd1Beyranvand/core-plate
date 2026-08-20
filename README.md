@@ -96,19 +96,9 @@ class _MyAppState extends State<MyApp> {
                 builder: (BuildContext context, PlateCardState state) {
                   switch (state.plateType) {
                     case PlateType.irCar:
-                      return const CarPlateNumber(
-                        activeColor: Colors.pinkAccent,
-                        inactiveColor: Colors.blueGrey,
-                        backgroundColor: Colors.white,
-                        spacingScale: 6,
-                      );
+                      return const PlateCanvas(spec: PlateSpecs.irCar);
                     case PlateType.irBicycle:
-                      return const BicyclePlateNumber(
-                        activeColor: Colors.blueAccent,
-                        inactiveColor: Colors.blueGrey,
-                        backgroundColor: Colors.white,
-                        spacingScale: 6,
-                      );
+                      return const PlateCanvas(spec: PlateSpecs.irBicycle);
                   }
                 },
               ),
@@ -166,16 +156,10 @@ class PlateTypeSelector extends StatelessWidget {
 
 ## Important Note
 
-To use the CarPlateNumber widget, make sure to import the relevant index file:
+`PlateCanvas` is exported from the package root:
 
 ```dart
-import 'package:plate_number/car_plate/index.dart';
-```
-
-And for the BicyclePlateNumber widget:
-
-```dart
-import 'package:plate_number/bicycle_plate/index.dart';
+import 'package:plate_number/plate_number.dart';
 ```
 
 Remember to create the PlateCardBloc beforehand and define the BlocProvider in the widget tree.

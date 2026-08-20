@@ -22,8 +22,6 @@ class PlateCanvas extends StatefulWidget {
     this.letterInputMode,
     this.onChooseCharacter,
     this.onActiveSlotChanged,
-    this.onRemove,
-    this.showRemoveButton = false,
     this.controller,
   });
 
@@ -33,8 +31,6 @@ class PlateCanvas extends StatefulWidget {
   final LetterInputMode? letterInputMode;
   final Future<String?> Function(PlateAlphabet alphabet)? onChooseCharacter;
   final ValueChanged<PlateSlot?>? onActiveSlotChanged;
-  final VoidCallback? onRemove;
-  final bool showRemoveButton;
   final PlateInputController? controller;
 
   @override
@@ -339,15 +335,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
       ),
     );
 
-    if (!widget.showRemoveButton) return fitted;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        fitted,
-        IconButton(onPressed: widget.onRemove, icon: const Icon(Icons.close)),
-      ],
-    );
+    return fitted;
   }
 }
 
