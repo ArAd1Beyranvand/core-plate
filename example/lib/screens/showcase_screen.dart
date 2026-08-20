@@ -8,6 +8,9 @@ import '../device_preview/device_frame.dart';
 import '../device_preview/device_transition.dart';
 import '../poster/poster_tokens.dart';
 import '../poster/annotation_callout.dart';
+import '../poster/callout_content.dart';
+import '../poster/callout_motion.dart';
+import '../poster/callout_rail.dart';
 import '../poster/corner_brackets.dart';
 import '../poster/grid_backdrop.dart';
 import '../poster/poster_footer.dart';
@@ -37,7 +40,10 @@ class ShowcaseScreen extends StatelessWidget {
           else
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 56, vertical: 44),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 56,
+                  vertical: 44,
+                ),
                 child: Column(
                   children: const [
                     PosterHeader(),
@@ -60,111 +66,130 @@ class ShowcaseScreen extends StatelessWidget {
 }
 
 /// Below this logical width the three-column poster collapses to a stack.
-const double _wideBreakpoint = 1180;
+const double _wideBreakpoint = 1080;
 
-// The four annotation callouts, shared between the wide and stacked layouts.
-const AnnotationCallout _callout01 = AnnotationCallout(
-  index: '01',
-  label: 'VIEWPORT',
-  title: 'One layout, three devices',
-  body: 'Mobile, tablet and laptop states animate between each other.',
-  side: CalloutSide.left,
-);
-const AnnotationCallout _callout02 = AnnotationCallout(
-  index: '02',
-  label: 'PACKAGE',
-  title: 'plate_number',
-  body: 'Open-source Flutter package for Iranian vehicle plates.',
-  side: CalloutSide.right,
-);
-const AnnotationCallout _callout03 = AnnotationCallout(
-  index: '03',
-  label: 'MODES',
-  title: 'Input & display',
-  body: 'Capture plates field by field, or render them read-only.',
-  side: CalloutSide.right,
-);
-const AnnotationCallout _callout04 = AnnotationCallout(
-  index: '04',
-  label: 'STYLING',
-  title: 'Fully themeable',
-  body: 'Spacing, colour and light or dark theme are all yours.',
-  side: CalloutSide.left,
-);
+/// The motif pairing for each hop, keyed by the device the hop lands on:
+/// how the previous set left, and how this set arrives.
+///
+/// The cycle is desktop -> mobile -> tablet (see DeviceCycle.order), so:
+/// the laptop's callouts sweep out sideways and the mobile's sweep in; the
+/// mobile's fall through a trapdoor and the tablet's drop in from one above;
+/// the tablet's siphon into their connector dots and the laptop's are emitted
+/// back out of them.
+const Map<DeviceType, ({CalloutMotif exit, CalloutMotif entry})> calloutMotifs =
+    {
+      DeviceType.desktop: (
+        exit: CalloutMotif.siphon,
+        entry: CalloutMotif.siphon,
+      ),
+      DeviceType.mobile: (exit: CalloutMotif.sweep, entry: CalloutMotif.sweep),
+      DeviceType.tablet: (
+        exit: CalloutMotif.trapdoor,
+        entry: CalloutMotif.trapdoor,
+      ),
+    };
 
-class _PosterBody extends StatelessWidget {
+class _PosterBody extends StatefulWidget {
   const _PosterBody();
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth >= _wideBreakpoint) return const _WideBody();
-        return const _StackedBody();
-      },
-    );
-  }
+  State<_PosterBody> createState() => _PosterBodyState();
 }
 
-/// Three columns: callouts flanking the device, connectors pointing inward.
+class _PosterBodyState extends State<_PosterBody> {
+  /// The device the callout rails are showing. Tracks the FRAME device, so it
+  /// flips at the start of a hop rather than at the content swap. Seeded to
+  /// DeviceCycle.order's first entry.
+  DeviceType _railDevice = DeviceType.desktop;
+
+  void _onFrameDeviceChanged(DeviceType device) {
+    if (!mounted || _railDevice == device) return;
+    setState(() => _railDevice = device);
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => constraints.maxWidth >= _wideBreakpoint
+        ? _WideBody(
+            device: _railDevice,
+            onFrameDeviceChanged: _onFrameDeviceChanged,
+          )
+        : _StackedBody(
+            device: _railDevice,
+            onFrameDeviceChanged: _onFrameDeviceChanged,
+          ),
+  );
+}
+
+/// Three columns: animated callout rails flanking the device, connectors
+/// pointing inward.
 class _WideBody extends StatelessWidget {
-  const _WideBody();
+  const _WideBody({required this.device, required this.onFrameDeviceChanged});
+
+  final DeviceType device;
+  final ValueChanged<DeviceType> onFrameDeviceChanged;
 
   @override
   Widget build(BuildContext context) {
+    final motifs = calloutMotifs[device]!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: const [
-        SizedBox(width: 360, child: _LeftCallouts()),
-        Expanded(child: _DeviceStage()),
-        SizedBox(width: 360, child: _RightCallouts()),
+      children: [
+        SizedBox(
+          width: 360,
+          child: CalloutRail(
+            device: device,
+            side: CalloutSide.left,
+            exitMotif: motifs.exit,
+            entryMotif: motifs.entry,
+          ),
+        ),
+        Expanded(
+          child: _DeviceStage(onFrameDeviceChanged: onFrameDeviceChanged),
+        ),
+        SizedBox(
+          width: 360,
+          child: CalloutRail(
+            device: device,
+            side: CalloutSide.right,
+            exitMotif: motifs.exit,
+            entryMotif: motifs.entry,
+          ),
+        ),
       ],
     );
   }
 }
 
 /// Narrow layout: the device on top, callouts as a connector-less 2x2 grid.
+/// No animation on this layout — it just rebuilds from the current set.
 class _StackedBody extends StatelessWidget {
-  const _StackedBody();
+  const _StackedBody({
+    required this.device,
+    required this.onFrameDeviceChanged,
+  });
+
+  final DeviceType device;
+  final ValueChanged<DeviceType> onFrameDeviceChanged;
 
   @override
   Widget build(BuildContext context) {
+    final set = calloutSets[device]!;
     return Column(
-      children: const [
-        Expanded(child: _DeviceStage()),
-        SizedBox(height: 24),
+      children: [
+        Expanded(
+          child: _DeviceStage(onFrameDeviceChanged: onFrameDeviceChanged),
+        ),
+        const SizedBox(height: 24),
         Wrap(
           spacing: 48,
           runSpacing: 28,
           children: [
-            SizedBox(
-              width: 300,
-              child: CalloutWithConnector(
-                callout: _callout01,
-                showConnector: false,
+            for (final c in [...set.left, ...set.right])
+              SizedBox(
+                width: 300,
+                child: CalloutWithConnector(callout: c, showConnector: false),
               ),
-            ),
-            SizedBox(
-              width: 300,
-              child: CalloutWithConnector(
-                callout: _callout02,
-                showConnector: false,
-              ),
-            ),
-            SizedBox(
-              width: 300,
-              child: CalloutWithConnector(
-                callout: _callout03,
-                showConnector: false,
-              ),
-            ),
-            SizedBox(
-              width: 300,
-              child: CalloutWithConnector(
-                callout: _callout04,
-                showConnector: false,
-              ),
-            ),
           ],
         ),
       ],
@@ -172,54 +197,14 @@ class _StackedBody extends StatelessWidget {
   }
 }
 
-class _LeftCallouts extends StatelessWidget {
-  const _LeftCallouts();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: const [
-        // 01 sits high on the left.
-        Padding(
-          padding: EdgeInsets.only(top: 40),
-          child: CalloutWithConnector(callout: _callout01),
-        ),
-        Spacer(),
-        // 04 sits low on the left.
-        Padding(
-          padding: EdgeInsets.only(bottom: 48),
-          child: CalloutWithConnector(callout: _callout04),
-        ),
-      ],
-    );
-  }
-}
-
-class _RightCallouts extends StatelessWidget {
-  const _RightCallouts();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        // 02 sits around the vertical middle.
-        SizedBox(height: 150),
-        CalloutWithConnector(callout: _callout02),
-        Spacer(),
-        // 03 sits lower down on the right.
-        Padding(
-          padding: EdgeInsets.only(bottom: 96),
-          child: CalloutWithConnector(callout: _callout03),
-        ),
-      ],
-    );
-  }
-}
-
 class _DeviceStage extends StatefulWidget {
-  const _DeviceStage();
+  const _DeviceStage({this.onFrameDeviceChanged});
+
+  /// Fired the instant a hop starts, with the incoming device — i.e. the same
+  /// moment [_DeviceStageState._frameDevice] flips, before the plate content
+  /// has caught up. The callout rails switch on this, so they leave while the
+  /// device is still morphing.
+  final ValueChanged<DeviceType>? onFrameDeviceChanged;
 
   @override
   State<_DeviceStage> createState() => _DeviceStageState();
@@ -246,6 +231,20 @@ class _DeviceStageState extends State<_DeviceStage> {
   /// attached [PlateCanvas], without either side knowing the active slot's
   /// index.
   final PlateInputController _plateInput = PlateInputController();
+
+  /// A tapped laptop keycap, routed through the attached plate's active slot.
+  /// PlateInputController.submit is a no-op when the character isn't in the
+  /// slot's alphabet, so the deck's Persian letters land only on letter slots
+  /// and its digits only on digit slots — no hard-coded character checks here,
+  /// and it keeps working for any plate of any country.
+  void _onDeckKey(String label) {
+    if (_typist.isRunning) return; // never fight the auto-typist
+    if (label == 'BACKSPACE') {
+      _plateInput.backspace();
+      return;
+    }
+    _plateInput.submit(label);
+  }
 
   /// Bumped on every device hop; captured by pending awaits so a stale run
   /// (a delayed typist start from a device we already left) bails out.
@@ -333,6 +332,7 @@ class _DeviceStageState extends State<_DeviceStage> {
     // DeviceCycle rebuilds its builder as part of the same advance, so the new
     // frame device is picked up without a setState here.
     _frameDevice = device;
+    widget.onFrameDeviceChanged?.call(device);
   }
 
   /// Fired by [DeviceFrame] during the blank hold, after the frame has morphed
@@ -380,8 +380,8 @@ class _DeviceStageState extends State<_DeviceStage> {
       // callback now delivers.
       onSlotChanged: device == DeviceType.tablet
           ? (i) => _setActiveSlot(
-                i == null ? null : specFor(_contentDevice).slotAt(i),
-              )
+              i == null ? null : specFor(_contentDevice).slotAt(i),
+            )
           : null,
       context: context,
     );
@@ -427,38 +427,58 @@ class _DeviceStageState extends State<_DeviceStage> {
     // tablet's letters pad shows: a digit-only alphabet keeps the digit grid,
     // anything else slides the letters layer in.
     final activeAlphabet = _activeSlot?.alphabet;
-    final showLetters = activeAlphabet != null &&
+    final showLetters =
+        activeAlphabet != null &&
         !activeAlphabet.characters.every((c) => c.isDigit());
-    return DeviceFrame(
-      device: frameDevice,
-      onPhaseChanged: _onPhase,
-      onContentSwap: _onContentSwap,
-      deckPressedKey: _typist.activeKey,
-      builder: (context, config) => PlateDisplay(
-        spec: specFor(contentDevice),
-        mode: PlateMode.input,
-        // activeColor is the completed-field underline colour; swap it to red
-        // for the tablet's German plate when the typed value is invalid (e.g. a
-        // forbidden letter combination). Other devices keep the accent.
-        activeColor: contentDevice == DeviceType.tablet &&
-                _germanValidation?.isValid == false
-            ? PosterTokens.invalid
-            : PosterTokens.accent,
-        bloc: _bloc,
-        // The laptop deck already carries letter keys, so its letter comes in
-        // through the library's on-screen-keypad mode instead of the modal
-        // picker. Other devices keep their platform default.
-        letterInputMode: contentDevice == DeviceType.desktop ||
-                contentDevice == DeviceType.tablet
-            ? LetterInputMode.hostKeypad
-            : null,
-        onActiveSlotChanged:
-            contentDevice == DeviceType.tablet ? _setActiveSlot : null,
-        controller: contentDevice == DeviceType.tablet ? _plateInput : null,
-        showBackdrop: true,
-        keyboard: contentDevice == DeviceType.desktop
-            ? null
-            : contentDevice == DeviceType.tablet
+    // Cap the frame: the laptop is 1280x830 body plus a ~430px projected deck,
+    // so unconstrained it eats the whole middle column and dwarfs the poster.
+    // DeviceFrame fits itself to its constraints, so this only scales it down.
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 860, maxHeight: 640),
+        child: DeviceFrame(
+          device: frameDevice,
+          onPhaseChanged: _onPhase,
+          onContentSwap: _onContentSwap,
+          deckPressedKey: _typist.activeKey,
+          onDeckKey: _onDeckKey,
+          builder: (context, config) => PlateDisplay(
+            spec: specFor(contentDevice),
+            mode: PlateMode.input,
+            // activeColor is the completed-field underline colour; swap it to red
+            // for the tablet's German plate when the typed value is invalid (e.g. a
+            // forbidden letter combination). Other devices keep the accent.
+            activeColor:
+                contentDevice == DeviceType.tablet &&
+                    _germanValidation?.isValid == false
+                ? PosterTokens.invalid
+                : PosterTokens.accent,
+            bloc: _bloc,
+            // The laptop deck already carries letter keys, so its letter comes in
+            // through the library's on-screen-keypad mode instead of the modal
+            // picker. Other devices keep their platform default.
+            letterInputMode:
+                contentDevice == DeviceType.desktop ||
+                    contentDevice == DeviceType.tablet
+                ? LetterInputMode.hostKeypad
+                : null,
+            onActiveSlotChanged: contentDevice == DeviceType.tablet
+                ? _setActiveSlot
+                : null,
+            controller:
+                contentDevice == DeviceType.tablet ||
+                    contentDevice == DeviceType.desktop
+                ? _plateInput
+                : null,
+            showBackdrop: true,
+            plateWidthFactor: switch (contentDevice) {
+              DeviceType.desktop => 0.55,
+              DeviceType.tablet => 0.62,
+              DeviceType.mobile => 0.86,
+            },
+            keyboard: contentDevice == DeviceType.desktop
+                ? null
+                : contentDevice == DeviceType.tablet
                 ? VirtualKeypad(
                     highlightedKey: _typist.activeKey,
                     compact: false,
@@ -481,6 +501,8 @@ class _DeviceStageState extends State<_DeviceStage> {
                     highlightedKey: _typist.activeKey,
                     compact: contentDevice == DeviceType.mobile,
                   ),
+          ),
+        ),
       ),
     );
   }
