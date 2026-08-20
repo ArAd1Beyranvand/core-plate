@@ -20,6 +20,7 @@ class PlateCanvas extends StatefulWidget {
     this.mode = PlateMode.input,
     this.theme,
     this.letterInputMode,
+    this.inputSource,
     this.onChooseCharacter,
     this.onActiveSlotChanged,
     this.controller,
@@ -28,7 +29,9 @@ class PlateCanvas extends StatefulWidget {
   final PlateSpec spec;
   final PlateMode mode;
   final PlateTheme? theme;
+  @Deprecated('Use inputSource')
   final LetterInputMode? letterInputMode;
+  final PlateInputSource? inputSource;
   final Future<String?> Function(PlateAlphabet alphabet)? onChooseCharacter;
   final ValueChanged<PlateSlot?>? onActiveSlotChanged;
   final PlateInputController? controller;
@@ -43,11 +46,13 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
 
   PlateSlot? _activeSlot;
   late LetterInputMode _letterInputMode;
+  late PlateInputSource _inputSource;
 
   @override
   void initState() {
     super.initState();
     _letterInputMode = widget.letterInputMode ?? defaultLetterInputMode();
+    _inputSource = _resolveInputSource();
     for (final slot in widget.spec.slots) {
       _focusNodes[slot.index] = FocusNode()..addListener(_handleFocusChange);
       if (slot.alphabet.input == AlphabetInput.typed) {
@@ -94,6 +99,13 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     super.dispose();
   }
 
+  PlateInputSource _resolveInputSource() {
+    return widget.inputSource ??
+        (widget.letterInputMode != null
+            ? inputSourceFromLetterMode(widget.letterInputMode!)
+            : defaultInputSource());
+  }
+
   void _handleFocusChange() {
     PlateSlot? active;
     for (final entry in _focusNodes.entries) {
@@ -119,7 +131,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     final nextSlot = widget.spec.slotAt(next);
     if (nextSlot == null) return;
     if (nextSlot.alphabet.input == AlphabetInput.chosen &&
-        _letterInputMode == LetterInputMode.picker) {
+        _inputSource == PlateInputSource.system) {
       _openPicker(nextSlot);
     } else {
       _focusNodes[next]?.requestFocus();
@@ -201,6 +213,11 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
       theme = theme.copyWith(borderWidthRatio: spec.borderWidthRatioOverride!);
     }
     _letterInputMode = widget.letterInputMode ?? defaultLetterInputMode();
+    // PlateMode.display renders inert, picker-like slots regardless of the
+    // configured source, so force [PlateInputSource.system] there.
+    _inputSource = widget.mode == PlateMode.input
+        ? _resolveInputSource()
+        : PlateInputSource.system;
 
     final plate = context.select<PlateCardBloc, PlateNumber>(
       (b) => b.state.plateNumber,
@@ -310,11 +327,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                               letterInputMode: widget.mode == PlateMode.input
                                   ? _letterInputMode
                                   : LetterInputMode.picker,
-                              inputSource: widget.mode == PlateMode.input
-                                  ? inputSourceFromLetterMode(
-                                      _letterInputMode,
-                                    )
-                                  : PlateInputSource.system,
+                              inputSource: _inputSource,
                               onChanged: (v) => bloc
                                   .add(ValueIsChanged(index: s.index, value: v)),
                               onCompleted: widget.mode == PlateMode.input
@@ -324,7 +337,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                                   (widget.mode == PlateMode.input &&
                                       s.alphabet.input ==
                                           AlphabetInput.chosen &&
-                                      _letterInputMode == LetterInputMode.picker)
+                                      _inputSource == PlateInputSource.system)
                                   ? () => _openPicker(s)
                                   : null,
                             ),
