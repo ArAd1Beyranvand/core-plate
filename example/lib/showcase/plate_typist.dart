@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:plate_number/plate_number.dart';
 
@@ -199,7 +198,7 @@ class PlateTypist extends ChangeNotifier {
 
     if (isLetterSlot) {
       if (useLetterPicker) {
-        await _pickLetter(bloc: bloc, context: context, step: keyStep);
+        await _pickLetter(bloc: bloc, context: context, spec: spec, step: keyStep);
         if (_cancelled) return false;
         return _sleep(keyStep.holdAfter ?? gap);
       }
@@ -247,15 +246,18 @@ class PlateTypist extends ChangeNotifier {
     return _sleep(keyStep.holdAfter ?? (keyStep.pauseAfter ? gap : burstGap));
   }
 
-  /// Opens the letter-picker sheet and scrolls it to the fifth entry
-  /// (`PlateAlphabet.persianPlateLetters.characters[4] == 'ص'`) before committing the value.
+  /// Opens [PlateCharacterPicker] and scrolls it to [step]'s character
+  /// before committing the value.
   Future<void> _pickLetter({
     required PlateCardBloc bloc,
     required BuildContext context,
+    required PlateSpec spec,
     required KeyStep step,
   }) async {
     if (!context.mounted) return;
 
+    final alphabet = spec.slotAt(step.index)!.alphabet;
+    final target = alphabet.characters.indexOf(step.char);
     final scroll = FixedExtentScrollController(initialItem: 0);
     final navigator = Navigator.of(context);
     var sheetOpen = false;
@@ -263,25 +265,7 @@ class PlateTypist extends ChangeNotifier {
     try {
       // Fire-and-forget: the sheet stays up until we pop it below.
       unawaited(
-        showModalBottomSheet<void>(
-          context: context,
-          builder: (_) => SafeArea(
-            child: SizedBox(
-              height: 216,
-              child: CupertinoPicker(
-                scrollController: scroll,
-                itemExtent: 44,
-                onSelectedItemChanged: (_) {},
-                children: [
-                  for (final letter in PlateAlphabet.persianPlateLetters.characters)
-                    Center(
-                      child: Text(letter, style: const TextStyle(fontSize: 22)),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ),
+        PlateCharacterPicker.show(context, alphabet, scrollController: scroll),
       );
       sheetOpen = true;
 
@@ -289,7 +273,7 @@ class PlateTypist extends ChangeNotifier {
       if (!await _sleep(const Duration(milliseconds: 220))) return;
       if (scroll.hasClients) {
         await scroll.animateToItem(
-          4,
+          target,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
