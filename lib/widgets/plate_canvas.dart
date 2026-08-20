@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../model/plate_number.dart';
@@ -11,6 +10,7 @@ import '../theme/plate_theme.dart';
 import 'plate_slot_item.dart';
 import 'plate_frame.dart';
 import 'country_panel.dart';
+import 'plate_character_picker.dart';
 import '../input/plate_input_controller.dart';
 
 class PlateCanvas extends StatefulWidget {
@@ -142,10 +142,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     final bloc = context.read<PlateCardBloc>();
     final chosen = widget.onChooseCharacter != null
         ? await widget.onChooseCharacter!(slot.alphabet)
-        : await showModalBottomSheet<String>(
-            context: context,
-            builder: (_) => _CharacterPickerSheet(alphabet: slot.alphabet),
-          );
+        : await PlateCharacterPicker.show(context, slot.alphabet);
     if (chosen == null) return;
     bloc.add(ValueIsChanged(index: slot.index, value: chosen));
     if (slot.next != null) _focusNodes[slot.next!]?.requestFocus();
@@ -386,44 +383,4 @@ class _PlateFaceClipper extends CustomClipper<RRect> {
   @override
   bool shouldReclip(_PlateFaceClipper old) =>
       old.border != border || old.radius != radius;
-}
-
-class _CharacterPickerSheet extends StatefulWidget {
-  const _CharacterPickerSheet({required this.alphabet});
-
-  final PlateAlphabet alphabet;
-
-  @override
-  State<_CharacterPickerSheet> createState() => _CharacterPickerSheetState();
-}
-
-class _CharacterPickerSheetState extends State<_CharacterPickerSheet> {
-  int _index = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            height: 180,
-            child: CupertinoPicker(
-              itemExtent: 44,
-              onSelectedItemChanged: (i) => _index = i,
-              children: [
-                for (final c in widget.alphabet.characters)
-                  Center(child: Text(widget.alphabet.render(c), style: const TextStyle(fontSize: 22))),
-              ],
-            ),
-          ),
-          TextButton(
-            onPressed: () =>
-                Navigator.of(context).pop(widget.alphabet.characters[_index]),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 }
