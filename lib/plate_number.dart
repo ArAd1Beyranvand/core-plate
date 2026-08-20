@@ -12,6 +12,7 @@ export 'widgets/country_panel.dart';
 export 'widgets/plate_flag.dart';
 export 'widgets/plate_canvas.dart';
 export 'widgets/plate_character_picker.dart';
+export 'widgets/plate_keypad.dart';
 export 'widgets/plate_slot_item.dart';
 export 'validators/german_plate_validator.dart';
 export 'input/plate_input_controller.dart';
