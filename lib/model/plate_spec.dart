@@ -80,9 +80,14 @@ class PlateLabel {
 /// rendered characters (e.g. 'IR ' before the province code).
 @immutable
 class PlateTextGroup {
-  const PlateTextGroup(this.indices, {this.prefix = ''});
+  const PlateTextGroup(this.indices, {this.prefix = '', this.key});
   final List<int> indices;
   final String prefix;
+
+  /// Optional semantic identifier (e.g. 'district', 'letters', 'serial'),
+  /// used by spec-aware validators to pull a group's value by name instead
+  /// of by position. Null for groups with no validator meaning.
+  final String? key;
 }
 
 /// A complete plate design. Adding a plate — including for a new country — means
@@ -154,6 +159,20 @@ class PlateSpec {
   PlateSlot? slotAt(int index) {
     for (final s in slots) { if (s.index == index) return s; }
     return null;
+  }
+
+  /// Concatenates [values] at the indices of the text group with the given
+  /// [key], unset slots rendering as ''. Returns '' if no group has that key.
+  String valueOfGroup(String key, List<String?> values) {
+    for (final g in textGroups) {
+      if (g.key != key) continue;
+      final buffer = StringBuffer();
+      for (final i in g.indices) {
+        buffer.write(i < values.length ? (values[i] ?? '') : '');
+      }
+      return buffer.toString();
+    }
+    return '';
   }
 
   @override
@@ -296,9 +315,9 @@ class PlateSpecs {
       ),
     ],
     textGroups: [
-      PlateTextGroup([0, 1]),
-      PlateTextGroup([2]),
-      PlateTextGroup([3, 4, 5, 6]),
+      PlateTextGroup([0, 1], key: 'district'),
+      PlateTextGroup([2], key: 'letters'),
+      PlateTextGroup([3, 4, 5, 6], key: 'serial'),
     ],
   );
 }

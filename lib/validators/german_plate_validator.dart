@@ -10,6 +10,8 @@
 /// official registration guarantee.
 library;
 
+import '../model/plate_spec.dart';
+
 /// Nationwide-forbidden letter pairs (Nazi-organisation abbreviations) plus
 /// widely-documented state-level additions and generically-offensive pairs.
 const Set<String> _forbiddenLetterPairs = {
@@ -49,6 +51,25 @@ class GermanPlateValidator {
   static final RegExp _districtPattern = RegExp(r'^[A-ZÄÖÜ]{1,3}$');
   static final RegExp _identifierLetterPattern = RegExp(r'^[A-Z]{1,2}$');
   static final RegExp _identifierDigitPattern = RegExp(r'^[0-9]{1,4}$');
+
+  /// Reads the district/letters/serial groups off [spec] by key and
+  /// validates them. Returns [GermanPlateValidationResult.valid] while the
+  /// 'letters' group is still blank, mirroring the showcase's rule that an
+  /// in-progress plate shouldn't be flagged before it's filled in — hosts
+  /// need no pre-check before calling this.
+  static GermanPlateValidationResult validateValues(
+    PlateSpec spec,
+    List<String?> values,
+  ) {
+    final letters = spec.valueOfGroup('letters', values);
+    if (letters.isEmpty) return GermanPlateValidationResult.valid;
+
+    return validate(
+      district: spec.valueOfGroup('district', values),
+      identifierLetters: letters,
+      identifierDigits: spec.valueOfGroup('serial', values),
+    );
+  }
 
   static GermanPlateValidationResult validate({
     required String district,
