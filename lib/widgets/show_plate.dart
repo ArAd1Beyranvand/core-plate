@@ -53,71 +53,31 @@ class PlateText extends StatelessWidget {
                 style: TextStyle(fontSize: 18),
               );
         }
-        if (state.spec.id == PlateSpecs.irCar.id) {
-          return IrCarText(
-            values: state.plateNumber.values,
-            textStyle: textStyle,
-          );
-        }
-        if (state.spec.id == PlateSpecs.irBicycle.id) {
-          return IrBicycleText(
-            values: state.plateNumber.values,
-            textStyle: textStyle,
-          );
-        }
-        return const Placeholder();
-      },
-    );
-  }
-}
-
-class IrCarText extends StatelessWidget {
-  const IrCarText({super.key, required this.values, this.textStyle});
-
-  final List values;
-  final TextStyle? textStyle;
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: textStyle ?? const TextStyle(color: Colors.black),
-      child: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            if (values[7] != null || values[6] != null)
-              Text('IR ${values[6] ?? ""}${values[7] ?? ""}'),
-            Text('${values[3] ?? ""}${values[4] ?? ""}${values[5] ?? ""}'),
-            Text(values[2] ?? ""),
-            Text('${values[0] ?? ""}${values[1] ?? ""}', style: textStyle),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class IrBicycleText extends StatelessWidget {
-  const IrBicycleText({super.key, this.textStyle, required this.values});
-
-  final TextStyle? textStyle;
-  final List values;
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: textStyle ?? const TextStyle(color: Colors.black),
-      child: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List<Text>.generate(
-            8,
-            (index) => Text(values[7 - index] ?? ""),
+        final spec = state.spec;
+        final values = state.plateNumber.values;
+        final groups = spec.textGroups.isEmpty
+            ? [for (final s in spec.slots) PlateTextGroup([s.index])]
+            : spec.textGroups;
+        return DefaultTextStyle(
+          style: textStyle ?? const TextStyle(color: Colors.black),
+          child: Directionality(
+            textDirection: spec.textDirection,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                for (final g in groups)
+                  if (g.indices.any((i) => (values[i] ?? '').isNotEmpty))
+                    Text(g.prefix +
+                        g.indices
+                            .map((i) =>
+                                spec.slotAt(i)?.alphabet.render(values[i] ?? '') ??
+                                '')
+                            .join()),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
