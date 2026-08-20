@@ -248,7 +248,7 @@ class PlateTypist extends ChangeNotifier {
   }
 
   /// Opens the letter-picker sheet and scrolls it to the fifth entry
-  /// (`persianCarPlateLetters[4] == 'ص'`) before committing the value.
+  /// (`PlateAlphabet.persianPlateLetters.characters[4] == 'ص'`) before committing the value.
   Future<void> _pickLetter({
     required PlateCardBloc bloc,
     required BuildContext context,
@@ -273,7 +273,7 @@ class PlateTypist extends ChangeNotifier {
                 itemExtent: 44,
                 onSelectedItemChanged: (_) {},
                 children: [
-                  for (final letter in persianCarPlateLetters)
+                  for (final letter in PlateAlphabet.persianPlateLetters.characters)
                     Center(
                       child: Text(letter, style: const TextStyle(fontSize: 22)),
                     ),
