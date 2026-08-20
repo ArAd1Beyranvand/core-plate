@@ -18,6 +18,7 @@ class PlateDisplay extends StatelessWidget {
     this.onActiveSlotChanged,
     this.controller,
     this.showBackdrop = false,
+    this.plateWidthFactor = 0.62,
   });
 
   final PlateSpec spec;
@@ -56,9 +57,24 @@ class PlateDisplay extends StatelessWidget {
   /// default, so existing call sites keep today's plain-glass look.
   final bool showBackdrop;
 
+  /// Fraction of the available width the plate itself occupies. The plate's
+  /// own FittedBox would otherwise fill the whole glass.
+  final double plateWidthFactor;
+
   @override
   Widget build(BuildContext context) {
-    final child = Builder(builder: _buildContent);
+    final child = _PlateDisplayBody(
+      mode: mode,
+      spec: spec,
+      keyboard: keyboard,
+      showBackdrop: showBackdrop,
+      plateWidthFactor: plateWidthFactor,
+      activeColor: activeColor,
+      inactiveColor: inactiveColor,
+      letterInputMode: letterInputMode,
+      onActiveSlotChanged: onActiveSlotChanged,
+      controller: controller,
+    );
     if (bloc != null) {
       return BlocProvider.value(value: bloc!, child: child);
     }
@@ -67,9 +83,46 @@ class PlateDisplay extends StatelessWidget {
       child: child,
     );
   }
+}
 
-  Widget _buildContent(BuildContext context) {
+class _PlateDisplayBody extends StatelessWidget {
+  const _PlateDisplayBody({
+    required this.mode,
+    required this.spec,
+    required this.keyboard,
+    required this.showBackdrop,
+    required this.plateWidthFactor,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.letterInputMode,
+    required this.onActiveSlotChanged,
+    required this.controller,
+  });
+
+  final PlateMode mode;
+  final PlateSpec spec;
+  final Widget? keyboard;
+  final bool showBackdrop;
+  final double plateWidthFactor;
+  final Color? activeColor;
+  final Color? inactiveColor;
+  final LetterInputMode? letterInputMode;
+  final ValueChanged<PlateSlot?>? onActiveSlotChanged;
+  final PlateInputController? controller;
+
+  @override
+  Widget build(BuildContext context) {
     final bloc = context.read<PlateCardBloc>();
+
+    final inputSurface = _PlateInputSurface(
+      spec: spec,
+      plateWidthFactor: plateWidthFactor,
+      activeColor: activeColor,
+      inactiveColor: inactiveColor,
+      letterInputMode: letterInputMode,
+      onActiveSlotChanged: onActiveSlotChanged,
+      controller: controller,
+    );
 
     Widget body;
     if (mode == PlateMode.display) {
@@ -78,7 +131,7 @@ class PlateDisplay extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(child: Center(child: _buildInputWidget())),
+            Expanded(child: Center(child: inputSurface)),
             const SizedBox(height: 16),
             const ShowPlate(),
             const SizedBox(height: 8),
@@ -91,12 +144,11 @@ class PlateDisplay extends StatelessWidget {
         ),
       );
     } else {
-      final content = _buildInputWidget();
       body = keyboard == null
-          ? content
+          ? inputSurface
           : Column(
               children: [
-                Expanded(child: content),
+                Expanded(child: inputSurface),
                 keyboard!,
               ],
             );
@@ -108,10 +160,31 @@ class PlateDisplay extends StatelessWidget {
       children: [const Positioned.fill(child: PlateBackdrop()), body],
     );
   }
+}
 
-  /// Wraps the plate in a [PlateThemeScope] that overrides ONLY the input-field
-  /// underline colours; every other plate token stays standard.
-  Widget _buildInputWidget() {
+/// Wraps the plate in a [PlateThemeScope] that overrides ONLY the input-field
+/// underline colours; every other plate token stays standard.
+class _PlateInputSurface extends StatelessWidget {
+  const _PlateInputSurface({
+    required this.spec,
+    required this.plateWidthFactor,
+    required this.activeColor,
+    required this.inactiveColor,
+    required this.letterInputMode,
+    required this.onActiveSlotChanged,
+    required this.controller,
+  });
+
+  final PlateSpec spec;
+  final double plateWidthFactor;
+  final Color? activeColor;
+  final Color? inactiveColor;
+  final LetterInputMode? letterInputMode;
+  final ValueChanged<PlateSlot?>? onActiveSlotChanged;
+  final PlateInputController? controller;
+
+  @override
+  Widget build(BuildContext context) {
     final base = PlateTheme.standard();
     final theme = base.copyWith(
       activeColor: activeColor ?? base.activeColor,
@@ -125,6 +198,11 @@ class PlateDisplay extends StatelessWidget {
       controller: controller,
     );
 
-    return PlateThemeScope(theme: theme, child: plate);
+    return Center(
+      child: FractionallySizedBox(
+        widthFactor: plateWidthFactor,
+        child: PlateThemeScope(theme: theme, child: plate),
+      ),
+    );
   }
 }

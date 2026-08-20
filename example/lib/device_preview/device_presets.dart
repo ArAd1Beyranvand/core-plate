@@ -56,15 +56,15 @@ class DevicePresets {
   static const desktop = DeviceConfig(
     type: DeviceType.desktop,
     label: 'Desktop',
-    bodySize: Size(1280, 830),
-    bezel: EdgeInsets.fromLTRB(11, 22, 11, 12),
+    bodySize: Size(1180, 740),
+    bezel: EdgeInsets.fromLTRB(22, 34, 22, 26),
     bodyRadius: 16,
     screenRadius: 8,
     notchSize: Size(180, 22),
     notchRadius: 8,
     cameraEdge: 0.125,
     cameraRadius: 3.5,
-    deck: DeviceDeck(depth: 430, angleDeg: 45, hingeHeight: 9, opacity: 1),
+    deck: DeviceDeck(depth: 360, angleDeg: 45, hingeHeight: 9, opacity: 1),
     shadowBlur: 60,
     shadowOffsetY: 26,
   );

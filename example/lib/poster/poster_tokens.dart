@@ -9,7 +9,7 @@ class PosterTokens {
 
   // --- Background -----------------------------------------------------------
   static const Color bg = Color(0xFF05080B);
-  static const Color bgTop = Color(0xFF070B10);
+  static const Color bgTop = Color(0xFF0A1017);
 
   // --- Accent ---------------------------------------------------------------
   static const Color accent = Color(0xFF6EE7B7);
@@ -23,7 +23,7 @@ class PosterTokens {
   // --- Text & lines ---------------------------------------------------------
   static const Color titleColor = Color(0xFFFFFFFF);
   static const Color bodyColor = Color(0xFF97A3AF);
-  static const Color hairline = Color(0x0FFFFFFF); // white @ 6%
+  static const Color hairline = Color(0x1AFFFFFF); // white @ 10%
 
   // --- Fonts ----------------------------------------------------------------
   /// Platform default serif family.

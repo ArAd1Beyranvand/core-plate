@@ -9,10 +9,10 @@ part 'device_painters.hardware.dart';
 /// Silver ramp used for every metal surface, so lid, deck and buttons read as
 /// one milled aluminium body.
 class _Metal {
-  static const highlight = Color(0xFF33373E);
-  static const light = Color(0xFF23262C);
-  static const mid = Color(0xFF171A1F);
-  static const shade = Color(0xFF20242A);
+  static const highlight = Color(0xFF3E434C);
+  static const light = Color(0xFF2B2F36);
+  static const mid = Color(0xFF1D2026);
+  static const shade = Color(0xFF262A31);
   static const deep = Color(0xFF0A0C0F);
   static const edge = Color(0xFF000000);
   static const glass = Color(0xFF07080A);
