@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../model/plate_alphabet.dart';
+import '../model/plate_input_source.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../theme/plate_theme.dart';
@@ -25,6 +26,7 @@ class PlateSlotItem extends StatelessWidget {
     required this.focusNode,
     required this.onChanged,
     required this.onCompleted,
+    required this.inputSource,
     this.theme,
     this.letterInputMode = LetterInputMode.picker,
     this.onPressed,
@@ -50,6 +52,10 @@ class PlateSlotItem extends StatelessWidget {
   final PlateTheme? theme;
 
   final LetterInputMode letterInputMode;
+
+  /// How characters arrive for this slot. Supersedes [letterInputMode] where
+  /// the two disagree.
+  final PlateInputSource inputSource;
 
   /// Opens the picker; chosen slots in [LetterInputMode.picker] only.
   final VoidCallback? onPressed;
@@ -114,8 +120,12 @@ class PlateSlotItem extends StatelessWidget {
           builder: (context, _) => TextField(
             controller: field,
             focusNode: focusNode,
-            readOnly: letterInputMode == LetterInputMode.hostKeypad,
-            showCursor: letterInputMode == LetterInputMode.hostKeypad
+            readOnly:
+                inputSource == PlateInputSource.packageKeypad ||
+                inputSource == PlateInputSource.host,
+            showCursor:
+                inputSource == PlateInputSource.packageKeypad ||
+                    inputSource == PlateInputSource.host
                 ? focusNode.hasFocus
                 : null,
             textAlign: TextAlign.center,
@@ -150,7 +160,11 @@ class PlateSlotItem extends StatelessWidget {
               }
             },
             maxLength: 1,
-            keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+            keyboardType: inputSource == PlateInputSource.hardwareKeyboard
+                ? TextInputType.none
+                : isNumeric
+                ? TextInputType.number
+                : TextInputType.text,
           ),
         ),
       ),
@@ -192,13 +206,15 @@ class PlateSlotItem extends StatelessWidget {
         ? effectiveTheme.inactiveColor
         : effectiveTheme.activeColor;
 
-    // Both keyboard and hostKeypad make the slot focusable and drive the
-    // underline off focus rather than opening a sheet. Only keyboard mode
-    // consumes key events; hostKeypad receives its letter from the app's
-    // on-screen pad via the bloc, so it just claims focus on tap.
-    if (letterInputMode == LetterInputMode.keyboard ||
-        letterInputMode == LetterInputMode.hostKeypad) {
-      final bool isKeyboard = letterInputMode == LetterInputMode.keyboard;
+    // Both hardwareKeyboard and packageKeypad/host make the slot focusable and
+    // drive the underline off focus rather than opening a sheet. Only
+    // hardwareKeyboard consumes key events; packageKeypad/host receive their
+    // letter from the app's on-screen pad via the bloc, so they just claim
+    // focus on tap.
+    if (inputSource == PlateInputSource.hardwareKeyboard ||
+        inputSource == PlateInputSource.packageKeypad ||
+        inputSource == PlateInputSource.host) {
+      final bool isKeyboard = inputSource == PlateInputSource.hardwareKeyboard;
       return Focus(
         focusNode: focusNode,
         onKeyEvent: isKeyboard

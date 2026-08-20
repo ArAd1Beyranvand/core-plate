@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../model/plate_alphabet.dart';
+import '../model/plate_input_source.dart';
 import '../bloc/plate_card_bloc.dart';
 import '../theme/plate_theme.dart';
 import 'plate_slot_item.dart';
@@ -309,6 +310,11 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                               letterInputMode: widget.mode == PlateMode.input
                                   ? _letterInputMode
                                   : LetterInputMode.picker,
+                              inputSource: widget.mode == PlateMode.input
+                                  ? inputSourceFromLetterMode(
+                                      _letterInputMode,
+                                    )
+                                  : PlateInputSource.system,
                               onChanged: (v) => bloc
                                   .add(ValueIsChanged(index: s.index, value: v)),
                               onCompleted: widget.mode == PlateMode.input
