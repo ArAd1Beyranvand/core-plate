@@ -195,7 +195,7 @@ class PlateTypist extends ChangeNotifier {
     final keyStep = step as KeyStep;
     final slot = spec.slotAt(keyStep.index);
     final isLetterSlot =
-        slot != null && !slot.alphabet.characters.every((c) => c.isDigit());
+        slot != null && !slot.alphabet.isNumeric;
 
     if (isLetterSlot) {
       if (useLetterPicker) {

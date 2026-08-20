@@ -28,6 +28,13 @@ class PlateAlphabet {
   /// The display form of [value]; falls back to [value] itself.
   String render(String value) => glyphs[value] ?? value;
 
+  /// True when every legal character is a single ASCII digit 0-9. Drives the
+  /// numeric keyboard, and lets hosts decide digit-pad vs letters-pad without
+  /// re-deriving it from [characters].
+  bool get isNumeric => characters.every(
+        (c) => c.length == 1 && c.codeUnitAt(0) >= 0x30 && c.codeUnitAt(0) <= 0x39,
+      );
+
   static const PlateAlphabet latinDigits = PlateAlphabet(
     characters: ['0','1','2','3','4','5','6','7','8','9'],
     input: AlphabetInput.typed,

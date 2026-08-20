@@ -5,7 +5,6 @@ import '../model/plate_alphabet.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../theme/plate_theme.dart';
-import '../tools.dart';
 import 'plate_items.dart';
 
 /// One plate position, driven entirely by its [PlateSlot].
@@ -98,7 +97,7 @@ class PlateSlotItem extends StatelessWidget {
         : effectiveTheme.activeColor;
 
     // Digits get the numeric keyboard; any other typed alphabet gets text.
-    final isNumeric = slot.alphabet.characters.every((c) => c.isDigit());
+    final isNumeric = slot.alphabet.isNumeric;
 
     return SizedBox(
       width: slot.width,

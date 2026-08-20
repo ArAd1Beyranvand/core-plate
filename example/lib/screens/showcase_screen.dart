@@ -429,7 +429,7 @@ class _DeviceStageState extends State<_DeviceStage> {
     final activeAlphabet = _activeSlot?.alphabet;
     final showLetters =
         activeAlphabet != null &&
-        !activeAlphabet.characters.every((c) => c.isDigit());
+        !activeAlphabet.isNumeric;
     // Cap the frame: the laptop is 1280x830 body plus a ~430px projected deck,
     // so unconstrained it eats the whole middle column and dwarfs the poster.
     // DeviceFrame fits itself to its constraints, so this only scales it down.
