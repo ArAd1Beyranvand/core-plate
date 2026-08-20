@@ -75,6 +75,16 @@ class PlateLabel {
   final double glyphHeight;
 }
 
+/// One visual group in the plain-text rendering of a plate (e.g. the "886"
+/// digit triple on an Iranian car plate). [prefix] is prepended to the
+/// rendered characters (e.g. 'IR ' before the province code).
+@immutable
+class PlateTextGroup {
+  const PlateTextGroup(this.indices, {this.prefix = ''});
+  final List<int> indices;
+  final String prefix;
+}
+
 /// A complete plate design. Adding a plate — including for a new country — means
 /// adding a const of this type. It must never mean adding a widget.
 @immutable
@@ -97,6 +107,7 @@ class PlateSpec {
     this.flagScale = 1.0,
     this.captionScale = 1.0,
     this.panelPadding,
+    this.textGroups = const <PlateTextGroup>[],
   });
 
   /// Stable identifier, e.g. 'ir.car'. Used for equality and persistence.
@@ -130,6 +141,11 @@ class PlateSpec {
   /// Padding around the flag + caption inside the country panel. Null keeps
   /// the default: a uniform inset of 10% of the panel's height on all sides.
   final EdgeInsets? panelPadding;
+
+  /// Groups of slot indices for the plain-text rendering of the plate, listed
+  /// in [textDirection] reading order. Empty means each slot is its own
+  /// group, in index order.
+  final List<PlateTextGroup> textGroups;
 
   /// How many values this plate stores. Derived, never hard-coded.
   int get slotCount => slots.length;
@@ -192,6 +208,12 @@ class PlateSpecs {
     ],
     labels: [
       PlateLabel(text: 'ایران', left: 412, top: 18, width: 103, height: 16, glyphHeight: 16),
+    ],
+    textGroups: [
+      PlateTextGroup([0, 1]),
+      PlateTextGroup([2]),
+      PlateTextGroup([3, 4, 5]),
+      PlateTextGroup([6, 7], prefix: 'IR '),
     ],
   );
 
@@ -272,6 +294,11 @@ class PlateSpecs {
         image: AssetImage('assets/de_state_seal.png', package: 'plate_number'),
         left: 184, top: 54, width: 38, height: 38,
       ),
+    ],
+    textGroups: [
+      PlateTextGroup([0, 1]),
+      PlateTextGroup([2]),
+      PlateTextGroup([3, 4, 5, 6]),
     ],
   );
 }
