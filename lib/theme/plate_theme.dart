@@ -18,8 +18,6 @@ class PlateTheme {
     required this.dividerColor,
     required this.borderWidthRatio,
     required this.plateRadiusRatio,
-    required this.carAspect,
-    required this.motorcycleAspect,
     required this.activeColor,
     required this.inactiveColor,
   });
@@ -42,12 +40,6 @@ class PlateTheme {
   /// Corner radius, as a fraction of plate height.
   final double plateRadiusRatio;
 
-  /// Aspect ratio (width / height) of a car plate: 520 / 110.
-  final double carAspect;
-
-  /// Aspect ratio (width / height) of a motorcycle plate: 175 / 110.
-  final double motorcycleAspect;
-
   /// Outline colour for a completed input field. Input-mode only — never used
   /// for plate chrome.
   final Color activeColor;
@@ -64,8 +56,6 @@ class PlateTheme {
       dividerColor: Color(0xFF000000),
       borderWidthRatio: 0.04,
       plateRadiusRatio: 0.12,
-      carAspect: 520 / 110,
-      motorcycleAspect: 175 / 110,
       activeColor: Color(0xFF0A0A0A),
       inactiveColor: Color(0x66666666),
     );
@@ -78,8 +68,6 @@ class PlateTheme {
     Color? dividerColor,
     double? borderWidthRatio,
     double? plateRadiusRatio,
-    double? carAspect,
-    double? motorcycleAspect,
     Color? activeColor,
     Color? inactiveColor,
   }) {
@@ -90,8 +78,6 @@ class PlateTheme {
       dividerColor: dividerColor ?? this.dividerColor,
       borderWidthRatio: borderWidthRatio ?? this.borderWidthRatio,
       plateRadiusRatio: plateRadiusRatio ?? this.plateRadiusRatio,
-      carAspect: carAspect ?? this.carAspect,
-      motorcycleAspect: motorcycleAspect ?? this.motorcycleAspect,
       activeColor: activeColor ?? this.activeColor,
       inactiveColor: inactiveColor ?? this.inactiveColor,
     );
@@ -114,8 +100,6 @@ class PlateTheme {
         other.dividerColor == dividerColor &&
         other.borderWidthRatio == borderWidthRatio &&
         other.plateRadiusRatio == plateRadiusRatio &&
-        other.carAspect == carAspect &&
-        other.motorcycleAspect == motorcycleAspect &&
         other.activeColor == activeColor &&
         other.inactiveColor == inactiveColor;
   }
@@ -128,8 +112,6 @@ class PlateTheme {
         dividerColor,
         borderWidthRatio,
         plateRadiusRatio,
-        carAspect,
-        motorcycleAspect,
         activeColor,
         inactiveColor,
       ]);
