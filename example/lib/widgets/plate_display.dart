@@ -13,7 +13,8 @@ class PlateDisplay extends StatelessWidget {
     this.inactiveColor,
     this.keyboard,
     this.bloc,
-    this.letterInputMode,
+    @Deprecated('Use inputSource') this.letterInputMode,
+    this.inputSource,
     this.onActiveSlotChanged,
     this.controller,
     this.showBackdrop = false,
@@ -30,7 +31,14 @@ class PlateDisplay extends StatelessWidget {
   /// How the car plate letter is entered. Null lets the plate resolve the
   /// platform default; pass [LetterInputMode.hostKeypad] when an app-supplied
   /// pad (e.g. the laptop deck's letter keys) feeds the letter in.
+  @Deprecated('Use inputSource')
   final LetterInputMode? letterInputMode;
+
+  /// How characters get into the plate. Null lets the plate resolve the
+  /// platform default; pass [PlateInputSource.host] when an app-supplied pad
+  /// (e.g. the laptop deck's letter keys or the tablet's [PlateKeypad]) feeds
+  /// characters in. Forwarded straight to [PlateCanvas].
+  final PlateInputSource? inputSource;
 
   /// Fires when the focused plate slot changes, reporting the active slot —
   /// including its alphabet, not just its position — or null when focus leaves
@@ -71,6 +79,7 @@ class PlateDisplay extends StatelessWidget {
       activeColor: activeColor,
       inactiveColor: inactiveColor,
       letterInputMode: letterInputMode,
+      inputSource: inputSource,
       onActiveSlotChanged: onActiveSlotChanged,
       controller: controller,
     );
@@ -94,6 +103,7 @@ class _PlateDisplayBody extends StatelessWidget {
     required this.activeColor,
     required this.inactiveColor,
     required this.letterInputMode,
+    required this.inputSource,
     required this.onActiveSlotChanged,
     required this.controller,
   });
@@ -106,6 +116,7 @@ class _PlateDisplayBody extends StatelessWidget {
   final Color? activeColor;
   final Color? inactiveColor;
   final LetterInputMode? letterInputMode;
+  final PlateInputSource? inputSource;
   final ValueChanged<PlateSlot?>? onActiveSlotChanged;
   final PlateInputController? controller;
 
@@ -119,6 +130,7 @@ class _PlateDisplayBody extends StatelessWidget {
       activeColor: activeColor,
       inactiveColor: inactiveColor,
       letterInputMode: letterInputMode,
+      inputSource: inputSource,
       onActiveSlotChanged: onActiveSlotChanged,
       controller: controller,
     );
@@ -170,6 +182,7 @@ class _PlateInputSurface extends StatelessWidget {
     required this.activeColor,
     required this.inactiveColor,
     required this.letterInputMode,
+    required this.inputSource,
     required this.onActiveSlotChanged,
     required this.controller,
   });
@@ -179,6 +192,7 @@ class _PlateInputSurface extends StatelessWidget {
   final Color? activeColor;
   final Color? inactiveColor;
   final LetterInputMode? letterInputMode;
+  final PlateInputSource? inputSource;
   final ValueChanged<PlateSlot?>? onActiveSlotChanged;
   final PlateInputController? controller;
 
@@ -193,6 +207,7 @@ class _PlateInputSurface extends StatelessWidget {
     final plate = PlateCanvas(
       spec: spec,
       letterInputMode: letterInputMode,
+      inputSource: inputSource,
       onActiveSlotChanged: onActiveSlotChanged,
       controller: controller,
     );

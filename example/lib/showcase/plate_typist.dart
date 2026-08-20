@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:plate_number/plate_number.dart';
 
-import 'virtual_keypad.dart' show kBackspaceKey, kLetterPadSlide;
 
 /// One step in a typing script: either a keystroke into a slot, or a
 /// backspace. `pauseAfter: true` marks a natural break (a burst just
@@ -175,7 +174,7 @@ class PlateTypist extends ChangeNotifier {
     required _LetterPadState padState,
   }) async {
     if (step is BackspaceStep) {
-      activeKey = kBackspaceKey;
+      activeKey = kPlateBackspaceKey;
       _notify();
       if (!await _sleep(flash)) return false;
 
@@ -209,7 +208,7 @@ class PlateTypist extends ChangeNotifier {
           padState.shown = keyStep.index;
           if (!padAlreadyUp) {
             if (!await _sleep(
-              kLetterPadSlide + const Duration(milliseconds: 80),
+              kPlateKeypadSlide + const Duration(milliseconds: 80),
             )) {
               return false;
             }
@@ -227,7 +226,7 @@ class PlateTypist extends ChangeNotifier {
     } else if (onSlotChanged != null && padState.shown != null) {
       onSlotChanged(null);
       padState.shown = null;
-      if (!await _sleep(kLetterPadSlide + const Duration(milliseconds: 80))) {
+      if (!await _sleep(kPlateKeypadSlide + const Duration(milliseconds: 80))) {
         return false;
       }
     }

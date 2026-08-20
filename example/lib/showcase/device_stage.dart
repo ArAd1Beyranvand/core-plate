@@ -9,7 +9,6 @@ import '../device_preview/device_transition.dart';
 import '../poster/poster_tokens.dart';
 import '../showcase/device_cycle.dart';
 import '../showcase/plate_typist.dart';
-import '../showcase/virtual_keypad.dart';
 import '../widgets/plate_display.dart';
 
 class DeviceStage extends StatefulWidget {
@@ -54,7 +53,7 @@ class _DeviceStageState extends State<DeviceStage> {
   /// and it keeps working for any plate of any country.
   void _onDeckKey(String label) {
     if (_typist.isRunning) return; // never fight the auto-typist
-    if (label == 'BACKSPACE') {
+    if (label == kPlateBackspaceKey) {
       _plateInput.backspace();
       return;
     }
@@ -272,10 +271,10 @@ class _DeviceStageState extends State<DeviceStage> {
             // The laptop deck already carries letter keys, so its letter comes in
             // through the library's on-screen-keypad mode instead of the modal
             // picker. Other devices keep their platform default.
-            letterInputMode:
+            inputSource:
                 contentDevice == DeviceType.desktop ||
                     contentDevice == DeviceType.tablet
-                ? LetterInputMode.hostKeypad
+                ? PlateInputSource.host
                 : null,
             onActiveSlotChanged: contentDevice == DeviceType.tablet
                 ? _setActiveSlot
@@ -294,7 +293,7 @@ class _DeviceStageState extends State<DeviceStage> {
             keyboard: contentDevice == DeviceType.desktop
                 ? null
                 : contentDevice == DeviceType.tablet
-                ? VirtualKeypad(
+                ? PlateKeypad(
                     highlightedKey: _typist.activeKey,
                     compact: false,
                     showLetters: showLetters,
@@ -308,11 +307,15 @@ class _DeviceStageState extends State<DeviceStage> {
                     // nothing to grey out yet. See the doc comment on
                     // _germanValidation.
                     unavailableKeys: const {},
-                    onKey: (key) => key == kBackspaceKey
+                    theme: const PlateKeypadTheme(
+                      highlight: PosterTokens.accent,
+                      keyBorder: PosterTokens.hairline,
+                    ),
+                    onKey: (key) => key == kPlateBackspaceKey
                         ? _plateInput.backspace()
                         : _plateInput.submit(key),
                   )
-                : VirtualKeypad(
+                : PlateKeypad(
                     highlightedKey: _typist.activeKey,
                     compact: contentDevice == DeviceType.mobile,
                   ),
