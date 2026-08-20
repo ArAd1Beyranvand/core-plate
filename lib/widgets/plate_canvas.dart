@@ -7,7 +7,6 @@ import '../model/plate_spec.dart';
 import '../model/plate_alphabet.dart';
 import '../bloc/plate_card_bloc.dart';
 import '../theme/plate_theme.dart';
-import '../tools.dart';
 import 'plate_slot_item.dart';
 import 'plate_items.dart';
 import 'plate_frame.dart';

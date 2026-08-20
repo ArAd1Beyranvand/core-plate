@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/plate_card_bloc.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
-import '../tools.dart';
 import 'plate_canvas.dart';
 
 /// Read-only plate view. Renders the real graphical plate (pixel-identical to

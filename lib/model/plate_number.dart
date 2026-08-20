@@ -10,6 +10,10 @@ class PlateNumber {
       values: values ?? this.values,
     );
   }
+
+  bool isCompleted() => !values.any((e) => e == null || e == '');
+
+  bool isEmpty() => !values.any((e) => e != null);
 }
 
 /// How the plate letter is entered: a modal [picker] on touch platforms,
