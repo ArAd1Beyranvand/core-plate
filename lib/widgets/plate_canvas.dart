@@ -8,7 +8,6 @@ import '../model/plate_alphabet.dart';
 import '../bloc/plate_card_bloc.dart';
 import '../theme/plate_theme.dart';
 import 'plate_slot_item.dart';
-import 'plate_items.dart';
 import 'plate_frame.dart';
 import 'country_panel.dart';
 import '../input/plate_input_controller.dart';
@@ -282,7 +281,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                           child: Text(
                             l.text,
                             textAlign: TextAlign.center,
-                            style: PlateDigit.styleFor(l.glyphHeight, theme.ink),
+                            style: theme.glyphStyle(l.glyphHeight, theme.ink),
                           ),
                         ),
                       for (final d in spec.decals)

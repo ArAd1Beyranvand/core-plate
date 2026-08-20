@@ -5,7 +5,6 @@ import '../model/plate_alphabet.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../theme/plate_theme.dart';
-import 'plate_items.dart';
 
 /// One plate position, driven entirely by its [PlateSlot].
 ///
@@ -70,7 +69,7 @@ class PlateSlotItem extends StatelessWidget {
                 child: Text(
                   slot.alphabet.render(v),
                   textAlign: TextAlign.center,
-                  style: PlateDigit.styleFor(slot.height, effectiveTheme.ink),
+                  style: effectiveTheme.glyphStyle(slot.height, effectiveTheme.ink),
                 ),
               ),
       );
@@ -120,7 +119,7 @@ class PlateSlotItem extends StatelessWidget {
                 ? focusNode.hasFocus
                 : null,
             textAlign: TextAlign.center,
-            style: PlateDigit.styleFor(slot.height, effectiveTheme.ink),
+            style: effectiveTheme.glyphStyle(slot.height, effectiveTheme.ink),
             cursorColor: effectiveTheme.activeColor,
             decoration: InputDecoration(
               isDense: true,
@@ -167,7 +166,7 @@ class PlateSlotItem extends StatelessWidget {
         ? Text(
             '؟',
             textAlign: TextAlign.center,
-            style: PlateDigit.styleFor(
+            style: effectiveTheme.glyphStyle(
               slot.height,
               effectiveTheme.inactiveColor,
             ),
@@ -175,7 +174,7 @@ class PlateSlotItem extends StatelessWidget {
         : Text(
             slot.alphabet.render(value!),
             textAlign: TextAlign.center,
-            style: PlateDigit.styleFor(slot.height, effectiveTheme.ink),
+            style: effectiveTheme.glyphStyle(slot.height, effectiveTheme.ink),
           );
 
     Widget slotBox(Color underlineColor) => SizedBox(

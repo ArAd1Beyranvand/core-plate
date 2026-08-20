@@ -7,7 +7,6 @@ export 'model/plate_spec.dart';
 export 'bloc/plate_card_bloc.dart';
 export 'theme/plate_theme.dart';
 export 'widgets/show_plate.dart';
-export 'widgets/plate_items.dart';
 export 'widgets/country_panel.dart';
 export 'widgets/plate_flag.dart';
 export 'widgets/plate_canvas.dart';

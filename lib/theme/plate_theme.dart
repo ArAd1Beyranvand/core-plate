@@ -83,6 +83,14 @@ class PlateTheme {
     );
   }
 
+  /// Text style for plate glyphs (digits/letters) at a given slot height.
+  TextStyle glyphStyle(double slotHeight, Color color) => TextStyle(
+        color: color,
+        fontWeight: FontWeight.w700,
+        fontSize: slotHeight * 0.72,
+        height: 1.0,
+      );
+
   /// The nearest enclosing [PlateTheme], or [PlateTheme.standard] if none.
   static PlateTheme of(BuildContext context) {
     final scope =
