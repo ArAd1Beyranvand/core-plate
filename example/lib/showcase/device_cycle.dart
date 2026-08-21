@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:plate_number/model/plate_spec.dart';
 
 import '../device_preview/device_config.dart';
+import 'demo_config.dart';
 
 /// Drives a [DeviceCycle] forward one device at a time.
 ///
@@ -15,11 +16,7 @@ class DeviceCycleController extends ChangeNotifier {
 /// The [PlateSpec] a given [device] should show: mobile demos the Iranian
 /// bicycle plate, the tablet demos the German car plate, and the laptop demos
 /// the Iranian car plate.
-PlateSpec specFor(DeviceType device) => switch (device) {
-      DeviceType.mobile => PlateSpecs.irBicycle,
-      DeviceType.tablet => PlateSpecs.deCar,
-      DeviceType.desktop => PlateSpecs.irCar,
-    };
+PlateSpec specFor(DeviceType device) => demoConfigs[device]!.spec;
 
 /// Cycles through a sequence of [DeviceType]s on demand, rebuilding [builder]
 /// each time the active device changes.

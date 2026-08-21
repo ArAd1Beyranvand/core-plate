@@ -7,6 +7,7 @@ import '../device_preview/device_config.dart';
 import '../device_preview/device_frame.dart';
 import '../device_preview/device_transition.dart';
 import '../poster/poster_tokens.dart';
+import '../showcase/demo_config.dart';
 import '../showcase/device_cycle.dart';
 import '../showcase/plate_typist.dart';
 import '../widgets/plate_display.dart';
@@ -211,20 +212,17 @@ class _DeviceStageState extends State<DeviceStage> {
     if (!mounted || gen != _generation) return;
 
     final device = _contentDevice;
+    final config = demoConfigs[device]!;
     await _typist.run(
       bloc: _bloc,
-      spec: specFor(device),
+      spec: config.spec,
       controller: _plateInput,
-      steps: switch (device) {
-        DeviceType.mobile => bicycleScript,
-        DeviceType.tablet => germanCarScript,
-        DeviceType.desktop => carScript,
-      },
+      steps: config.script,
       useLetterPicker: false,
       // The typist (out of scope here) still reports a bare index; resolve it to
       // the matching PlateSlot so _setActiveSlot sees the same type the canvas
       // callback now delivers.
-      onSlotChanged: device == DeviceType.tablet
+      onSlotChanged: config.showsValidation
           ? (i) => _setActiveSlot(
               i == null ? null : specFor(_contentDevice).slotAt(i),
             )
@@ -269,6 +267,7 @@ class _DeviceStageState extends State<DeviceStage> {
     // [_contentDevice] until the swap, so the outgoing plate keeps rendering
     // through its fade-out instead of being replaced the instant the hop fires.
     final contentDevice = _contentDevice;
+    final config = demoConfigs[contentDevice]!;
     // The active slot's alphabet, not its position, decides whether the
     // tablet's letters pad shows: a digit-only alphabet keeps the digit grid,
     // anything else slides the letters layer in.
@@ -288,14 +287,14 @@ class _DeviceStageState extends State<DeviceStage> {
           onContentSwap: _onContentSwap,
           deckPressedKey: _typist.activeKey,
           onDeckKey: _onDeckKey,
-          builder: (context, config) => PlateDisplay(
-            spec: specFor(contentDevice),
+          builder: (context, _) => PlateDisplay(
+            spec: config.spec,
             mode: PlateMode.input,
             // activeColor is the completed-field underline colour; swap it to red
             // for the tablet's German plate when the typed value is invalid (e.g. a
             // forbidden letter combination). Other devices keep the accent.
             activeColor:
-                contentDevice == DeviceType.tablet &&
+                config.showsValidation &&
                     _germanValidation?.isValid == false
                 ? PosterTokens.invalid
                 : PosterTokens.accent,
@@ -303,28 +302,16 @@ class _DeviceStageState extends State<DeviceStage> {
             // The laptop deck already carries letter keys, so its letter comes in
             // through the library's on-screen-keypad mode instead of the modal
             // picker. Other devices keep their platform default.
-            inputSource:
-                contentDevice == DeviceType.desktop ||
-                    contentDevice == DeviceType.tablet
-                ? PlateInputSource.host
-                : null,
-            onActiveSlotChanged: contentDevice == DeviceType.tablet
+            inputSource: config.inputSource,
+            onActiveSlotChanged: config.showsValidation
                 ? _setActiveSlot
                 : null,
-            controller:
-                contentDevice == DeviceType.tablet ||
-                    contentDevice == DeviceType.desktop
-                ? _plateInput
-                : null,
+            controller: config.usesController ? _plateInput : null,
             showBackdrop: true,
-            plateWidthFactor: switch (contentDevice) {
-              DeviceType.desktop => 0.55,
-              DeviceType.tablet => 0.62,
-              DeviceType.mobile => 0.86,
-            },
-            keyboard: contentDevice == DeviceType.desktop
+            plateWidthFactor: config.plateWidthFactor,
+            keyboard: !config.showsKeypad
                 ? null
-                : contentDevice == DeviceType.tablet
+                : !config.compactKeypad
                 ? PlateKeypad(
                     highlightedKey: _typist.activeKey,
                     compact: false,
@@ -347,7 +334,7 @@ class _DeviceStageState extends State<DeviceStage> {
                   )
                 : PlateKeypad(
                     highlightedKey: _typist.activeKey,
-                    compact: contentDevice == DeviceType.mobile,
+                    compact: config.compactKeypad,
                   ),
           ),
         ),
