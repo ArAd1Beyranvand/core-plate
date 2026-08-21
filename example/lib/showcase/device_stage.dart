@@ -87,6 +87,45 @@ class _DeviceStageState extends State<DeviceStage> {
     setState(() => _activeSlot = slot);
   }
 
+  /// Barred keys for the tablet's keypad, derived from the active slot's
+  /// group and the values already typed before it. Empty when the active
+  /// slot isn't in a barred group (or there is none).
+  Set<String> _unavailableKeysFor(PlateCardState state) {
+    final slot = _activeSlot;
+    if (slot == null) return const {};
+    final spec = specFor(DeviceType.tablet);
+    final values = state.plateNumber.values;
+    PlateTextGroup? groupContaining(String key) {
+      for (final g in spec.textGroups) {
+        if (g.key == key && g.indices.contains(slot.index)) return g;
+      }
+      return null;
+    }
+
+    String valueBeforeActive(PlateTextGroup group) {
+      final buffer = StringBuffer();
+      for (final i in group.indices) {
+        if (i >= slot.index) continue;
+        buffer.write(i < values.length ? (values[i] ?? '') : '');
+      }
+      return buffer.toString();
+    }
+
+    final serialGroup = groupContaining('serial');
+    if (serialGroup != null) {
+      return GermanPlateValidator.barredNextDigits(
+        valueBeforeActive(serialGroup),
+      );
+    }
+    final lettersGroup = groupContaining('letters');
+    if (lettersGroup != null) {
+      return GermanPlateValidator.barredNextLetters(
+        valueBeforeActive(lettersGroup),
+      );
+    }
+    return const {};
+  }
+
   /// Subscribes [_validateGermanPlate] to the current [_bloc], dropping any
   /// subscription to a previous (now-closed) bloc first.
   void _listenToBloc() {
@@ -293,13 +332,11 @@ class _DeviceStageState extends State<DeviceStage> {
                     digitAlphabet: PlateAlphabet.latinDigits,
                     letterAlphabet: PlateAlphabet.latinUppercase,
                     activeAlphabet: activeAlphabet,
-                    // GermanPlateValidator only exposes a whole-plate
-                    // validate() (district + letters + digits in, one
-                    // isValid/reason out) — no per-character ban set to
-                    // derive individual barred keys from, so there is
-                    // nothing to grey out yet. See the doc comment on
-                    // _germanValidation.
-                    unavailableKeys: const {},
+                    // NOTE the deliberate demo tension: the auto-typist commits
+                    // via bloc.add and is unaffected by key enabledness, so the
+                    // scripted "88" red beat still plays; greying protects only
+                    // interactive taps.
+                    unavailableKeys: _unavailableKeysFor(_bloc.state),
                     theme: const PlateKeypadTheme(
                       highlight: PosterTokens.accent,
                       keyBorder: PosterTokens.hairline,
