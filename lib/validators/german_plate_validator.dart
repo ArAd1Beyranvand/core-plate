@@ -124,4 +124,36 @@ class GermanPlateValidator {
 
     return GermanPlateValidationResult.valid;
   }
+
+  /// Digits that would complete a forbidden number if typed next after
+  /// [serialSoFar].
+  ///
+  /// For each forbidden number in [_forbiddenNumbers], if it starts with
+  /// [serialSoFar] and is exactly one character longer, the next character
+  /// of that forbidden number is barred. Lets an on-screen keypad grey out
+  /// or block the keys that would COMPLETE a forbidden combination, rather
+  /// than only rejecting after the fact.
+  static Set<String> barredNextDigits(String serialSoFar) {
+    return {
+      for (final n in _forbiddenNumbers)
+        if (n.startsWith(serialSoFar) && n.length == serialSoFar.length + 1)
+          n[serialSoFar.length],
+    };
+  }
+
+  /// Letters that would complete a forbidden letter pair if typed next
+  /// after [lettersSoFar].
+  ///
+  /// For each forbidden pair in [_forbiddenLetterPairs], if it starts with
+  /// [lettersSoFar] and is exactly one character longer, the next character
+  /// of that forbidden pair is barred. Lets an on-screen keypad grey out
+  /// or block the keys that would COMPLETE a forbidden combination, rather
+  /// than only rejecting after the fact.
+  static Set<String> barredNextLetters(String lettersSoFar) {
+    return {
+      for (final n in _forbiddenLetterPairs)
+        if (n.startsWith(lettersSoFar) && n.length == lettersSoFar.length + 1)
+          n[lettersSoFar.length],
+    };
+  }
 }
