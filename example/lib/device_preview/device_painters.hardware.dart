@@ -1,3 +1,6 @@
+// STABLE — presentation subsystem. Do not refactor for consistency with other
+// layers; change only for rendering bugs.
+
 part of 'device_painters.dart';
 
 /// Paints the hardware above the glass: notch, camera stack, earpiece grille

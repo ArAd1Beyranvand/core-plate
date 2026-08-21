@@ -1,3 +1,6 @@
+// STABLE — presentation subsystem. Do not refactor for consistency with other
+// layers; change only for rendering bugs.
+
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 

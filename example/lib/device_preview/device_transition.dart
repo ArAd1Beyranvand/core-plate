@@ -1,3 +1,6 @@
+// STABLE — presentation subsystem. Do not refactor for consistency with other
+// layers; change only for rendering bugs.
+
 import 'package:flutter/foundation.dart';
 
 /// The three phases of a device change.

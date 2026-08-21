@@ -1,3 +1,6 @@
+// STABLE — presentation subsystem. Do not refactor for consistency with other
+// layers; change only for rendering bugs.
+
 import 'package:flutter/widgets.dart';
 
 import 'device_config.dart';

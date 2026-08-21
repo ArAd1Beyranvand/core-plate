@@ -1,3 +1,6 @@
+// STABLE — presentation subsystem. Do not refactor for consistency with other
+// layers; change only for rendering bugs.
+
 part of 'laptop_deck.dart';
 
 /// Vertical gap left below every keyboard/numpad row.

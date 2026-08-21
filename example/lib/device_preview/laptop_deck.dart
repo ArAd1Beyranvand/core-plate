@@ -1,3 +1,6 @@
+// STABLE — presentation subsystem. Do not refactor for consistency with other
+// layers; change only for rendering bugs.
+
 import 'package:flutter/material.dart';
 
 part 'laptop_deck.parts.dart';
