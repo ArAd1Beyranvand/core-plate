@@ -122,7 +122,7 @@ class _PlateDisplayBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = context.read<PlateCardBloc>();
+    assert(mode == PlateMode.input);
 
     final inputSurface = _PlateInputSurface(
       spec: spec,
@@ -135,35 +135,14 @@ class _PlateDisplayBody extends StatelessWidget {
       controller: controller,
     );
 
-    Widget body;
-    if (mode == PlateMode.display) {
-      body = Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(child: Center(child: inputSurface)),
-            const SizedBox(height: 16),
-            const ShowPlate(),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: () => bloc.add(RemovePlateCard()),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Clear'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      body = keyboard == null
-          ? inputSurface
-          : Column(
-              children: [
-                Expanded(child: inputSurface),
-                keyboard!,
-              ],
-            );
-    }
+    final body = keyboard == null
+        ? inputSurface
+        : Column(
+            children: [
+              Expanded(child: inputSurface),
+              keyboard!,
+            ],
+          );
 
     if (!showBackdrop) return body;
     return Stack(
