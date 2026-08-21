@@ -27,6 +27,21 @@ class PlateSlot {
 
   /// The index focus advances to when this slot fills. Null unfocuses.
   final int? next;
+
+  @override
+  bool operator ==(Object other) =>
+      other is PlateSlot &&
+      other.index == index &&
+      other.alphabet == alphabet &&
+      other.left == left &&
+      other.top == top &&
+      other.width == width &&
+      other.height == height &&
+      other.next == next;
+
+  @override
+  int get hashCode =>
+      Object.hash(index, alphabet, left, top, width, height, next);
 }
 
 /// A painted rule (e.g. the vertical divider on an Iranian car plate).
@@ -180,6 +195,56 @@ class PlateSpec {
 
   @override
   int get hashCode => id.hashCode;
+}
+
+/// Debug-only sanity check for a [PlateSpec]'s internal consistency: unique
+/// slot indices, every non-null [PlateSlot.next] resolving to a real slot,
+/// no cycle when following [PlateSlot.next] from any slot, and every slot
+/// rect fitting within the canvas. Always returns true — call it inside an
+/// `assert(...)` so it's stripped from release builds.
+bool debugValidateSpec(PlateSpec spec) {
+  final seenIndices = <int>{};
+  for (final slot in spec.slots) {
+    assert(
+      seenIndices.add(slot.index),
+      'Duplicate PlateSlot index ${slot.index} in spec "${spec.id}".',
+    );
+  }
+
+  for (final slot in spec.slots) {
+    if (slot.next == null) continue;
+    assert(
+      spec.slotAt(slot.next!) != null,
+      'PlateSlot ${slot.index} in spec "${spec.id}" has next=${slot.next}, '
+      'which does not resolve to a slot.',
+    );
+  }
+
+  for (final start in spec.slots) {
+    final visited = <int>{};
+    int? current = start.index;
+    while (current != null) {
+      assert(
+        visited.add(current),
+        'Cycle detected following PlateSlot.next from index ${start.index} '
+        'in spec "${spec.id}".',
+      );
+      current = spec.slotAt(current)?.next;
+    }
+  }
+
+  for (final slot in spec.slots) {
+    assert(
+      slot.left >= 0 &&
+          slot.top >= 0 &&
+          slot.left + slot.width <= spec.canvasWidth &&
+          slot.top + slot.height <= spec.canvasHeight,
+      'PlateSlot ${slot.index} in spec "${spec.id}" has a rect outside the '
+      'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
+    );
+  }
+
+  return true;
 }
 
 /// The catalogue of known plate designs.

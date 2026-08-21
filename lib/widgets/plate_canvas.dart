@@ -51,6 +51,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
   @override
   void initState() {
     super.initState();
+    assert(debugValidateSpec(widget.spec));
     _letterInputMode = widget.letterInputMode ?? defaultLetterInputMode();
     _inputSource = _resolveInputSource();
     for (final slot in widget.spec.slots) {
@@ -114,7 +115,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
         break;
       }
     }
-    // PlateSlot has no == override, so compare by index identity.
+    // Index comparison is the cheap path here (avoids a full PlateSlot ==).
     if (active?.index != _activeSlot?.index) {
       _activeSlot = active;
       widget.onActiveSlotChanged?.call(active);
