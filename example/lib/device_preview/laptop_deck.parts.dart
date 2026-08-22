@@ -3,12 +3,12 @@
 
 part of 'laptop_deck.dart';
 
-/// Vertical gap left below every keyboard/numpad row.
+/// Vertical gap left below every keyboard row.
 const _rowGap = 10.0;
 
 /// The inner height of the main keyboard well: every deck row plus the gap
-/// that follows it. The numpad derives its row height from this so both
-/// columns end flush, even if [deckRows] changes.
+/// that follows it. Used to shrink-to-fit the well when the deck is handed
+/// less height than its natural total.
 double get _deckWellHeight =>
     deckRows.fold<double>(0, (h, r) => h + r.height) +
     _rowGap * deckRows.length;
@@ -22,78 +22,61 @@ IconData? _iconFor(String label) => switch (label) {
       _ => null,
     };
 
-/// The number pad to the right of the keyboard — decorative, like the rest of
-/// the deck.
-class _Numpad extends StatelessWidget {
-  const _Numpad({this.onKey});
-  final ValueChanged<String>? onKey;
+/// A single keyboard row of keycaps. When [fadeOut] is set, the row is masked
+/// with a top-to-bottom gradient: fully opaque across its top half, then
+/// dissolving to opacity 0 by its very bottom edge — used on the last visible
+/// row so the trimmed keyboard fades off rather than ending on a hard cut.
+class _DeckRowStrip extends StatelessWidget {
+  const _DeckRowStrip({
+    required this.row,
+    required this.scale,
+    this.onKey,
+    this.pressedKey,
+    this.fadeOut = false,
+  });
 
-  static const _rows = <List<String>>[
-    ['⌧', '÷', '×', '⌫'],
-    ['7', '8', '9', '−'],
-    ['4', '5', '6', '+'],
-    ['1', '2', '3', '⏎'],
-    ['0', '.', ''],
-  ];
+  final DeckRow row;
+  final double scale;
+  final ValueChanged<String>? onKey;
+  final String? pressedKey;
+  final bool fadeOut;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF0B0D10), Color(0xFF14171C)],
-        ),
-        boxShadow: const [
-          BoxShadow(color: Color(0xB3000000), blurRadius: 14, offset: Offset(0, 4)),
+    Widget strip = SizedBox(
+      height: row.height * scale,
+      child: Row(
+        children: [
+          for (var i = 0; i < row.keys.length; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            Expanded(
+              flex: (row.keys[i].flex * 100).round(),
+              child: _Key(
+                label: row.keys[i].label,
+                icon: _iconFor(row.keys[i].label),
+                onKey: onKey,
+                pressedLabel: pressedKey,
+              ),
+            ),
+          ],
         ],
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Mirrors the keyboard well's own shrink-to-fit scale (see
-          // LaptopDeck's Column) so both columns keep ending flush even when
-          // the deck is handed less height than its natural well.
-          final scale = constraints.hasBoundedHeight
-              ? (constraints.maxHeight / _deckWellHeight).clamp(0.0, 1.0)
-              : 1.0;
-          // Match the keyboard well's inner height so both columns end flush
-          // at the bottom, then back out an even row height from the number
-          // of numpad rows.
-          final rowHeight =
-              (_deckWellHeight - _rowGap * _rows.length) / _rows.length *
-              scale;
-          return Column(
-            children: [
-              for (final row in _rows) ...[
-                SizedBox(
-                  height: rowHeight,
-                  child: Row(
-                    children: [
-                      for (var i = 0; i < row.length; i++) ...[
-                        if (i > 0) const SizedBox(width: 8),
-                        Expanded(
-                          // the zero key spans two columns, as on a real numpad
-                          flex: row[i] == '0' ? 208 : 100,
-                          child: _Key(
-                            label: row[i],
-                            icon: _iconFor(row[i]),
-                            onKey: onKey,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                SizedBox(height: _rowGap * scale),
-              ],
-            ],
-          );
-        },
-      ),
     );
+
+    if (fadeOut) {
+      strip = ShaderMask(
+        blendMode: BlendMode.dstIn,
+        shaderCallback: (rect) => const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.white, Colors.white, Colors.transparent],
+          stops: [0, 0.5, 1],
+        ).createShader(rect),
+        child: strip,
+      );
+    }
+
+    return strip;
   }
 }
 
@@ -265,19 +248,19 @@ class _KeyState extends State<_Key> {
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFFFDFEFF), Color(0xFFEBEEF2), Color(0xFFCFD5DD)],
+              colors: [Color(0xFF23262B), Color(0xFF141619), Color(0xFF050607)],
               stops: [0, .45, 1],
             ),
             border: const Border(
-              top: BorderSide(color: Color(0xE6FFFFFF)),
+              top: BorderSide(color: Color(0x33FFFFFF)),
             ),
             boxShadow: pressed
                 ? const [
                     BoxShadow(color: Color(0x99000000), blurRadius: 10, offset: Offset(0, 4)),
                   ]
                 : const [
-                    BoxShadow(color: Color(0xFF9AA1AA), offset: Offset(0, 5)),
-                    BoxShadow(color: Color(0xFF6C737B), offset: Offset(0, 7)),
+                    BoxShadow(color: Color(0xFF34373C), offset: Offset(0, 5)),
+                    BoxShadow(color: Color(0xFF1A1C20), offset: Offset(0, 7)),
                     BoxShadow(color: Color(0x99000000), blurRadius: 16, offset: Offset(0, 13)),
                   ],
           ),
@@ -285,10 +268,10 @@ class _KeyState extends State<_Key> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2),
               child: widget.icon != null
-                  ? Icon(widget.icon, size: 18, color: const Color(0xFF171A1F))
+                  ? Icon(widget.icon, size: 18, color: const Color(0xFFE8EBEF))
                   : Text(
                       widget.label,
-                      style: const TextStyle(color: Color(0xFF171A1F), fontSize: 18, fontWeight: FontWeight.w600),
+                      style: const TextStyle(color: Color(0xFFE8EBEF), fontSize: 18, fontWeight: FontWeight.w600),
                     ),
             ),
           ),

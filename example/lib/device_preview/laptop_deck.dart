@@ -8,7 +8,7 @@ part 'laptop_deck.parts.dart';
 /// Width of the milled-aluminium chassis edge painted by [LaptopChassisEdge].
 const laptopEdgeWidth = 8.0;
 
-const _edgeColor = Color(0xFF565C68);
+const _edgeColor = Color(0xFF8A909C);
 const _edgeRadius = BorderRadius.vertical(bottom: Radius.circular(26));
 
 /// The chassis rim around the laptop deck: a thin gray-metal ring matching
@@ -59,14 +59,6 @@ final deckRows = <DeckRow>[
   DeckRow(32, _row('esc|F1|F2|F3|F4|F5|F6|F7|F8|F9|F10|F11|F12|⏻', flex: {0: 1.7})),
   DeckRow(52, _row('`|1|2|3|4|5|6|7|8|9|0|-|=|⌫', flex: {13: 1.9})),
   DeckRow(52, _row('⇥|ض|ص|ث|ق|ف|غ|ع|ه|خ|ح|ج|چ', flex: {0: 1.5})),
-  DeckRow(52, _row('⇪|ش|س|ی|ب|ل|ا|ت|ن|م|ک|گ|⏎', flex: {0: 1.8, 12: 2.0})),
-  DeckRow(52, _row('⇧|ظ|ط|ز|ر|ذ|د|پ|و|ژ|/|⇧', flex: {0: 2.4, 11: 2.4})),
-  DeckRow(52, const [
-    DeckKey('fn'), DeckKey('⌃'), DeckKey('⌥'), DeckKey('⌘', flex: 1.4),
-    DeckKey('', flex: 6.6),
-    DeckKey('⌘', flex: 1.4), DeckKey('⌥'),
-    DeckKey('◂'), DeckKey('▴'), DeckKey('▾'), DeckKey('▸'),
-  ]),
 ];
 
 /// The laptop base: milled aluminium and a recessed keyboard well with
@@ -92,7 +84,6 @@ class LaptopDeck extends StatelessWidget {
   final ValueChanged<String>? onKey;
 
   /// Label of a key to render as held down, e.g. from a hardware keypress.
-  /// Applies to the deck rows only, not the numpad.
   final String? pressedKey;
 
   @override
@@ -102,7 +93,7 @@ class LaptopDeck extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF1E2126), Color(0xFF2A2E35), Color(0xFF1A1D22), Color(0xFF0C0E11)],
+          colors: [Color(0xFF9CA2AE), Color(0xFFAEB4C0), Color(0xFF8E94A0), Color(0xFF767C88)],
           stops: [0, .22, .62, 1],
         ),
         borderRadius: _edgeRadius,
@@ -122,12 +113,7 @@ class LaptopDeck extends StatelessWidget {
             opacity: frontOpacity.clamp(0, 1),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(40, 22, 40, 16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 77,
-                    child: Container(
+              child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
@@ -157,44 +143,33 @@ class LaptopDeck extends StatelessWidget {
                                 )
                               : 1.0;
                           return Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              for (final row in deckRows) ...[
-                                SizedBox(
-                                  height: row.height * scale,
-                                  child: Row(
-                                    children: [
-                                      for (
-                                        var i = 0;
-                                        i < row.keys.length;
-                                        i++
-                                      ) ...[
-                                        if (i > 0) const SizedBox(width: 8),
-                                        Expanded(
-                                          flex: (row.keys[i].flex * 100)
-                                              .round(),
-                                          child: _Key(
-                                            label: row.keys[i].label,
-                                            icon: _iconFor(row.keys[i].label),
-                                            onKey: onKey,
-                                            pressedLabel: pressedKey,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
+                              for (
+                                var r = 0;
+                                r < deckRows.length;
+                                r++
+                              ) ...[
+                                _DeckRowStrip(
+                                  row: deckRows[r],
+                                  scale: scale,
+                                  onKey: onKey,
+                                  pressedKey: pressedKey,
+                                  // The last visible row fades from fully
+                                  // opaque at its top to transparent at its
+                                  // bottom, so the keyboard dissolves off the
+                                  // bottom edge of the well rather than being
+                                  // cut off hard.
+                                  fadeOut: r == deckRows.length - 1,
                                 ),
-                                SizedBox(height: _rowGap * scale),
+                                if (r < deckRows.length - 1)
+                                  SizedBox(height: _rowGap * scale),
                               ],
                             ],
                           );
                         },
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(flex: 23, child: _Numpad(onKey: onKey)),
-                ],
-              ),
             ),
           ),
         ],
