@@ -20,6 +20,10 @@ class ShowcaseScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMobile = _isAndroidMobile(context);
+    final mediaQuery = MediaQuery.of(context);
+    final bool isLandscapePhone =
+        mediaQuery.orientation == Orientation.landscape &&
+        mediaQuery.size.height < 500;
 
     return Scaffold(
       backgroundColor: PosterTokens.bg,
@@ -32,15 +36,15 @@ class ShowcaseScreen extends StatelessWidget {
           else
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 56,
-                  vertical: 44,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isLandscapePhone ? 16 : 56,
+                  vertical: isLandscapePhone ? 8 : 44,
                 ),
                 child: Column(
-                  children: const [
-                    PosterHeader(),
-                    Expanded(child: _PosterBody()),
-                    PosterFooter(),
+                  children: [
+                    if (!isLandscapePhone) const PosterHeader(),
+                    const Expanded(child: _PosterBody()),
+                    if (!isLandscapePhone) const PosterFooter(),
                   ],
                 ),
               ),
@@ -53,7 +57,8 @@ class ShowcaseScreen extends StatelessWidget {
   static bool _isAndroidMobile(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final isSmallScreen = mediaQuery.size.width < 600;
-    return isSmallScreen;
+    final isPortrait = mediaQuery.orientation == Orientation.portrait;
+    return isSmallScreen && isPortrait;
   }
 }
 
@@ -101,51 +106,75 @@ class _PosterBodyState extends State<_PosterBody> {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) => constraints.maxWidth >= _wideBreakpoint
-        ? _WideBody(
-            device: _railDevice,
-            onFrameDeviceChanged: _onFrameDeviceChanged,
-          )
-        : _StackedBody(
-            device: _railDevice,
-            onFrameDeviceChanged: _onFrameDeviceChanged,
-          ),
+    builder: (context, constraints) {
+      final bool isWide = constraints.maxWidth >= _wideBreakpoint;
+      // A short, wide viewport (mobile landscape) still reads better as
+      // rails-flanking-the-device than as the stacked grid — it just needs
+      // the rails and callout type shrunk to fit.
+      final mediaQuery = MediaQuery.of(context);
+      final bool isLandscapePhone =
+          mediaQuery.orientation == Orientation.landscape &&
+          mediaQuery.size.height < 500;
+
+      if (isWide || isLandscapePhone) {
+        return _WideBody(
+          device: _railDevice,
+          onFrameDeviceChanged: _onFrameDeviceChanged,
+          compact: !isWide,
+        );
+      }
+      return _StackedBody(
+        device: _railDevice,
+        onFrameDeviceChanged: _onFrameDeviceChanged,
+      );
+    },
   );
 }
 
 /// Three columns: animated callout rails flanking the device, connectors
 /// pointing inward.
 class _WideBody extends StatelessWidget {
-  const _WideBody({required this.device, required this.onFrameDeviceChanged});
+  const _WideBody({
+    required this.device,
+    required this.onFrameDeviceChanged,
+    this.compact = false,
+  });
 
   final DeviceType device;
   final ValueChanged<DeviceType> onFrameDeviceChanged;
 
+  /// Shrinks the rails for a short, wide viewport (mobile landscape) where
+  /// a full 360px rail on each side would crowd out the device.
+  final bool compact;
+
   @override
   Widget build(BuildContext context) {
     final motifs = calloutMotifs[device]!;
+    final double railWidth = compact ? 150 : 360;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          width: 360,
+          width: railWidth,
           child: CalloutRail(
             device: device,
             side: CalloutSide.left,
             exitMotif: motifs.exit,
             entryMotif: motifs.entry,
+            compact: compact,
           ),
         ),
         Expanded(
           child: DeviceStage(onFrameDeviceChanged: onFrameDeviceChanged),
         ),
         SizedBox(
-          width: 360,
+          width: railWidth,
           child: CalloutRail(
             device: device,
             side: CalloutSide.right,
             exitMotif: motifs.exit,
             entryMotif: motifs.entry,
+            compact: compact,
           ),
         ),
       ],
@@ -167,20 +196,27 @@ class _StackedBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final set = calloutSets[device]!;
+    // A short viewport (mobile landscape) can't fit the poster's full-size
+    // callout type without the 2x2 grid overflowing or crowding the device
+    // stage, so it renders a smaller variant instead.
+    final bool compact = MediaQuery.of(context).size.height < 500;
     return Column(
       children: [
         Expanded(
           child: DeviceStage(onFrameDeviceChanged: onFrameDeviceChanged),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: compact ? 12 : 24),
         Wrap(
-          spacing: 48,
-          runSpacing: 28,
+          spacing: compact ? 24 : 48,
+          runSpacing: compact ? 14 : 28,
           children: [
             for (final c in [...set.left, ...set.right])
               SizedBox(
-                width: 300,
-                child: CalloutWithConnector(callout: c, showConnector: false),
+                width: compact ? 180 : 300,
+                child: CalloutWithConnector(
+                  callout: c.withCompact(compact),
+                  showConnector: false,
+                ),
               ),
           ],
         ),

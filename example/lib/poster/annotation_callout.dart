@@ -18,6 +18,7 @@ class AnnotationCallout extends StatelessWidget {
     required this.title,
     required this.body,
     required this.side,
+    this.compact = false,
   });
 
   final String index;
@@ -26,22 +27,58 @@ class AnnotationCallout extends StatelessWidget {
   final String body;
   final CalloutSide side;
 
+  /// Shrinks the title/body text styles for cramped layouts (e.g. mobile
+  /// landscape's stacked callout grid).
+  final bool compact;
+
+  AnnotationCallout withCompact(bool compact) => AnnotationCallout(
+        index: index,
+        label: label,
+        title: title,
+        body: body,
+        side: side,
+        compact: compact,
+      );
+
+  /// Persian/Arabic script range — text in these blocks is always shown
+  /// right-aligned in RTL direction, regardless of which side of the
+  /// poster the callout sits on.
+  static final RegExp _rtlScript = RegExp(r'[؀-ۿݐ-ݿ]');
+
+  static bool _isRtl(String text) => _rtlScript.hasMatch(text);
+
+  Widget _line(String text, TextStyle style, TextAlign fallbackAlign) {
+    if (_isRtl(text)) {
+      return Text(
+        text,
+        style: style,
+        textAlign: TextAlign.right,
+        textDirection: TextDirection.rtl,
+      );
+    }
+    return Text(text, style: style, textAlign: fallbackAlign);
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool isLeft = side == CalloutSide.left;
     final CrossAxisAlignment cross =
         isLeft ? CrossAxisAlignment.end : CrossAxisAlignment.start;
     final TextAlign textAlign = isLeft ? TextAlign.right : TextAlign.left;
+    final TextStyle titleStyle =
+        compact ? PosterTokens.sectionTitleCompact : PosterTokens.sectionTitle;
+    final TextStyle bodyStyle =
+        compact ? PosterTokens.bodyCompact : PosterTokens.body;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: cross,
       children: [
-        Text('$index — $label', style: PosterTokens.eyebrow),
-        const SizedBox(height: 10),
-        Text(title, style: PosterTokens.sectionTitle, textAlign: textAlign),
-        const SizedBox(height: 12),
-        Text(body, style: PosterTokens.body, textAlign: textAlign),
+        _line('$index — $label', PosterTokens.eyebrow, textAlign),
+        SizedBox(height: compact ? 4 : 10),
+        _line(title, titleStyle, textAlign),
+        SizedBox(height: compact ? 4 : 12),
+        _line(body, bodyStyle, textAlign),
       ],
     );
   }

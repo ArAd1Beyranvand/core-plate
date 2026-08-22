@@ -51,6 +51,23 @@ class PosterTokens {
     color: bodyColor,
   );
 
+  /// Smaller variant of [sectionTitle] for cramped layouts (e.g. the
+  /// callout grid in mobile landscape).
+  static const TextStyle sectionTitleCompact = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    fontFamily: serifFamily,
+    color: titleColor,
+  );
+
+  /// Smaller variant of [body] for cramped layouts.
+  static const TextStyle bodyCompact = TextStyle(
+    fontSize: 12,
+    height: 1.4,
+    fontFamily: serifFamily,
+    color: bodyColor,
+  );
+
   static const TextStyle headerName = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w700,

@@ -17,6 +17,7 @@ class CalloutRail extends StatefulWidget {
     required this.exitMotif, // how the OUTGOING set leaves
     required this.entryMotif, // how the INCOMING set arrives
     this.duration = const Duration(milliseconds: 1500),
+    this.compact = false,
   });
 
   final DeviceType device;
@@ -24,6 +25,10 @@ class CalloutRail extends StatefulWidget {
   final CalloutMotif exitMotif;
   final CalloutMotif entryMotif;
   final Duration duration;
+
+  /// Shrinks callout type and tightens rail spacing for narrow viewports
+  /// (e.g. mobile landscape).
+  final bool compact;
 
   @override
   State<CalloutRail> createState() => _CalloutRailState();
@@ -96,6 +101,7 @@ class _CalloutRailState extends State<CalloutRail>
             return _RailColumn(
               callouts: _calloutsFor(widget.device),
               side: widget.side,
+              compact: widget.compact,
             );
           }
 
@@ -112,6 +118,7 @@ class _CalloutRailState extends State<CalloutRail>
                 side: widget.side,
                 connectorAnimation: _exit,
                 connectorEntering: false,
+                compact: widget.compact,
               ),
             );
           }
@@ -125,6 +132,7 @@ class _CalloutRailState extends State<CalloutRail>
               side: widget.side,
               connectorAnimation: _entry,
               connectorEntering: true,
+              compact: widget.compact,
             ),
           );
         },
@@ -141,56 +149,91 @@ class _RailColumn extends StatelessWidget {
     required this.side,
     this.connectorAnimation,
     this.connectorEntering = true,
+    this.compact = false,
   });
 
   final List<AnnotationCallout> callouts; // exactly two, top then bottom
   final CalloutSide side;
   final Animation<double>? connectorAnimation;
   final bool connectorEntering;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    if (side == CalloutSide.left) {
+    final double connectorLength = compact ? 60 : 150;
+    final AnnotationCallout top = callouts[0].withCompact(compact);
+    final AnnotationCallout bottom = callouts[1].withCompact(compact);
+    final CrossAxisAlignment cross =
+        side == CalloutSide.left ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final Alignment fitAlign =
+        side == CalloutSide.left ? Alignment.centerRight : Alignment.centerLeft;
+
+    final Widget topCallout = CalloutWithConnector(
+      callout: top,
+      connectorLength: connectorLength,
+      connectorAnimation: connectorAnimation,
+      connectorEntering: connectorEntering,
+    );
+    final Widget bottomCallout = CalloutWithConnector(
+      callout: bottom,
+      connectorLength: connectorLength,
+      connectorAnimation: connectorAnimation,
+      connectorEntering: connectorEntering,
+    );
+
+    if (compact) {
+      // Short viewports (mobile landscape) can't guarantee both callouts
+      // fit at compact type either, so each is scaled down to whatever
+      // room its half of the rail actually has rather than overflowing.
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: cross,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 40),
-            child: CalloutWithConnector(
-              callout: callouts[0],
-              connectorAnimation: connectorAnimation,
-              connectorEntering: connectorEntering,
+          Expanded(
+            child: Align(
+              alignment: fitAlign,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: fitAlign,
+                child: topCallout,
+              ),
             ),
           ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 48),
-            child: CalloutWithConnector(
-              callout: callouts[1],
-              connectorAnimation: connectorAnimation,
-              connectorEntering: connectorEntering,
+          Expanded(
+            child: Align(
+              alignment: fitAlign,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: fitAlign,
+                child: bottomCallout,
+              ),
             ),
           ),
         ],
       );
     }
+
+    if (side == CalloutSide.left) {
+      return Column(
+        crossAxisAlignment: cross,
+        children: [
+          Padding(padding: const EdgeInsets.only(top: 40), child: topCallout),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 48),
+            child: bottomCallout,
+          ),
+        ],
+      );
+    }
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: cross,
       children: [
         const SizedBox(height: 150),
-        CalloutWithConnector(
-          callout: callouts[0],
-          connectorAnimation: connectorAnimation,
-          connectorEntering: connectorEntering,
-        ),
+        topCallout,
         const Spacer(),
         Padding(
           padding: const EdgeInsets.only(bottom: 96),
-          child: CalloutWithConnector(
-            callout: callouts[1],
-            connectorAnimation: connectorAnimation,
-            connectorEntering: connectorEntering,
-          ),
+          child: bottomCallout,
         ),
       ],
     );
