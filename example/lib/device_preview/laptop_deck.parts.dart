@@ -22,28 +22,23 @@ IconData? _iconFor(String label) => switch (label) {
       _ => null,
     };
 
-/// A single keyboard row of keycaps. When [fadeOut] is set, the row is masked
-/// with a top-to-bottom gradient: fully opaque across its top half, then
-/// dissolving to opacity 0 by its very bottom edge — used on the last visible
-/// row so the trimmed keyboard fades off rather than ending on a hard cut.
+/// A single keyboard row of keycaps, scaled by [scale] to fit the well.
 class _DeckRowStrip extends StatelessWidget {
   const _DeckRowStrip({
     required this.row,
     required this.scale,
     this.onKey,
     this.pressedKey,
-    this.fadeOut = false,
   });
 
   final DeckRow row;
   final double scale;
   final ValueChanged<String>? onKey;
   final String? pressedKey;
-  final bool fadeOut;
 
   @override
   Widget build(BuildContext context) {
-    Widget strip = SizedBox(
+    return SizedBox(
       height: row.height * scale,
       child: Row(
         children: [
@@ -62,21 +57,6 @@ class _DeckRowStrip extends StatelessWidget {
         ],
       ),
     );
-
-    if (fadeOut) {
-      strip = ShaderMask(
-        blendMode: BlendMode.dstIn,
-        shaderCallback: (rect) => const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.white, Colors.white, Colors.transparent],
-          stops: [0, 0.5, 1],
-        ).createShader(rect),
-        child: strip,
-      );
-    }
-
-    return strip;
   }
 }
 

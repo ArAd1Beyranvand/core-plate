@@ -112,9 +112,9 @@ class LaptopDeck extends StatelessWidget {
           Opacity(
             opacity: frontOpacity.clamp(0, 1),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(40, 22, 40, 16),
+              padding: const EdgeInsets.fromLTRB(40, 22, 40, 6),
               child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         gradient: const LinearGradient(
@@ -142,30 +142,50 @@ class LaptopDeck extends StatelessWidget {
                                   1.0,
                                 )
                               : 1.0;
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              for (
-                                var r = 0;
-                                r < deckRows.length;
-                                r++
-                              ) ...[
-                                _DeckRowStrip(
-                                  row: deckRows[r],
-                                  scale: scale,
-                                  onKey: onKey,
-                                  pressedKey: pressedKey,
-                                  // The last visible row fades from fully
-                                  // opaque at its top to transparent at its
-                                  // bottom, so the keyboard dissolves off the
-                                  // bottom edge of the well rather than being
-                                  // cut off hard.
-                                  fadeOut: r == deckRows.length - 1,
-                                ),
-                                if (r < deckRows.length - 1)
-                                  SizedBox(height: _rowGap * scale),
+                          // Where the last row starts, and its midpoint, as a
+                          // fraction of the column's natural height. The whole
+                          // keyboard is masked with a top-to-bottom gradient
+                          // that stays fully opaque down to that midpoint, then
+                          // dissolves to opacity 0 at the column's very bottom —
+                          // so the top rows read crisply and only the last row
+                          // fades off the bottom edge of the deck.
+                          final totalHeight =
+                              deckRows.fold<double>(0, (h, r) => h + r.height) +
+                              _rowGap * (deckRows.length - 1);
+                          final lastMid =
+                              (totalHeight - deckRows.last.height / 2) /
+                              totalHeight;
+                          return ShaderMask(
+                            blendMode: BlendMode.dstIn,
+                            shaderCallback: (rect) => LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: const [
+                                Colors.white,
+                                Colors.white,
+                                Colors.transparent,
                               ],
-                            ],
+                              stops: [0, lastMid, 1],
+                            ).createShader(rect),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (
+                                  var r = 0;
+                                  r < deckRows.length;
+                                  r++
+                                ) ...[
+                                  _DeckRowStrip(
+                                    row: deckRows[r],
+                                    scale: scale,
+                                    onKey: onKey,
+                                    pressedKey: pressedKey,
+                                  ),
+                                  if (r < deckRows.length - 1)
+                                    SizedBox(height: _rowGap * scale),
+                                ],
+                              ],
+                            ),
                           );
                         },
                       ),

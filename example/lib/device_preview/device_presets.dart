@@ -67,7 +67,7 @@ class DevicePresets {
     notchRadius: 8,
     cameraEdge: 0.125,
     cameraRadius: 3.5,
-    deck: DeviceDeck(depth: 360, angleDeg: 45, hingeHeight: 9, opacity: 1),
+    deck: DeviceDeck(depth: 210, angleDeg: 45, hingeHeight: 9, opacity: 1),
     shadowBlur: 60,
     shadowOffsetY: 26,
   );
