@@ -18,3 +18,21 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/textures/bg_grain_a.png
+    - assets/textures/bg_grain_b.png
+    - assets/textures/tex_screen.png
+    - assets/textures/tex_overlay.png
+  fonts:
+    - family: Archivo
+      fonts:
+        - asset: assets/fonts/Archivo-latin-ext.ttf
+    - family: MartianMono
+      fonts:
+        - asset: assets/fonts/MartianMono-latin-ext.ttf
+    - family: Newsreader
+      fonts:
+        - asset: assets/fonts/Newsreader-latin-ext.ttf
+    - family: Vazirmatn
+      fonts:
+        - asset: assets/fonts/Vazirmatn-latin-ext.ttf

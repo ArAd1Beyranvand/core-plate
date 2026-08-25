@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'annotation_callout.dart'; // CalloutSide
 import 'poster_tokens.dart'; // PosterTokens.accent
+
+/// Which side of the device a callout sits on.
+///
+/// TODO(P8): annotation_callout.dart, the previous owner of this enum, was
+/// removed in the poster demolition; this is a temporary local stand-in
+/// until P8 rebuilds the callout content model.
+enum CalloutSide { left, right }
 
 /// How a set of callouts leaves and the next set arrives.
 enum CalloutMotif {
