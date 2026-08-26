@@ -7,7 +7,7 @@ Run with `/task <n>`. One task per session, commit between each.
 | P1 | Bootstrap & demolition | ☑ | deb30f1 | Landed together with P2 — neither half compiles alone. |
 | P2 | Theme tokens & responsive metrics | ☑ | deb30f1 | Same commit as P1. |
 | P3 | Bevel-panel primitives | ☑ | d72aba8 | |
-| P4 | The road backdrop | ☑ | 18057e2 | Grain drawn with `ui.ImageShader` + `saveLayer`, not `textureDecoration` — see below. `poster_scale.dart` gained `stageScale`/`sx`/`sy`. Backdrop wired into `showcase_screen.dart` ahead of P9. |
+| P4 | The road backdrop | ☑ | b58b6d4 | Grain drawn with `ui.ImageShader` + `saveLayer`, not `textureDecoration` — see below. `poster_scale.dart` gained `stageScale`/`sx`/`sy`. Backdrop wired into `showcase_screen.dart` ahead of P9. |
 | P5 | Sweep light & ground shadow | ☐ | | |
 | P6 | Wordmark & page chrome | ☐ | | |
 | P7 | Callout content & cards | ☐ | | |
