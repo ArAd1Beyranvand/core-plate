@@ -52,6 +52,19 @@ class PosterMetrics extends InheritedWidget {
   /// under the current fluid factor.
   double px(double designPx) => designPx * f;
 
+  /// The stage's own scale against the design canvas, *unclamped*.
+  ///
+  /// [f] is clamped so type and card metrics never collapse; the full-bleed
+  /// backdrop has the opposite requirement — the road must always span the
+  /// stage exactly — so its lengths go through this instead.
+  double get stageScale => size.width / _designWidth;
+
+  /// A horizontal design-canvas px as a real px on this stage.
+  double sx(double designPx) => designPx / _designWidth * size.width;
+
+  /// A vertical design-canvas px as a real px on this stage.
+  double sy(double designPx) => designPx / _designHeight * size.height;
+
   /// Converts a design-space fractional box (`fx, fy, fw, fh` — each in
   /// `0..1` of the 1920×1080 canvas) to a real [Rect] within [size].
   Rect box(double fx, double fy, double fw, double fh) {
