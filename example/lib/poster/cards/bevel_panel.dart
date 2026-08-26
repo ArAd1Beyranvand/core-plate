@@ -422,6 +422,12 @@ class _GrainLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
+        // `backgroundBlendMode` asserts a color or gradient even though the
+        // intent is only to blend the grain image against itself — a fully
+        // transparent base keeps that assertion happy without changing what
+        // paints (see the P4 note in PROGRESS.md on this layer not actually
+        // blending against the panel ground beneath it).
+        color: const Color(0x00000000),
         backgroundBlendMode: blendMode,
         image: textureDecoration(
           texture: texture,

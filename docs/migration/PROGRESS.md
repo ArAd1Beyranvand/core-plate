@@ -8,8 +8,8 @@ Run with `/task <n>`. One task per session, commit between each.
 | P2 | Theme tokens & responsive metrics | ☑ | deb30f1 | Same commit as P1. |
 | P3 | Bevel-panel primitives | ☑ | d72aba8 | |
 | P4 | The road backdrop | ☑ | b58b6d4 | Grain drawn with `ui.ImageShader` + `saveLayer`, not `textureDecoration` — see below. `poster_scale.dart` gained `stageScale`/`sx`/`sy`. Backdrop wired into `showcase_screen.dart` ahead of P9. |
-| P5 | Sweep light & ground shadow | ☐ | | |
-| P6 | Wordmark & page chrome | ☐ | | |
+| P5 | Sweep light & ground shadow | ☑ | pending | Landed together with P6 — the gallery's `C` toggle and the bevel-panel fix below are shared by both. |
+| P6 | Wordmark & page chrome | ☑ | pending | Same commit as P5. `poster_links.dart` uses bevel panels; `url_launcher` was not a dependency, so taps are a no-op (see below). |
 | P7 | Callout content & cards | ☐ | | |
 | P8 | Callout motion | ☐ | | |
 | P9 | Responsive assembly & verification | ☐ | | |
@@ -34,3 +34,20 @@ Run with `/task <n>`. One task per session, commit between each.
   and converge with it. The gallery and the app both build and run without
   exceptions, but no screenshot was captured for a human look; worth an eyeball
   before P5 builds the sweep on top of this geometry.
+- **P5 — the `beamWedgePath()` seam went unused.** `poster_backdrop.dart`'s
+  `PosterBackdrop.sweep` parameter and its "P5 can clip it to `beamWedgePath`"
+  comment anticipated the sweep being handed in and clipped to the beam wedge.
+  §6.10 of `DESIGN_SPEC.md` does not actually call for that clip, so
+  `SweepLight` is instead composited as its own full-stage layer above
+  `PosterBackdrop` (see `backdrop_gallery.dart`'s `_LiveStage`). The `sweep`
+  parameter is still unused and its "Nothing here yet" comment is now stale —
+  P9 should either wire `SweepLight` through it or delete the seam.
+- **P5/P6 — `flutter analyze` clean and the gallery runs (`S`/`D`/`C` keys
+  smoke-tested via `flutter run -d linux`), but no rendered screenshot was
+  taken** (headless sandbox, no way to eyeball the diagonal wordmark cut, the
+  stamp rotation, or the shadow skew signs against the spec). Worth a human
+  look before P9.
+- **P6 — bevel-panel grain assertion.** `_GrainLayer` in `cards/bevel_panel.dart`
+  passes `backgroundBlendMode` to a `BoxDecoration` with no `color`/`gradient`,
+  which asserts. Fixed by giving it a fully transparent `color`, which changes
+  nothing visually — needed for `poster_links.dart`'s bevel-panel buttons.
