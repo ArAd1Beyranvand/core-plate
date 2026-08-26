@@ -6,7 +6,7 @@ Run with `/task <n>`. One task per session, commit between each.
 |---|------|------|--------|-------|
 | P1 | Bootstrap & demolition | ☑ | deb30f1 | Landed together with P2 — neither half compiles alone. |
 | P2 | Theme tokens & responsive metrics | ☑ | deb30f1 | Same commit as P1. |
-| P3 | Bevel-panel primitives | ☐ | | |
+| P3 | Bevel-panel primitives | ☑ | d72aba8 | |
 | P4 | The road backdrop | ☐ | | |
 | P5 | Sweep light & ground shadow | ☐ | | |
 | P6 | Wordmark & page chrome | ☐ | | |
