@@ -10,7 +10,7 @@ Run with `/task <n>`. One task per session, commit between each.
 | P4 | The road backdrop | ☑ | b58b6d4 | Grain drawn with `ui.ImageShader` + `saveLayer`, not `textureDecoration` — see below. `poster_scale.dart` gained `stageScale`/`sx`/`sy`. Backdrop wired into `showcase_screen.dart` ahead of P9. |
 | P5 | Sweep light & ground shadow | ☑ | f3fc95c | Landed together with P6 — the gallery's `C` toggle and the bevel-panel fix below are shared by both. |
 | P6 | Wordmark & page chrome | ☑ | f3fc95c | Same commit as P5. `poster_links.dart` uses bevel panels; `url_launcher` was not a dependency, so taps are a no-op (see below). |
-| P7 | Callout content & cards | ☐ | | |
+| P7 | Callout content & cards | ☑ | | See below — card 01/02/05 flag bug found and fixed during verification. |
 | P8 | Callout motion | ☐ | | |
 | P9 | Responsive assembly & verification | ☐ | | |
 
@@ -51,3 +51,20 @@ Run with `/task <n>`. One task per session, commit between each.
   passes `backgroundBlendMode` to a `BoxDecoration` with no `color`/`gradient`,
   which asserts. Fixed by giving it a fully transparent `color`, which changes
   nothing visually — needed for `poster_links.dart`'s bevel-panel buttons.
+- **P7 — flag decoration bug found and fixed during verification.** The
+  `callout_data.dart`/`callout_card.dart` pair already existed (uncommitted)
+  going into this session. Cross-checking every `CalloutSpec` field against
+  §4/§5 found two defects, both fixed: (1) `hasIrFlag` (the §4 card-01 vertical
+  IR strip) was set on card 05 instead of card 01 — card 01 was missing its
+  required strip, card 05 had a spurious one alongside its own footer flag.
+  (2) Card 02's faded 5px flag strip (§4, `FadedFlagStrip` in
+  `card_decorations.dart`, already built but never wired up) had no
+  corresponding flag on `CalloutSpec` at all — added `hasFadedFlag` and wired
+  it into `CalloutCard`. All twelve callout strings were diffed
+  programmatically against §5 (title/eyebrow/body, including Persian code
+  points and ZWNJ placement) and all anchors/widths/kind/side/sizes against
+  the same table — all matched exactly after the flag fix. All twelve cards
+  were pumped in a `flutter test` widget test (`flutter run -d linux` is
+  available in this environment) with no `RenderFlex`/overflow errors at
+  their declared widths; the scratch test file was not committed. No rendered
+  screenshot was taken — worth a human look before P9, same as P4–P6.
