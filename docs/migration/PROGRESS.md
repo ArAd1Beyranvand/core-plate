@@ -10,7 +10,7 @@ Run with `/task <n>`. One task per session, commit between each.
 | P4 | The road backdrop | ☑ | b58b6d4 | Grain drawn with `ui.ImageShader` + `saveLayer`, not `textureDecoration` — see below. `poster_scale.dart` gained `stageScale`/`sx`/`sy`. Backdrop wired into `showcase_screen.dart` ahead of P9. |
 | P5 | Sweep light & ground shadow | ☑ | f3fc95c | Landed together with P6 — the gallery's `C` toggle and the bevel-panel fix below are shared by both. |
 | P6 | Wordmark & page chrome | ☑ | f3fc95c | Same commit as P5. `poster_links.dart` uses bevel panels; `url_launcher` was not a dependency, so taps are a no-op (see below). |
-| P7 | Callout content & cards | ☑ | | See below — card 01/02/05 flag bug found and fixed during verification. |
+| P7 | Callout content & cards | ☑ | f67840a | See below — card 01/02/05 flag bug found and fixed during verification. |
 | P8 | Callout motion | ☐ | | |
 | P9 | Responsive assembly & verification | ☐ | | |
 
