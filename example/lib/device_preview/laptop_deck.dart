@@ -167,15 +167,18 @@ class LaptopDeck extends StatelessWidget {
                           // whenever the frame is scaled down to fit tight
                           // constraints (e.g. a maximised window mid-resize), so
                           // the well can be handed less height than the rows'
-                          // natural total. Scale every row and gap down to fit
-                          // rather than overflowing — an overflow here forces an
-                          // expensive error-render on the busiest possible frame
-                          // and has crashed the GL embedder on Linux.
+                          // natural total — scale every row and gap down to fit
+                          // rather than overflowing, which forces an expensive
+                          // error-render on the busiest possible frame and has
+                          // crashed the GL embedder on Linux. The well is just
+                          // as often handed *more* height than the rows'
+                          // natural total (the deck's resting state), so the
+                          // same scale is also allowed to grow past 1.0 — the
+                          // keyboard fills the well instead of leaving its
+                          // lower portion empty.
                           final scale = constraints.hasBoundedHeight
-                              ? (constraints.maxHeight / _deckWellHeight).clamp(
-                                  0.0,
-                                  1.0,
-                                )
+                              ? (constraints.maxHeight / _deckWellHeight)
+                                  .clamp(0.0, double.infinity)
                               : 1.0;
                           // Where the last row starts, and its midpoint, as a
                           // fraction of the column's natural height. The whole
