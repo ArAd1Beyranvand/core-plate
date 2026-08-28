@@ -85,54 +85,101 @@ class InspectionStamp extends StatelessWidget {
                         ],
                       ),
                     ),
-                    SizedBox(height: metrics.px(6)),
+                    SizedBox(height: metrics.px(2)),
                     SizedBox(
                       width: metrics.px(220),
-                      height: metrics.px(36),
+                      height: metrics.px(20),
                       child: Stack(
+                        clipBehavior: Clip.none,
                         alignment: Alignment.topCenter,
                         children: [
                           Positioned(
-                            left: metrics.px(15),
-                            top: metrics.px(8),
+                            left: metrics.px(8),
+                            top: metrics.px(2),
                             child: Container(
-                              width: metrics.px(24),
-                              height: metrics.px(24),
+                              width: metrics.px(16),
+                              height: metrics.px(16),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.white.withValues(alpha:0.5),
-                                    blurRadius: metrics.px(12),
-                                    spreadRadius: metrics.px(4),
+                                    color: Colors.white.withValues(alpha:0.25),
+                                    blurRadius: metrics.px(18),
+                                    spreadRadius: metrics.px(6),
                                   ),
                                   BoxShadow(
-                                    color: Colors.white.withValues(alpha:0.3),
-                                    blurRadius: metrics.px(20),
-                                    spreadRadius: metrics.px(8),
+                                    color: Colors.white.withValues(alpha:0.15),
+                                    blurRadius: metrics.px(28),
+                                    spreadRadius: metrics.px(12),
                                   ),
                                 ],
                               ),
                             ),
                           ),
                           Positioned(
-                            right: metrics.px(25),
-                            top: metrics.px(6),
+                            left: metrics.px(22),
+                            top: metrics.px(4),
                             child: Container(
-                              width: metrics.px(20),
-                              height: metrics.px(20),
+                              width: metrics.px(12),
+                              height: metrics.px(12),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.white.withValues(alpha:0.4),
-                                    blurRadius: metrics.px(10),
-                                    spreadRadius: metrics.px(3),
-                                  ),
-                                  BoxShadow(
                                     color: Colors.white.withValues(alpha:0.2),
                                     blurRadius: metrics.px(16),
-                                    spreadRadius: metrics.px(6),
+                                    spreadRadius: metrics.px(5),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha:0.1),
+                                    blurRadius: metrics.px(24),
+                                    spreadRadius: metrics.px(10),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: metrics.px(35),
+                            top: metrics.px(3),
+                            child: Container(
+                              width: metrics.px(14),
+                              height: metrics.px(14),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha:0.22),
+                                    blurRadius: metrics.px(17),
+                                    spreadRadius: metrics.px(5),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha:0.12),
+                                    blurRadius: metrics.px(26),
+                                    spreadRadius: metrics.px(11),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: metrics.px(18),
+                            top: metrics.px(1),
+                            child: Container(
+                              width: metrics.px(18),
+                              height: metrics.px(18),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha:0.28),
+                                    blurRadius: metrics.px(20),
+                                    spreadRadius: metrics.px(7),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha:0.16),
+                                    blurRadius: metrics.px(30),
+                                    spreadRadius: metrics.px(13),
                                   ),
                                 ],
                               ),
@@ -140,22 +187,45 @@ class InspectionStamp extends StatelessWidget {
                           ),
                           Positioned(
                             right: metrics.px(8),
-                            top: 0,
+                            top: metrics.px(5),
                             child: Container(
-                              width: metrics.px(32),
-                              height: metrics.px(32),
+                              width: metrics.px(20),
+                              height: metrics.px(20),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.white.withValues(alpha:0.6),
-                                    blurRadius: metrics.px(14),
-                                    spreadRadius: metrics.px(5),
+                                    color: Colors.white.withValues(alpha:0.3),
+                                    blurRadius: metrics.px(22),
+                                    spreadRadius: metrics.px(8),
                                   ),
                                   BoxShadow(
-                                    color: Colors.white.withValues(alpha:0.35),
-                                    blurRadius: metrics.px(24),
-                                    spreadRadius: metrics.px(10),
+                                    color: Colors.white.withValues(alpha:0.18),
+                                    blurRadius: metrics.px(32),
+                                    spreadRadius: metrics.px(14),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: metrics.px(35),
+                            top: metrics.px(5),
+                            child: Container(
+                              width: metrics.px(10),
+                              height: metrics.px(10),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha:0.18),
+                                    blurRadius: metrics.px(15),
+                                    spreadRadius: metrics.px(4),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha:0.08),
+                                    blurRadius: metrics.px(22),
+                                    spreadRadius: metrics.px(8),
                                   ),
                                 ],
                               ),
