@@ -12,9 +12,13 @@ class CalloutCard extends StatelessWidget {
   const CalloutCard({
     super.key,
     required this.spec,
+    this.widthDesignPx,
+    this.showIndexChip = true,
   });
 
   final CalloutSpec spec;
+  final double? widthDesignPx;
+  final bool showIndexChip;
 
   BevelKind get _bevelKind {
     switch (spec.kind) {
@@ -115,18 +119,30 @@ class CalloutCard extends StatelessWidget {
         metrics.px(22),
       ),
       child: Column(
-        crossAxisAlignment:
-            direction == TextDirection.rtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: direction == TextDirection.rtl
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: <Widget>[
           // Eyebrow
           Directionality(
             textDirection: TextDirection.ltr,
             child: Align(
-              alignment: direction == TextDirection.rtl ? Alignment.centerRight : Alignment.centerLeft,
-              child: Text(
-                spec.eyebrow,
-                textAlign: direction == TextDirection.rtl ? TextAlign.right : TextAlign.left,
-                style: _eyebrowStyle(metrics.f),
+              alignment: direction == TextDirection.rtl
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: showIndexChip && (spec.index == 1 || spec.index == 9)
+                      ? metrics.px(70)
+                      : 0,
+                ),
+                child: Text(
+                  spec.eyebrow,
+                  textAlign: direction == TextDirection.rtl
+                      ? TextAlign.right
+                      : TextAlign.left,
+                  style: _eyebrowStyle(metrics.f),
+                ),
               ),
             ),
           ),
@@ -135,18 +151,13 @@ class CalloutCard extends StatelessWidget {
           // Title
           Directionality(
             textDirection: direction,
-            child: Text(
-              spec.title,
-              style: _titleStyle(metrics.f),
-            ),
+            child: Text(spec.title, style: _titleStyle(metrics.f)),
           ),
           SizedBox(height: metrics.px(14)),
 
           // Dashed rule
           if (!spec.hasDivider)
-            DashedRule.thin(
-              color: _dashedRuleColor(metrics),
-            ),
+            DashedRule.thin(color: _dashedRuleColor(metrics)),
           if (spec.hasDivider) const TwoToneDivider(),
 
           SizedBox(height: metrics.px(14)),
@@ -155,10 +166,7 @@ class CalloutCard extends StatelessWidget {
           if (spec.body != null)
             Directionality(
               textDirection: direction,
-              child: Text(
-                spec.body!,
-                style: _bodyStyle(metrics.f),
-              ),
+              child: Text(spec.body!, style: _bodyStyle(metrics.f)),
             ),
 
           // Footer (card 05)
@@ -223,11 +231,7 @@ class CalloutCard extends StatelessWidget {
       cardContent = Stack(
         children: <Widget>[
           cardContent,
-          Positioned(
-            right: 0,
-            bottom: metrics.px(14),
-            child: const RedTag(),
-          ),
+          Positioned(right: 0, bottom: metrics.px(14), child: const RedTag()),
         ],
       );
     }
@@ -254,10 +258,12 @@ class CalloutCard extends StatelessWidget {
       groundColor: _groundColor,
       groundGradient: _groundGradient,
       child: SizedBox(
-        width: metrics.px(spec.widthFx * 1920),
+        width: metrics.px(widthDesignPx ?? spec.widthFx * 1920),
         child: cardContent,
       ),
     );
+
+    if (!showIndexChip) return card;
 
     // Add index chip
     final chipPositioned = spec.side == CalloutSide.left
@@ -282,10 +288,7 @@ class CalloutCard extends StatelessWidget {
 
     return Stack(
       clipBehavior: Clip.none,
-      children: <Widget>[
-        card,
-        chipPositioned,
-      ],
+      children: <Widget>[card, chipPositioned],
     );
   }
 }

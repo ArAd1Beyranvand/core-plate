@@ -14,7 +14,8 @@ class PlateNumberShowcaseApp extends StatelessWidget {
       theme: ThemeData(
         colorSchemeSeed: PosterTokens.accent,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: PosterTokens.bg,
+        scaffoldBackgroundColor: PosterColors.pageBlack,
+        canvasColor: PosterColors.pageBlack,
         useMaterial3: true,
       ),
       home: const ShowcaseScreen(),

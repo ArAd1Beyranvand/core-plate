@@ -25,7 +25,7 @@ enum CalloutMotif {
   siphon,
 }
 
-/// SWEEP — Transform.translate on X, plus Opacity.
+/// SWEEP — Transform.translate on X, plus independent group opacity.
 class SweepTransition extends StatelessWidget {
   const SweepTransition({
     super.key,
@@ -40,8 +40,10 @@ class SweepTransition extends StatelessWidget {
   final CalloutSide side;
   final Widget child;
 
-  /// Distance to travel off screen, comfortably past the 360px rail.
+  /// Distance to travel off the poster rail.
   static const double _distance = 520;
+  static const Curve _enterCurve = Cubic(0.215, 0.61, 0.355, 1);
+  static const Curve _exitCurve = Cubic(0.55, 0.055, 0.675, 0.19);
 
   @override
   Widget build(BuildContext context) {
@@ -51,19 +53,11 @@ class SweepTransition extends StatelessWidget {
       child: child,
       builder: (context, child) {
         final double t = animation.value;
-        double dx;
-        double opacity;
-        if (entering) {
-          final double eased = Curves.easeOutCubic.transform(t);
-          dx = sign * _distance * (1 - eased);
-          // Opacity 0 -> 1 over the FIRST 40% only.
-          opacity = (t / 0.4).clamp(0.0, 1.0);
-        } else {
-          final double eased = Curves.easeInCubic.transform(t);
-          dx = sign * _distance * eased;
-          // Opacity 1 -> 0 over the LAST 40% only.
-          opacity = (1 - (t - 0.6) / 0.4).clamp(0.0, 1.0);
-        }
+        final double eased = (entering ? _enterCurve : _exitCurve).transform(t);
+        final double dx = entering
+            ? sign * _distance * (1 - eased)
+            : sign * _distance * eased;
+        final double opacity = entering ? t : 1 - t;
         return Transform.translate(
           offset: Offset(dx, 0),
           child: Opacity(opacity: opacity, child: child),
@@ -88,6 +82,9 @@ class TrapdoorTransition extends StatelessWidget {
   final CalloutSide side;
   final Widget child;
 
+  static const Curve _enterCurve = Cubic(0.25, 0.46, 0.45, 0.94);
+  static const Curve _exitCurve = Cubic(0.55, 0.085, 0.68, 0.53);
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -95,40 +92,15 @@ class TrapdoorTransition extends StatelessWidget {
       child: child,
       builder: (context, child) {
         final double t = animation.value;
-        double slotFactor;
-        double dy;
-        double opacity;
-
-        if (entering) {
-          // Slot opens over the first 25%.
-          slotFactor = (t / 0.25).clamp(0.0, 1.0);
-          // Child drops (Y -90 -> 0, fade 0 -> 1) over the middle.
-          final double drop =
-              ((t - 0.25) / (0.80 - 0.25)).clamp(0.0, 1.0);
-          final double eased = Curves.easeOutQuad.transform(drop);
-          dy = -90 * (1 - eased);
-          opacity = eased;
-          // Slot closes over the final 20%.
-          if (t > 0.8) {
-            slotFactor = (1 - (t - 0.8) / 0.2).clamp(0.0, 1.0);
-          }
-        } else {
-          // Slot opens over the first 30%.
-          slotFactor = (t / 0.3).clamp(0.0, 1.0);
-          // Child falls (Y 0 -> +90, fade 1 -> 0) over the remaining 70%.
-          final double fall = ((t - 0.3) / 0.7).clamp(0.0, 1.0);
-          final double eased = Curves.easeInQuad.transform(fall);
-          dy = 90 * eased;
-          opacity = 1 - eased;
-          // Slot closes back over the final 15%.
-          if (t > 0.85) {
-            slotFactor = (1 - (t - 0.85) / 0.15).clamp(0.0, 1.0);
-          }
-        }
+        final double eased = (entering ? _enterCurve : _exitCurve).transform(t);
+        final double slotFactor = entering ? t : 1 - t;
+        final double dy = entering ? -90 * (1 - eased) : 90 * eased;
+        final double opacity = entering ? t : 1 - t;
 
         // Entry aligns the slot to the TOP; exit to the BOTTOM.
-        final Alignment slotAlign =
-            entering ? Alignment.topCenter : Alignment.bottomCenter;
+        final Alignment slotAlign = entering
+            ? Alignment.topCenter
+            : Alignment.bottomCenter;
 
         return ClipRect(
           child: Stack(
@@ -164,10 +136,7 @@ class _TrapdoorSlot extends StatelessWidget {
         decoration: BoxDecoration(
           color: PosterTokens.accent.withValues(alpha: 0.55),
           boxShadow: const [
-            BoxShadow(
-              color: PosterTokens.accent,
-              blurRadius: 12,
-            ),
+            BoxShadow(color: PosterTokens.accent, blurRadius: 12),
           ],
         ),
       ),
@@ -190,6 +159,9 @@ class SiphonTransition extends StatelessWidget {
   final CalloutSide side;
   final Widget child;
 
+  static const Curve _enterCurve = Cubic(0.34, 1.56, 0.64, 1);
+  static const Curve _exitCurve = Cubic(0.36, 0, 0.66, -0.56);
+
   @override
   Widget build(BuildContext context) {
     // The dot sits on the device-facing edge: RIGHT for left callouts,
@@ -205,27 +177,12 @@ class SiphonTransition extends StatelessWidget {
       child: child,
       builder: (context, child) {
         final double t = animation.value;
-        double scale;
-        double opacity;
-        double dx;
-
-        if (entering) {
-          // Scale 0.04 -> 1, opacity 0 -> 1 over the FIRST 55%.
-          final double p = (t / 0.55).clamp(0.0, 1.0);
-          final double eased = Curves.easeOutBack.transform(p);
-          scale = (0.04 + (1 - 0.04) * eased).clamp(0.0, double.infinity);
-          opacity = p.clamp(0.0, 1.0);
-          // X nudge ∓18 -> 0.
-          dx = (-sign * 18) * (1 - eased);
-        } else {
-          // Scale 1 -> 0.04, opacity 1 -> 0 over the LAST 55%.
-          final double p = ((t - 0.45) / 0.55).clamp(0.0, 1.0);
-          final double eased = Curves.easeInBack.transform(p);
-          scale = (1 - (1 - 0.04) * eased).clamp(0.0, double.infinity);
-          opacity = (1 - p).clamp(0.0, 1.0);
-          // X nudge 0 -> ±18 toward the dot.
-          dx = (sign * 18) * eased;
-        }
+        final double eased = (entering ? _enterCurve : _exitCurve).transform(t);
+        final double scale = entering ? 0.04 + 0.96 * eased : 1 - 0.96 * eased;
+        final double opacity = entering ? t : 1 - t;
+        final double dx = entering
+            ? (-sign * 18) * (1 - eased)
+            : (sign * 18) * eased;
 
         return Transform.translate(
           offset: Offset(dx, 0),
@@ -261,23 +218,23 @@ class CalloutTransition extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (motif) {
       CalloutMotif.sweep => SweepTransition(
-          animation: animation,
-          entering: entering,
-          side: side,
-          child: child,
-        ),
+        animation: animation,
+        entering: entering,
+        side: side,
+        child: child,
+      ),
       CalloutMotif.trapdoor => TrapdoorTransition(
-          animation: animation,
-          entering: entering,
-          side: side,
-          child: child,
-        ),
+        animation: animation,
+        entering: entering,
+        side: side,
+        child: child,
+      ),
       CalloutMotif.siphon => SiphonTransition(
-          animation: animation,
-          entering: entering,
-          side: side,
-          child: child,
-        ),
+        animation: animation,
+        entering: entering,
+        side: side,
+        child: child,
+      ),
     };
   }
 }

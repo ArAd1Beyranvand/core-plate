@@ -11,8 +11,8 @@ Run with `/task <n>`. One task per session, commit between each.
 | P5 | Sweep light & ground shadow | ☑ | f3fc95c | Landed together with P6 — the gallery's `C` toggle and the bevel-panel fix below are shared by both. |
 | P6 | Wordmark & page chrome | ☑ | f3fc95c | Same commit as P5. `poster_links.dart` uses bevel panels; `url_launcher` was not a dependency, so taps are a no-op (see below). |
 | P7 | Callout content & cards | ☑ | f67840a | See below — card 01/02/05 flag bug found and fixed during verification. |
-| P8 | Callout motion | ☐ | | |
-| P9 | Responsive assembly & verification | ☐ | | |
+| P8 | Callout motion | ☑ | PENDING | Landed together with P9. `callout_rail.dart` was not renamed to `callouts/callout_layer.dart` — see below. |
+| P9 | Responsive assembly & verification | ☑ | PENDING | Same commit as P8. Freeze audit clean, `flutter analyze` clean, `flutter test` green. |
 
 ## Open issues
 
@@ -68,3 +68,25 @@ Run with `/task <n>`. One task per session, commit between each.
   available in this environment) with no `RenderFlex`/overflow errors at
   their declared widths; the scratch test file was not committed. No rendered
   screenshot was taken — worth a human look before P9, same as P4–P6.
+- **P8 — the callout layer lives in `showcase_screen.dart`, not
+  `callouts/callout_layer.dart`.** `callout_rail.dart` had already been removed
+  in the P1 demolition, so there was nothing to rename. Its structure (one
+  controller per side at 1500ms, exit on `Interval(0, .45)`, entry on
+  `Interval(.55, 1)`, animations built in `initState`, one set at a time,
+  driven from `didUpdateWidget`) is reproduced in `_CalloutSideLayer`. The
+  three motifs, all six curves and the new device→motif mapping live in
+  `callout_motion.dart`; `callouts/callout_gallery.dart` is the dev target.
+- **P8/P9 — verified by widget test, not by eye.** `flutter analyze` is clean
+  (the one remaining `withOpacity` info is in the frozen
+  `device_preview/pixel_dissolve.dart`), the freeze audit against `deb30f1^`
+  reports zero changes under `lib/`, `example/lib/device_preview/` or any of
+  the five frozen showcase files, and `flutter test` passes: the tier sweep
+  (1920×1080, 1440×900, 1024×768, 800×600, 400×880) and a full device cycle
+  both run with no render errors. Still no rendered screenshot.
+- **P9 — the wide tier's anchors and its card metrics scale on different
+  axes.** Card positions are `anchorFx * width` / `anchorFy * height`, but card
+  widths and type go through `f = (width / 1920).clamp(.52, 1)`, derived from
+  width alone. On any stage that is not 16:9 the two diverge, and the cards
+  drift into the device and into each other — the design is a fixed 1920×1080
+  composition and only holds at that aspect. Reported by the author right after
+  this commit; fixed in the follow-up.

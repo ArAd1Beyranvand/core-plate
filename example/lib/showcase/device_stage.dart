@@ -13,13 +13,20 @@ import '../showcase/plate_typist.dart';
 import '../widgets/plate_display.dart';
 
 class DeviceStage extends StatefulWidget {
-  const DeviceStage({this.onFrameDeviceChanged});
+  const DeviceStage({
+    super.key,
+    this.onFrameDeviceChanged,
+    this.onPhaseChanged,
+  });
 
   /// Fired the instant a hop starts, with the incoming device — i.e. the same
   /// moment [_DeviceStageState._frameDevice] flips, before the plate content
   /// has caught up. The callout rails switch on this, so they leave while the
   /// device is still morphing.
   final ValueChanged<DeviceType>? onFrameDeviceChanged;
+
+  /// Fired for every phase reported by the frame transition.
+  final ValueChanged<DeviceTransitionPhase>? onPhaseChanged;
 
   @override
   State<DeviceStage> createState() => _DeviceStageState();
@@ -197,6 +204,7 @@ class _DeviceStageState extends State<DeviceStage> {
   }
 
   void _onPhase(DeviceTransitionPhase phase) {
+    widget.onPhaseChanged?.call(phase);
     // At idle the content has fully faded back in, so it's safe to start typing.
     if (phase == DeviceTransitionPhase.idle) _maybeStartTyping();
   }
@@ -272,72 +280,59 @@ class _DeviceStageState extends State<DeviceStage> {
     // tablet's letters pad shows: a digit-only alphabet keeps the digit grid,
     // anything else slides the letters layer in.
     final activeAlphabet = _activeSlot?.alphabet;
-    final showLetters =
-        activeAlphabet != null &&
-        !activeAlphabet.isNumeric;
-    // Cap the frame: the laptop is 1280x830 body plus a ~430px projected deck,
-    // so unconstrained it eats the whole middle column and dwarfs the poster.
-    // DeviceFrame fits itself to its constraints, so this only scales it down.
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 860, maxHeight: 640),
-        child: DeviceFrame(
-          device: frameDevice,
-          onPhaseChanged: _onPhase,
-          onContentSwap: _onContentSwap,
-          deckPressedKey: _typist.activeKey,
-          onDeckKey: _onDeckKey,
-          builder: (context, _) => PlateDisplay(
-            spec: config.spec,
-            mode: PlateMode.input,
-            // activeColor is the completed-field underline colour; swap it to red
-            // for the tablet's German plate when the typed value is invalid (e.g. a
-            // forbidden letter combination). Other devices keep the accent.
-            activeColor:
-                config.showsValidation &&
-                    _germanValidation?.isValid == false
-                ? PosterTokens.invalid
-                : PosterTokens.accent,
-            bloc: _bloc,
-            // The laptop deck already carries letter keys, so its letter comes in
-            // through the library's on-screen-keypad mode instead of the modal
-            // picker. Other devices keep their platform default.
-            inputSource: config.inputSource,
-            onActiveSlotChanged: config.showsValidation
-                ? _setActiveSlot
-                : null,
-            controller: config.usesController ? _plateInput : null,
-            showBackdrop: true,
-            plateWidthFactor: config.plateWidthFactor,
-            keyboard: !config.showsKeypad
-                ? null
-                : !config.compactKeypad
-                ? PlateKeypad(
-                    highlightedKey: _typist.activeKey,
-                    compact: false,
-                    showLetters: showLetters,
-                    digitAlphabet: PlateAlphabet.latinDigits,
-                    letterAlphabet: PlateAlphabet.latinUppercase,
-                    activeAlphabet: activeAlphabet,
-                    // NOTE the deliberate demo tension: the auto-typist commits
-                    // via bloc.add and is unaffected by key enabledness, so the
-                    // scripted "88" red beat still plays; greying protects only
-                    // interactive taps.
-                    unavailableKeys: _unavailableKeysFor(_bloc.state),
-                    theme: const PlateKeypadTheme(
-                      highlight: PosterTokens.accent,
-                      keyBorder: PosterTokens.hairline,
-                    ),
-                    onKey: (key) => key == kPlateBackspaceKey
-                        ? _plateInput.backspace()
-                        : _plateInput.submit(key),
-                  )
-                : PlateKeypad(
-                    highlightedKey: _typist.activeKey,
-                    compact: config.compactKeypad,
-                  ),
-          ),
-        ),
+    final showLetters = activeAlphabet != null && !activeAlphabet.isNumeric;
+    return DeviceFrame(
+      device: frameDevice,
+      onPhaseChanged: _onPhase,
+      onContentSwap: _onContentSwap,
+      deckPressedKey: _typist.activeKey,
+      onDeckKey: _onDeckKey,
+      builder: (context, _) => PlateDisplay(
+        spec: config.spec,
+        mode: PlateMode.input,
+        // activeColor is the completed-field underline colour; swap it to red
+        // for the tablet's German plate when the typed value is invalid (e.g. a
+        // forbidden letter combination). Other devices keep the accent.
+        activeColor:
+            config.showsValidation && _germanValidation?.isValid == false
+            ? PosterTokens.invalid
+            : PosterTokens.accent,
+        bloc: _bloc,
+        // The laptop deck already carries letter keys, so its letter comes in
+        // through the library's on-screen-keypad mode instead of the modal
+        // picker. Other devices keep their platform default.
+        inputSource: config.inputSource,
+        onActiveSlotChanged: config.showsValidation ? _setActiveSlot : null,
+        controller: config.usesController ? _plateInput : null,
+        showBackdrop: true,
+        plateWidthFactor: config.plateWidthFactor,
+        keyboard: !config.showsKeypad
+            ? null
+            : !config.compactKeypad
+            ? PlateKeypad(
+                highlightedKey: _typist.activeKey,
+                compact: false,
+                showLetters: showLetters,
+                digitAlphabet: PlateAlphabet.latinDigits,
+                letterAlphabet: PlateAlphabet.latinUppercase,
+                activeAlphabet: activeAlphabet,
+                // NOTE the deliberate demo tension: the auto-typist commits
+                // via bloc.add and is unaffected by key enabledness, so the
+                // scripted "88" red beat still plays; greying protects only
+                // interactive taps.
+                unavailableKeys: _unavailableKeysFor(_bloc.state),
+                theme: const PlateKeypadTheme(
+                  highlight: PosterTokens.accent,
+                  keyBorder: PosterTokens.hairline,
+                ),
+                onKey: (key) => key == kPlateBackspaceKey
+                    ? _plateInput.backspace()
+                    : _plateInput.submit(key),
+              )
+            : PlateKeypad(
+                highlightedKey: _typist.activeKey,
+                compact: config.compactKeypad,
+              ),
       ),
     );
   }
