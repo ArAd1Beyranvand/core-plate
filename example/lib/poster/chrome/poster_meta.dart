@@ -4,10 +4,7 @@ import '../poster_scale.dart';
 import '../poster_tokens.dart';
 
 /// The meta strip from DESIGN_SPEC.md §6 "Chrome", anchored at `.039, .882`.
-///
-/// `made in IRAN` (meta-strong, bold), on a
-/// `rgba(9,8,6,.92)` ground, with a top hairline `rgba(188,206,235,.18)` and a
-/// bottom hairline `rgba(0,0,0,.7)`.
+/// Currently hidden (renders as empty).
 ///
 /// §9.1: in the source this strip is clipped by cards 04/08/12 and the link
 /// buttons. P6 builds the chrome to live in its own layer ABOVE the callouts
@@ -22,7 +19,6 @@ class PosterMeta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final PosterMetrics metrics = PosterMetrics.of(context);
-    final double f = metrics.f;
     final double hair = metrics.px(1);
 
     return DecoratedBox(
@@ -38,12 +34,7 @@ class PosterMeta extends StatelessWidget {
           horizontal: metrics.px(20),
           vertical: metrics.px(12),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Text('made in IRAN', style: PosterType.metaStrong(f).copyWith(fontWeight: FontWeight.bold)),
-          ],
-        ),
+        child: const SizedBox.shrink(),
       ),
     );
   }

@@ -69,7 +69,7 @@ class PosterChrome extends StatelessWidget {
         Positioned(
           left: stamp.dx,
           top: stamp.dy,
-          child: InspectionStamp(device: device),
+          child: const InspectionStamp(),
         ),
       ],
     );

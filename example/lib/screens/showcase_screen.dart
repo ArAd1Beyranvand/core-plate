@@ -377,7 +377,7 @@ class _MediumChrome extends StatelessWidget {
         Positioned(
           right: 66,
           bottom: 8,
-          child: InspectionStamp(device: device),
+          child: const InspectionStamp(),
         ),
         Positioned(
           right: 20,
