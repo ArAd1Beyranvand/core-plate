@@ -98,7 +98,7 @@ class InspectionStamp extends StatelessWidget {
                               width: metrics.px(20),
                               height: metrics.px(2),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.6),
+                                color: Colors.white.withValues(alpha:0.6),
                                 borderRadius: BorderRadius.circular(metrics.px(1)),
                               ),
                             ),
@@ -109,7 +109,7 @@ class InspectionStamp extends StatelessWidget {
                               width: metrics.px(16),
                               height: metrics.px(2),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.4),
+                                color: Colors.white.withValues(alpha:0.4),
                                 borderRadius: BorderRadius.circular(metrics.px(1)),
                               ),
                             ),
@@ -120,7 +120,7 @@ class InspectionStamp extends StatelessWidget {
                               width: metrics.px(32),
                               height: metrics.px(3),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.7),
+                                color: Colors.white.withValues(alpha:0.7),
                                 borderRadius: BorderRadius.circular(metrics.px(1.5)),
                               ),
                             ),
@@ -132,7 +132,7 @@ class InspectionStamp extends StatelessWidget {
                               width: metrics.px(24),
                               height: metrics.px(2),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha:0.5),
                                 borderRadius: BorderRadius.circular(metrics.px(1)),
                               ),
                             ),
