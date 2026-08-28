@@ -180,50 +180,28 @@ class LaptopDeck extends StatelessWidget {
                               ? (constraints.maxHeight / _deckWellHeight)
                                   .clamp(0.0, double.infinity)
                               : 1.0;
-                          // Where the last row starts, and its midpoint, as a
-                          // fraction of the column's natural height. The whole
-                          // keyboard is masked with a top-to-bottom gradient
-                          // that stays fully opaque down to that midpoint, then
-                          // dissolves to opacity 0 at the column's very bottom —
-                          // so the top rows read crisply and only the last row
-                          // fades off the bottom edge of the deck.
-                          final totalHeight =
-                              deckRows.fold<double>(0, (h, r) => h + r.height) +
-                              _rowGap * (deckRows.length - 1);
-                          final lastMid =
-                              (totalHeight - deckRows.last.height / 2) /
-                              totalHeight;
-                          return ShaderMask(
-                            blendMode: BlendMode.dstIn,
-                            shaderCallback: (rect) => LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: const [
-                                Colors.white,
-                                Colors.white,
-                                Colors.transparent,
+                          // Rows now scale up to fill the well (see [scale]
+                          // above), so a fixed fraction of the bottom is no
+                          // longer just the last row's own height — it grows
+                          // with the well and dissolves a wide band of keys to
+                          // transparent, exposing the lighter aluminum body
+                          // behind the well as a blank strip at the deck's
+                          // far edge. The rows already fill the well exactly,
+                          // so no edge fade is needed to hide an overflow.
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (var r = 0; r < deckRows.length; r++) ...[
+                                _DeckRowStrip(
+                                  row: deckRows[r],
+                                  scale: scale,
+                                  onKey: onKey,
+                                  pressedKey: pressedKey,
+                                ),
+                                if (r < deckRows.length - 1)
+                                  SizedBox(height: _rowGap * scale),
                               ],
-                              stops: [0, lastMid, 1],
-                            ).createShader(rect),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                for (
-                                  var r = 0;
-                                  r < deckRows.length;
-                                  r++
-                                ) ...[
-                                  _DeckRowStrip(
-                                    row: deckRows[r],
-                                    scale: scale,
-                                    onKey: onKey,
-                                    pressedKey: pressedKey,
-                                  ),
-                                  if (r < deckRows.length - 1)
-                                    SizedBox(height: _rowGap * scale),
-                                ],
-                              ],
-                            ),
+                            ],
                           );
                         },
                       ),
