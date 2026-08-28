@@ -815,6 +815,9 @@ class _SlotRail extends StatelessWidget {
   }
 }
 
+/// How long a callout set takes to cross-fade when the device changes.
+const Duration _kCalloutSwap = Duration(milliseconds: 1400);
+
 class _CompactCallouts extends StatelessWidget {
   const _CompactCallouts({required this.device});
 
@@ -823,7 +826,10 @@ class _CompactCallouts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
-      duration: const DeviceTransitionDurations().frameTransform,
+      // Deliberately not the frame morph's duration: the callouts are prose and
+      // need to stay readable on the way out, so they cross-fade on their own,
+      // slower clock while the shell reshapes underneath them.
+      duration: _kCalloutSwap,
       switchInCurve: Curves.easeOutCubic,
       switchOutCurve: Curves.easeInCubic,
       layoutBuilder: (currentChild, previousChildren) {

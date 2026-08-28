@@ -72,17 +72,18 @@ const List<TypistStep> germanCarScript = [
   KeyStep(6, '3'),
 ];
 
-/// The keystrokes for the bicycle plate: eight straight digits, no letter,
-/// evenly spaced.
+/// The keystrokes for the bicycle plate: eight straight digits, no letter.
+/// Typed as four quick pairs rather than an even drip — pausing after every
+/// single digit made the longest plate of the three the slowest to watch.
 const List<TypistStep> bicycleScript = [
-  KeyStep(0, '9', pauseAfter: true),
+  KeyStep(0, '9'),
   KeyStep(1, '1', pauseAfter: true),
-  KeyStep(2, '8', pauseAfter: true),
+  KeyStep(2, '8'),
   KeyStep(3, '8', pauseAfter: true),
-  KeyStep(4, '6', pauseAfter: true),
+  KeyStep(4, '6'),
   KeyStep(5, '4', pauseAfter: true),
-  KeyStep(6, '0', pauseAfter: true),
-  KeyStep(7, '4', pauseAfter: true),
+  KeyStep(6, '0'),
+  KeyStep(7, '4'),
 ];
 
 /// Tracks which slot the letters pad is currently showing across a [PlateTypist.run],

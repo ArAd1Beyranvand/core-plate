@@ -9,12 +9,13 @@ enum DeviceTransitionPhase { idle, contentFadeOut, frameTransform, contentFadeIn
 /// Durations for each phase. Fades default to 1500ms.
 ///
 /// The fades are kept equal on purpose: with a symmetric swap the frame morph
-/// lands dead-centre of the whole transition timeline.
+/// sits at the centre of the transition timeline, off only by the half of
+/// [blankHold] that trails it.
 @immutable
 class DeviceTransitionDurations {
   const DeviceTransitionDurations({
     this.contentFadeOut = const Duration(milliseconds: 1500),
-    this.frameTransform = const Duration(milliseconds: 600),
+    this.frameTransform = const Duration(milliseconds: 1100),
     this.contentFadeIn = const Duration(milliseconds: 1500),
     this.blankHold = const Duration(milliseconds: 120),
   });
