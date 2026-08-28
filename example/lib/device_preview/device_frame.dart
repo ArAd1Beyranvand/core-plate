@@ -345,17 +345,24 @@ class _DeviceFrameState extends State<DeviceFrame>
                   // than waiting on the pixel-reveal to glitch it into view.
                   child: Stack(
                     children: [
-                      PixelDissolve(
-                        progress: _deckReveal,
-                        seed: _dissolveSeed,
-                        // Blocks that haven't revealed read as the blank screen
-                        // behind the deck.
-                        coverColor: const Color(0xFF07080A),
-                        child: LaptopDeck(
-                          frontOpacity: frontOpacity,
-                          backOpacity: backOpacity,
-                          pressedKey: widget.deckPressedKey,
-                          onKey: widget.onDeckKey,
+                      // The dissolve paints square cover blocks across the full
+                      // bounds, so it must be clipped to the deck's own rounded
+                      // bottom corners — unclipped it squares them off for the
+                      // whole fold/unfold beat.
+                      ClipRRect(
+                        borderRadius: laptopEdgeRadius,
+                        child: PixelDissolve(
+                          progress: _deckReveal,
+                          seed: _dissolveSeed,
+                          // Blocks that haven't revealed read as the blank screen
+                          // behind the deck.
+                          coverColor: const Color(0xFF07080A),
+                          child: LaptopDeck(
+                            frontOpacity: frontOpacity,
+                            backOpacity: backOpacity,
+                            pressedKey: widget.deckPressedKey,
+                            onKey: widget.onDeckKey,
+                          ),
                         ),
                       ),
                       const Positioned.fill(child: LaptopChassisEdge()),

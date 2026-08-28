@@ -9,7 +9,12 @@ part 'laptop_deck.parts.dart';
 const laptopEdgeWidth = 8.0;
 
 const _edgeColor = Color(0xFF8A909C);
-const _edgeRadius = BorderRadius.vertical(bottom: Radius.circular(16));
+
+/// Corner rounding of the deck's bottom edge. Public because the dissolve
+/// overlay stacked above the deck paints square blocks and must be clipped to
+/// this same shape, or it squares off the corners mid-transition.
+const laptopEdgeRadius = BorderRadius.vertical(bottom: Radius.circular(16));
+const _edgeRadius = laptopEdgeRadius;
 
 /// The chassis rim around the laptop deck: a thin gray-metal ring matching
 /// the body's own frame. [DeviceFrame] stacks this on top of the deck's
