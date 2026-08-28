@@ -61,8 +61,10 @@ class DevicePresets {
     label: 'Desktop',
     bodySize: Size(1180, 740),
     bezel: EdgeInsets.fromLTRB(22, 34, 22, 26),
-    bodyRadius: 16,
-    screenRadius: 8,
+    // Same corner rounding as the tablet, so the three form factors read as one
+    // family and the morph between them never changes corner size.
+    bodyRadius: 38,
+    screenRadius: 24,
     notchSize: Size(180, 22),
     notchRadius: 8,
     cameraEdge: 0.125,

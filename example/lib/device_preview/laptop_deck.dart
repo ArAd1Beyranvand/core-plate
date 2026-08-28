@@ -10,11 +10,16 @@ const laptopEdgeWidth = 8.0;
 
 const _edgeColor = Color(0xFF8A909C);
 
-/// Corner rounding of the deck's bottom edge. Public because the dissolve
-/// overlay stacked above the deck paints square blocks and must be clipped to
-/// this same shape, or it squares off the corners mid-transition.
-const laptopEdgeRadius = BorderRadius.vertical(bottom: Radius.circular(16));
+/// Corner rounding of the deck's bottom edge — matches the body's own
+/// [DeviceConfig.bodyRadius], which is the tablet's 38. Public because the
+/// dissolve overlay stacked above the deck paints square blocks and must be
+/// clipped to this same shape, or it squares off the corners mid-transition.
+const laptopEdgeRadius = BorderRadius.vertical(bottom: Radius.circular(38));
 const _edgeRadius = laptopEdgeRadius;
+
+/// Corner rounding of the recessed keyboard well — matches the body's
+/// [DeviceConfig.screenRadius], the tablet's 24.
+const _wellRadius = BorderRadius.all(Radius.circular(24));
 
 /// The chassis rim around the laptop deck: a thin gray-metal ring matching
 /// the body's own frame. [DeviceFrame] stacks this on top of the deck's
@@ -121,7 +126,7 @@ class LaptopDeck extends StatelessWidget {
               child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: _wellRadius,
                         gradient: const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
