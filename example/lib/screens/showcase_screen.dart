@@ -30,6 +30,13 @@ class ShowcaseScreen extends StatefulWidget {
 
 class _ShowcaseScreenState extends State<ShowcaseScreen> {
   DeviceType _device = DeviceType.desktop;
+
+  /// The device the layout slot is sized for. It lags [_device] until the frame
+  /// actually starts morphing: the hop fires at the top of the content fade-out,
+  /// and resizing the slot there squeezed the still-full-size laptop down to
+  /// phone width before the shell had reshaped, so it pinched tiny and then grew
+  /// back. Holding the outgoing bounds keeps the slot and the shell in step.
+  DeviceType _slotDevice = DeviceType.desktop;
   DeviceTransitionPhase _phase = DeviceTransitionPhase.idle;
 
   void _onFrameDeviceChanged(DeviceType device) {
@@ -39,7 +46,13 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
 
   void _onPhaseChanged(DeviceTransitionPhase phase) {
     if (!mounted) return;
-    setState(() => _phase = phase);
+    setState(() {
+      _phase = phase;
+      if (phase == DeviceTransitionPhase.frameTransform ||
+          phase == DeviceTransitionPhase.idle) {
+        _slotDevice = _device;
+      }
+    });
   }
 
   @override
@@ -49,6 +62,7 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
       body: PosterMetricsScope(
         child: _PosterAssembly(
           device: _device,
+          slotDevice: _slotDevice,
           phase: _phase,
           onFrameDeviceChanged: _onFrameDeviceChanged,
           onPhaseChanged: _onPhaseChanged,
@@ -61,12 +75,16 @@ class _ShowcaseScreenState extends State<ShowcaseScreen> {
 class _PosterAssembly extends StatelessWidget {
   const _PosterAssembly({
     required this.device,
+    required this.slotDevice,
     required this.phase,
     required this.onFrameDeviceChanged,
     required this.onPhaseChanged,
   });
 
   final DeviceType device;
+
+  /// Sizes the device slot; lags [device] until the shell starts morphing.
+  final DeviceType slotDevice;
   final DeviceTransitionPhase phase;
   final ValueChanged<DeviceType> onFrameDeviceChanged;
   final ValueChanged<DeviceTransitionPhase> onPhaseChanged;
@@ -78,6 +96,7 @@ class _PosterAssembly extends StatelessWidget {
       case PosterTier.wide:
         return _WidePoster(
           device: device,
+          slotDevice: slotDevice,
           phase: phase,
           onFrameDeviceChanged: onFrameDeviceChanged,
           onPhaseChanged: onPhaseChanged,
@@ -85,6 +104,7 @@ class _PosterAssembly extends StatelessWidget {
       case PosterTier.medium:
         return _MediumPoster(
           device: device,
+          slotDevice: slotDevice,
           phase: phase,
           onFrameDeviceChanged: onFrameDeviceChanged,
           onPhaseChanged: onPhaseChanged,
@@ -103,12 +123,14 @@ class _PosterAssembly extends StatelessWidget {
 class _WidePoster extends StatelessWidget {
   const _WidePoster({
     required this.device,
+    required this.slotDevice,
     required this.phase,
     required this.onFrameDeviceChanged,
     required this.onPhaseChanged,
   });
 
   final DeviceType device;
+  final DeviceType slotDevice;
   final DeviceTransitionPhase phase;
   final ValueChanged<DeviceType> onFrameDeviceChanged;
   final ValueChanged<DeviceTransitionPhase> onPhaseChanged;
@@ -116,7 +138,7 @@ class _WidePoster extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final metrics = PosterMetrics.of(context);
-    final bounds = _wideDeviceBounds(metrics.size, device);
+    final bounds = _wideDeviceBounds(metrics.size, slotDevice);
 
     return Stack(
       fit: StackFit.expand,
@@ -144,12 +166,14 @@ class _WidePoster extends StatelessWidget {
 class _MediumPoster extends StatelessWidget {
   const _MediumPoster({
     required this.device,
+    required this.slotDevice,
     required this.phase,
     required this.onFrameDeviceChanged,
     required this.onPhaseChanged,
   });
 
   final DeviceType device;
+  final DeviceType slotDevice;
   final DeviceTransitionPhase phase;
   final ValueChanged<DeviceType> onFrameDeviceChanged;
   final ValueChanged<DeviceTransitionPhase> onPhaseChanged;
@@ -173,7 +197,7 @@ class _MediumPoster extends StatelessWidget {
       centerWidth,
       areaHeight,
     );
-    final bounds = _mediumDeviceBounds(stageArea, device);
+    final bounds = _mediumDeviceBounds(stageArea, slotDevice);
 
     return Stack(
       fit: StackFit.expand,
