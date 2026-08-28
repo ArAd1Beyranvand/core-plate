@@ -13,12 +13,12 @@ import '../poster_tokens.dart';
 /// (`inset 0 0 0 2px rgba(228,214,188,.34), inset 0 0 0 8px rgba(228,214,188,.14)`)
 /// and two centred Martian Mono lines:
 ///
-///   FORM FACTOR {01|02|03}/03
+///   made in IRAN
 ///   {LAPTOP|PHONE|TABLET} — INSPECTED
 ///
-/// The current [device] drives both. Per §6 the numbering follows
-/// `DeviceCycle.order` — `desktop → 01 LAPTOP`, `mobile → 02 PHONE`,
-/// `tablet → 03 TABLET` — which is NOT the declaration order of the
+/// The current [device] drives the device label. Per §6 the numbering follows
+/// `DeviceCycle.order` — `desktop → LAPTOP`, `mobile → PHONE`,
+/// `tablet → TABLET` — which is NOT the declaration order of the
 /// [DeviceType] enum, so the mapping is spelled out explicitly below.
 class InspectionStamp extends StatelessWidget {
   const InspectionStamp({super.key, required this.device});
@@ -44,7 +44,6 @@ class InspectionStamp extends StatelessWidget {
   Widget build(BuildContext context) {
     final PosterMetrics metrics = PosterMetrics.of(context);
     final spec = _spec(device);
-    final String ordinal = spec.ordinal.toString().padLeft(2, '0');
 
     final TextStyle stampStyle = PosterType.stamp(metrics.f);
 
@@ -73,9 +72,9 @@ class InspectionStamp extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Text(
-                      'FORM FACTOR $ordinal/03',
+                      'made in IRAN',
                       textAlign: TextAlign.center,
-                      style: stampStyle,
+                      style: stampStyle.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       '${spec.label} — INSPECTED',

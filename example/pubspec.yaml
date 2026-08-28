@@ -23,16 +23,27 @@ flutter:
     - assets/textures/bg_grain_b.png
     - assets/textures/tex_screen.png
     - assets/textures/tex_overlay.png
+  # Each family ships as per-script subsets, and the `-latin-ext` file holds
+  # ONLY the Latin Extended block — it has no A–Z at all. Declaring it alone
+  # left every glyph in the poster to the system fallback, which has neither
+  # the `wght`/`wdth` axes nor the metrics §2 is specified against, so cards
+  # wrapped far taller than the design and collided. Every subset a family has
+  # must be listed; Flutter falls through them glyph by glyph.
   fonts:
     - family: Archivo
       fonts:
+        - asset: assets/fonts/Archivo-latin.ttf
         - asset: assets/fonts/Archivo-latin-ext.ttf
     - family: MartianMono
       fonts:
+        - asset: assets/fonts/MartianMono-latin.ttf
         - asset: assets/fonts/MartianMono-latin-ext.ttf
     - family: Newsreader
       fonts:
+        - asset: assets/fonts/Newsreader-latin.ttf
         - asset: assets/fonts/Newsreader-latin-ext.ttf
     - family: Vazirmatn
       fonts:
+        - asset: assets/fonts/Vazirmatn-arabic.ttf
+        - asset: assets/fonts/Vazirmatn-latin.ttf
         - asset: assets/fonts/Vazirmatn-latin-ext.ttf

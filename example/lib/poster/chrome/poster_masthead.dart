@@ -5,7 +5,7 @@ import '../poster_tokens.dart';
 
 /// The byline from DESIGN_SPEC.md §6 "Chrome" and §2.
 ///
-/// `ARAD BIRANVAND` (Martian Mono `wght 800`, tracking `.16em`, `#DEE7F4`)
+/// `ARAD BEYRANVAND` (Martian Mono `wght 800`, tracking `.16em`, `#DEE7F4`)
 /// set baseline-aligned beside `sole author` (Newsreader `wght 400` italic,
 /// `#8E9DB4`), with a 14 design-px gap. Anchored at `.040, .048`.
 ///
@@ -25,7 +25,7 @@ class PosterMasthead extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: <Widget>[
-        Text('ARAD BIRANVAND', style: PosterType.bylineName(f)),
+        Text('ARAD BEYRANVAND', style: PosterType.bylineName(f)),
         SizedBox(width: metrics.px(14)),
         Text('sole author', style: PosterType.bylineRole(f)),
       ],
