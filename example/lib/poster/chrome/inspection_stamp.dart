@@ -57,7 +57,7 @@ class InspectionStamp extends StatelessWidget {
                             text: 'made',
                             style: stampStyle.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: Colors.red,
+                              color: Color(0xFF239F40),
                             ),
                           ),
                           TextSpan(
