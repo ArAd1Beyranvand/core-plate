@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../poster_scale.dart';
-import '../poster_textures.dart';
 import '../poster_tokens.dart';
 
 /// The five bevel flavours of DESIGN_SPEC.md §4.6/§4.7.
@@ -284,7 +283,6 @@ class BevelPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final metrics = PosterMetrics.of(context);
     final direction = Directionality.of(context);
-    final useScreenGrain = screenGrain ?? style.defaultScreenGrain;
 
     final EdgeInsets resolvedPadding = padding == null
         ? EdgeInsets.zero
@@ -321,28 +319,6 @@ class BevelPanel extends StatelessWidget {
             ),
           ),
 
-          // 3 — overlay grain.
-          Positioned.fill(
-            child: _GrainLayer(
-              texture: PosterTexture.overlayGrain,
-              metrics: metrics,
-              tileDesignPx: style.overlayTileDesignPx,
-              opacity: style.overlayGrainOpacity,
-              blendMode: BlendMode.overlay,
-            ),
-          ),
-
-          // 4 — screen grain (hero cards and white chips only).
-          if (useScreenGrain)
-            Positioned.fill(
-              child: _GrainLayer(
-                texture: PosterTexture.screenGrain,
-                metrics: metrics,
-                tileDesignPx: style.screenTileDesignPx,
-                opacity: style.screenGrainOpacity,
-                blendMode: BlendMode.screen,
-              ),
-            ),
 
           // 5 — the 103° diagonal sheen.
           Positioned.fill(
@@ -399,47 +375,6 @@ class BevelPanel extends StatelessWidget {
   }
 }
 
-/// One tiling grain layer. `textureDecoration`'s own `blendMode` is used as an
-/// identity filter (`BlendMode.dst` leaves the tile's pixels alone); the real
-/// compositing happens through [BoxDecoration.backgroundBlendMode], which
-/// blends against the panel ground inside `BevelPanel`'s layer.
-class _GrainLayer extends StatelessWidget {
-  const _GrainLayer({
-    required this.texture,
-    required this.metrics,
-    required this.tileDesignPx,
-    required this.opacity,
-    required this.blendMode,
-  });
-
-  final PosterTexture texture;
-  final PosterMetrics metrics;
-  final double tileDesignPx;
-  final double opacity;
-  final BlendMode blendMode;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        // `backgroundBlendMode` asserts a color or gradient even though the
-        // intent is only to blend the grain image against itself — a fully
-        // transparent base keeps that assertion happy without changing what
-        // paints (see the P4 note in PROGRESS.md on this layer not actually
-        // blending against the panel ground beneath it).
-        color: const Color(0x00000000),
-        backgroundBlendMode: blendMode,
-        image: textureDecoration(
-          texture: texture,
-          metrics: metrics,
-          tileDesignPx: tileDesignPx,
-          opacity: opacity,
-          blendMode: BlendMode.dst,
-        ),
-      ),
-    );
-  }
-}
 
 class _BevelPainter extends CustomPainter {
   const _BevelPainter({
