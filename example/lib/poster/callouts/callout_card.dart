@@ -55,18 +55,6 @@ class CalloutCard extends StatelessWidget {
     }
   }
 
-  TextStyle _eyebrowStyle(double f) {
-    switch (spec.kind) {
-      case CalloutKind.heroIr:
-      case CalloutKind.heroDe:
-        return PosterType.cardEyebrowHero(f);
-      case CalloutKind.steel:
-        return PosterType.cardEyebrowSteel(f);
-      case CalloutKind.dark:
-        return PosterType.cardEyebrowDark(f);
-    }
-  }
-
   TextStyle _titleStyle(double f) {
     final size = spec.titleSizeDesignPx;
     if (spec.textDirection == TextDirection.rtl) {
@@ -122,27 +110,6 @@ class CalloutCard extends StatelessWidget {
             ? CrossAxisAlignment.end
             : CrossAxisAlignment.start,
         children: <Widget>[
-          // Eyebrow
-          Directionality(
-            textDirection: TextDirection.ltr,
-            child: Align(
-              alignment: direction == TextDirection.rtl
-                  ? Alignment.centerRight
-                  : Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.zero,
-                child: Text(
-                  spec.eyebrow,
-                  textAlign: direction == TextDirection.rtl
-                      ? TextAlign.right
-                      : TextAlign.left,
-                  style: _eyebrowStyle(metrics.f),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: metrics.px(10)),
-
           // Title
           Directionality(
             textDirection: direction,
@@ -151,7 +118,7 @@ class CalloutCard extends StatelessWidget {
           SizedBox(height: metrics.px(14)),
 
           // Dashed rule
-          if (!spec.hasDivider)
+          if (spec.hasDashedRule && !spec.hasDivider)
             DashedRule.thin(color: _dashedRuleColor(metrics)),
           if (spec.hasDivider) const TwoToneDivider(),
 

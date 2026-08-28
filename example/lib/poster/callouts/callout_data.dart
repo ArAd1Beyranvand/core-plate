@@ -24,6 +24,7 @@ class CalloutSpec {
     this.hasDivider = false,
     this.hasFooter = false,
     this.hasDeBranding = false,
+    this.hasDashedRule = true,
   });
 
   final int index;
@@ -45,6 +46,7 @@ class CalloutSpec {
   final bool hasDivider;
   final bool hasFooter;
   final bool hasDeBranding;
+  final bool hasDashedRule;
 }
 
 const Map<DeviceType, List<CalloutSpec>> calloutSets = {
@@ -77,6 +79,7 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       body: null,
       titleSizeDesignPx: 36,
       bodySizeDesignPx: 20,
+      hasDashedRule: false,
     ),
     CalloutSpec(
       index: 4,
@@ -169,6 +172,7 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       body: null,
       titleSizeDesignPx: 34,
       bodySizeDesignPx: 0,
+      hasDashedRule: false,
     ),
   ],
 };
