@@ -47,17 +47,11 @@ class CalloutCard extends StatelessWidget {
   Gradient? get _groundGradient {
     switch (spec.kind) {
       case CalloutKind.steel:
-        // Two steel mixes, alternated by index, so consecutive steel cards
-        // don't read as the same slab.
-        return spec.index.isEven
-            ? PosterGradients.cardSteel
-            : PosterGradients.cardSteelWarm;
       case CalloutKind.dark:
-        // Deep enamel tints (navy / teal / plum / slate / moss), picked by
-        // card index — the numbered cards should read as painted plates, not
-        // one repeated block of steel.
-        final faces = PosterGradients.plateFaces;
-        return faces[spec.index % faces.length];
+        // Each numbered card gets its own plate-face colour so they don't read
+        // as one repeated slab — blues echo the hero cards, 07/08/11 are a
+        // green family, 02/03 share a slate tone.
+        return PosterGradients.calloutFace(spec.index);
       case CalloutKind.heroIr:
       case CalloutKind.heroDe:
         return null;

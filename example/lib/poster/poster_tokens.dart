@@ -137,44 +137,39 @@ class PosterGradients {
     colors: [Color(0xFF1B2131), Color(0xFF0C0F16)],
   );
 
-  /// A warmer companion to [cardSteel] — alternated with it on the callout
-  /// cards so two steel cards never look identical.
-  static const LinearGradient cardSteelWarm = LinearGradient(
-    begin: Alignment(-0.62, -0.79),
-    end: Alignment(0.62, 0.79),
-    colors: [Color(0xFF2A2C3C), Color(0xFF14110F)],
-  );
+  /// Per-card ground for the numbered callout cards (steel + dark kinds):
+  ///
+  ///  * 04 — a lighter blue of hero card 01 (`#16479D`)
+  ///  * 12 — a lighter blue of hero card 09 (`#003399`)
+  ///  * 07 / 08 / 11 — a green family (11 the mid tone, 07 brighter, 08 deeper)
+  ///  * 02 / 03 — one shared slate tone
+  ///
+  /// Anything unlisted falls back to [cardSteel].
+  static LinearGradient calloutFace(int index) {
+    switch (index) {
+      case 2:
+      case 3:
+        return _face(0xFF20293C, 0xFF0C0F17);
+      case 4:
+        return _face(0xFF3160B0, 0xFF17233F);
+      case 7:
+        return _face(0xFF2A6B44, 0xFF0C2016);
+      case 8:
+        return _face(0xFF17402B, 0xFF081410);
+      case 11:
+        return _face(0xFF1F5A3A, 0xFF0A1E14);
+      case 12:
+        return _face(0xFF2E56C0, 0xFF0C1734);
+      default:
+        return cardSteel;
+    }
+  }
 
-  /// Deep enamel grounds for the numbered callout cards — navy, teal, plum,
-  /// slate and moss. They give each card its own plate-face colour instead of
-  /// one repeated slab of dark steel. Indexed by card number in `CalloutCard`.
-  static const List<LinearGradient> plateFaces = <LinearGradient>[
-    LinearGradient(
-      begin: Alignment(-0.62, -0.79),
-      end: Alignment(0.62, 0.79),
-      colors: [Color(0xFF17233C), Color(0xFF090D17)],
-    ),
-    LinearGradient(
-      begin: Alignment(-0.62, -0.79),
-      end: Alignment(0.62, 0.79),
-      colors: [Color(0xFF14302C), Color(0xFF081412)],
-    ),
-    LinearGradient(
-      begin: Alignment(-0.62, -0.79),
-      end: Alignment(0.62, 0.79),
-      colors: [Color(0xFF241C34), Color(0xFF0F0A18)],
-    ),
-    LinearGradient(
-      begin: Alignment(-0.62, -0.79),
-      end: Alignment(0.62, 0.79),
-      colors: [Color(0xFF1E2637), Color(0xFF0C0F16)],
-    ),
-    LinearGradient(
-      begin: Alignment(-0.62, -0.79),
-      end: Alignment(0.62, 0.79),
-      colors: [Color(0xFF1C2A1F), Color(0xFF0B120D)],
-    ),
-  ];
+  static LinearGradient _face(int top, int bottom) => LinearGradient(
+        begin: const Alignment(-0.62, -0.79),
+        end: const Alignment(0.62, 0.79),
+        colors: <Color>[Color(top), Color(bottom)],
+      );
 
   /// `linear-gradient(158deg, #1A2032, #0C0E16)`; hover ground → `#EDEFF3`.
   static const LinearGradient linkButton = LinearGradient(
