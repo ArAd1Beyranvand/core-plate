@@ -89,7 +89,7 @@ class _RoadLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final Text dark = Text(
       'ROAD',
-      style: base.copyWith(color: const Color(0xFF000000)),
+      style: base.copyWith(color: const Color(0xFF2BA000)),
     );
     final Text cut = Text(
       'ROAD',
@@ -104,20 +104,20 @@ class _RoadLine extends StatelessWidget {
           child: ShaderMask(
             blendMode: BlendMode.dstIn,
             shaderCallback: (Rect bounds) {
-              // `linear-gradient(103.5deg, opaque 0–30%, transparent 30%)`.
+              // `linear-gradient(103.5deg, opaque 0–47%, transparent 47%)`.
               // CSS angles run clockwise from "to top"; 103.5° points right
               // and just past horizontal (down a hair). Two stops at the same
-              // 30% position keep the edge hard rather than feathered.
+              // 47% position keep the edge hard rather than feathered.
               final Alignment begin = _alignmentForCssAngle(103.5);
               return LinearGradient(
                 begin: begin,
                 end: -begin,
                 colors: const <Color>[
-                  Color(0xFFFFFFFF), // opaque — bright copy shows
+                  Color(0xFFFFFFFF), // opaque — bright copy shows (most of word)
                   Color(0xFFFFFFFF),
-                  Color(0x00FFFFFF), // transparent — bright copy hidden (small black part of o)
+                  Color(0x00FFFFFF), // transparent — green accent shows (small part of o)
                 ],
-                stops: const <double>[0.0, 0.30, 0.30],
+                stops: const <double>[0.0, 0.47, 0.47],
               ).createShader(bounds);
             },
             child: cut,
