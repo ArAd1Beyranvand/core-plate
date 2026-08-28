@@ -9,7 +9,7 @@ part 'laptop_deck.parts.dart';
 const laptopEdgeWidth = 8.0;
 
 const _edgeColor = Color(0xFF8A909C);
-const _edgeRadius = BorderRadius.vertical(bottom: Radius.circular(26));
+const _edgeRadius = BorderRadius.vertical(bottom: Radius.circular(8));
 
 /// The chassis rim around the laptop deck: a thin gray-metal ring matching
 /// the body's own frame. [DeviceFrame] stacks this on top of the deck's
@@ -116,7 +116,7 @@ class LaptopDeck extends StatelessWidget {
               child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                         gradient: const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
