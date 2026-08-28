@@ -10,17 +10,24 @@ const laptopEdgeWidth = 8.0;
 
 const _edgeColor = Color(0xFF8A909C);
 
-/// Corner rounding of the deck's bottom edge — matches the body's own
-/// [DeviceConfig.bodyRadius], which is the tablet's 38. Public because the
-/// dissolve overlay stacked above the deck paints square blocks and must be
-/// clipped to this same shape, or it squares off the corners mid-transition.
-const laptopEdgeRadius = BorderRadius.vertical(bottom: Radius.circular(38));
+/// Corner rounding shared by the deck and its keyboard well — the desktop
+/// preset's own [DeviceConfig.screenRadius], so the base's corners read at the
+/// same size as the screen above them.
+///
+/// Kept at the screen's radius rather than the body's larger one: the well is
+/// only 6px of padding away from the bottom keycap row, and a corner much
+/// rounder than this eats into the outer keys.
+const _cornerRadius = 24.0;
+
+/// The deck's bottom edge. Public because the dissolve overlay stacked above
+/// the deck paints square blocks and must be clipped to this same shape, or it
+/// squares off the corners mid-transition.
+const laptopEdgeRadius =
+    BorderRadius.vertical(bottom: Radius.circular(_cornerRadius));
 const _edgeRadius = laptopEdgeRadius;
 
-/// Corner rounding of the recessed keyboard well — the same 38 as the deck's
-/// own edge, so the keyboard's corners read at the same size as the chassis
-/// around it rather than as a tighter box inside it.
-const _wellRadius = BorderRadius.all(Radius.circular(38));
+/// The recessed keyboard well.
+const _wellRadius = BorderRadius.all(Radius.circular(_cornerRadius));
 
 /// The chassis rim around the laptop deck: a thin gray-metal ring matching
 /// the body's own frame. [DeviceFrame] stacks this on top of the deck's
