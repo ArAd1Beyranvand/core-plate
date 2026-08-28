@@ -16,17 +16,6 @@ import 'device_transition.dart';
 ///
 /// The laptop deck is a real tilted plane: it unfolds out of the body as part
 /// of the same morph.
-
-/// Real time the laptop deck spends physically folding shut / swinging open.
-/// Decoupled from [DeviceTransitionDurations.frameTransform]: only transitions
-/// that involve the laptop stretch to give this beat its full length.
-const Duration _deckFoldDuration = Duration(seconds: 3);
-
-/// Base share of [DeviceTransitionDurations.frameTransform] taken by the
-/// dissolve and body-resize beats; the remainder is the fold beat, which is
-/// stretched to [_deckFoldDuration].
-const double _dissolveFrac = 0.28;
-const double _resizeFrac = 0.38;
 class DeviceFrame extends StatefulWidget {
   const DeviceFrame({
     super.key,
@@ -109,11 +98,6 @@ class _DeviceFrameState extends State<DeviceFrame>
   late Animation<double> _fadeIn;
   late Animation<double> _morphRaw;
 
-  /// The frame-transform window actually in effect for the running transition —
-  /// [DeviceTransitionDurations.frameTransform], or a stretched version when a
-  /// laptop is involved (see [_effectiveDurations]).
-  late Duration _frameTransform;
-
   /// How much of the deck is revealed by the pixel dissolve: 1 = fully present,
   /// 0 = fully dissolved away. Closing folds the deck shut onto the screen then
   /// runs this 1 → 0; opening runs it 0 → 1 (still shut) once the screen has
@@ -146,36 +130,16 @@ class _DeviceFrameState extends State<DeviceFrame>
   void initState() {
     super.initState();
     _from = _to = _resolve(widget.device);
-    final eff = _effectiveDurations;
-    _controller = AnimationController(vsync: this, duration: eff.total)
+    _controller = AnimationController(vsync: this, duration: widget.durations.total)
       ..addListener(_onTick);
-    _buildIntervals(eff);
+    _buildIntervals();
     _controller.value = 1;
-  }
-
-  /// The transition timings in effect for the current [_from] → [_to] pair.
-  /// When neither side is a laptop this is [DeviceFrame.durations] unchanged;
-  /// otherwise the frame-transform window is stretched so the deck's fold /
-  /// unfold beat lasts [_deckFoldDuration] while the dissolve and resize beats
-  /// keep their base length.
-  DeviceTransitionDurations get _effectiveDurations {
-    final d = widget.durations;
-    final laptop =
-        _from.type == DeviceType.desktop || _to.type == DeviceType.desktop;
-    if (!laptop) return d;
-    final kept = d.frameTransform * (_dissolveFrac + _resizeFrac);
-    return DeviceTransitionDurations(
-      contentFadeOut: d.contentFadeOut,
-      frameTransform: kept + _deckFoldDuration,
-      contentFadeIn: d.contentFadeIn,
-      blankHold: d.blankHold,
-    );
   }
 
   /// Splits the one controller into the three phases, so the timings stay
   /// declarative and configurable.
-  void _buildIntervals(DeviceTransitionDurations d) {
-    _frameTransform = d.frameTransform;
+  void _buildIntervals() {
+    final d = widget.durations;
     final total = d.total.inMicroseconds.toDouble();
     double at(Duration x) => x.inMicroseconds / total;
 
@@ -222,9 +186,8 @@ class _DeviceFrameState extends State<DeviceFrame>
   void didUpdateWidget(covariant DeviceFrame old) {
     super.didUpdateWidget(old);
     if (widget.durations.total != old.durations.total) {
-      final eff = _effectiveDurations;
-      _controller.duration = eff.total;
-      _buildIntervals(eff);
+      _controller.duration = widget.durations.total;
+      _buildIntervals();
     }
     if (widget.device != old.device) {
       // Whatever is on screen becomes the new starting point, so an
@@ -232,9 +195,6 @@ class _DeviceFrameState extends State<DeviceFrame>
       _from = _currentConfig;
       _to = _resolve(widget.device);
       _contentSwapped = false;
-      final eff = _effectiveDurations;
-      _controller.duration = eff.total;
-      _buildIntervals(eff);
       _controller.forward(from: 0);
     }
   }
@@ -261,32 +221,22 @@ class _DeviceFrameState extends State<DeviceFrame>
     const shutAngle = 180.0;
     double angle(double t) => openAngle + (shutAngle - openAngle) * t;
 
-    // Beat widths as fractions of the (possibly stretched) frame-transform
-    // window: the fold beat carries [_deckFoldDuration], the other two keep
-    // their base length.
-    final ext = _frameTransform.inMicroseconds.toDouble();
-    final base = widget.durations.frameTransform.inMicroseconds.toDouble();
-    final foldF = _deckFoldDuration.inMicroseconds / ext;
-    final dissF = base * _dissolveFrac / ext;
-    final rezF = base * _resizeFrac / ext;
-
     if (wasLaptop && !willBeLaptop) {
       // OUTRO: fold shut → pixel-dissolve out → resize.
-      final fold = Curves.easeInOut.transform((mr / foldF).clamp(0.0, 1.0));
+      final fold = Curves.easeInOut.transform((mr / 0.34).clamp(0.0, 1.0));
       _deckAngle = angle(fold);
-      // Linear so the blocks vanish at a steady rate across the dissolve beat.
-      _deckReveal = 1 - ((mr - foldF) / dissF).clamp(0.0, 1.0);
-      final resize = ((mr - foldF - dissF) / rezF).clamp(0.0, 1.0);
-      _deckT = 1 - Curves.easeInOut.transform(resize);
-      return widget.curve.transform(resize);
+      // Linear so the blocks vanish at a steady rate across the ~0.4s beat.
+      _deckReveal = 1 - ((mr - 0.34) / 0.28).clamp(0.0, 1.0);
+      _deckT =
+          1 - Curves.easeInOut.transform(((mr - 0.62) / 0.38).clamp(0.0, 1.0));
+      return widget.curve.transform(((mr - 0.62) / 0.38).clamp(0.0, 1.0));
     }
     if (!wasLaptop && willBeLaptop) {
       // INTRO: resize → pixel-dissolve the shut deck in → swing open.
-      final body = widget.curve.transform((mr / rezF).clamp(0.0, 1.0));
+      final body = widget.curve.transform((mr / 0.38).clamp(0.0, 1.0));
       _deckT = 1;
-      _deckReveal = ((mr - rezF) / dissF).clamp(0.0, 1.0);
-      final open = Curves.easeInOut
-          .transform(((mr - rezF - dissF) / foldF).clamp(0.0, 1.0));
+      _deckReveal = ((mr - 0.38) / 0.28).clamp(0.0, 1.0);
+      final open = Curves.easeInOut.transform(((mr - 0.66) / 0.34).clamp(0.0, 1.0));
       _deckAngle = angle(1 - open);
       return body;
     }
