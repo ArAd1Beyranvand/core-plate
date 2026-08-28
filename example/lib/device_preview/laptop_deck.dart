@@ -17,9 +17,10 @@ const _edgeColor = Color(0xFF8A909C);
 const laptopEdgeRadius = BorderRadius.vertical(bottom: Radius.circular(38));
 const _edgeRadius = laptopEdgeRadius;
 
-/// Corner rounding of the recessed keyboard well — matches the body's
-/// [DeviceConfig.screenRadius], the tablet's 24.
-const _wellRadius = BorderRadius.all(Radius.circular(24));
+/// Corner rounding of the recessed keyboard well — the same 38 as the deck's
+/// own edge, so the keyboard's corners read at the same size as the chassis
+/// around it rather than as a tighter box inside it.
+const _wellRadius = BorderRadius.all(Radius.circular(38));
 
 /// The chassis rim around the laptop deck: a thin gray-metal ring matching
 /// the body's own frame. [DeviceFrame] stacks this on top of the deck's
@@ -125,6 +126,10 @@ class LaptopDeck extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(40, 22, 40, 6),
               child: Container(
                       padding: const EdgeInsets.fromLTRB(20, 18, 20, 6),
+                      // The bottom keycap row sits only 6px inside the well, so
+                      // without this the outer caps paint straight over the
+                      // corner curve and square it off.
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         borderRadius: _wellRadius,
                         gradient: const LinearGradient(
