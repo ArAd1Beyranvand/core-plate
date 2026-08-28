@@ -49,10 +49,41 @@ class InspectionStamp extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Text(
-                      'made in IRAN',
+                    RichText(
                       textAlign: TextAlign.center,
-                      style: stampStyle.copyWith(fontWeight: FontWeight.bold),
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'made',
+                            style: stampStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' ',
+                            style: stampStyle.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(
+                            text: 'in',
+                            style: stampStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' ',
+                            style: stampStyle.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          TextSpan(
+                            text: 'IRAN',
+                            style: stampStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF8B0000),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
