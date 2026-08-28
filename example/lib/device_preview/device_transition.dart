@@ -6,13 +6,16 @@ import 'package:flutter/foundation.dart';
 /// The three phases of a device change.
 enum DeviceTransitionPhase { idle, contentFadeOut, frameTransform, contentFadeIn }
 
-/// Durations for each phase. Fades default to 1800ms.
+/// Durations for each phase. Fades default to 2200ms.
+///
+/// The fades are kept equal on purpose: with a symmetric swap the frame morph
+/// lands dead-centre of the whole transition timeline.
 @immutable
 class DeviceTransitionDurations {
   const DeviceTransitionDurations({
-    this.contentFadeOut = const Duration(milliseconds: 1800),
-    this.frameTransform = const Duration(milliseconds: 1500),
-    this.contentFadeIn = const Duration(milliseconds: 1800),
+    this.contentFadeOut = const Duration(milliseconds: 2200),
+    this.frameTransform = const Duration(milliseconds: 1000),
+    this.contentFadeIn = const Duration(milliseconds: 2200),
     this.blankHold = const Duration(milliseconds: 120),
   });
 
