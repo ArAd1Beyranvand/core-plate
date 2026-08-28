@@ -19,11 +19,15 @@ const _edgeColor = Color(0xFF8A909C);
 /// rounder than this eats into the outer keys.
 const _cornerRadius = 24.0;
 
-/// The deck's bottom edge. Public because the dissolve overlay stacked above
-/// the deck paints square blocks and must be clipped to this same shape, or it
-/// squares off the corners mid-transition.
-const laptopEdgeRadius =
-    BorderRadius.vertical(bottom: Radius.circular(_cornerRadius));
+/// The deck's outline. All four corners are rounded, not just the bottom pair:
+/// the deck is tilted into perspective as a free-standing slab, so its top
+/// corners are just as visible as its bottom ones and read as sharp points
+/// against the trapezoid if left square.
+///
+/// Public because the dissolve overlay stacked above the deck paints square
+/// blocks and must be clipped to this same shape, or it squares off the
+/// corners mid-transition.
+const laptopEdgeRadius = BorderRadius.all(Radius.circular(_cornerRadius));
 const _edgeRadius = laptopEdgeRadius;
 
 /// The recessed keyboard well.
