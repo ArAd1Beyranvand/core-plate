@@ -137,7 +137,11 @@ class LaptopDeck extends StatelessWidget {
             ),
           ),
           Opacity(
-            opacity: frontOpacity.clamp(0, 1),
+            // Binary like the back: the keyboard face is either fully present or
+            // gone, never a half-lit pane you can see the chassis through while
+            // the deck swings open. Both faces flip at edge-on, where the deck's
+            // projected height is ~0, so the swap can't be seen.
+            opacity: frontOpacity <= 0 ? 0 : 1,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(40, 22, 40, 6),
               child: Container(
