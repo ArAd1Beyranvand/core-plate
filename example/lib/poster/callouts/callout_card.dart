@@ -254,32 +254,11 @@ class CalloutCard extends StatelessWidget {
       );
     }
 
-    // Every card carries some worked-over grain; the amount varies per card so
-    // the wall of them doesn't read as evenly printed. The heaviest also get
-    // the screen-grain layer switched on.
-    final double grainScale = switch (spec.index) {
-      1 => 1.5,
-      2 => 1.7,
-      3 => 2.3,
-      4 => 1.1,
-      5 => 1.5,
-      6 => 2.1,
-      7 => 1.6,
-      8 => 1.4,
-      9 => 1.55,
-      10 => 2.4,
-      11 => 1.65,
-      12 => 1.15,
-      _ => 1.0,
-    };
-
     // Main card with bevel panel
     final Widget card = BevelPanel(
       style: BevelStyle.byKind[_bevelKind]!,
       groundColor: _groundColor,
       groundGradient: _groundGradient,
-      grainScale: grainScale,
-      screenGrain: grainScale >= 1.8 ? true : null,
       child: SizedBox(
         width: metrics.px(widthDesignPx ?? spec.widthFx * 1920),
         child: cardContent,

@@ -140,8 +140,8 @@ class PosterGradients {
   /// Per-card ground for the numbered callout cards (steel + dark kinds):
   ///
   ///  * 04 — a lighter blue of hero card 01 (`#16479D`)
-  ///  * 12 — a lighter blue of hero card 09 (`#003399`)
-  ///  * 07 — desaturated steel teal, 08 — cool steel blue, 11 — warm graphite
+  ///  * 12 — a muted denim, lighter than hero card 09 (`#003399`)
+  ///  * 07 — cool charcoal, 08 — cool steel blue, 11 — blue slate
   ///  * 02 / 03 — one shared slate tone
   ///
   /// Anything unlisted falls back to [cardSteel].
@@ -153,13 +153,13 @@ class PosterGradients {
       case 4:
         return _face(0xFF3160B0, 0xFF17233F);
       case 7:
-        return _face(0xFF1F2D33, 0xFF0A1417);
+        return _face(0xFF26262B, 0xFF0E0E12);
       case 8:
         return _face(0xFF1B2B3C, 0xFF0A131B);
       case 11:
-        return _face(0xFF2B2825, 0xFF100E0C);
+        return _face(0xFF243040, 0xFF0C1019);
       case 12:
-        return _face(0xFF2E56C0, 0xFF0C1734);
+        return _face(0xFF3C5C97, 0xFF111A2E);
       default:
         return cardSteel;
     }
