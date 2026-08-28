@@ -254,17 +254,32 @@ class CalloutCard extends StatelessWidget {
       );
     }
 
-    // Cards 04/06/12 wear a heavier, worked-over grain than their flavour's
-    // default.
-    final bool dirty = spec.index == 4 || spec.index == 6 || spec.index == 12;
+    // Every card carries some worked-over grain; the amount varies per card so
+    // the wall of them doesn't read as evenly printed. The heaviest also get
+    // the screen-grain layer switched on.
+    final double grainScale = switch (spec.index) {
+      1 => 1.15,
+      2 => 1.5,
+      3 => 1.3,
+      4 => 2.2,
+      5 => 1.1,
+      6 => 2.0,
+      7 => 1.6,
+      8 => 1.35,
+      9 => 1.2,
+      10 => 1.7,
+      11 => 1.45,
+      12 => 2.4,
+      _ => 1.0,
+    };
 
     // Main card with bevel panel
     final Widget card = BevelPanel(
       style: BevelStyle.byKind[_bevelKind]!,
       groundColor: _groundColor,
       groundGradient: _groundGradient,
-      grainScale: dirty ? 2.2 : 1.0,
-      screenGrain: dirty ? true : null,
+      grainScale: grainScale,
+      screenGrain: grainScale >= 1.8 ? true : null,
       child: SizedBox(
         width: metrics.px(widthDesignPx ?? spec.widthFx * 1920),
         child: cardContent,

@@ -141,7 +141,7 @@ class PosterGradients {
   ///
   ///  * 04 — a lighter blue of hero card 01 (`#16479D`)
   ///  * 12 — a lighter blue of hero card 09 (`#003399`)
-  ///  * 07 / 08 / 11 — a green family (11 the mid tone, 07 brighter, 08 deeper)
+  ///  * 07 — aubergine, 11 — indigo, 08 — cool steel blue
   ///  * 02 / 03 — one shared slate tone
   ///
   /// Anything unlisted falls back to [cardSteel].
@@ -153,11 +153,11 @@ class PosterGradients {
       case 4:
         return _face(0xFF3160B0, 0xFF17233F);
       case 7:
-        return _face(0xFF2A6B44, 0xFF0C2016);
+        return _face(0xFF2C2138, 0xFF110A18);
       case 8:
-        return _face(0xFF17402B, 0xFF081410);
+        return _face(0xFF1B2B3C, 0xFF0A131B);
       case 11:
-        return _face(0xFF1F5A3A, 0xFF0A1E14);
+        return _face(0xFF282544, 0xFF0F0C1E);
       case 12:
         return _face(0xFF2E56C0, 0xFF0C1734);
       default:
