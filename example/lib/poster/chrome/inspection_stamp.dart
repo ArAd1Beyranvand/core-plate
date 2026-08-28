@@ -85,6 +85,61 @@ class InspectionStamp extends StatelessWidget {
                         ],
                       ),
                     ),
+                    SizedBox(height: metrics.px(4)),
+                    SizedBox(
+                      width: metrics.px(180),
+                      height: metrics.px(8),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned(
+                            left: metrics.px(10),
+                            child: Container(
+                              width: metrics.px(20),
+                              height: metrics.px(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(metrics.px(1)),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: metrics.px(20),
+                            child: Container(
+                              width: metrics.px(16),
+                              height: metrics.px(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(metrics.px(1)),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: metrics.px(2),
+                            child: Container(
+                              width: metrics.px(32),
+                              height: metrics.px(3),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(metrics.px(1.5)),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            right: metrics.px(8),
+                            bottom: metrics.px(2),
+                            child: Container(
+                              width: metrics.px(24),
+                              height: metrics.px(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(metrics.px(1)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
