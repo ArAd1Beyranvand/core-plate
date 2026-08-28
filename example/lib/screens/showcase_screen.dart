@@ -145,7 +145,11 @@ class _WidePoster extends StatelessWidget {
       clipBehavior: Clip.none,
       children: <Widget>[
         PosterBackdrop(
-          sweep: SweepLight(isHopping: phase != DeviceTransitionPhase.idle),
+          // Fires on the rising edge of frameTransform, which is the exact
+          // frame the device's content opacity reaches zero.
+          sweep: SweepLight(
+            isHopping: phase == DeviceTransitionPhase.frameTransform,
+          ),
         ),
         GroundShadowLayer(device: device),
         _AnimatedDeviceSlot(
@@ -204,7 +208,11 @@ class _MediumPoster extends StatelessWidget {
       clipBehavior: Clip.none,
       children: <Widget>[
         PosterBackdrop(
-          sweep: SweepLight(isHopping: phase != DeviceTransitionPhase.idle),
+          // Fires on the rising edge of frameTransform, which is the exact
+          // frame the device's content opacity reaches zero.
+          sweep: SweepLight(
+            isHopping: phase == DeviceTransitionPhase.frameTransform,
+          ),
         ),
         GroundShadowLayer(device: device),
         _AnimatedDeviceSlot(

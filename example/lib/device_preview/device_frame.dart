@@ -27,7 +27,8 @@ class DeviceFrame extends StatefulWidget {
     this.hingeAngle = 150,
     this.scale,
     this.curve = Curves.easeInOutCubic,
-    this.fadeCurve = Curves.easeInOut,
+    this.fadeOutCurve = Curves.easeIn,
+    this.fadeInCurve = Curves.easeOut,
     this.onPhaseChanged,
     this.onContentSwap,
     this.deckPressedKey,
@@ -56,7 +57,17 @@ class DeviceFrame extends StatefulWidget {
   final double? scale;
 
   final Curve curve;
-  final Curve fadeCurve;
+
+  /// Drives the content fade-out. easeIn on purpose: easeInOut crawls through
+  /// its tail, so the plate reads as black long before opacity is actually
+  /// zero — and everything cued off that moment (the road sweep, the content
+  /// swap, the morph) would look late. easeIn keeps the plate up, then drops
+  /// it, so visual black and opacity zero land together.
+  final Curve fadeOutCurve;
+
+  /// Drives the content fade-in — easeOut, the mirror of [fadeOutCurve], so the
+  /// incoming plate leaves black immediately rather than lingering there.
+  final Curve fadeInCurve;
   final ValueChanged<DeviceTransitionPhase>? onPhaseChanged;
 
   /// Fired once per transition the instant content opacity reaches zero — i.e.
@@ -138,9 +149,9 @@ class _DeviceFrameState extends State<DeviceFrame>
     final inStart = morphEnd + at(d.blankHold);
 
     _fadeOut = CurvedAnimation(
-        parent: _controller, curve: Interval(0, outEnd, curve: widget.fadeCurve));
+        parent: _controller, curve: Interval(0, outEnd, curve: widget.fadeOutCurve));
     _fadeIn = CurvedAnimation(
-        parent: _controller, curve: Interval(inStart, 1, curve: widget.fadeCurve));
+        parent: _controller, curve: Interval(inStart, 1, curve: widget.fadeInCurve));
     _morphRaw =
         CurvedAnimation(parent: _controller, curve: Interval(morphStart, morphEnd));
   }

@@ -15,11 +15,12 @@ import 'poster_backdrop.dart';
 /// `cubic-bezier(.42,.02,.6,1)`, screen-blended, with opacity ramping in and
 /// out over `.34s` linear.
 ///
-/// It owns no state machine — §7.2. Pass [isHopping] straight from
-/// `DeviceFrame.onPhaseChanged` (`phase != DeviceTransitionPhase.idle`). The
-/// sweep fires once on the false→true edge and does not loop or retrigger
-/// while the hop is still running, which matters because the hop
-/// (`DeviceTransitionDurations.total`, ~6.7s) far outlasts the 1.5s sweep.
+/// It owns no state machine — §7.2. Derive [isHopping] from
+/// `DeviceFrame.onPhaseChanged`: pass `phase == frameTransform`, so the rake
+/// starts on the exact frame the device's content opacity reaches zero rather
+/// than back when it only began fading. The sweep fires once on the false→true
+/// edge and runs its full 1.5s on its own controller, so it outlives the
+/// shorter phase window that triggered it.
 class SweepLight extends StatefulWidget {
   const SweepLight({
     super.key,
