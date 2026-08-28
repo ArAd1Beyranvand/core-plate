@@ -11,8 +11,8 @@ Run with `/task <n>`. One task per session, commit between each.
 | P5 | Sweep light & ground shadow | ☑ | f3fc95c | Landed together with P6 — the gallery's `C` toggle and the bevel-panel fix below are shared by both. |
 | P6 | Wordmark & page chrome | ☑ | f3fc95c | Same commit as P5. `poster_links.dart` uses bevel panels; `url_launcher` was not a dependency, so taps are a no-op (see below). |
 | P7 | Callout content & cards | ☑ | f67840a | See below — card 01/02/05 flag bug found and fixed during verification. |
-| P8 | Callout motion | ☑ | PENDING | Landed together with P9. `callout_rail.dart` was not renamed to `callouts/callout_layer.dart` — see below. |
-| P9 | Responsive assembly & verification | ☑ | PENDING | Same commit as P8. Freeze audit clean, `flutter analyze` clean, `flutter test` green. |
+| P8 | Callout motion | ☑ | 026921e | Landed together with P9. `callout_rail.dart` was not renamed to `callouts/callout_layer.dart` — see below. |
+| P9 | Responsive assembly & verification | ☑ | 026921e | Same commit as P8. Freeze audit clean, `flutter analyze` clean, `flutter test` green. |
 
 ## Open issues
 
