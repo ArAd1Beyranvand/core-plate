@@ -33,71 +33,82 @@ class InspectionStamp extends StatelessWidget {
         width: metrics.px(250),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            // Double inner ring reproduced as two stacked inset borders.
             border: Border.all(color: _ringOuter, width: metrics.px(2)),
           ),
           child: Padding(
-            padding: EdgeInsets.all(metrics.px(6)),
+            padding: EdgeInsets.all(metrics.px(4)),
             child: DecoratedBox(
               decoration: BoxDecoration(
-                border: Border.all(color: _ringInner, width: metrics.px(6)),
+                // Double inner ring reproduced as two stacked inset borders.
+                border: Border.all(color: _ringOuter, width: metrics.px(2)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Color(0xFF444444),
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Color(0xFF888888),
-                          width: metrics.px(0.5),
+              child: Padding(
+                padding: EdgeInsets.all(metrics.px(6)),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: _ringInner, width: metrics.px(6)),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFF444444),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Color(0xFF888888),
+                              width: metrics.px(0.5),
+                            ),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: metrics.px(3)),
+                          child: RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'made',
+                                  style: stampStyle.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF239F40),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' ',
+                                  style: stampStyle.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'in',
+                                  style: stampStyle.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: ' ',
+                                  style: stampStyle.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'IRAN',
+                                  style: stampStyle.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF8B0000),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    child: RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'made',
-                            style: stampStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF239F40),
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' ',
-                            style: stampStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextSpan(
-                            text: 'in',
-                            style: stampStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' ',
-                            style: stampStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextSpan(
-                            text: 'IRAN',
-                            style: stampStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF8B0000),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
