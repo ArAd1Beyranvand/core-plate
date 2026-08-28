@@ -51,53 +51,54 @@ class InspectionStamp extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: 'made',
-                            style: stampStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF239F40),
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' ',
-                            style: stampStyle.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          TextSpan(
-                            text: 'in',
-                            style: stampStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' ',
-                            style: stampStyle.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          TextSpan(
-                            text: 'IRAN',
-                            style: stampStyle.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF8B0000),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: metrics.px(3)),
                     Container(
-                      width: metrics.px(220),
-                      height: metrics.px(8),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Color(0xFF444444),
                         border: Border(
                           bottom: BorderSide(
-                            color: Color(0xFFAAAAAA),
+                            color: Color(0xFF888888),
                             width: metrics.px(0.5),
                           ),
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: metrics.px(12),
+                        vertical: metrics.px(4),
+                      ),
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'made',
+                              style: stampStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF239F40),
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' ',
+                              style: stampStyle.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: 'in',
+                              style: stampStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' ',
+                              style: stampStyle.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                            TextSpan(
+                              text: 'IRAN',
+                              style: stampStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF8B0000),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
