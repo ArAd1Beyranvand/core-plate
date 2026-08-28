@@ -89,7 +89,7 @@ class _RoadLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final Text dark = Text(
       'ROAD',
-      style: base.copyWith(color: const Color(0xFF2BA000)),
+      style: base.copyWith(color: PosterColors.inkDisplay1),
     );
     final Text cut = Text(
       'ROAD',
