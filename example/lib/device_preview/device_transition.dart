@@ -25,10 +25,12 @@ class DeviceTransitionDurations {
   final Duration frameTransform;
   final Duration contentFadeIn;
 
-  /// A beat of pure black either side of the morph, so the screen reads as
-  /// switched off rather than mid-fade.
+  /// A beat of pure black after the morph, before the content fades back in, so
+  /// the screen reads as switched off rather than mid-fade. The morph itself
+  /// starts the instant the outgoing content hits zero opacity — no leading
+  /// hold — so the shell begins reshaping exactly on the swap.
   final Duration blankHold;
 
   Duration get total =>
-      contentFadeOut + blankHold + frameTransform + blankHold + contentFadeIn;
+      contentFadeOut + frameTransform + blankHold + contentFadeIn;
 }

@@ -133,7 +133,7 @@ class _DeviceFrameState extends State<DeviceFrame>
     double at(Duration x) => x.inMicroseconds / total;
 
     final outEnd = at(d.contentFadeOut);
-    final morphStart = outEnd + at(d.blankHold);
+    final morphStart = outEnd;
     final morphEnd = morphStart + at(d.frameTransform);
     final inStart = morphEnd + at(d.blankHold);
 
