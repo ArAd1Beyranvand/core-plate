@@ -126,8 +126,13 @@ class LaptopDeck extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
+            // The underside is a single solid slab, not a cross-faded face: the
+            // moment the deck tips past edge-on it snaps to fully opaque so the
+            // whole back reads as milled body, never a frosted pane with the
+            // chassis glowing through its lower half. The swap is invisible
+            // because at edge-on the deck's projected height is ~0.
             child: Opacity(
-              opacity: backOpacity.clamp(0, 1),
+              opacity: backOpacity <= 0 ? 0 : 1,
               child: const _BackPanel(),
             ),
           ),
