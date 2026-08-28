@@ -258,18 +258,18 @@ class CalloutCard extends StatelessWidget {
     // the wall of them doesn't read as evenly printed. The heaviest also get
     // the screen-grain layer switched on.
     final double grainScale = switch (spec.index) {
-      1 => 1.15,
-      2 => 1.5,
-      3 => 1.3,
-      4 => 2.2,
-      5 => 1.1,
-      6 => 2.0,
+      1 => 1.5,
+      2 => 1.7,
+      3 => 2.3,
+      4 => 1.1,
+      5 => 1.5,
+      6 => 2.1,
       7 => 1.6,
-      8 => 1.35,
-      9 => 1.2,
-      10 => 1.7,
-      11 => 1.45,
-      12 => 2.4,
+      8 => 1.4,
+      9 => 1.55,
+      10 => 2.4,
+      11 => 1.65,
+      12 => 1.15,
       _ => 1.0,
     };
 
