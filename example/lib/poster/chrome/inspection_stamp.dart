@@ -23,9 +23,9 @@ class InspectionStamp extends StatelessWidget {
   Widget build(BuildContext context) {
     final PosterMetrics metrics = PosterMetrics.of(context);
 
-    final TextStyle stampStyle = PosterType.stamp(metrics.f).copyWith(
-      fontSize: PosterType.stamp(metrics.f).fontSize! * 1.5,
-    );
+    final TextStyle stampStyle = PosterType.stamp(
+      metrics.f,
+    ).copyWith(fontSize: PosterType.stamp(metrics.f).fontSize! * 1.5);
 
     return Transform.rotate(
       angle: -6 * math.pi / 180.0,
@@ -42,68 +42,62 @@ class InspectionStamp extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border.all(color: _ringInner, width: metrics.px(6)),
               ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: metrics.px(18),
-                  vertical: metrics.px(8),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF444444),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Color(0xFF888888),
-                            width: metrics.px(0.5),
-                          ),
-                        ),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: metrics.px(12),
-                        vertical: metrics.px(4),
-                      ),
-                      child: RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'made',
-                              style: stampStyle.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF239F40),
-                              ),
-                            ),
-                            TextSpan(
-                              text: ' ',
-                              style: stampStyle.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text: 'in',
-                              style: stampStyle.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            TextSpan(
-                              text: ' ',
-                              style: stampStyle.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            TextSpan(
-                              text: 'IRAN',
-                              style: stampStyle.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF8B0000),
-                              ),
-                            ),
-                          ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFF444444),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Color(0xFF888888),
+                          width: metrics.px(0.5),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                    child: RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'made',
+                            style: stampStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF239F40),
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' ',
+                            style: stampStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: 'in',
+                            style: stampStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' ',
+                            style: stampStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: 'IRAN',
+                            style: stampStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF8B0000),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
