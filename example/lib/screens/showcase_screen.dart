@@ -554,7 +554,9 @@ class _CalloutSideLayerState extends State<_CalloutSideLayer>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const DeviceTransitionDurations().frameTransform,
+      // The rails read as prose, not chrome: they run on the callout clock, not
+      // the frame morph's, which is far too quick to read a sentence out of.
+      duration: _kCalloutSwap,
     );
     _exit = CurvedAnimation(
       parent: _controller,
@@ -815,8 +817,11 @@ class _SlotRail extends StatelessWidget {
   }
 }
 
-/// How long a callout set takes to cross-fade when the device changes.
-const Duration _kCalloutSwap = Duration(milliseconds: 1400);
+/// How long a callout set takes to leave and be replaced when the device
+/// changes. Paced against the whole device hop (~4.2s of fade, morph and fade)
+/// rather than the frame morph alone, so the text is readable on its way out.
+/// Both callout layers — the wide side rails and the compact set — share it.
+const Duration _kCalloutSwap = Duration(milliseconds: 2600);
 
 class _CompactCallouts extends StatelessWidget {
   const _CompactCallouts({required this.device});
