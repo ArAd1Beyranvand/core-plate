@@ -137,6 +137,45 @@ class PosterGradients {
     colors: [Color(0xFF1B2131), Color(0xFF0C0F16)],
   );
 
+  /// A warmer companion to [cardSteel] — alternated with it on the callout
+  /// cards so two steel cards never look identical.
+  static const LinearGradient cardSteelWarm = LinearGradient(
+    begin: Alignment(-0.62, -0.79),
+    end: Alignment(0.62, 0.79),
+    colors: [Color(0xFF2A2C3C), Color(0xFF14110F)],
+  );
+
+  /// Deep enamel grounds for the numbered callout cards — navy, teal, plum,
+  /// slate and moss. They give each card its own plate-face colour instead of
+  /// one repeated slab of dark steel. Indexed by card number in `CalloutCard`.
+  static const List<LinearGradient> plateFaces = <LinearGradient>[
+    LinearGradient(
+      begin: Alignment(-0.62, -0.79),
+      end: Alignment(0.62, 0.79),
+      colors: [Color(0xFF17233C), Color(0xFF090D17)],
+    ),
+    LinearGradient(
+      begin: Alignment(-0.62, -0.79),
+      end: Alignment(0.62, 0.79),
+      colors: [Color(0xFF14302C), Color(0xFF081412)],
+    ),
+    LinearGradient(
+      begin: Alignment(-0.62, -0.79),
+      end: Alignment(0.62, 0.79),
+      colors: [Color(0xFF241C34), Color(0xFF0F0A18)],
+    ),
+    LinearGradient(
+      begin: Alignment(-0.62, -0.79),
+      end: Alignment(0.62, 0.79),
+      colors: [Color(0xFF1E2637), Color(0xFF0C0F16)],
+    ),
+    LinearGradient(
+      begin: Alignment(-0.62, -0.79),
+      end: Alignment(0.62, 0.79),
+      colors: [Color(0xFF1C2A1F), Color(0xFF0B120D)],
+    ),
+  ];
+
   /// `linear-gradient(158deg, #1A2032, #0C0E16)`; hover ground → `#EDEFF3`.
   static const LinearGradient linkButton = LinearGradient(
     begin: Alignment(-0.62, -0.79),

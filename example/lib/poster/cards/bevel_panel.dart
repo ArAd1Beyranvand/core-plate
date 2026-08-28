@@ -128,12 +128,12 @@ class BevelStyle {
     lightSoft: Color(0x70E2EEFF),
     darkStrong: Color(0x9900081A),
     darkSoft: Color(0x7500081A),
-    overlayGrainOpacity: 0.20,
+    overlayGrainOpacity: 0.11,
     overlayTileDesignPx: 220,
-    screenGrainOpacity: 0.46,
+    screenGrainOpacity: 0.22,
     screenTileDesignPx: 180,
-    sheenStrong: Color(0x4DE2EEFF), // rgba(226,238,255,.30)
-    sheenFaint: Color(0x0FE2EEFF), // rgba(226,238,255,.06)
+    sheenStrong: Color(0x3DE2EEFF), // rgba(226,238,255,.24)
+    sheenFaint: Color(0x0BE2EEFF), // rgba(226,238,255,.04)
     defaultScreenGrain: true,
   );
 
@@ -148,12 +148,12 @@ class BevelStyle {
     lightSoft: Color(0x4DD4E2FC),
     darkStrong: Color(0xA300030A),
     darkSoft: Color(0x8000030A),
-    overlayGrainOpacity: 0.18,
+    overlayGrainOpacity: 0.12,
     overlayTileDesignPx: 210,
-    screenGrainOpacity: 0.32,
+    screenGrainOpacity: 0.24,
     screenTileDesignPx: 160,
-    sheenStrong: Color(0x40E2EEFF), // rgba(226,238,255,.25)
-    sheenFaint: Color(0x0DE2EEFF),
+    sheenStrong: Color(0x2EE2EEFF), // rgba(226,238,255,.18)
+    sheenFaint: Color(0x0AE2EEFF),
   );
 
   /// Dark: light rgba(184,200,230,.23/.155), dark rgba(0,2,8,.70/.56), 2px.
@@ -167,12 +167,12 @@ class BevelStyle {
     lightSoft: Color(0x28B8C8E6),
     darkStrong: Color(0xB3000208),
     darkSoft: Color(0x8F000208),
-    overlayGrainOpacity: 0.14,
+    overlayGrainOpacity: 0.10,
     overlayTileDesignPx: 200,
-    screenGrainOpacity: 0.30,
+    screenGrainOpacity: 0.22,
     screenTileDesignPx: 140,
-    sheenStrong: Color(0x38E2EEFF), // rgba(226,238,255,.22)
-    sheenFaint: Color(0x0AE2EEFF),
+    sheenStrong: Color(0x28E2EEFF), // rgba(226,238,255,.16)
+    sheenFaint: Color(0x08E2EEFF),
   );
 
   /// White index chip — same light source, but the bevel reads against #EDEFF3.
