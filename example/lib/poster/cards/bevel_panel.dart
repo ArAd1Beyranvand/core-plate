@@ -246,6 +246,7 @@ class BevelPanel extends StatelessWidget {
     this.groundColor,
     this.groundGradient,
     this.screenGrain,
+    this.grainScale = 1.0,
     this.screws,
     this.shadow = const BevelShadow(),
     this.padding,
@@ -267,6 +268,10 @@ class BevelPanel extends StatelessWidget {
 
   /// Layer 4 on/off. Defaults to [BevelStyle.defaultScreenGrain].
   final bool? screenGrain;
+
+  /// Multiplier on both grain layers' opacity — >1 makes a single card read
+  /// dirtier than its flavour's default without disturbing the others.
+  final double grainScale;
 
   final ScrewDots? screws;
   final BevelShadow shadow;
@@ -327,7 +332,7 @@ class BevelPanel extends StatelessWidget {
               texture: PosterTexture.overlayGrain,
               metrics: metrics,
               tileDesignPx: style.overlayTileDesignPx,
-              opacity: style.overlayGrainOpacity,
+              opacity: (style.overlayGrainOpacity * grainScale).clamp(0.0, 1.0),
               blendMode: BlendMode.overlay,
             ),
           ),
@@ -339,7 +344,7 @@ class BevelPanel extends StatelessWidget {
                 texture: PosterTexture.screenGrain,
                 metrics: metrics,
                 tileDesignPx: style.screenTileDesignPx,
-                opacity: style.screenGrainOpacity,
+                opacity: (style.screenGrainOpacity * grainScale).clamp(0.0, 1.0),
                 blendMode: BlendMode.screen,
               ),
             ),

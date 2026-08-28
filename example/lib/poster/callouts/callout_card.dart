@@ -254,11 +254,17 @@ class CalloutCard extends StatelessWidget {
       );
     }
 
+    // Cards 04/06/12 wear a heavier, worked-over grain than their flavour's
+    // default.
+    final bool dirty = spec.index == 4 || spec.index == 6 || spec.index == 12;
+
     // Main card with bevel panel
     final Widget card = BevelPanel(
       style: BevelStyle.byKind[_bevelKind]!,
       groundColor: _groundColor,
       groundGradient: _groundGradient,
+      grainScale: dirty ? 2.2 : 1.0,
+      screenGrain: dirty ? true : null,
       child: SizedBox(
         width: metrics.px(widthDesignPx ?? spec.widthFx * 1920),
         child: cardContent,
@@ -267,8 +273,14 @@ class CalloutCard extends StatelessWidget {
 
     if (!showIndexChip) return card;
 
-    // Add index chip
-    final chipPositioned = spec.side == CalloutSide.left
+    // Add index chip. Most chips follow the card's device-facing side, but a
+    // few are pinned by hand: 02/07 to the top-left, 09 to the right.
+    final bool chipOnLeft = switch (spec.index) {
+      2 || 7 => true,
+      9 => false,
+      _ => spec.side == CalloutSide.left,
+    };
+    final chipPositioned = chipOnLeft
         ? pinIndexChip(
             metrics: metrics,
             chip: IndexChip(
