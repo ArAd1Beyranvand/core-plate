@@ -104,20 +104,20 @@ class _RoadLine extends StatelessWidget {
           child: ShaderMask(
             blendMode: BlendMode.dstIn,
             shaderCallback: (Rect bounds) {
-              // `linear-gradient(103.5deg, opaque 0–46%, transparent 46%)`.
+              // `linear-gradient(103.5deg, opaque 0–25%, transparent 25%)`.
               // CSS angles run clockwise from "to top"; 103.5° points right
               // and just past horizontal (down a hair). Two stops at the same
-              // 46% position keep the edge hard rather than feathered.
+              // 25% position keep the edge hard rather than feathered.
               final Alignment begin = _alignmentForCssAngle(103.5);
               return LinearGradient(
                 begin: begin,
                 end: -begin,
                 colors: const <Color>[
-                  Color(0xFFFFFFFF), // opaque — bright copy shows
+                  Color(0xFFFFFFFF), // opaque — bright copy shows (R only)
                   Color(0xFFFFFFFF),
-                  Color(0x00FFFFFF), // transparent — bright copy hidden
+                  Color(0x00FFFFFF), // transparent — bright copy hidden (OAD)
                 ],
-                stops: const <double>[0.0, 0.46, 0.46],
+                stops: const <double>[0.0, 0.25, 0.25],
               ).createShader(bounds);
             },
             child: cut,

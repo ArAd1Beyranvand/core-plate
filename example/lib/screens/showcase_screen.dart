@@ -319,18 +319,7 @@ class _WideChrome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final metrics = PosterMetrics.of(context);
-    return Stack(
-      clipBehavior: Clip.none,
-      children: <Widget>[
-        PosterChrome(device: device),
-        Positioned(
-          left: metrics.size.width * 0.039,
-          top: metrics.size.height * 0.882,
-          child: const PosterMeta(),
-        ),
-      ],
-    );
+    return PosterChrome(device: device);
   }
 }
 
