@@ -24,7 +24,7 @@ class InspectionStamp extends StatelessWidget {
     final PosterMetrics metrics = PosterMetrics.of(context);
 
     final TextStyle stampStyle = PosterType.stamp(metrics.f).copyWith(
-      fontSize: PosterType.stamp(metrics.f).fontSize! * 1.2,
+      fontSize: PosterType.stamp(metrics.f).fontSize! * 1.5,
     );
 
     return Transform.rotate(
