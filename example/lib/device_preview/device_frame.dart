@@ -59,11 +59,11 @@ class DeviceFrame extends StatefulWidget {
   final Curve fadeCurve;
   final ValueChanged<DeviceTransitionPhase>? onPhaseChanged;
 
-  /// Fired once per transition during the blank hold after the frame has
-  /// finished morphing, while content opacity is pinned at zero and before the
-  /// fade-in starts. This is the moment to swap the page's backing state (e.g.
-  /// a plate's bloc), so the incoming content is never seen crossing the
-  /// outgoing one.
+  /// Fired once per transition the instant content opacity reaches zero — i.e.
+  /// as the frame morph begins, not after it. Opacity stays pinned at zero for
+  /// the whole morph, so this is the earliest safe moment to swap the page's
+  /// backing state (e.g. a plate's bloc) without the incoming content being
+  /// seen crossing the outgoing one.
   final VoidCallback? onContentSwap;
 
   /// Label of a laptop key to render as held down.
@@ -146,10 +146,10 @@ class _DeviceFrameState extends State<DeviceFrame>
   }
 
   void _onTick() {
-    // The frame morph is done once _morphRaw saturates; the blank hold before
-    // the fade-in runs from here, so this is the safe, invisible moment to hand
-    // the page's content over to the incoming device.
-    if (!_contentSwapped && _morphRaw.value >= 1) {
+    // The outgoing content is fully transparent once _fadeOut saturates, and it
+    // stays that way for the whole morph — so this first invisible frame is the
+    // moment to hand the page's content over to the incoming device.
+    if (!_contentSwapped && _fadeOut.value >= 1) {
       _contentSwapped = true;
       widget.onContentSwap?.call();
     }

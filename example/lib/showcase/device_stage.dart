@@ -189,9 +189,9 @@ class _DeviceStageState extends State<DeviceStage> {
     widget.onFrameDeviceChanged?.call(device);
   }
 
-  /// Fired by [DeviceFrame] during the blank hold, after the frame has morphed
-  /// and content opacity has hit zero — so the outgoing plate widget is already
-  /// unmounted and its bloc can be closed and replaced without a visible flash.
+  /// Fired by [DeviceFrame] the moment content opacity hits zero, as the frame
+  /// starts morphing — the outgoing plate is already invisible, so its bloc can
+  /// be closed and replaced without a visible flash.
   void _onContentSwap() {
     if (!mounted) return;
     _bloc.close();
