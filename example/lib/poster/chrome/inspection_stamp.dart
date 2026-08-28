@@ -36,7 +36,7 @@ class InspectionStamp extends StatelessWidget {
             border: Border.all(color: _ringOuter, width: metrics.px(2)),
           ),
           child: Padding(
-            padding: EdgeInsets.all(metrics.px(4)),
+            padding: EdgeInsets.all(metrics.px(9)),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 // Double inner ring reproduced as two stacked inset borders.
