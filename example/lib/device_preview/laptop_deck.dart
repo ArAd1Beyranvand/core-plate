@@ -9,7 +9,7 @@ part 'laptop_deck.parts.dart';
 const laptopEdgeWidth = 8.0;
 
 const _edgeColor = Color(0xFF8A909C);
-const _edgeRadius = BorderRadius.vertical(bottom: Radius.circular(8));
+const _edgeRadius = BorderRadius.vertical(bottom: Radius.circular(16));
 
 /// The chassis rim around the laptop deck: a thin gray-metal ring matching
 /// the body's own frame. [DeviceFrame] stacks this on top of the deck's
