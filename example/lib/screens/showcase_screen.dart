@@ -17,7 +17,6 @@ import '../poster/chrome/poster_links.dart';
 import '../poster/chrome/poster_masthead.dart';
 import '../poster/chrome/poster_meta.dart';
 import '../poster/chrome/poster_wordmark.dart';
-import '../poster/cards/index_chip.dart';
 import '../poster/poster_scale.dart';
 import '../poster/poster_tokens.dart';
 import '../showcase/device_stage.dart';
@@ -859,19 +858,12 @@ class _CompactCalloutRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        IndexChip(
-          label: spec.index.toString().padLeft(2, '0'),
-          fontDesignPx: 48,
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-        ),
-        const SizedBox(width: 10),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
               return CalloutCard(
                 spec: spec,
                 widthDesignPx: constraints.maxWidth / metrics.f,
-                showIndexChip: false,
               );
             },
           ),

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../cards/bevel_panel.dart';
 import '../cards/card_decorations.dart';
 import '../cards/dashed_rule.dart';
-import '../cards/index_chip.dart';
 import '../poster_scale.dart';
 import '../poster_tokens.dart';
 import 'callout_data.dart';
@@ -13,12 +12,10 @@ class CalloutCard extends StatelessWidget {
     super.key,
     required this.spec,
     this.widthDesignPx,
-    this.showIndexChip = true,
   });
 
   final CalloutSpec spec;
   final double? widthDesignPx;
-  final bool showIndexChip;
 
   BevelKind get _bevelKind {
     switch (spec.kind) {
@@ -133,11 +130,7 @@ class CalloutCard extends StatelessWidget {
                   ? Alignment.centerRight
                   : Alignment.centerLeft,
               child: Padding(
-                padding: EdgeInsets.only(
-                  left: showIndexChip && (spec.index == 1 || spec.index == 9)
-                      ? metrics.px(70)
-                      : 0,
-                ),
+                padding: EdgeInsets.zero,
                 child: Text(
                   spec.eyebrow,
                   textAlign: direction == TextDirection.rtl
@@ -265,38 +258,6 @@ class CalloutCard extends StatelessWidget {
       ),
     );
 
-    if (!showIndexChip) return card;
-
-    // Add index chip. Most chips follow the card's device-facing side, but a
-    // few are pinned by hand: 02/07 to the top-left, 09 to the right.
-    final bool chipOnLeft = switch (spec.index) {
-      2 || 7 => true,
-      9 => false,
-      _ => spec.side == CalloutSide.left,
-    };
-    final chipPositioned = chipOnLeft
-        ? pinIndexChip(
-            metrics: metrics,
-            chip: IndexChip(
-              label: '${spec.index.toString().padLeft(2, '0')}',
-              kind: BevelKind.chipWhite,
-            ),
-            left: -28,
-            top: -26,
-          )
-        : pinIndexChip(
-            metrics: metrics,
-            chip: IndexChip(
-              label: '${spec.index.toString().padLeft(2, '0')}',
-              kind: BevelKind.chipWhite,
-            ),
-            right: -28,
-            top: -26,
-          );
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: <Widget>[card, chipPositioned],
-    );
+    return card;
   }
 }

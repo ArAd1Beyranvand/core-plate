@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import '../poster/cards/bevel_panel.dart';
 import '../poster/cards/card_decorations.dart';
 import '../poster/cards/dashed_rule.dart';
-import '../poster/cards/index_chip.dart';
 import '../poster/poster_scale.dart';
 import '../poster/poster_tokens.dart';
 
 /// A throwaway gallery for the DESIGN_SPEC.md §4 bevel primitives: every
 /// [BevelStyle] at a realistic card size, LTR and RTL, with and without screw
-/// dots and index chips, over the stage black. Run with:
+/// dots, over the stage black. Run with:
 ///
 ///   flutter run -t lib/dev/bevel_gallery.dart
 void main() => runApp(const BevelGallery());
@@ -34,12 +33,10 @@ class BevelGallery extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const <Widget>[
-                _Label('hero — IR ground, screw dots, tilted chip 01'),
+                _Label('hero — IR ground, screw dots'),
                 _Sample(
                   kind: BevelKind.hero,
                   widthDesignPx: 536,
-                  chip: '01',
-                  tiltChip: true,
                   screws: true,
                 ),
                 _Gap(),
@@ -48,30 +45,27 @@ class BevelGallery extends StatelessWidget {
                   kind: BevelKind.hero,
                   german: true,
                   widthDesignPx: 400,
-                  chip: '09',
                   euBadge: true,
                   redTag: true,
                 ),
                 _Gap(),
-                _Label('steel — chip 03, dashed rule, DE strip'),
+                _Label('steel — dashed rule, DE strip'),
                 _Sample(
                   kind: BevelKind.steel,
                   widthDesignPx: 350,
-                  chip: '03',
                   screws: true,
                   dashedRule: true,
                   deStrip: true,
                 ),
                 _Gap(),
-                _Label('dark — LTR, no chip, no screws'),
+                _Label('dark — LTR, no screws'),
                 _Sample(kind: BevelKind.dark, widthDesignPx: 366),
                 _Gap(),
-                _Label('dark — RTL, chip pinned to the right, screws right'),
+                _Label('dark — RTL, screws right'),
                 _Sample(
                   kind: BevelKind.dark,
                   widthDesignPx: 306,
                   rtl: true,
-                  chip: '07',
                   screws: true,
                 ),
                 _Gap(),
@@ -80,15 +74,11 @@ class BevelGallery extends StatelessWidget {
                   kind: BevelKind.hero,
                   widthDesignPx: 386,
                   rtl: true,
-                  chip: '05',
                   screws: true,
                   divider: true,
                   flagFooter: true,
                   irStrip: true,
                 ),
-                _Gap(),
-                _Label('index chips on their own — white / dark, 44 and 78px'),
-                _ChipRow(),
                 _Gap(),
                 _Label('dashed rules — 8/16 at 2px, 10/20 at 3px'),
                 _RuleRow(),
@@ -132,8 +122,6 @@ class _Sample extends StatelessWidget {
     required this.widthDesignPx,
     this.german = false,
     this.rtl = false,
-    this.chip,
-    this.tiltChip = false,
     this.screws = false,
     this.dashedRule = false,
     this.divider = false,
@@ -148,8 +136,6 @@ class _Sample extends StatelessWidget {
   final double widthDesignPx;
   final bool german;
   final bool rtl;
-  final String? chip;
-  final bool tiltChip;
   final bool screws;
   final bool dashedRule;
   final bool divider;
@@ -255,22 +241,6 @@ class _Sample extends StatelessWidget {
             bottom: metrics.px(16),
             child: const EuBadgeColumn(),
           ),
-        if (chip != null)
-          pinIndexChip(
-            metrics: metrics,
-            left: rtl ? 0 : -28,
-            right: rtl ? -28 : null,
-            top: -26,
-            chip: tiltChip
-                ? IndexChip.tilted(label: chip!)
-                : IndexChip(
-                    label: chip!,
-                    kind: kind == BevelKind.hero
-                        ? BevelKind.chipWhite
-                        : BevelKind.chipDark,
-                    fontDesignPx: 48,
-                  ),
-          ),
       ],
     );
 
@@ -283,25 +253,6 @@ class _Sample extends StatelessWidget {
           child: stacked,
         ),
       ),
-    );
-  }
-}
-
-class _ChipRow extends StatelessWidget {
-  const _ChipRow();
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 48,
-      runSpacing: 48,
-      children: const <Widget>[
-        IndexChip(label: '01', fontDesignPx: 78),
-        IndexChip(label: '02', fontDesignPx: 44),
-        IndexChip(label: '07', kind: BevelKind.chipDark, fontDesignPx: 78),
-        IndexChip(label: '12', kind: BevelKind.chipDark, fontDesignPx: 44),
-        IndexChip.tilted(label: '01'),
-      ],
     );
   }
 }

@@ -74,7 +74,7 @@ void main() {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      CalloutCard(spec: spec, showIndexChip: false),
+                      CalloutCard(spec: spec),
                     ],
                   ),
                 ),

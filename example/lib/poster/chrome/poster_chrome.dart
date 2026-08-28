@@ -37,7 +37,6 @@ class PosterChrome extends StatelessWidget {
     // Fractional anchors from §6's chrome table.
     final Offset byline = Offset(0.040 * size.width, 0.048 * size.height);
     final Offset wordmark = Offset(0.036 * size.width, 0.172 * size.height);
-    final Offset links = Offset(0.039 * size.width, 0.778 * size.height);
     final Offset stamp = Offset(0.843 * size.width, 0.874 * size.height);
     final Offset pips = Offset(0.977 * size.width, 0.415 * size.height);
 
@@ -52,12 +51,15 @@ class PosterChrome extends StatelessWidget {
         Positioned(
           left: wordmark.dx,
           top: wordmark.dy,
-          child: const PosterWordmark(),
-        ),
-        Positioned(
-          left: links.dx,
-          top: links.dy,
-          child: const PosterLinks(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const PosterWordmark(),
+              SizedBox(height: metrics.px(32)),
+              const PosterLinks(),
+            ],
+          ),
         ),
         // The pips anchor at their right edge (`.977`), so pin `right` rather
         // than `left` and let the right-aligned column grow leftward.
