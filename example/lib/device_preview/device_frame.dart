@@ -279,18 +279,20 @@ class _DeviceFrameState extends State<DeviceFrame>
             child: SizedBox(
               width: total.width * fit,
               height: fitHeight * fit,
-              child: OverflowBox(
-                alignment: Alignment.topCenter,
-                maxHeight: double.infinity,
-                child: SizedBox(
-                  width: total.width * fit,
-                  height: total.height * fit,
-                  child: FittedBox(
-                    fit: BoxFit.fill,
-                    child: SizedBox(
-                      width: total.width,
-                      height: total.height,
-                      child: _buildDevice(context, config),
+              child: ClipRect(
+                child: OverflowBox(
+                  alignment: Alignment.topCenter,
+                  maxHeight: double.infinity,
+                  child: SizedBox(
+                    width: total.width * fit,
+                    height: total.height * fit,
+                    child: FittedBox(
+                      fit: BoxFit.fill,
+                      child: SizedBox(
+                        width: total.width,
+                        height: total.height,
+                        child: _buildDevice(context, config),
+                      ),
                     ),
                   ),
                 ),

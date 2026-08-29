@@ -8,7 +8,7 @@ import 'package:plate_number/model/plate_spec.dart';
 import 'package:plate_number/widgets/plate_canvas.dart';
 
 void main() {
-  final spec = PlateSpecs.deCar;
+  const spec = PlateSpecs.deCar;
 
   Future<PlateCardBloc> pumpCanvas(
     WidgetTester tester,

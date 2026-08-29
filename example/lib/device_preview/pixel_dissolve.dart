@@ -105,7 +105,7 @@ class _DissolvePainter extends CustomPainter {
         final coverAlpha =
             1 - ((progress - (t - _fadeBand)) / _fadeBand).clamp(0.0, 1.0);
         if (coverAlpha <= 0.001) continue;
-        paint.color = cover.withOpacity(coverAlpha.clamp(0.0, 1.0));
+        paint.color = cover.withValues(alpha: coverAlpha.clamp(0.0, 1.0));
         // +1 to close the seams between neighbouring blocks.
         canvas.drawRect(Rect.fromLTWH(c * bw, r * bh, bw + 1, bh + 1), paint);
       }
