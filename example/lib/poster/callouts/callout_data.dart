@@ -160,7 +160,9 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       textDirection: TextDirection.ltr,
       anchorFx: 0.811,
       anchorFy: 0.059,
-      widthFx: 0.208,
+      // Wide enough that the body column beside the L's vertical leg still
+      // reads as prose; the anchor clamps the card back onto the canvas.
+      widthFx: 0.270,
       eyebrow: 'RULES',
       title: 'Live\nvalidation',
       body: 'Forbidden district and serial combinations flare red as you type — before submit, not after.',
