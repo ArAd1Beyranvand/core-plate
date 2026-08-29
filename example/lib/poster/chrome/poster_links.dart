@@ -35,7 +35,7 @@ class PosterLinks extends StatelessWidget {
           url: pubDevUrl,
           iconBuilder: (Color color) => _CubeIcon(color: color),
         ),
-        SizedBox(height: metrics.px(5)),
+        SizedBox(height: metrics.px(8)),
         _LinkButton(
           label: 'GITHUB',
           url: githubUrl,
@@ -78,8 +78,8 @@ class _LinkButtonState extends State<_LinkButton> {
 
     // Ground and content invert on hover.
     final Color contentColor =
-        hovered ? const Color(0xFF12141B) : PosterColors.cardHeroDe;
-    final double iconSize = metrics.px(7);
+        hovered ? const Color(0xFF12141B) : PosterColors.inkDisplay1;
+    final double iconSize = metrics.px(29);
 
     final Widget panel = BevelPanel(
       style: BevelStyle.dark,
@@ -87,7 +87,7 @@ class _LinkButtonState extends State<_LinkButton> {
       groundGradient: hovered ? null : null,
       screenGrain: false,
       shadow: BevelShadow.none,
-      padding: const EdgeInsets.fromLTRB(7, 5, 7, 6),
+      padding: const EdgeInsets.fromLTRB(29, 21, 29, 22),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -96,10 +96,10 @@ class _LinkButtonState extends State<_LinkButton> {
             height: iconSize,
             child: widget.iconBuilder(contentColor),
           ),
-          SizedBox(width: metrics.px(2)),
+          SizedBox(width: metrics.px(8)),
           Text(
             widget.label,
-            style: PosterType.linkLabel(metrics.f * 0.4).copyWith(color: contentColor),
+            style: PosterType.linkLabel(metrics.f * 1.6).copyWith(color: contentColor),
           ),
         ],
       ),
