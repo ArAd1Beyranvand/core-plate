@@ -174,20 +174,25 @@ class CalloutCard extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                title,
-                SizedBox(width: gap),
-                if (beside.isNotEmpty)
-                  SizedBox(
-                    width: columnWidth,
-                    child: Directionality(
-                      textDirection: direction,
-                      child: Text(beside, style: bodyStyle),
+            // Stretched so the L's legs run to the bottom of whichever is
+            // taller, title or the lines beside it — no dead space under the
+            // short side before the full-width block picks up.
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  title,
+                  SizedBox(width: gap),
+                  if (beside.isNotEmpty)
+                    SizedBox(
+                      width: columnWidth,
+                      child: Directionality(
+                        textDirection: direction,
+                        child: Text(beside, style: bodyStyle),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
             if (below.isNotEmpty)
               Padding(
@@ -221,8 +226,11 @@ class CalloutCard extends StatelessWidget {
     double consumed = 0;
     int lastFitting = -1;
     for (int i = 0; i < lines.length; i++) {
+      // A line counts as beside the L if it *starts* within the notch; letting
+      // it overhang keeps the two sides flush instead of leaving a hole under
+      // the shorter one — the L stretches to cover the overhang.
+      if (consumed >= height) break;
       consumed += lines[i].height;
-      if (consumed > height) break;
       lastFitting = i;
     }
     if (lastFitting < 0) return 0;
