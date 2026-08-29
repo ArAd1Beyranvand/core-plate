@@ -101,9 +101,9 @@ class CalloutCard extends StatelessWidget {
     Widget cardContent = Padding(
       padding: EdgeInsets.fromLTRB(
         metrics.px(24),
-        metrics.px(22),
+        spec.isCentered ? 0 : metrics.px(22),
         metrics.px(24),
-        metrics.px(22),
+        spec.isCentered ? 0 : metrics.px(22),
       ),
       child: Column(
         mainAxisAlignment: spec.isCentered
@@ -124,14 +124,14 @@ class CalloutCard extends StatelessWidget {
               textAlign: spec.isCentered ? TextAlign.center : null,
             ),
           ),
-          SizedBox(height: metrics.px(14)),
+          if (!spec.isCentered) SizedBox(height: metrics.px(14)),
 
           // Dashed rule
           if (spec.hasDashedRule && !spec.hasDivider)
             DashedRule.thin(color: _dashedRuleColor(metrics)),
           if (spec.hasDivider) const TwoToneDivider(),
 
-          SizedBox(height: metrics.px(14)),
+          if (!spec.isCentered) SizedBox(height: metrics.px(14)),
 
           // Body
           if (spec.body != null)
