@@ -307,7 +307,7 @@ class PlateSpecs {
     canvasWidth: 175,
     canvasHeight: 110,
     // Overlap the border on the two touching edges (left/top) instead of
-    // sitting flush at the border thickness (0.07 * canvasHeight = 7.7); the
+    // sitting flush at the border thickness (0.05 * canvasHeight = 5.5); the
     // panel is clipped back to the plate face, so this kills the thin white
     // seam a flush edge leaves. See irCar. Right (63.7) and bottom (53.7) edges
     // are interior and unchanged.
@@ -319,7 +319,7 @@ class PlateSpecs {
     panelWidth: 47,
     panelHeight: 53.7,
     textDirection: TextDirection.rtl,
-    borderWidthRatioOverride: 0.07,
+    borderWidthRatioOverride: 0.05,
     flagScale: 1.0,
     captionScale: 0.25,
     // Bigger left margin than top/bottom: matches a real bicycle plate's
