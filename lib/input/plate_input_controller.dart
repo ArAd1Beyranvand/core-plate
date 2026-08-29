@@ -7,7 +7,7 @@ import '../model/plate_spec.dart';
 /// The controller talks to the attached canvas through this interface because
 /// the canvas's State is private and cannot be referenced by type from here.
 abstract class PlateInputTarget {
-  PlateSlot? get activeSlot;
+  int? get activeIndex;
   void submitCharacter(String character);
   void backspaceCharacter();
   void focusFirstEmptySlot();
@@ -17,7 +17,7 @@ abstract class PlateInputTarget {
 /// A handle a host app holds to drive character entry on a [PlateCanvas]
 /// without knowing which slot is active or which alphabet it accepts.
 ///
-/// The host renders its own on-screen keypad, reads [activeSlot] to decide
+/// The host renders its own on-screen keypad, reads [activeIndex] to decide
 /// which keys to show, and calls [submit]/[backspace] to enter or remove
 /// characters. The controller keeps no plate state of its own: every operation
 /// is proxied to the attached canvas, which owns the focus and the bloc.
@@ -45,21 +45,26 @@ class PlateInputController extends ChangeNotifier {
   /// Called by PlateCanvas when its active slot changes.
   void notifyActiveSlotChanged() => notifyListeners();
 
-  /// The slot currently accepting input, or null when the plate is unfocused
-  /// (or no canvas is attached). Hosts read it to decide which keypad to show.
-  PlateSlot? get activeSlot => _target?.activeSlot;
+  /// The position of the slot currently accepting input, or null when the
+  /// plate is unfocused (or no canvas is attached). Hosts read it to decide
+  /// which keypad to show.
+  int? get activeIndex => _target?.activeIndex;
+
+  /// The active slot itself, resolved against [spec] — the convenience for
+  /// hosts that need the slot's alphabet rather than just its position. They
+  /// know which spec is on screen; the controller deliberately does not.
+  PlateSlot? activeSlotIn(PlateSpec spec) => spec.slotAt(activeIndex ?? -1);
 
   /// Whether a canvas is currently attached.
   bool get isAttached => _target != null;
 
   /// Commit [character] to the active slot and advance focus, exactly as typing
-  /// into that slot would. No-op when there is no active slot, or when
-  /// `activeSlot.alphabet.accepts(character)` is false.
+  /// into that slot would. No-op when there is no active slot, or when the
+  /// active slot's alphabet does not accept [character].
   void submit(String character) => _target?.submitCharacter(character);
 
   /// Clear the active slot; if it is already empty, step focus backwards to the
-  /// previous slot (the one whose `next` points at the active index) and clear
-  /// that instead. No-op at the start of the plate.
+  /// preceding slot and clear that instead. No-op at the start of the plate.
   void backspace() => _target?.backspaceCharacter();
 
   /// Focus the first slot with a null/empty value, or the first slot if the

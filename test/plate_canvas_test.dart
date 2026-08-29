@@ -42,8 +42,7 @@ void main() {
       addTearDown(c.dispose);
       await pumpCanvas(tester, c);
 
-      expect(c.activeSlot, isNotNull);
-      expect(c.activeSlot!.index, 0);
+      expect(c.activeIndex,0);
     });
 
     testWidgets('submit writes the value and advances focus', (tester) async {
@@ -55,8 +54,7 @@ void main() {
       await tester.pump();
 
       expect(bloc.state.plateNumber.values[0], 'D');
-      expect(c.activeSlot, isNotNull);
-      expect(c.activeSlot!.index, 1);
+      expect(c.activeIndex,1);
     });
 
     testWidgets('submitting a character the alphabet rejects is a no-op', (
@@ -70,7 +68,7 @@ void main() {
       await tester.pump();
 
       expect(bloc.state.plateNumber.values[0], anyOf(isNull, isEmpty));
-      expect(c.activeSlot!.index, 0);
+      expect(c.activeIndex, 0);
     });
 
     testWidgets('backspace on an empty slot steps back and clears previous', (
@@ -83,13 +81,13 @@ void main() {
       // Fill slot 0, landing focus on the (empty) slot 1.
       c.submit('D');
       await tester.pump();
-      expect(c.activeSlot!.index, 1);
+      expect(c.activeIndex, 1);
 
       c.backspace();
       await tester.pump();
 
       // Focus stepped back to slot 0 and its value was cleared.
-      expect(c.activeSlot!.index, 0);
+      expect(c.activeIndex, 0);
       expect(bloc.state.plateNumber.values[0], anyOf(isNull, isEmpty));
     });
 
@@ -109,7 +107,7 @@ void main() {
       c.focusFirstEmpty();
       await tester.pump();
 
-      expect(c.activeSlot!.index, 2);
+      expect(c.activeIndex, 2);
     });
   });
 }

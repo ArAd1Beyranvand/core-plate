@@ -7,41 +7,18 @@ import 'plate_country.dart';
 @immutable
 class PlateSlot {
   const PlateSlot({
-    required this.index,
     required this.alphabet,
     required this.left,
     required this.top,
     required this.width,
     required this.height,
-    required this.next,
   });
-
-  /// Position in PlateNumber.values.
-  final int index;
 
   final PlateAlphabet alphabet;
 
   /// Plate-space geometry. [height] doubles as the slot height passed to the
   /// glyph style — do not add a separate field for it.
   final double left, top, width, height;
-
-  /// The index focus advances to when this slot fills. Null unfocuses.
-  final int? next;
-
-  @override
-  bool operator ==(Object other) =>
-      other is PlateSlot &&
-      other.index == index &&
-      other.alphabet == alphabet &&
-      other.left == left &&
-      other.top == top &&
-      other.width == width &&
-      other.height == height &&
-      other.next == next;
-
-  @override
-  int get hashCode =>
-      Object.hash(index, alphabet, left, top, width, height, next);
 }
 
 /// A painted rule (e.g. the vertical divider on an Iranian car plate).
@@ -170,11 +147,17 @@ class PlateSpec {
   /// How many values this plate stores. Derived, never hard-coded.
   int get slotCount => slots.length;
 
-  /// The slot at [index], or null.
-  PlateSlot? slotAt(int index) {
-    for (final s in slots) { if (s.index == index) return s; }
-    return null;
-  }
+  /// The slot at [index], or null when [index] is outside the plate.
+  PlateSlot? slotAt(int index) =>
+      index >= 0 && index < slots.length ? slots[index] : null;
+
+  /// The slot focus advances to from [index], or null at the end of the plate.
+  int? nextIndex(int index) =>
+      index >= 0 && index + 1 < slots.length ? index + 1 : null;
+
+  /// The slot focus steps back to from [index], or null at the start.
+  int? previousIndex(int index) =>
+      index > 0 && index < slots.length ? index - 1 : null;
 
   /// Concatenates [values] at the indices of the text group with the given
   /// [key], unset slots rendering as ''. Returns '' if no group has that key.
@@ -197,49 +180,18 @@ class PlateSpec {
   int get hashCode => id.hashCode;
 }
 
-/// Debug-only sanity check for a [PlateSpec]'s internal consistency: unique
-/// slot indices, every non-null [PlateSlot.next] resolving to a real slot,
-/// no cycle when following [PlateSlot.next] from any slot, and every slot
-/// rect fitting within the canvas. Always returns true — call it inside an
+/// Debug-only sanity check for a [PlateSpec]'s internal consistency: every
+/// slot rect fits within the canvas. Always returns true — call it inside an
 /// `assert(...)` so it's stripped from release builds.
 bool debugValidateSpec(PlateSpec spec) {
-  final seenIndices = <int>{};
-  for (final slot in spec.slots) {
-    assert(
-      seenIndices.add(slot.index),
-      'Duplicate PlateSlot index ${slot.index} in spec "${spec.id}".',
-    );
-  }
-
-  for (final slot in spec.slots) {
-    if (slot.next == null) continue;
-    assert(
-      spec.slotAt(slot.next!) != null,
-      'PlateSlot ${slot.index} in spec "${spec.id}" has next=${slot.next}, '
-      'which does not resolve to a slot.',
-    );
-  }
-
-  for (final start in spec.slots) {
-    final visited = <int>{};
-    int? current = start.index;
-    while (current != null) {
-      assert(
-        visited.add(current),
-        'Cycle detected following PlateSlot.next from index ${start.index} '
-        'in spec "${spec.id}".',
-      );
-      current = spec.slotAt(current)?.next;
-    }
-  }
-
-  for (final slot in spec.slots) {
+  for (var i = 0; i < spec.slots.length; i++) {
+    final slot = spec.slots[i];
     assert(
       slot.left >= 0 &&
           slot.top >= 0 &&
           slot.left + slot.width <= spec.canvasWidth &&
           slot.top + slot.height <= spec.canvasHeight,
-      'PlateSlot ${slot.index} in spec "${spec.id}" has a rect outside the '
+      'PlateSlot $i in spec "${spec.id}" has a rect outside the '
       'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
     );
   }
@@ -276,14 +228,14 @@ class PlateSpecs {
     panelHeight: 110,
     textDirection: TextDirection.rtl,
     slots: [
-      PlateSlot(index: 0, alphabet: PlateAlphabet.persianDigits, left: 65, top: 17, width: 47, height: 76, next: 1),
-      PlateSlot(index: 1, alphabet: PlateAlphabet.persianDigits, left: 120, top: 17, width: 47, height: 76, next: 2),
-      PlateSlot(index: 2, alphabet: PlateAlphabet.persianPlateLetters, left: 175, top: 17, width: 55, height: 76, next: 3),
-      PlateSlot(index: 3, alphabet: PlateAlphabet.persianDigits, left: 238, top: 17, width: 47, height: 76, next: 4),
-      PlateSlot(index: 4, alphabet: PlateAlphabet.persianDigits, left: 293, top: 17, width: 47, height: 76, next: 5),
-      PlateSlot(index: 5, alphabet: PlateAlphabet.persianDigits, left: 348, top: 17, width: 47, height: 76, next: 6),
-      PlateSlot(index: 6, alphabet: PlateAlphabet.persianDigits, left: 428, top: 40, width: 32, height: 52, next: 7),
-      PlateSlot(index: 7, alphabet: PlateAlphabet.persianDigits, left: 466, top: 40, width: 32, height: 52, next: null),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 65, top: 17, width: 47, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 120, top: 17, width: 47, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.persianPlateLetters, left: 175, top: 17, width: 55, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 238, top: 17, width: 47, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 293, top: 17, width: 47, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 348, top: 17, width: 47, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 428, top: 40, width: 32, height: 52),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 466, top: 40, width: 32, height: 52),
     ],
     rules: [
       // The province divider runs the full height of the plate face (top edge
@@ -329,14 +281,14 @@ class PlateSpecs {
     // panel edges instead of crowding the blue block.
     panelPadding: EdgeInsets.fromLTRB(15, 16, 6, 6),
     slots: [
-      PlateSlot(index: 0, alphabet: PlateAlphabet.persianDigits, left: 74, top: 13, width: 22, height: 36, next: 1),
-      PlateSlot(index: 1, alphabet: PlateAlphabet.persianDigits, left: 104, top: 13, width: 22, height: 36, next: 2),
-      PlateSlot(index: 2, alphabet: PlateAlphabet.persianDigits, left: 134, top: 13, width: 22, height: 36, next: 3),
-      PlateSlot(index: 3, alphabet: PlateAlphabet.persianDigits, left: 8, top: 58, width: 27, height: 44, next: 4),
-      PlateSlot(index: 4, alphabet: PlateAlphabet.persianDigits, left: 41, top: 58, width: 27, height: 44, next: 5),
-      PlateSlot(index: 5, alphabet: PlateAlphabet.persianDigits, left: 74, top: 58, width: 27, height: 44, next: 6),
-      PlateSlot(index: 6, alphabet: PlateAlphabet.persianDigits, left: 107, top: 58, width: 27, height: 44, next: 7),
-      PlateSlot(index: 7, alphabet: PlateAlphabet.persianDigits, left: 140, top: 58, width: 27, height: 44, next: null),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 74, top: 13, width: 22, height: 36),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 104, top: 13, width: 22, height: 36),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 134, top: 13, width: 22, height: 36),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 8, top: 58, width: 27, height: 44),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 41, top: 58, width: 27, height: 44),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 74, top: 58, width: 27, height: 44),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 107, top: 58, width: 27, height: 44),
+      PlateSlot(alphabet: PlateAlphabet.persianDigits, left: 140, top: 58, width: 27, height: 44),
     ],
   );
 
@@ -358,14 +310,14 @@ class PlateSpecs {
     textDirection: TextDirection.ltr,
     slots: [
       // District code, e.g. "DA".
-      PlateSlot(index: 0, alphabet: PlateAlphabet.latinUppercase, left: 64, top: 17, width: 52, height: 76, next: 1),
-      PlateSlot(index: 1, alphabet: PlateAlphabet.latinUppercase, left: 122, top: 17, width: 52, height: 76, next: 2),
+      PlateSlot(alphabet: PlateAlphabet.latinUppercase, left: 64, top: 17, width: 52, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.latinUppercase, left: 122, top: 17, width: 52, height: 76),
       // Identifier: one letter then the serial digits, e.g. "X1953".
-      PlateSlot(index: 2, alphabet: PlateAlphabet.latinUppercase, left: 230, top: 17, width: 52, height: 76, next: 3),
-      PlateSlot(index: 3, alphabet: PlateAlphabet.latinDigits, left: 288, top: 17, width: 46, height: 76, next: 4),
-      PlateSlot(index: 4, alphabet: PlateAlphabet.latinDigits, left: 338, top: 17, width: 46, height: 76, next: 5),
-      PlateSlot(index: 5, alphabet: PlateAlphabet.latinDigits, left: 388, top: 17, width: 46, height: 76, next: 6),
-      PlateSlot(index: 6, alphabet: PlateAlphabet.latinDigits, left: 438, top: 17, width: 46, height: 76, next: null),
+      PlateSlot(alphabet: PlateAlphabet.latinUppercase, left: 230, top: 17, width: 52, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.latinDigits, left: 288, top: 17, width: 46, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.latinDigits, left: 338, top: 17, width: 46, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.latinDigits, left: 388, top: 17, width: 46, height: 76),
+      PlateSlot(alphabet: PlateAlphabet.latinDigits, left: 438, top: 17, width: 46, height: 76),
     ],
     decals: [
       // Stacked in the gap between the district code and the identifier: the

@@ -16,6 +16,27 @@ void main() {
     });
   });
 
+  group('PlateSpec focus order', () {
+    test('nextIndex/previousIndex step through the plate', () {
+      const spec = PlateSpecs.deCar;
+      expect(spec.nextIndex(0), 1);
+      expect(spec.previousIndex(1), 0);
+    });
+
+    test('nextIndex is null at the last slot, previousIndex at the first', () {
+      const spec = PlateSpecs.deCar;
+      expect(spec.nextIndex(spec.slots.length - 1), isNull);
+      expect(spec.previousIndex(0), isNull);
+    });
+
+    test('slotAt returns null outside the plate', () {
+      const spec = PlateSpecs.deCar;
+      expect(spec.slotAt(-1), isNull);
+      expect(spec.slotAt(spec.slots.length), isNull);
+      expect(spec.slotAt(0), same(spec.slots.first));
+    });
+  });
+
   group('PlateSpec.valueOfGroup on deCar', () {
     test('concatenates values at a group\'s indices', () {
       final values = <String?>['D', 'A', 'X', '1', '9', '5', '3'];

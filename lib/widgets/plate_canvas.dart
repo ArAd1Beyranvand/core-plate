@@ -22,7 +22,7 @@ class PlateCanvas extends StatefulWidget {
     this.letterInputMode,
     this.inputSource,
     this.onChooseCharacter,
-    this.onActiveSlotChanged,
+    this.onActiveIndexChanged,
     this.controller,
   });
 
@@ -33,7 +33,7 @@ class PlateCanvas extends StatefulWidget {
   final LetterInputMode? letterInputMode;
   final PlateInputSource? inputSource;
   final Future<String?> Function(PlateAlphabet alphabet)? onChooseCharacter;
-  final ValueChanged<PlateSlot?>? onActiveSlotChanged;
+  final ValueChanged<int?>? onActiveIndexChanged;
   final PlateInputController? controller;
 
   @override
@@ -41,10 +41,13 @@ class PlateCanvas extends StatefulWidget {
 }
 
 class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
-  final Map<int, FocusNode> _focusNodes = {};
-  final Map<int, TextEditingController> _controllers = {};
+  // Indexed by slot position: slot identity *is* list order, so a dense list
+  // says that in the type instead of leaving it to convention. Null controller
+  // entries are chosen-alphabet slots, which have no text field.
+  final List<FocusNode> _focusNodes = [];
+  final List<TextEditingController?> _controllers = [];
 
-  PlateSlot? _activeSlot;
+  int? _activeIndex;
   late LetterInputMode _letterInputMode;
   late PlateInputSource _inputSource;
 
@@ -54,25 +57,26 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     assert(debugValidateSpec(widget.spec));
     _letterInputMode = widget.letterInputMode ?? defaultLetterInputMode();
     _inputSource = _resolveInputSource();
-    for (final slot in widget.spec.slots) {
-      _focusNodes[slot.index] = FocusNode()..addListener(_handleFocusChange);
-      if (slot.alphabet.input == AlphabetInput.typed) {
-        _controllers[slot.index] = TextEditingController();
-      }
+    for (var i = 0; i < widget.spec.slots.length; i++) {
+      _focusNodes.add(FocusNode()..addListener(_handleFocusChange));
+      _controllers.add(
+        widget.spec.slots[i].alphabet.input == AlphabetInput.typed
+            ? TextEditingController()
+            : null,
+      );
     }
     // Seed the active slot to the first one before any focus lands, so a host
-    // that renders its own keypad off [activeSlot] (e.g. picking a digit vs.
+    // that renders its own keypad off [activeIndex] (e.g. picking a digit vs.
     // letters pad from the slot's alphabet) starts on the alphabet the first
     // slot actually takes — instead of defaulting to one type and visibly
     // switching the instant focus reaches slot 0. Reported after the first
     // frame so listeners are attached; a later focus change overrides it.
-    _activeSlot =
-        widget.spec.slots.isNotEmpty ? widget.spec.slots.first : null;
+    _activeIndex = widget.spec.slots.isNotEmpty ? 0 : null;
     widget.controller?.attach(this);
-    if (_activeSlot != null) {
+    if (_activeIndex != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        widget.onActiveSlotChanged?.call(_activeSlot);
+        widget.onActiveIndexChanged?.call(_activeIndex);
         widget.controller?.notifyActiveSlotChanged();
       });
     }
@@ -90,10 +94,10 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
   @override
   void dispose() {
     widget.controller?.detach(this);
-    for (final c in _controllers.values) {
-      c.dispose();
+    for (final c in _controllers) {
+      c?.dispose();
     }
-    for (final f in _focusNodes.values) {
+    for (final f in _focusNodes) {
       f.removeListener(_handleFocusChange);
       f.dispose();
     }
@@ -108,99 +112,91 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
   }
 
   void _handleFocusChange() {
-    PlateSlot? active;
-    for (final entry in _focusNodes.entries) {
-      if (entry.value.hasFocus) {
-        active = widget.spec.slotAt(entry.key);
+    int? active;
+    for (var i = 0; i < _focusNodes.length; i++) {
+      if (_focusNodes[i].hasFocus) {
+        active = i;
         break;
       }
     }
-    // Index comparison is the cheap path here (avoids a full PlateSlot ==).
-    if (active?.index != _activeSlot?.index) {
-      _activeSlot = active;
-      widget.onActiveSlotChanged?.call(active);
+    if (active != _activeIndex) {
+      _activeIndex = active;
+      widget.onActiveIndexChanged?.call(active);
       widget.controller?.notifyActiveSlotChanged();
     }
   }
 
-  void _advance(PlateSlot slot) {
-    final next = slot.next;
+  void _advance(int index) {
+    final next = widget.spec.nextIndex(index);
     if (next == null) {
-      _focusNodes[slot.index]?.unfocus();
+      _focusNodes[index].unfocus();
       return;
     }
-    final nextSlot = widget.spec.slotAt(next);
-    if (nextSlot == null) return;
+    final nextSlot = widget.spec.slots[next];
     if (nextSlot.alphabet.input == AlphabetInput.chosen &&
         _inputSource == PlateInputSource.system) {
-      _openPicker(nextSlot);
+      _openPicker(next);
     } else {
-      _focusNodes[next]?.requestFocus();
+      _focusNodes[next].requestFocus();
     }
   }
 
-  Future<void> _openPicker(PlateSlot slot) async {
+  Future<void> _openPicker(int index) async {
+    final slot = widget.spec.slots[index];
     final bloc = context.read<PlateCardBloc>();
     final chosen = widget.onChooseCharacter != null
         ? await widget.onChooseCharacter!(slot.alphabet)
         : await PlateCharacterPicker.show(context, slot.alphabet);
     if (chosen == null) return;
-    bloc.add(ValueIsChanged(index: slot.index, value: chosen));
-    if (slot.next != null) _focusNodes[slot.next!]?.requestFocus();
+    bloc.add(ValueIsChanged(index: index, value: chosen));
+    final next = widget.spec.nextIndex(index);
+    if (next != null) _focusNodes[next].requestFocus();
   }
 
   @override
-  PlateSlot? get activeSlot => _activeSlot;
+  int? get activeIndex => _activeIndex;
 
   @override
   void submitCharacter(String c) {
-    final slot = _activeSlot;
-    if (slot == null || !slot.alphabet.accepts(c)) return;
-    context.read<PlateCardBloc>().add(
-      ValueIsChanged(index: slot.index, value: c),
-    );
-    _advance(slot);
+    final index = _activeIndex;
+    if (index == null || !widget.spec.slots[index].alphabet.accepts(c)) return;
+    context.read<PlateCardBloc>().add(ValueIsChanged(index: index, value: c));
+    _advance(index);
   }
 
   @override
   void backspaceCharacter() {
-    final slot = _activeSlot;
-    if (slot == null) return;
+    final index = _activeIndex;
+    if (index == null) return;
     final values = context.read<PlateCardBloc>().state.plateNumber.values;
-    final current = values[slot.index];
+    final current = values[index];
     final target = (current == null || current.isEmpty)
-        ? _previousSlot(slot)
-        : slot;
+        ? widget.spec.previousIndex(index)
+        : index;
     if (target == null) return;
     context.read<PlateCardBloc>().add(
-      ValueIsChanged(index: target.index, value: ''),
+      ValueIsChanged(index: target, value: ''),
     );
-    _focusNodes[target.index]?.requestFocus();
-  }
-
-  PlateSlot? _previousSlot(PlateSlot slot) {
-    for (final s in widget.spec.slots) {
-      if (s.next == slot.index) return s;
-    }
-    return null;
+    _focusNodes[target].requestFocus();
   }
 
   @override
   void focusFirstEmptySlot() {
     final values = context.read<PlateCardBloc>().state.plateNumber.values;
-    for (final s in widget.spec.slots) {
-      final v = values[s.index];
+    for (var i = 0; i < widget.spec.slots.length; i++) {
+      final v = values[i];
       if (v == null || v.isEmpty) {
-        _focusNodes[s.index]?.requestFocus();
+        _focusNodes[i].requestFocus();
         return;
       }
     }
-    _focusNodes[widget.spec.slots.first.index]?.requestFocus();
+    _focusNodes.first.requestFocus();
   }
 
   @override
   void focusSlot(int index) {
-    _focusNodes[index]?.requestFocus();
+    if (index < 0 || index >= _focusNodes.length) return;
+    _focusNodes[index].requestFocus();
   }
 
   @override
@@ -222,10 +218,10 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     );
     final bloc = context.read<PlateCardBloc>();
 
-    for (final slot in spec.slots) {
-      final c = _controllers[slot.index];
+    for (var i = 0; i < spec.slots.length; i++) {
+      final c = _controllers[i];
       if (c == null) continue;
-      final v = plate.values[slot.index] ?? '';
+      final v = plate.values[i] ?? '';
       if (c.text != v) {
         c.value = TextEditingValue(
           text: v,
@@ -308,35 +304,35 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                           height: d.height,
                           child: Image(image: d.image, fit: BoxFit.contain),
                         ),
-                      for (final s in spec.slots)
+                      for (var i = 0; i < spec.slots.length; i++)
                         Positioned(
-                          left: s.left,
-                          top: s.top,
-                          width: s.width,
-                          height: s.height,
+                          left: spec.slots[i].left,
+                          top: spec.slots[i].top,
+                          width: spec.slots[i].width,
+                          height: spec.slots[i].height,
                           child: Center(
                             child: PlateSlotItem(
-                              slot: s,
+                              slot: spec.slots[i],
                               mode: widget.mode,
                               theme: theme,
-                              value: plate.values[s.index],
-                              controller: _controllers[s.index],
-                              focusNode: _focusNodes[s.index]!,
+                              value: plate.values[i],
+                              controller: _controllers[i],
+                              focusNode: _focusNodes[i],
                               letterInputMode: widget.mode == PlateMode.input
                                   ? _letterInputMode
                                   : LetterInputMode.picker,
                               inputSource: _inputSource,
-                              onChanged: (v) => bloc
-                                  .add(ValueIsChanged(index: s.index, value: v)),
+                              onChanged: (v) =>
+                                  bloc.add(ValueIsChanged(index: i, value: v)),
                               onCompleted: widget.mode == PlateMode.input
-                                  ? () => _advance(s)
+                                  ? () => _advance(i)
                                   : null,
                               onPressed:
                                   (widget.mode == PlateMode.input &&
-                                      s.alphabet.input ==
+                                      spec.slots[i].alphabet.input ==
                                           AlphabetInput.chosen &&
                                       _inputSource == PlateInputSource.system)
-                                  ? () => _openPicker(s)
+                                  ? () => _openPicker(i)
                                   : null,
                             ),
                           ),

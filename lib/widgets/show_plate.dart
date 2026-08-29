@@ -56,7 +56,7 @@ class PlateText extends StatelessWidget {
         final spec = state.spec;
         final values = state.plateNumber.values;
         final groups = spec.textGroups.isEmpty
-            ? [for (final s in spec.slots) PlateTextGroup([s.index])]
+            ? [for (var i = 0; i < spec.slots.length; i++) PlateTextGroup([i])]
             : spec.textGroups;
         return DefaultTextStyle(
           style: textStyle ?? const TextStyle(color: Colors.black),
