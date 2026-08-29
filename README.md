@@ -1,44 +1,20 @@
 # Plate Number Package
 
-A Flutter package that provides a customizable widget for collecting vehicle or motorcycle license
-plate numbers from users.
-
-## Examples
-
-<table style="border-collapse: collapse; width: 100%; margin: 0 auto;">
-  <tr>
-    <td style="text-align: center; padding: 10px; border: none;">
-      <img src="assets/example2.gif" alt="Default usage example" style="max-width: 100%; height: auto;"/>
-      <br/>
-      <small>Default usage example</small>
-    </td>
-    <td style="text-align: center; padding: 10px; border: none;">
-      <img src="assets/example1.png" alt="Real project implementation" style="max-width: 100%; height: auto;"/>
-      <br/>
-      <small>Real project implementation</small>
-    </td>
-  </tr>
-</table>
-
-## Features
-
-- **Dynamic Spacing**: Adjust spacing between widgets using the `spacingScale` parameter.
-- **Custom Widgets**: Option to add custom widgets for letters and removal actions.
-- **Flexible Styling**: Customize text styles for numbers and letters, as well as border radius.
-- **Interactive Letter Selection**: Callback for handling letter selection.
-- **Input Validation**: Prevents the entry of invalid characters such as ".", "-", and " " in
-  numeric text fields.
+A Flutter package that renders an interactive license-plate widget and collects the
+plate characters a user types into it. It ships layout specs for Iranian car and
+motorcycle plates and for the German car plate, and validates each field as it is
+entered.
 
 ## Installation
 
-To use this package, add it to your `pubspec.yaml` file:
+Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  plate_number: ^0.0.1
+  plate_number: ^0.1.0
 ```
 
-Then run the following command to install the package:
+Then:
 
 ```bash
 flutter pub get
@@ -46,123 +22,50 @@ flutter pub get
 
 ## Usage
 
-To get started with the package, you need to create a PlateCardBloc that manages the state of the
-selected plate type. This bloc should be defined in your widget tree using BlocProvider. Below is an
-example of how to implement this in your Flutter application:
+`PlateCanvas` renders a plate for a given `PlateSpec` and reads its state from a
+`PlateCardBloc` you provide above it in the widget tree. Create the bloc with the
+same spec you pass to the canvas:
 
 ```dart
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:plate_number/bicycle_plate/index.dart';
-import 'package:plate_number/car_plate/index.dart';
-import 'package:plate_number/widgets/show_plate.dart';
+import 'package:plate_number/plate_number.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  late PlateCardBloc bloc;
-  late PlateType selectedType;
-
-  @override
-  void initState() {
-    bloc = PlateCardBloc(PlateType.irCar);
-    selectedType = bloc.plateType;
-    super.initState();
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plate Number Input Example'),
-        ),
         body: BlocProvider(
-          create: (BuildContext context) {
-            return bloc;
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              BlocBuilder<PlateCardBloc, PlateCardState>(
-                builder: (BuildContext context, PlateCardState state) {
-                  switch (state.plateType) {
-                    case PlateType.irCar:
-                      return const PlateCanvas(spec: PlateSpecs.irCar);
-                    case PlateType.irBicycle:
-                      return const PlateCanvas(spec: PlateSpecs.irBicycle);
-                  }
-                },
-              ),
-              const ShowPlate(),
-              PlateTypeSelector(
-                onValueChanged: (PlateType type) {
-                  setState(() {
-                    selectedType = type;
-                  });
-                  bloc.add(TypeIsChanged(type));
-                },
-                selectedType: selectedType,
-              ),
-            ],
+          create: (_) => PlateCardBloc(PlateSpecs.irCar),
+          child: const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: PlateCanvas(spec: PlateSpecs.irCar),
+            ),
           ),
         ),
       ),
     );
   }
 }
-
-class PlateTypeSelector extends StatelessWidget {
-  const PlateTypeSelector({super.key, required this.onValueChanged, required this.selectedType});
-
-  final ValueChanged<PlateType> onValueChanged;
-  final PlateType selectedType;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        CupertinoSegmentedControl<PlateType>(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          selectedColor: Colors.blueAccent,
-          unselectedColor: Colors.white,
-          children: {
-            for (var type in PlateType.values)
-              type: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: Text(
-                  type.parseToString(),
-                  style: const TextStyle(fontSize: 15),
-                ),
-              )
-          },
-          onValueChanged: onValueChanged,
-          groupValue: selectedType,
-        ),
-      ],
-    );
-  }
-}
 ```
 
-## Important Note
+`PlateCanvas` is exported from the package root (`package:plate_number/plate_number.dart`).
 
-`PlateCanvas` is exported from the package root:
+## What this package renders
 
-```dart
-import 'package:plate_number/plate_number.dart';
-```
+Pass one of the shipped specs to both `PlateCardBloc` and `PlateCanvas`:
 
-Remember to create the PlateCardBloc beforehand and define the BlocProvider in the widget tree.
+- `PlateSpecs.irCar` — Iranian car plate.
+- `PlateSpecs.irBicycle` — Iranian motorcycle plate.
+- `PlateSpecs.deCar` — German car plate.
 
 ## Contributing
 

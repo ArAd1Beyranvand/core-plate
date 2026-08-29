@@ -1,3 +1,7 @@
+## Unreleased
+
+- Rewrote `README.md` against the current `PlateSpec`/`PlateCanvas` API.
+
 ## 0.1.0
 
 - **Breaking:** Removed `CarPlateNumber` and `BicyclePlateNumber`. Use
