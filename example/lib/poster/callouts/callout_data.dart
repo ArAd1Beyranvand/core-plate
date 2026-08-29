@@ -179,7 +179,7 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       anchorFy: 0.830,
       widthFx: 0.191,
       eyebrow: 'مقیاس',
-      title: 'بسته قابل تنظیم',
+      title: 'همه چیز قابل تنظیم',
       body: null,
       titleSizeDesignPx: 34,
       bodySizeDesignPx: 0,

@@ -129,43 +129,31 @@ class CalloutCard extends StatelessWidget {
   /// the vertical leg, to its right.
   Widget _buildLRuleBody(PosterMetrics metrics, TextDirection direction) {
     final Color ruleColor = _dashedRuleColor(metrics);
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(right: metrics.px(16)),
-                  child: Directionality(
-                    textDirection: direction,
-                    child: _buildTitle(metrics, direction),
-                  ),
-                ),
-                const Spacer(),
-                SizedBox(height: metrics.px(14)),
-                DashedRule.thin(color: ruleColor),
-              ],
-            ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        // Unflexed so the title keeps its natural width and never re-wraps.
+        DashedLBorder(
+          color: ruleColor,
+          child: Directionality(
+            textDirection: direction,
+            child: _buildTitle(metrics, direction),
           ),
-          VerticalDashedRule(color: ruleColor),
-          if (spec.body != null)
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: metrics.px(16),
-                  right: spec.hasEuBadge ? metrics.px(30) : 0,
-                ),
-                child: Directionality(
-                  textDirection: direction,
-                  child: Text(spec.body!, style: _bodyStyle(metrics.f)),
-                ),
+        ),
+        if (spec.body != null)
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: metrics.px(14),
+                right: spec.hasEuBadge ? metrics.px(30) : 0,
+              ),
+              child: Directionality(
+                textDirection: direction,
+                child: Text(spec.body!, style: _bodyStyle(metrics.f)),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 

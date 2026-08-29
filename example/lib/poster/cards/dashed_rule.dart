@@ -63,19 +63,22 @@ class DashedRule extends StatelessWidget {
   }
 }
 
-/// Vertical twin of [DashedRule]: same 8/8 period, 2px wide, stretching to the
-/// parent's height. Pairs with a horizontal rule to draw an L-shaped corner.
-class VerticalDashedRule extends StatelessWidget {
-  const VerticalDashedRule({
+/// Same 8/8 dashes as [DashedRule.thin], bent into an L that hugs [child]:
+/// down its right edge and along its bottom. Sizes to the child, so the legs
+/// only ever run as far as the text they wrap.
+class DashedLBorder extends StatelessWidget {
+  const DashedLBorder({
     super.key,
     required this.color,
+    required this.child,
     this.dash = 8,
     this.gap = 8,
     this.thickness = 2,
-    this.height,
+    this.inset = 14,
   });
 
   final Color color;
+  final Widget child;
 
   /// Painted length of one dash, in DESIGN px.
   final double dash;
@@ -83,58 +86,74 @@ class VerticalDashedRule extends StatelessWidget {
   /// Gap between dashes, in DESIGN px.
   final double gap;
 
-  /// Rule width, in DESIGN px.
+  /// Leg thickness, in DESIGN px.
   final double thickness;
 
-  /// Optional fixed length in DESIGN px. Null stretches to the parent.
-  final double? height;
+  /// Clearance between the child and each leg, in DESIGN px.
+  final double inset;
 
   @override
   Widget build(BuildContext context) {
     final PosterMetrics metrics = PosterMetrics.of(context);
-    return SizedBox(
-      width: metrics.px(thickness),
-      height: height == null ? null : metrics.px(height!),
-      child: CustomPaint(
-        painter: _VerticalDashedRulePainter(
-          color: color,
-          dash: metrics.px(dash),
-          gap: metrics.px(gap),
+    return CustomPaint(
+      foregroundPainter: _DashedLPainter(
+        color: color,
+        dash: metrics.px(dash),
+        gap: metrics.px(gap),
+        thickness: metrics.px(thickness),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          right: metrics.px(inset + thickness),
+          bottom: metrics.px(inset + thickness),
         ),
+        child: child,
       ),
     );
   }
 }
 
-class _VerticalDashedRulePainter extends CustomPainter {
-  const _VerticalDashedRulePainter({
+class _DashedLPainter extends CustomPainter {
+  const _DashedLPainter({
     required this.color,
     required this.dash,
     required this.gap,
+    required this.thickness,
   });
 
   final Color color;
   final double dash;
   final double gap;
+  final double thickness;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (dash <= 0 || size.height <= 0) return;
+    if (dash <= 0) return;
     final Paint paint = Paint()
       ..color = color
       ..isAntiAlias = false;
     final double period = dash + gap;
+    final double right = size.width - thickness;
+    final double bottom = size.height - thickness;
+
+    // Vertical leg, down the right edge to the corner.
     for (double y = 0; y < size.height; y += period) {
       final double end = math.min(y + dash, size.height);
-      canvas.drawRect(Rect.fromLTRB(0, y, size.width, end), paint);
+      canvas.drawRect(Rect.fromLTRB(right, y, size.width, end), paint);
+    }
+    // Horizontal leg, along the bottom up to the same corner.
+    for (double x = 0; x < size.width; x += period) {
+      final double end = math.min(x + dash, size.width);
+      canvas.drawRect(Rect.fromLTRB(x, bottom, end, size.height), paint);
     }
   }
 
   @override
-  bool shouldRepaint(_VerticalDashedRulePainter oldDelegate) {
+  bool shouldRepaint(_DashedLPainter oldDelegate) {
     return oldDelegate.color != color ||
         oldDelegate.dash != dash ||
-        oldDelegate.gap != gap;
+        oldDelegate.gap != gap ||
+        oldDelegate.thickness != thickness;
   }
 }
 
