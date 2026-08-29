@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../device_preview/device_config.dart' show DeviceType;
 import '../poster_scale.dart';
-import 'form_factor_pips.dart';
 import 'inspection_stamp.dart';
 import 'poster_links.dart';
 import 'poster_masthead.dart';
@@ -38,7 +37,6 @@ class PosterChrome extends StatelessWidget {
     final Offset byline = Offset(0.040 * size.width, 0.048 * size.height);
     final Offset wordmark = Offset(0.036 * size.width, 0.172 * size.height);
     final Offset stamp = Offset(0.843 * size.width, 0.874 * size.height);
-    final Offset pips = Offset(0.977 * size.width, 0.415 * size.height);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -60,13 +58,6 @@ class PosterChrome extends StatelessWidget {
               const PosterLinks(),
             ],
           ),
-        ),
-        // The pips anchor at their right edge (`.977`), so pin `right` rather
-        // than `left` and let the right-aligned column grow leftward.
-        Positioned(
-          right: size.width - pips.dx,
-          top: pips.dy,
-          child: FormFactorPips(device: device),
         ),
         Positioned(
           left: stamp.dx,

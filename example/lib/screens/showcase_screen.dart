@@ -10,7 +10,6 @@ import '../poster/backdrop/sweep_light.dart';
 import '../poster/callout_motion.dart' as motion;
 import '../poster/callouts/callout_card.dart';
 import '../poster/callouts/callout_data.dart' as callouts;
-import '../poster/chrome/form_factor_pips.dart';
 import '../poster/chrome/inspection_stamp.dart';
 import '../poster/chrome/poster_chrome.dart';
 import '../poster/chrome/poster_links.dart';
@@ -398,11 +397,6 @@ class _MediumChrome extends StatelessWidget {
           right: 66,
           bottom: 8,
           child: const InspectionStamp(),
-        ),
-        Positioned(
-          right: 20,
-          bottom: 22,
-          child: FormFactorPips(device: device),
         ),
       ],
     );
