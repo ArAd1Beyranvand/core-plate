@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../cards/bevel_panel.dart';
 import '../poster_scale.dart';
-import '../poster_tokens.dart' show PosterColors, PosterGradients, PosterType, PosterTokens, PosterMetrics;
+import '../poster_tokens.dart';
 
 /// The two link buttons from DESIGN_SPEC.md §6 "Chrome": `PUB.DEV` and
 /// `GITHUB`, anchored at `.039, .778`.
