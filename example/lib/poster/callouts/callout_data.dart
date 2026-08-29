@@ -25,6 +25,7 @@ class CalloutSpec {
     this.hasFooter = false,
     this.hasDeBranding = false,
     this.hasDashedRule = true,
+    this.hasLRule = false,
     this.isCentered = false,
   });
 
@@ -48,6 +49,10 @@ class CalloutSpec {
   final bool hasFooter;
   final bool hasDeBranding;
   final bool hasDashedRule;
+
+  /// Wraps the title in an L-shaped dashed rule — down its right edge and
+  /// along its bottom — with the body set to the right of the vertical leg.
+  final bool hasLRule;
   final bool isCentered;
 }
 
@@ -163,6 +168,7 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       bodySizeDesignPx: 18,
       hasEuBadge: true,
       hasFlareTag: true,
+      hasLRule: true,
     ),
     CalloutSpec(
       index: 12,

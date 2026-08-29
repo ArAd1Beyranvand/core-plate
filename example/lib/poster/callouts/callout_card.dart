@@ -8,11 +8,7 @@ import '../poster_tokens.dart';
 import 'callout_data.dart';
 
 class CalloutCard extends StatelessWidget {
-  const CalloutCard({
-    super.key,
-    required this.spec,
-    this.widthDesignPx,
-  });
+  const CalloutCard({super.key, required this.spec, this.widthDesignPx});
 
   final CalloutSpec spec;
   final double? widthDesignPx;
@@ -102,10 +98,7 @@ class CalloutCard extends StatelessWidget {
                   fontSize: (baseStyle.fontSize ?? 24) * 1.2,
                 ),
               ),
-              TextSpan(
-                text: rest,
-                style: baseStyle,
-              ),
+              TextSpan(text: rest, style: baseStyle),
             ],
           ),
         );
@@ -131,6 +124,51 @@ class CalloutCard extends StatelessWidget {
     }
   }
 
+  /// Title boxed by an L of dashed rule — vertical leg down its right edge,
+  /// horizontal leg along its bottom — with the body starting at the top of
+  /// the vertical leg, to its right.
+  Widget _buildLRuleBody(PosterMetrics metrics, TextDirection direction) {
+    final Color ruleColor = _dashedRuleColor(metrics);
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(right: metrics.px(16)),
+                  child: Directionality(
+                    textDirection: direction,
+                    child: _buildTitle(metrics, direction),
+                  ),
+                ),
+                const Spacer(),
+                SizedBox(height: metrics.px(14)),
+                DashedRule.thin(color: ruleColor),
+              ],
+            ),
+          ),
+          VerticalDashedRule(color: ruleColor),
+          if (spec.body != null)
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: metrics.px(16),
+                  right: spec.hasEuBadge ? metrics.px(30) : 0,
+                ),
+                child: Directionality(
+                  textDirection: direction,
+                  child: Text(spec.body!, style: _bodyStyle(metrics.f)),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final metrics = PosterMetrics.of(context);
@@ -143,44 +181,46 @@ class CalloutCard extends StatelessWidget {
         metrics.px(24),
         spec.isCentered ? metrics.px(18) : metrics.px(22),
       ),
-      child: Column(
-        mainAxisAlignment: spec.isCentered
-            ? MainAxisAlignment.center
-            : MainAxisAlignment.start,
-        crossAxisAlignment: spec.isCentered
-            ? CrossAxisAlignment.center
-            : (direction == TextDirection.rtl
-                ? CrossAxisAlignment.end
-                : CrossAxisAlignment.start),
-        children: <Widget>[
-          // Title
-          Directionality(
-            textDirection: direction,
-            child: _buildTitle(metrics, direction),
-          ),
-          if (!spec.isCentered) SizedBox(height: metrics.px(14)),
+      child: spec.hasLRule
+          ? _buildLRuleBody(metrics, direction)
+          : Column(
+              mainAxisAlignment: spec.isCentered
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
+              crossAxisAlignment: spec.isCentered
+                  ? CrossAxisAlignment.center
+                  : (direction == TextDirection.rtl
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start),
+              children: <Widget>[
+                // Title
+                Directionality(
+                  textDirection: direction,
+                  child: _buildTitle(metrics, direction),
+                ),
+                if (!spec.isCentered) SizedBox(height: metrics.px(14)),
 
-          // Dashed rule
-          if (spec.hasDashedRule && !spec.hasDivider)
-            DashedRule.thin(color: _dashedRuleColor(metrics)),
-          if (spec.hasDivider) const TwoToneDivider(),
+                // Dashed rule
+                if (spec.hasDashedRule && !spec.hasDivider)
+                  DashedRule.thin(color: _dashedRuleColor(metrics)),
+                if (spec.hasDivider) const TwoToneDivider(),
 
-          if (!spec.isCentered) SizedBox(height: metrics.px(14)),
+                if (!spec.isCentered) SizedBox(height: metrics.px(14)),
 
-          // Body
-          if (spec.body != null)
-            Directionality(
-              textDirection: direction,
-              child: Text(spec.body!, style: _bodyStyle(metrics.f)),
+                // Body
+                if (spec.body != null)
+                  Directionality(
+                    textDirection: direction,
+                    child: Text(spec.body!, style: _bodyStyle(metrics.f)),
+                  ),
+
+                // Footer (card 05)
+                if (spec.hasFooter) ...[
+                  SizedBox(height: metrics.px(12)),
+                  const IrFlagFooter(),
+                ],
+              ],
             ),
-
-          // Footer (card 05)
-          if (spec.hasFooter) ...[
-            SizedBox(height: metrics.px(12)),
-            const IrFlagFooter(),
-          ],
-        ],
-      ),
     );
 
     // Build decorations

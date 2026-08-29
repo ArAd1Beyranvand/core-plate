@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../cards/bevel_panel.dart';
 import '../poster_scale.dart';
-import '../poster_tokens.dart';
+import '../poster_tokens.dart' show PosterColors, PosterGradients, PosterType, PosterTokens, PosterMetrics;
 
 /// The two link buttons from DESIGN_SPEC.md §6 "Chrome": `PUB.DEV` and
 /// `GITHUB`, anchored at `.039, .778`.
@@ -78,16 +78,16 @@ class _LinkButtonState extends State<_LinkButton> {
 
     // Ground and content invert on hover.
     final Color contentColor =
-        hovered ? const Color(0xFF12141B) : PosterColors.inkLink;
-    final double iconSize = metrics.px(18);
+        hovered ? const Color(0xFF12141B) : PosterTokens.keypadHighlight;
+    final double iconSize = metrics.px(36);
 
     final Widget panel = BevelPanel(
       style: BevelStyle.dark,
-      groundColor: hovered ? PosterGradients.linkButtonHover : null,
-      groundGradient: hovered ? null : PosterGradients.linkButton,
+      groundColor: hovered ? PosterGradients.linkButtonHover : PosterTokens.keypadHighlight,
+      groundGradient: hovered ? null : null,
       screenGrain: false,
       shadow: BevelShadow.none,
-      padding: const EdgeInsets.fromLTRB(18, 13, 18, 14),
+      padding: const EdgeInsets.fromLTRB(36, 26, 36, 28),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -99,7 +99,7 @@ class _LinkButtonState extends State<_LinkButton> {
           SizedBox(width: metrics.px(10)),
           Text(
             widget.label,
-            style: PosterType.linkLabel(metrics.f).copyWith(color: contentColor),
+            style: PosterType.linkLabel(metrics.f * 2).copyWith(color: contentColor),
           ),
         ],
       ),

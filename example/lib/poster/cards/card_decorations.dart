@@ -308,7 +308,7 @@ class _EuStarsPainter extends CustomPainter {
 /// `9 14 10`, `inset 0 2px 0 rgba(230,224,244,.6)` and
 /// `inset 0 -2px 0 rgba(50,10,30,.5)`.
 class RedTag extends StatelessWidget {
-  const RedTag({super.key, this.label = 'FLARE — SERIAL FIELD'});
+  const RedTag({super.key, this.label = 'SERIAL FIELD'});
 
   final String label;
 

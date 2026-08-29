@@ -22,15 +22,15 @@ class DashedRule extends StatelessWidget {
 
   /// 8px dash, 8px gap (a 16px period), 2px high.
   const DashedRule.thin({super.key, required this.color, this.width})
-      : dash = 8,
-        gap = 8,
-        thickness = 2;
+    : dash = 8,
+      gap = 8,
+      thickness = 2;
 
   /// 10px dash, 10px gap (a 20px period), 3px high.
   const DashedRule.thick({super.key, required this.color, this.width})
-      : dash = 10,
-        gap = 10,
-        thickness = 3;
+    : dash = 10,
+      gap = 10,
+      thickness = 3;
 
   final Color color;
 
@@ -60,6 +60,81 @@ class DashedRule extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Vertical twin of [DashedRule]: same 8/8 period, 2px wide, stretching to the
+/// parent's height. Pairs with a horizontal rule to draw an L-shaped corner.
+class VerticalDashedRule extends StatelessWidget {
+  const VerticalDashedRule({
+    super.key,
+    required this.color,
+    this.dash = 8,
+    this.gap = 8,
+    this.thickness = 2,
+    this.height,
+  });
+
+  final Color color;
+
+  /// Painted length of one dash, in DESIGN px.
+  final double dash;
+
+  /// Gap between dashes, in DESIGN px.
+  final double gap;
+
+  /// Rule width, in DESIGN px.
+  final double thickness;
+
+  /// Optional fixed length in DESIGN px. Null stretches to the parent.
+  final double? height;
+
+  @override
+  Widget build(BuildContext context) {
+    final PosterMetrics metrics = PosterMetrics.of(context);
+    return SizedBox(
+      width: metrics.px(thickness),
+      height: height == null ? null : metrics.px(height!),
+      child: CustomPaint(
+        painter: _VerticalDashedRulePainter(
+          color: color,
+          dash: metrics.px(dash),
+          gap: metrics.px(gap),
+        ),
+      ),
+    );
+  }
+}
+
+class _VerticalDashedRulePainter extends CustomPainter {
+  const _VerticalDashedRulePainter({
+    required this.color,
+    required this.dash,
+    required this.gap,
+  });
+
+  final Color color;
+  final double dash;
+  final double gap;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (dash <= 0 || size.height <= 0) return;
+    final Paint paint = Paint()
+      ..color = color
+      ..isAntiAlias = false;
+    final double period = dash + gap;
+    for (double y = 0; y < size.height; y += period) {
+      final double end = math.min(y + dash, size.height);
+      canvas.drawRect(Rect.fromLTRB(0, y, size.width, end), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_VerticalDashedRulePainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.dash != dash ||
+        oldDelegate.gap != gap;
   }
 }
 
