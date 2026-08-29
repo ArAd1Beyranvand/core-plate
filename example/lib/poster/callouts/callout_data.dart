@@ -25,6 +25,7 @@ class CalloutSpec {
     this.hasFooter = false,
     this.hasDeBranding = false,
     this.hasDashedRule = true,
+    this.isCentered = false,
   });
 
   final int index;
@@ -47,6 +48,7 @@ class CalloutSpec {
   final bool hasFooter;
   final bool hasDeBranding;
   final bool hasDashedRule;
+  final bool isCentered;
 }
 
 const Map<DeviceType, List<CalloutSpec>> calloutSets = {
@@ -80,6 +82,7 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       titleSizeDesignPx: 36,
       bodySizeDesignPx: 20,
       hasDashedRule: false,
+      isCentered: true,
     ),
     CalloutSpec(
       index: 4,
@@ -94,6 +97,8 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       body: null,
       titleSizeDesignPx: 34,
       bodySizeDesignPx: 0,
+      hasDashedRule: false,
+      isCentered: true,
     ),
   ],
   DeviceType.mobile: [
@@ -173,6 +178,7 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       titleSizeDesignPx: 34,
       bodySizeDesignPx: 0,
       hasDashedRule: false,
+      isCentered: true,
     ),
   ],
 };

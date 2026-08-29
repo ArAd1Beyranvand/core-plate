@@ -106,14 +106,20 @@ class CalloutCard extends StatelessWidget {
         metrics.px(22),
       ),
       child: Column(
-        crossAxisAlignment: direction == TextDirection.rtl
-            ? CrossAxisAlignment.end
-            : CrossAxisAlignment.start,
+        crossAxisAlignment: spec.isCentered
+            ? CrossAxisAlignment.center
+            : (direction == TextDirection.rtl
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start),
         children: <Widget>[
           // Title
           Directionality(
             textDirection: direction,
-            child: Text(spec.title, style: _titleStyle(metrics.f)),
+            child: Text(
+              spec.title,
+              style: _titleStyle(metrics.f),
+              textAlign: spec.isCentered ? TextAlign.center : null,
+            ),
           ),
           SizedBox(height: metrics.px(14)),
 

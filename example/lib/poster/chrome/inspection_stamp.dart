@@ -71,33 +71,33 @@ class InspectionStamp extends StatelessWidget {
                                 TextSpan(
                                   text: 'made',
                                   style: stampStyle.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                     color: Color(0xFF239F40),
                                   ),
                                 ),
                                 TextSpan(
                                   text: ' ',
                                   style: stampStyle.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                                 TextSpan(
                                   text: 'in',
                                   style: stampStyle.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                   ),
                                 ),
                                 TextSpan(
                                   text: ' ',
                                   style: stampStyle.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                                 TextSpan(
                                   text: 'IRAN',
                                   style: stampStyle.copyWith(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                     color: Color(0xFF8B0000),
                                   ),
                                 ),
