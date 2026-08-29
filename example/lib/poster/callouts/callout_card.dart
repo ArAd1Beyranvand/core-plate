@@ -81,6 +81,44 @@ class CalloutCard extends StatelessWidget {
     return PosterType.cardBodyEn(f, spec.bodySizeDesignPx);
   }
 
+  Widget _buildTitle(PosterMetrics metrics, TextDirection direction) {
+    final baseStyle = _titleStyle(metrics.f);
+
+    if (spec.title.startsWith(RegExp(r'\d'))) {
+      final digitMatch = RegExp(r'^(\d+)(.*)').firstMatch(spec.title);
+      if (digitMatch != null) {
+        final digit = digitMatch.group(1)!;
+        final rest = digitMatch.group(2)!;
+
+        return RichText(
+          textAlign: spec.isCentered ? TextAlign.center : TextAlign.start,
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: digit,
+                style: baseStyle.copyWith(
+                  color: const Color(0xFFE53935),
+                  fontWeight: FontWeight.w900,
+                  fontSize: (baseStyle.fontSize ?? 24) * 1.2,
+                ),
+              ),
+              TextSpan(
+                text: rest,
+                style: baseStyle,
+              ),
+            ],
+          ),
+        );
+      }
+    }
+
+    return Text(
+      spec.title,
+      style: baseStyle,
+      textAlign: spec.isCentered ? TextAlign.center : null,
+    );
+  }
+
   Color _dashedRuleColor(PosterMetrics metrics) {
     switch (spec.kind) {
       case CalloutKind.heroIr:
@@ -118,11 +156,7 @@ class CalloutCard extends StatelessWidget {
           // Title
           Directionality(
             textDirection: direction,
-            child: Text(
-              spec.title,
-              style: _titleStyle(metrics.f),
-              textAlign: spec.isCentered ? TextAlign.center : null,
-            ),
+            child: _buildTitle(metrics, direction),
           ),
           if (!spec.isCentered) SizedBox(height: metrics.px(14)),
 
