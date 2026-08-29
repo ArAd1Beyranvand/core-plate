@@ -49,6 +49,10 @@ class PosterColors {
 
   // --- Accent / signal --------------------------------------------------------
   static const Color accent = Color(0xFF7C5CFF);
+
+  /// On-screen keypad key highlight — a lighter cast of hero card 01
+  /// (`#16479D`), keeping the pad in the project's blue family.
+  static const Color keypadHighlight = Color(0xFF3160B0);
   static const Color accentRail = Color(0x8C7C5CFF); // rgba(124,92,255,.55)
   static const Color accentRailGlow = Color(0xF27C5CFF); // rgba(124,92,255,.95)
   static const Color accentPipGlow = Color(0xF27C5CFF); // rgba(124,92,255,.95)
@@ -359,6 +363,7 @@ class PosterTokens {
   const PosterTokens._();
 
   static const Color accent = PosterColors.accentCompat;
+  static const Color keypadHighlight = PosterColors.keypadHighlight;
   static const Color hairline = PosterColors.hairlineCompat;
   static const Color bg = PosterColors.bgCompat;
   static const Color invalid = PosterColors.invalidCompat;

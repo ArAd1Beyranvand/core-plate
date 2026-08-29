@@ -322,7 +322,7 @@ class _DeviceStageState extends State<DeviceStage> {
                 // interactive taps.
                 unavailableKeys: _unavailableKeysFor(_bloc.state),
                 theme: const PlateKeypadTheme(
-                  highlight: PosterTokens.accent,
+                  highlight: PosterTokens.keypadHighlight,
                   keyBorder: PosterTokens.hairline,
                 ),
                 onKey: (key) => key == kPlateBackspaceKey
@@ -332,6 +332,10 @@ class _DeviceStageState extends State<DeviceStage> {
             : PlateKeypad(
                 highlightedKey: _typist.activeKey,
                 compact: config.compactKeypad,
+                theme: const PlateKeypadTheme(
+                  highlight: PosterTokens.keypadHighlight,
+                  keyBorder: PosterTokens.hairline,
+                ),
               ),
       ),
     );
