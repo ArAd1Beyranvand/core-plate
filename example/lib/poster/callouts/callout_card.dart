@@ -144,15 +144,13 @@ class CalloutCard extends StatelessWidget {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         // The L sizes itself to the title, so measure the title to learn how
-        // deep and how wide the notch the body has to flow around is.
+        // wide the notch the body has to flow around is.
         final TextPainter titlePainter = TextPainter(
           text: TextSpan(text: spec.title, style: _titleStyle(metrics.f)),
           textDirection: direction,
         )..layout();
         final double notchWidth =
             titlePainter.width + metrics.px(DashedLBorder.defaultInset + 2);
-        final double notchHeight =
-            titlePainter.height + metrics.px(DashedLBorder.defaultInset + 2);
 
         final double gap = metrics.px(14);
         final double trailing = spec.hasEuBadge ? metrics.px(30) : 0;
@@ -166,7 +164,6 @@ class CalloutCard extends StatelessWidget {
                 style: bodyStyle,
                 direction: direction,
                 width: columnWidth,
-                height: notchHeight,
               );
         final String beside = spec.body!.substring(0, split).trimRight();
         final String below = spec.body!.substring(split).trimLeft();
@@ -208,14 +205,17 @@ class CalloutCard extends StatelessWidget {
     );
   }
 
-  /// Index in [text] of the first character that no longer fits in a [width]
-  /// by [height] column — i.e. where the body has to drop below the L.
+  /// Number of lines of the full-width block under the L, regardless of how
+  /// tall the L's notch is.
+  static const int _linesBelow = 2;
+
+  /// Index in [text] where the body has to drop below the L, keeping the
+  /// last [_linesBelow] lines (as wrapped at [width]) full width.
   int _splitBodyAt({
     required String text,
     required TextStyle style,
     required TextDirection direction,
     required double width,
-    required double height,
   }) {
     final TextPainter painter = TextPainter(
       text: TextSpan(text: text, style: style),
@@ -223,22 +223,12 @@ class CalloutCard extends StatelessWidget {
     )..layout(maxWidth: width);
 
     final List<LineMetrics> lines = painter.computeLineMetrics();
-    double consumed = 0;
-    int lastFitting = -1;
-    for (int i = 0; i < lines.length; i++) {
-      // A line counts as beside the L if it *starts* within the notch; letting
-      // it overhang keeps the two sides flush instead of leaving a hole under
-      // the shorter one — the L stretches to cover the overhang.
-      if (consumed >= height) break;
-      consumed += lines[i].height;
-      lastFitting = i;
-    }
-    if (lastFitting < 0) return 0;
-    if (lastFitting == lines.length - 1) return text.length;
+    final int besideCount = lines.length - _linesBelow;
+    if (besideCount <= 0) return 0;
 
-    // End of the last fitting line: probe just past its right edge.
+    // End of the last beside line: probe just past its right edge.
     return painter
-        .getPositionForOffset(Offset(width, lines[lastFitting].baseline))
+        .getPositionForOffset(Offset(width, lines[besideCount - 1].baseline))
         .offset;
   }
 
