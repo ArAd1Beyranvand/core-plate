@@ -235,18 +235,18 @@ class _OrbPainter extends CustomPainter {
   final List<Offset> drift;
 
   // Large haloes first, then the small bright balls on top. Tints pulled from
-  // the poster palette: accent violet plus the steel / slate card grounds.
+  // the callout card color scheme to maintain visual consistency.
   static const List<_Orb> _orbs = [
-    _Orb(0.14, 0.18, 0.44, Color(0xFF7C5CFF), 0.24),
+    _Orb(0.14, 0.18, 0.44, Color(0xFF232C42), 0.24),
     _Orb(0.83, 0.12, 0.34, Color(0xFF3160B0), 0.20),
-    _Orb(0.68, 0.74, 0.50, Color(0xFF232C42), 0.30),
-    _Orb(0.28, 0.88, 0.38, Color(0xFF1C2233), 0.34),
-    _Orb(0.50, 0.46, 0.62, Color(0xFF17233F), 0.20),
-    _Orb(0.22, 0.62, 0.075, Color(0xFF9B86FF), 0.50, core: 0.60),
-    _Orb(0.88, 0.46, 0.052, Color(0xFF9FB6E4), 0.42, core: 0.58),
-    _Orb(0.62, 0.22, 0.036, Color(0xFFB6A6FF), 0.38, core: 0.55),
-    _Orb(0.41, 0.13, 0.024, Color(0xFF7C5CFF), 0.48, core: 0.50),
-    _Orb(0.77, 0.91, 0.029, Color(0xFFCBBEFF), 0.34, core: 0.50),
+    _Orb(0.68, 0.74, 0.50, Color(0xFF20293C), 0.30),
+    _Orb(0.28, 0.88, 0.38, Color(0xFF1B2B3C), 0.34),
+    _Orb(0.50, 0.46, 0.62, Color(0xFF243040), 0.20),
+    _Orb(0.22, 0.62, 0.075, Color(0xFF3C5C97), 0.50, core: 0.60),
+    _Orb(0.88, 0.46, 0.052, Color(0xFF26262B), 0.42, core: 0.58),
+    _Orb(0.62, 0.22, 0.036, Color(0xFF3160B0), 0.38, core: 0.55),
+    _Orb(0.41, 0.13, 0.024, Color(0xFF232C42), 0.48, core: 0.50),
+    _Orb(0.77, 0.91, 0.029, Color(0xFF20293C), 0.34, core: 0.50),
   ];
 
   @override
