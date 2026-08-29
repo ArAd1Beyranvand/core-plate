@@ -101,9 +101,9 @@ class CalloutCard extends StatelessWidget {
     Widget cardContent = Padding(
       padding: EdgeInsets.fromLTRB(
         metrics.px(24),
-        spec.isCentered ? metrics.px(12) : metrics.px(22),
+        spec.isCentered ? metrics.px(18) : metrics.px(22),
         metrics.px(24),
-        spec.isCentered ? metrics.px(12) : metrics.px(22),
+        spec.isCentered ? metrics.px(18) : metrics.px(22),
       ),
       child: Column(
         mainAxisAlignment: spec.isCentered
