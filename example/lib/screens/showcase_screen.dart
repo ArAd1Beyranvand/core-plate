@@ -545,8 +545,6 @@ class _CalloutSideLayerState extends State<_CalloutSideLayer>
   late final AnimationController _controller;
   late final Animation<double> _exit;
   late final Animation<double> _entry;
-  late final Animation<double> _railExit;
-  late final Animation<double> _railEntry;
   DeviceType? _outgoing;
 
   @override
@@ -566,14 +564,6 @@ class _CalloutSideLayerState extends State<_CalloutSideLayer>
     _entry = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.6, 1),
-    );
-    _railExit = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0, 0.4),
-    );
-    _railEntry = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.62, 1),
     );
   }
 
@@ -601,7 +591,7 @@ class _CalloutSideLayerState extends State<_CalloutSideLayer>
             _outgoing == null ||
             _controller.status == AnimationStatus.completed;
         if (settled) {
-          return _buildCalloutSet(context, widget.device, slotAnimation: null);
+          return _buildCalloutSet(context, widget.device);
         }
 
         final bool showingOutgoing = _controller.value < 0.5;
@@ -609,10 +599,6 @@ class _CalloutSideLayerState extends State<_CalloutSideLayer>
             ? _outgoing!
             : widget.device;
         final Animation<double> transition = showingOutgoing ? _exit : _entry;
-        final Animation<double>? slotAnimation = _slotAnimation(
-          shownDevice,
-          showingOutgoing,
-        );
         final motion.CalloutMotif motif = _motifFor(shownDevice);
 
         return motion.CalloutTransition(
@@ -623,23 +609,16 @@ class _CalloutSideLayerState extends State<_CalloutSideLayer>
           child: _buildCalloutSet(
             context,
             shownDevice,
-            slotAnimation: slotAnimation,
           ),
         );
       },
     );
   }
 
-  Animation<double>? _slotAnimation(DeviceType device, bool showingOutgoing) {
-    if (device != DeviceType.mobile) return null;
-    return showingOutgoing ? _railExit : _railEntry;
-  }
-
   Widget _buildCalloutSet(
     BuildContext context,
-    DeviceType device, {
-    required Animation<double>? slotAnimation,
-  }) {
+    DeviceType device,
+  ) {
     final set = callouts.calloutSets[_calloutDevice(device)]!;
     final specs = set.where(
       (spec) =>
@@ -651,13 +630,12 @@ class _CalloutSideLayerState extends State<_CalloutSideLayer>
         clipBehavior: Clip.none,
         children: <Widget>[
           for (final spec in specs)
-            _WideCalloutItem(spec: spec, slotAnimation: slotAnimation),
+            _WideCalloutItem(spec: spec),
         ],
       );
     }
     return _MediumCalloutSet(
       specs: specs.toList(growable: false),
-      slotAnimation: slotAnimation,
     );
   }
 
@@ -673,10 +651,9 @@ class _CalloutSideLayerState extends State<_CalloutSideLayer>
 }
 
 class _WideCalloutItem extends StatelessWidget {
-  const _WideCalloutItem({required this.spec, required this.slotAnimation});
+  const _WideCalloutItem({required this.spec});
 
   final callouts.CalloutSpec spec;
-  final Animation<double>? slotAnimation;
 
   @override
   Widget build(BuildContext context) {
@@ -690,16 +667,6 @@ class _WideCalloutItem extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: <Widget>[
-          if (slotAnimation != null)
-            Positioned(
-              left: 0,
-              top: 0,
-              child: _SlotRail(
-                width: cardWidth,
-                side: spec.side,
-                animation: slotAnimation!,
-              ),
-            ),
           CalloutCard(spec: spec),
         ],
       ),
@@ -708,10 +675,9 @@ class _WideCalloutItem extends StatelessWidget {
 }
 
 class _MediumCalloutSet extends StatelessWidget {
-  const _MediumCalloutSet({required this.specs, required this.slotAnimation});
+  const _MediumCalloutSet({required this.specs});
 
   final List<callouts.CalloutSpec> specs;
-  final Animation<double>? slotAnimation;
 
   @override
   Widget build(BuildContext context) {
@@ -732,7 +698,6 @@ class _MediumCalloutSet extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: _MediumCalloutItem(
                   spec: spec,
-                  slotAnimation: slotAnimation,
                 ),
               ),
             ),
@@ -743,77 +708,17 @@ class _MediumCalloutSet extends StatelessWidget {
 }
 
 class _MediumCalloutItem extends StatelessWidget {
-  const _MediumCalloutItem({required this.spec, required this.slotAnimation});
+  const _MediumCalloutItem({required this.spec});
 
   final callouts.CalloutSpec spec;
-  final Animation<double>? slotAnimation;
 
   @override
   Widget build(BuildContext context) {
-    final metrics = PosterMetrics.of(context);
-    final width = metrics.px(spec.widthFx * 1920);
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
-        if (slotAnimation != null)
-          Positioned(
-            top: 0,
-            left: 0,
-            child: _SlotRail(
-              width: width,
-              side: spec.side,
-              animation: slotAnimation!,
-            ),
-          ),
         CalloutCard(spec: spec),
       ],
-    );
-  }
-}
-
-class _SlotRail extends StatelessWidget {
-  const _SlotRail({
-    required this.width,
-    required this.side,
-    required this.animation,
-  });
-
-  final double width;
-  final callouts.CalloutSide side;
-  final Animation<double> animation;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, _) {
-        final alignment = side == callouts.CalloutSide.left
-            ? Alignment.centerLeft
-            : Alignment.centerRight;
-        return SizedBox(
-          width: width,
-          height: 3,
-          child: Align(
-            alignment: alignment,
-            child: Transform.scale(
-              alignment: alignment,
-              scaleX: animation.value,
-              child: DecoratedBox(
-                decoration: const BoxDecoration(
-                  color: PosterColors.accentRail,
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: PosterColors.accentRailGlow,
-                      blurRadius: 12,
-                    ),
-                  ],
-                ),
-                child: const SizedBox(width: double.infinity, height: 3),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
