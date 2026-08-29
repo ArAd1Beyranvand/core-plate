@@ -74,8 +74,12 @@ class DashedLBorder extends StatelessWidget {
     this.dash = 8,
     this.gap = 8,
     this.thickness = 2,
-    this.inset = 14,
+    this.inset = defaultInset,
   });
+
+  /// Default clearance between child and legs, in DESIGN px. Public so callers
+  /// laying text around the L can predict its footprint.
+  static const double defaultInset = 14;
 
   final Color color;
   final Widget child;

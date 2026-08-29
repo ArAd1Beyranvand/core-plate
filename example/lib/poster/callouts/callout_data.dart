@@ -165,7 +165,7 @@ const Map<DeviceType, List<CalloutSpec>> calloutSets = {
       title: 'Live\nvalidation',
       body: 'Forbidden district and serial combinations flare red as you type — before submit, not after.',
       titleSizeDesignPx: 42,
-      bodySizeDesignPx: 18,
+      bodySizeDesignPx: 23,
       hasEuBadge: true,
       hasFlareTag: true,
       hasLRule: true,
