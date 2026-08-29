@@ -240,7 +240,7 @@ full card width, `rgba(124,92,255,.55)` + glow, animating `scaleX 0 → 1`.
 
 | # | Anchor (px / fraction) | Width | Kind | side | Content |
 |---|---|---|---|---|---|
-| **05** | 832, 222 / `.433, .206` | 386 / `.201` | hero IR **RTL** | L | eyebrow `تنظیمات` · title `هر بخش از پلاک،\nقابل تنظیم` (50px) · two-tone divider · body `رنگ، اندازه، پرچم و رفتار صفحه‌کلید — همه در دست تو.` (23px) · footer: IR flag + `IR · MOTORBIKE` |
+| **05** | 832, 222 / `.433, .206` | 386 / `.201` | hero IR **RTL** | L | eyebrow `تنظیمات` · title `هر بخش از پلاک\nقابل تنظیم` (50px) · two-tone divider · body `رنگ، اندازه، پرچم و رفتار صفحه‌کلید همه در دست تو.` (23px) · footer: IR flag + `IR · MOTORBIKE` |
 | **06** | 1656, 268 / `.863, .248` | 244 / `.127` | steel | R | eyebrow `VALIDATION` · title `Checks as\nyou type` (34px) · body `Plate rules are verified field by field.` (19px) |
 | **07** | 1586, 40 / `.826, .037` | 306 / `.159` | dark **RTL** | R | eyebrow `حالت‌های خاص` · title `حالت‌های خاص هندل شده` (34px) · body `آن‌هایی که معمولاً از قلم می‌افتند.` (19px) |
 | **08** | 158, 886 / `.082, .820` | 366 / `.191` | dark | L | eyebrow `COMPACT` · title `Fits a phone` (34px) · body `Twelve keys, one hand, no layout gymnastics.` (19px) |
