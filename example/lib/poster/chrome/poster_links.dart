@@ -27,7 +27,7 @@ class PosterLinks extends StatelessWidget {
   Widget build(BuildContext context) {
     final PosterMetrics metrics = PosterMetrics.of(context);
 
-    return Row(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         _LinkButton(
@@ -35,7 +35,7 @@ class PosterLinks extends StatelessWidget {
           url: pubDevUrl,
           iconBuilder: (Color color) => _CubeIcon(color: color),
         ),
-        SizedBox(width: metrics.px(10)),
+        SizedBox(height: metrics.px(5)),
         _LinkButton(
           label: 'GITHUB',
           url: githubUrl,
@@ -78,16 +78,16 @@ class _LinkButtonState extends State<_LinkButton> {
 
     // Ground and content invert on hover.
     final Color contentColor =
-        hovered ? const Color(0xFF12141B) : PosterTokens.keypadHighlight;
-    final double iconSize = metrics.px(36);
+        hovered ? const Color(0xFF12141B) : PosterColors.cardHeroDe;
+    final double iconSize = metrics.px(7);
 
     final Widget panel = BevelPanel(
       style: BevelStyle.dark,
-      groundColor: hovered ? PosterGradients.linkButtonHover : PosterTokens.keypadHighlight,
+      groundColor: hovered ? PosterGradients.linkButtonHover : PosterColors.cardHeroDe,
       groundGradient: hovered ? null : null,
       screenGrain: false,
       shadow: BevelShadow.none,
-      padding: const EdgeInsets.fromLTRB(36, 26, 36, 28),
+      padding: const EdgeInsets.fromLTRB(7, 5, 7, 6),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -96,10 +96,10 @@ class _LinkButtonState extends State<_LinkButton> {
             height: iconSize,
             child: widget.iconBuilder(contentColor),
           ),
-          SizedBox(width: metrics.px(10)),
+          SizedBox(width: metrics.px(2)),
           Text(
             widget.label,
-            style: PosterType.linkLabel(metrics.f * 2).copyWith(color: contentColor),
+            style: PosterType.linkLabel(metrics.f * 0.4).copyWith(color: contentColor),
           ),
         ],
       ),
