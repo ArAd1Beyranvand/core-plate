@@ -106,6 +106,9 @@ class CalloutCard extends StatelessWidget {
         metrics.px(22),
       ),
       child: Column(
+        mainAxisAlignment: spec.isCentered
+            ? MainAxisAlignment.center
+            : MainAxisAlignment.start,
         crossAxisAlignment: spec.isCentered
             ? CrossAxisAlignment.center
             : (direction == TextDirection.rtl
