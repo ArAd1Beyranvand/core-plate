@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:plate_number/plate_number.dart';
 
@@ -70,6 +71,7 @@ class PlateKeypad extends StatefulWidget {
   const PlateKeypad({
     super.key,
     required this.highlightedKey,
+    this.highlightedKeyListenable,
     this.compact = false,
     this.showLetters = false,
     this.onKey,
@@ -81,7 +83,20 @@ class PlateKeypad extends StatefulWidget {
   });
 
   /// Label of the key to flash; null flashes nothing.
+  ///
+  /// Ignored when [highlightedKeyListenable] is supplied.
   final String? highlightedKey;
+
+  /// The key to flash, as something the individual keys can watch.
+  ///
+  /// Prefer this over [highlightedKey] for anything that flashes keys rapidly —
+  /// an auto-typist, or a host echoing hardware presses. Passing the label as a
+  /// plain field means a new [PlateKeypad] per flash, which rebuilds the whole
+  /// pad: the digit grid, the letters grid (~30 keys, built even while it is
+  /// slid out of sight), every [GestureDetector], and the row/column structure
+  /// the grid is laid out from. With a listenable the structure is built once
+  /// and only the keys re-evaluate whether they are lit.
+  final ValueListenable<String?>? highlightedKeyListenable;
 
   /// true on mobile (shorter keys), false on tablet.
   final bool compact;
@@ -120,6 +135,18 @@ class _PlateKeypadState extends State<PlateKeypad>
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: kPlateKeypadSlide,
+  );
+
+  /// The letters pad's slide, built once.
+  ///
+  /// This used to be constructed inside `build`, so every rebuild of the pad —
+  /// twice per keystroke while a typist is running — allocated a fresh [Tween]
+  /// and [CurvedAnimation]. Harmless individually, but it is exactly the kind of
+  /// steady per-frame garbage that turns into a GC pause partway through an
+  /// animation and shows up as one dropped frame.
+  late final Animation<Offset> _slide =
+      Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
+    CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
   );
 
   static const List<List<String>> _rows = [
@@ -218,7 +245,11 @@ class _PlateKeypadState extends State<PlateKeypad>
       onTap: enabled ? () => widget.onKey?.call(key) : null,
       child: _Key(
         label: rawLabel,
-        highlighted: rawLabel.isNotEmpty && key == widget.highlightedKey,
+        highlighted: widget.highlightedKeyListenable == null &&
+            rawLabel.isNotEmpty &&
+            key == widget.highlightedKey,
+        highlightListenable: widget.highlightedKeyListenable,
+        highlightKey: key,
         enabled: enabled,
         theme: widget.theme,
         digitAlphabet: widget.digitAlphabet,
@@ -285,8 +316,13 @@ class _PlateKeypadState extends State<PlateKeypad>
                                   : null,
                               child: _Key(
                                 label: letter,
-                                highlighted: letter.isNotEmpty &&
-                                    letter == widget.highlightedKey,
+                                highlighted:
+                                    widget.highlightedKeyListenable == null &&
+                                        letter.isNotEmpty &&
+                                        letter == widget.highlightedKey,
+                                highlightListenable:
+                                    widget.highlightedKeyListenable,
+                                highlightKey: letter,
                                 enabled: enabled,
                                 theme: widget.theme,
                               ),
@@ -304,15 +340,7 @@ class _PlateKeypadState extends State<PlateKeypad>
       ),
     );
 
-    final slide = SlideTransition(
-      position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Curves.easeOutCubic,
-        ),
-      ),
-      child: grid,
-    );
+    final slide = SlideTransition(position: _slide, child: grid);
 
     return AnimatedBuilder(
       animation: _controller,
@@ -332,10 +360,21 @@ class _Key extends StatelessWidget {
     required this.enabled,
     required this.theme,
     this.digitAlphabet,
+    this.highlightListenable,
+    this.highlightKey,
   });
 
   final String label;
+
+  /// Whether this key is lit, when the pad was handed a plain label. Ignored if
+  /// [highlightListenable] is set — the key then works it out itself.
   final bool highlighted;
+
+  /// The pad's current highlight, watched by this key alone.
+  final ValueListenable<String?>? highlightListenable;
+
+  /// The label this key reports; compared against [highlightListenable].
+  final String? highlightKey;
 
   /// Barred by a validation rule (or outside the active alphabet) when
   /// false. Stays in the grid at the same position; a disabled key is never
@@ -352,11 +391,22 @@ class _Key extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Empty label = blank spacer, no border.
+    // Empty label = blank spacer, no border. Checked before subscribing, so
+    // spacer cells never listen to anything.
     if (label.isEmpty) {
       return const SizedBox.shrink();
     }
 
+    final listenable = highlightListenable;
+    if (listenable == null) return _visual(highlighted);
+    return ValueListenableBuilder<String?>(
+      valueListenable: listenable,
+      builder: (context, held, _) =>
+          _visual(highlightKey != null && held == highlightKey),
+    );
+  }
+
+  Widget _visual(bool highlighted) {
     final Color ink = highlighted
         ? theme.highlightInk
         : enabled

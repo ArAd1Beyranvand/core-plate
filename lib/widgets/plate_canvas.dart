@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../model/plate_box.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../model/plate_alphabet.dart';
@@ -213,22 +214,14 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
         ? _resolveInputSource()
         : PlateInputSource.system;
 
-    final plate = context.select<PlateCardBloc, PlateNumber>(
-      (b) => b.state.plateNumber,
-    );
-    final bloc = context.read<PlateCardBloc>();
-
-    for (var i = 0; i < spec.slots.length; i++) {
-      final c = _controllers[i];
-      if (c == null) continue;
-      final v = plate.values[i] ?? '';
-      if (c.text != v) {
-        c.value = TextEditingValue(
-          text: v,
-          selection: TextSelection.collapsed(offset: v.length),
-        );
-      }
-    }
+    // NOTE: this build deliberately does NOT watch the plate value.
+    //
+    // It used to `context.select` the whole [PlateNumber], which meant every
+    // bloc emission rebuilt this entire subtree — the frame, the clip, the
+    // country panel, every rule, label and decal, and all eight slots — to
+    // change one character. The frame and each slot now subscribe to just the
+    // part they render (see [_FrameBinding] and [_SlotBinding]), so a keystroke
+    // rebuilds one slot, and the plate's static furniture is built once.
 
     // The rounded white face, so content (e.g. the blue country panel) is
     // clipped to the same corner radius the frame paints instead of poking
@@ -248,12 +241,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
           textDirection: spec.textDirection,
           child: Stack(
             children: [
-              Positioned.fill(
-                child: PlateFrame(
-                  isCompleted: plate.isCompleted(),
-                  theme: theme,
-                ),
-              ),
+              Positioned.fill(child: _FrameBinding(theme: theme)),
               Positioned.fill(
                 child: ClipRRect(
                   clipper: _PlateFaceClipper(
@@ -262,34 +250,22 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                   ),
                   child: Stack(
                     children: [
-                      Positioned(
-                        left: spec.panelLeft,
-                        top: spec.panelTop,
-                        width: spec.panelWidth,
-                        height: spec.panelHeight,
-                        child:
-                            CountryPanel(
-                              country: spec.country,
-                              theme: theme,
-                              flagScale: spec.flagScale,
-                              captionScale: spec.captionScale,
-                              padding: spec.panelPadding,
-                            ),
+                      _Placed(
+                        box: spec.panel.box,
+                        child: CountryPanel(
+                          country: spec.country,
+                          theme: theme,
+                          panel: spec.panel,
+                        ),
                       ),
                       for (final r in spec.rules)
-                        Positioned(
-                          left: r.left,
-                          top: r.top,
-                          width: r.width,
-                          height: r.height,
+                        _Placed(
+                          box: r.box,
                           child: ColoredBox(color: theme.dividerColor),
                         ),
                       for (final l in spec.labels)
-                        Positioned(
-                          left: l.left,
-                          top: l.top,
-                          width: l.width,
-                          height: l.height,
+                        _Placed(
+                          box: l.box,
                           child: Text(
                             l.text,
                             textAlign: TextAlign.center,
@@ -297,33 +273,25 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                           ),
                         ),
                       for (final d in spec.decals)
-                        Positioned(
-                          left: d.left,
-                          top: d.top,
-                          width: d.width,
-                          height: d.height,
+                        _Placed(
+                          box: d.box,
                           child: Image(image: d.image, fit: BoxFit.contain),
                         ),
                       for (var i = 0; i < spec.slots.length; i++)
-                        Positioned(
-                          left: spec.slots[i].left,
-                          top: spec.slots[i].top,
-                          width: spec.slots[i].width,
-                          height: spec.slots[i].height,
+                        _Placed(
+                          box: spec.slots[i].box,
                           child: Center(
-                            child: PlateSlotItem(
+                            child: _SlotBinding(
+                              index: i,
                               slot: spec.slots[i],
                               mode: widget.mode,
                               theme: theme,
-                              value: plate.values[i],
                               controller: _controllers[i],
                               focusNode: _focusNodes[i],
                               letterInputMode: widget.mode == PlateMode.input
                                   ? _letterInputMode
                                   : LetterInputMode.picker,
                               inputSource: _inputSource,
-                              onChanged: (v) =>
-                                  bloc.add(ValueIsChanged(index: i, value: v)),
                               onCompleted: widget.mode == PlateMode.input
                                   ? () => _advance(i)
                                   : null,
@@ -348,6 +316,114 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     );
 
     return fitted;
+  }
+}
+
+/// Positions a child in plate-space from a [PlateBox]. The one place the four
+/// `left/top/width/height` literals turn into a [Positioned].
+class _Placed extends StatelessWidget {
+  const _Placed({required this.box, required this.child});
+
+  final PlateBox box;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Positioned(
+        left: box.left,
+        top: box.top,
+        width: box.width,
+        height: box.height,
+        child: child,
+      );
+}
+
+/// The plate's border and white face, subscribed only to whether the plate is
+/// complete.
+///
+/// [PlateFrame] repaints for exactly one reason — the border shifts ~2% when
+/// the last slot fills — so watching a bool means a keystroke that does not
+/// complete the plate leaves the frame entirely alone.
+class _FrameBinding extends StatelessWidget {
+  const _FrameBinding({required this.theme});
+
+  final PlateTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCompleted = context.select<PlateCardBloc, bool>(
+      (b) => b.state.plateNumber.isCompleted(),
+    );
+    return PlateFrame(isCompleted: isCompleted, theme: theme);
+  }
+}
+
+/// One slot, subscribed to its OWN character rather than to the whole plate.
+///
+/// This is what keeps a keystroke local: `select` returns a `String?`, so only
+/// the slot whose character actually changed rebuilds. The other seven, the
+/// country panel, the rules, the labels and the decals are untouched.
+class _SlotBinding extends StatelessWidget {
+  const _SlotBinding({
+    required this.index,
+    required this.slot,
+    required this.mode,
+    required this.theme,
+    required this.controller,
+    required this.focusNode,
+    required this.letterInputMode,
+    required this.inputSource,
+    required this.onCompleted,
+    required this.onPressed,
+  });
+
+  final int index;
+  final PlateSlot slot;
+  final PlateMode mode;
+  final PlateTheme theme;
+
+  /// Backs the slot's [TextField]; null for chosen slots.
+  final TextEditingController? controller;
+  final FocusNode focusNode;
+  final LetterInputMode letterInputMode;
+  final PlateInputSource inputSource;
+  final VoidCallback? onCompleted;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = context.select<PlateCardBloc, String?>((b) {
+      final values = b.state.plateNumber.values;
+      return index < values.length ? values[index] : null;
+    });
+
+    // Keep the field's text in step with the bloc, as the canvas used to do for
+    // every slot at once. This runs before this slot's own TextField builds in
+    // the same frame, so notifying its controller here is safe.
+    final field = controller;
+    if (field != null) {
+      final text = value ?? '';
+      if (field.text != text) {
+        field.value = TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: text.length),
+        );
+      }
+    }
+
+    final bloc = context.read<PlateCardBloc>();
+    return PlateSlotItem(
+      slot: slot,
+      mode: mode,
+      theme: theme,
+      value: value,
+      controller: field,
+      focusNode: focusNode,
+      letterInputMode: letterInputMode,
+      inputSource: inputSource,
+      onChanged: (v) => bloc.add(ValueIsChanged(index: index, value: v)),
+      onCompleted: onCompleted,
+      onPressed: onPressed,
+    );
   }
 }
 

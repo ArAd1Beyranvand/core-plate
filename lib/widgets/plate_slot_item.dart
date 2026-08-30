@@ -7,6 +7,32 @@ import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../theme/plate_theme.dart';
 
+/// Material themes for the text-selection colours, cached by active colour.
+///
+/// [ThemeData.light] is one of the most expensive constructors in the
+/// framework — it derives a full colour scheme, a full text theme and every
+/// Material sub-theme. This widget was calling it once per typed slot on every
+/// build, so an eight-slot plate paid for eight of them on every keystroke,
+/// and the enclosing [Theme] then ran `ThemeData`'s field-by-field
+/// `updateShouldNotify` comparison eight more times.
+///
+/// The result depends only on the active colour, and a plate uses two or three
+/// of those in its whole life, so they are built once and reused.
+final Map<Color, ThemeData> _selectionThemes = <Color, ThemeData>{};
+
+ThemeData _selectionTheme(Color active) {
+  return _selectionThemes.putIfAbsent(
+    active,
+    () => ThemeData.light().copyWith(
+      textSelectionTheme: TextSelectionThemeData(
+        selectionColor: active.withValues(alpha: 0.3),
+        cursorColor: active,
+        selectionHandleColor: active,
+      ),
+    ),
+  );
+}
+
 /// One plate position, driven entirely by its [PlateSlot].
 ///
 /// This replaces the old `IntegerPlateItem`/`StringPlateItem` pair: those two
@@ -67,15 +93,15 @@ class PlateSlotItem extends StatelessWidget {
     if (mode == PlateMode.display) {
       final v = value ?? '';
       return SizedBox(
-        width: slot.width,
-        height: slot.height,
+        width: slot.box.width,
+        height: slot.box.height,
         child: v.isEmpty
             ? null
             : Center(
                 child: Text(
                   slot.alphabet.render(v),
                   textAlign: TextAlign.center,
-                  style: effectiveTheme.glyphStyle(slot.height, effectiveTheme.ink),
+                  style: effectiveTheme.glyphStyle(slot.box.height, effectiveTheme.ink),
                 ),
               ),
       );
@@ -105,16 +131,10 @@ class PlateSlotItem extends StatelessWidget {
     final isNumeric = slot.alphabet.isNumeric;
 
     return SizedBox(
-      width: slot.width,
-      height: slot.height,
+      width: slot.box.width,
+      height: slot.box.height,
       child: Theme(
-        data: ThemeData.light().copyWith(
-          textSelectionTheme: TextSelectionThemeData(
-            selectionColor: effectiveTheme.activeColor.withValues(alpha: 0.3),
-            cursorColor: effectiveTheme.activeColor,
-            selectionHandleColor: effectiveTheme.activeColor,
-          ),
-        ),
+        data: _selectionTheme(effectiveTheme.activeColor),
         child: ListenableBuilder(
           listenable: focusNode,
           builder: (context, _) => TextField(
@@ -129,12 +149,12 @@ class PlateSlotItem extends StatelessWidget {
                 ? focusNode.hasFocus
                 : null,
             textAlign: TextAlign.center,
-            style: effectiveTheme.glyphStyle(slot.height, effectiveTheme.ink),
+            style: effectiveTheme.glyphStyle(slot.box.height, effectiveTheme.ink),
             cursorColor: effectiveTheme.activeColor,
             decoration: InputDecoration(
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
-                vertical: slot.height * 0.12,
+                vertical: slot.box.height * 0.12,
               ),
               filled: false,
               counterText: '',
@@ -181,19 +201,19 @@ class PlateSlotItem extends StatelessWidget {
             '؟',
             textAlign: TextAlign.center,
             style: effectiveTheme.glyphStyle(
-              slot.height,
+              slot.box.height,
               effectiveTheme.inactiveColor,
             ),
           )
         : Text(
             slot.alphabet.render(value!),
             textAlign: TextAlign.center,
-            style: effectiveTheme.glyphStyle(slot.height, effectiveTheme.ink),
+            style: effectiveTheme.glyphStyle(slot.box.height, effectiveTheme.ink),
           );
 
     Widget slotBox(Color underlineColor) => SizedBox(
-      width: slot.width,
-      height: slot.height,
+      width: slot.box.width,
+      height: slot.box.height,
       child: Container(
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: underlineColor)),

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../model/plate_country.dart';
+import '../model/plate_spec.dart';
 import '../theme/plate_theme.dart';
 import 'plate_flag.dart';
 
@@ -13,11 +14,9 @@ import 'plate_flag.dart';
 class CountryPanel extends StatelessWidget {
   const CountryPanel({
     super.key,
+    required this.panel,
     this.theme,
     this.country = PlateCountry.iran,
-    this.flagScale = 1.0,
-    this.captionScale = 1.0,
-    this.padding,
   });
 
   /// Colours to paint with. Falls back to [PlateTheme.of] / standard when null.
@@ -27,15 +26,10 @@ class CountryPanel extends StatelessWidget {
   /// The country whose flag, caption and panel colours to render.
   final PlateCountry country;
 
-  /// Scale factor applied to the flag. Defaults to 1.0.
-  final double flagScale;
-
-  /// Scale factor applied to the caption. Defaults to 1.0.
-  final double captionScale;
-
-  /// Padding around the flag + caption. Null falls back to a uniform inset of
-  /// 10% of the panel's height on all sides.
-  final EdgeInsets? padding;
+  /// Layout of the flag + caption inside the block. Only [PlatePanel.flagScale],
+  /// [PlatePanel.captionScale] and [PlatePanel.padding] are read here; the box
+  /// positions the panel on the plate and is the canvas's concern.
+  final PlatePanel panel;
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +40,13 @@ class CountryPanel extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final uniformPad = constraints.maxHeight * 0.10;
-            final resolvedPadding = padding ?? EdgeInsets.all(uniformPad);
+            final resolvedPadding = panel.padding ?? EdgeInsets.all(uniformPad);
             final innerW = constraints.maxWidth - resolvedPadding.horizontal;
             final innerH = constraints.maxHeight - resolvedPadding.vertical;
             // Flag: scale the width by flagScale; height follows the
             // country's flag aspect ratio, clamped to the available height so
             // small panels never overflow.
-            var flagW = innerW * flagScale;
+            var flagW = innerW * panel.flagScale;
             var flagH = flagW / country.flagAspectRatio;
             if (flagH > innerH) {
               flagH = innerH;
@@ -80,7 +74,7 @@ class CountryPanel extends StatelessWidget {
                       child: _Caption(
                         lines: country.captionLines,
                         color: country.panelTextColor,
-                        scale: captionScale,
+                        scale: panel.captionScale,
                       ),
                     ),
                   ),
