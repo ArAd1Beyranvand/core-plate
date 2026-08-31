@@ -1,89 +1,51 @@
-import 'package:country_flags/country_flags.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-/// A national flag rendered from a proper SVG vector source, sized to fill its
-/// parent.
-///
-/// Flags are looked up by ISO 3166-1 alpha-2 code (e.g. `ir`). The intrinsic
-/// aspect ratio of each flag is preserved, so at plate scale (~20px tall) the
-/// artwork stays crisp instead of the hand-drawn approximation it replaces.
-///
-/// Where we ship our own high-fidelity SVG for a country (see [_svgAssets]) it
-/// is rendered directly with `flutter_svg`, which rasterises the live vector at
-/// the exact device-pixel size. Everything else falls back to the
-/// `country_flags` package, which pre-compiles each flag to a quantized binary
-/// (`.si`) format ahead of time — fine for simple tricolours, but coarse enough
-/// on a detailed emblem (Iran's, its Kufic-script border) to read as pixelation
-/// at plate scale. Shipping the raw SVG for those sidesteps the quantization.
-class PlateFlag extends StatelessWidget {
-  const PlateFlag({super.key, required this.countryCode, this.borderRadius});
+import '../model/plate_asset.dart';
+import '../model/plate_country.dart';
 
-  /// ISO 3166-1 alpha-2 country code, case-insensitive.
-  final String countryCode;
+/// A country's flag, rendered from the asset the country ships and sized to
+/// fill its parent.
+///
+/// Every country now ships a vector (or raster) of its own flag — see
+/// [PlateAsset]. There is one rendering path: a detailed emblem (fine script
+/// around a border, say) that a pre-quantized shared bitmap format would read
+/// as pixelation at plate scale (~20px tall) stays crisp because the raw
+/// vector is drawn at the exact device-pixel size.
+///
+/// A country with no flag asset renders nothing.
+class PlateFlag extends StatelessWidget {
+  const PlateFlag({super.key, required this.country, this.borderRadius});
+
+  /// The country whose [PlateCountry.flag] asset to render.
+  final PlateCountry country;
 
   /// Optional corner rounding, in logical pixels. When null the flag is drawn
   /// as a plain rectangle.
   final double? borderRadius;
 
-  /// Country codes (lower-case) we ship a crisp SVG asset for, mapped to the
-  /// asset path inside this package.
-  static const Map<String, String> _svgAssets = {
-    'ir': 'assets/flags/Flag_of_Iran.svg',
-  };
-
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final size = _resolveSize(constraints);
+    final asset = country.flag;
+    if (asset == null) return const SizedBox.shrink();
 
-        final asset = _svgAssets[countryCode.toLowerCase()];
-        if (asset != null) {
-          final flag = SvgPicture.asset(
-            asset,
-            package: 'plate_number',
-            width: size.width,
-            height: size.height,
-            fit: BoxFit.fill,
-          );
-          if (borderRadius == null) return flag;
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(borderRadius!),
-            child: flag,
-          );
-        }
+    final Widget flag = switch (asset) {
+      SvgPlateAsset() => SvgPicture.asset(
+          asset.path,
+          package: asset.package,
+          fit: BoxFit.fill,
+        ),
+      RasterPlateAsset() => Image.asset(
+          asset.path,
+          package: asset.package,
+          fit: BoxFit.fill,
+        ),
+    };
 
-        // country_flags requires an explicit size; let the parent decide it and
-        // preserve the flag's intrinsic aspect ratio.
-        return CountryFlag.fromCountryCode(
-          countryCode,
-          theme: ImageTheme(
-            width: size.width,
-            height: size.height,
-            shape: borderRadius == null
-                ? const Rectangle()
-                : RoundedRectangle(borderRadius!),
-          ),
-        );
-      },
+    if (borderRadius == null) return flag;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius!),
+      child: flag,
     );
-  }
-
-  /// Picks a finite width/height from [constraints], falling back to a sensible
-  /// default when a dimension is unbounded.
-  ///
-  /// The 7:4 fallback below is only used when both dimensions are unbounded;
-  /// callers that know the country should size this widget from
-  /// [PlateCountry.flagAspectRatio] instead of relying on this default.
-  Size _resolveSize(BoxConstraints constraints) {
-    var width = constraints.maxWidth;
-    var height = constraints.maxHeight;
-    if (!width.isFinite && !height.isFinite) {
-      return const Size(21, 12); // 7:4 fallback
-    }
-    if (!width.isFinite) width = height * 7 / 4;
-    if (!height.isFinite) height = width * 4 / 7;
-    return Size(width, height);
   }
 }

@@ -14,7 +14,7 @@ class PlateSlot {
   final PlateBox box;
 }
 
-/// A painted rule (e.g. the vertical divider on an Iranian car plate).
+/// A painted rule (e.g. a vertical divider between character groups).
 @immutable
 class PlateRule {
   const PlateRule({required this.box});
@@ -81,9 +81,9 @@ class PlatePanel {
   final EdgeInsets? padding;
 }
 
-/// One visual group in the plain-text rendering of a plate (e.g. the "886"
-/// digit triple on an Iranian car plate). [prefix] is prepended to the
-/// rendered characters (e.g. 'IR ' before the province code).
+/// One visual group in the plain-text rendering of a plate (e.g. a digit
+/// triple). [prefix] is prepended to the rendered characters (e.g. a country
+/// code before a regional group).
 @immutable
 class PlateTextGroup {
   const PlateTextGroup(this.indices, {this.prefix = '', this.key});
@@ -115,7 +115,7 @@ class PlateSpec {
     this.textGroups = const <PlateTextGroup>[],
   });
 
-  /// Stable identifier, e.g. 'ir.car'. Used for equality and persistence.
+  /// Stable identifier, e.g. 'xx.car'. Used for equality and persistence.
   final String id;
 
   final PlateCountry country;
@@ -261,144 +261,4 @@ bool _sameChars(List<String> a, List<String> b) {
     if (a[i] != b[i]) return false;
   }
   return true;
-}
-
-/// The catalogue of known plate designs.
-///
-/// Adding a new plate type — a new country, a new vehicle class, a different
-/// alphabet, slot count, reading direction, or divider layout — requires only a
-/// new `const PlateSpec` declaration here. No widget file needs to be touched:
-/// the widgets read geometry, alphabets, direction, rules, and labels entirely
-/// from the spec. If adding a plate ever forces a widget edit, the abstraction
-/// has leaked and should be fixed at the widget, not worked around here.
-class PlateSpecs {
-  const PlateSpecs._();
-
-  static const PlateSpec irCar = PlateSpec(
-    id: 'ir.car',
-    country: PlateCountry.iran,
-    canvasWidth: 520,
-    canvasHeight: 110,
-    panel: PlatePanel(
-      // Overlap the border on the three touching edges (left/top/bottom)
-      // instead of sitting flush at the border thickness (0.04 * canvasHeight =
-      // 4.4). The panel is clipped back to the rounded plate face by
-      // _PlateFaceClipper, so extending it under the frame just makes the blue
-      // paint right up to the clip boundary — killing the thin white seam that
-      // a flush edge leaves when the FittedBox scale lands the panel edge and
-      // the border edge on different physical pixels. Right edge (56.4) stays
-      // interior and is unchanged.
-      box: PlateBox(0, 0, 56.4, 110),
-    ),
-    textDirection: TextDirection.rtl,
-    slots: [
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(65, 17, 47, 76)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(120, 17, 47, 76)),
-      PlateSlot(alphabet: PlateAlphabet.persianPlateLetters, box: PlateBox(175, 17, 55, 76)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(238, 17, 47, 76)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(293, 17, 47, 76)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(348, 17, 47, 76)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(428, 40, 32, 52)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(466, 40, 32, 52)),
-    ],
-    rules: [
-      // The province divider runs the full height of the plate face (top edge
-      // to bottom edge), meeting the border at both ends — no empty gaps.
-      PlateRule(box: PlateBox(404, 4.4, 5, 101.2)),
-    ],
-    labels: [
-      PlateLabel(text: 'ایران', box: PlateBox(412, 18, 103, 16), glyphHeight: 16),
-    ],
-    textGroups: [
-      PlateTextGroup([0, 1]),
-      PlateTextGroup([2]),
-      PlateTextGroup([3, 4, 5]),
-      PlateTextGroup([6, 7], prefix: 'IR '),
-    ],
-  );
-
-  static const PlateSpec irBicycle = PlateSpec(
-    id: 'ir.bicycle',
-    country: PlateCountry.iran,
-    canvasWidth: 175,
-    canvasHeight: 110,
-    panel: PlatePanel(
-      // Overlap the border on the two touching edges (left/top) instead of
-      // sitting flush at the border thickness (0.05 * canvasHeight = 5.5); the
-      // panel is clipped back to the plate face, so this kills the thin white
-      // seam a flush edge leaves. See irCar. Right (63.7) and bottom (53.7)
-      // edges are interior and unchanged.
-      //
-      // Panel width is sized to wrap the flag (the widest element) plus the
-      // left/right margins below, instead of a slack fraction: flagScale is 1.0
-      // so the flag fills its box exactly and panelWidth = padding + flag
-      // width.
-      box: PlateBox(0, 0, 47, 53.7),
-      flagScale: 1.0,
-      captionScale: 0.25,
-      // Bigger left margin than top/bottom: matches a real bicycle plate's
-      // panel, where the flag+caption block sits clear of the frame on the
-      // left but only needs breathing room, not a deep inset, top and bottom.
-      // Extra margin all around keeps the smaller flag/caption clear of the
-      // panel edges instead of crowding the blue block.
-      padding: EdgeInsets.fromLTRB(15, 16, 6, 6),
-    ),
-    textDirection: TextDirection.rtl,
-    borderWidthRatioOverride: 0.05,
-    slots: [
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(74, 13, 22, 36)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(104, 13, 22, 36)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(134, 13, 22, 36)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(8, 58, 27, 44)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(41, 58, 27, 44)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(74, 58, 27, 44)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(107, 58, 27, 44)),
-      PlateSlot(alphabet: PlateAlphabet.persianDigits, box: PlateBox(140, 58, 27, 44)),
-    ],
-  );
-
-  /// A standard German car plate (e.g. "DA·X1953"): a district code of Latin
-  /// letters, then the two round stickers (vehicle-inspection and federal-state
-  /// seal), then the identifier's Latin letter and serial digits — read
-  /// left-to-right, with no dividers and no printed labels. The stickers are
-  /// [PlateDecal]s that sit in the gap between the two character groups.
-  static const PlateSpec deCar = PlateSpec(
-    id: 'de.car',
-    country: PlateCountry.germany,
-    canvasWidth: 520,
-    canvasHeight: 110,
-    panel: PlatePanel(
-      // Overlap the border on the three touching edges — see irCar.
-      box: PlateBox(0, 0, 56.4, 110),
-    ),
-    textDirection: TextDirection.ltr,
-    slots: [
-      // District code, e.g. "DA".
-      PlateSlot(alphabet: PlateAlphabet.latinUppercase, box: PlateBox(64, 17, 52, 76)),
-      PlateSlot(alphabet: PlateAlphabet.latinUppercase, box: PlateBox(122, 17, 52, 76)),
-      // Identifier: one letter then the serial digits, e.g. "X1953".
-      PlateSlot(alphabet: PlateAlphabet.latinUppercase, box: PlateBox(230, 17, 52, 76)),
-      PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(288, 17, 46, 76)),
-      PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(338, 17, 46, 76)),
-      PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(388, 17, 46, 76)),
-      PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(438, 17, 46, 76)),
-    ],
-    decals: [
-      // Stacked in the gap between the district code and the identifier: the
-      // orange TÜV inspection sticker on top, the federal-state seal below.
-      PlateDecal(
-        image: AssetImage('assets/de_inspection_sticker.png', package: 'plate_number'),
-        box: PlateBox(184, 14, 38, 38),
-      ),
-      PlateDecal(
-        image: AssetImage('assets/de_state_seal.png', package: 'plate_number'),
-        box: PlateBox(184, 54, 38, 38),
-      ),
-    ],
-    textGroups: [
-      PlateTextGroup([0, 1], key: 'district'),
-      PlateTextGroup([2], key: 'letters'),
-      PlateTextGroup([3, 4, 5, 6], key: 'serial'),
-    ],
-  );
 }

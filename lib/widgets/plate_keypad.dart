@@ -75,8 +75,8 @@ class PlateKeypad extends StatefulWidget {
     this.compact = false,
     this.showLetters = false,
     this.onKey,
-    this.digitAlphabet = PlateAlphabet.persianDigits,
-    this.letterAlphabet = PlateAlphabet.persianPlateLetters,
+    required this.digitAlphabet,
+    required this.letterAlphabet,
     this.activeAlphabet,
     this.theme = const PlateKeypadTheme(),
   });
@@ -275,10 +275,7 @@ class _PlateKeypadState extends State<PlateKeypad>
       letters.add('');
     }
 
-    final TextDirection direction =
-        widget.letterAlphabet == PlateAlphabet.persianPlateLetters
-            ? TextDirection.rtl
-            : TextDirection.ltr;
+    final TextDirection direction = widget.letterAlphabet.direction;
 
     final Widget grid = Container(
       decoration: BoxDecoration(

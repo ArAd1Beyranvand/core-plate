@@ -10,7 +10,7 @@
 /// official registration guarantee.
 library;
 
-import 'plate_validator.dart';
+import '../validators/plate_validator.dart';
 
 /// Nationwide-forbidden letter pairs (Nazi-organisation abbreviations) plus
 /// widely-documented state-level additions and generically-offensive pairs.

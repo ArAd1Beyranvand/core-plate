@@ -196,9 +196,10 @@ class _TypedField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO(persian-input): the controller keeps ASCII so the bloc stays ASCII;
-    // a two-way TextInputFormatter that displays Persian while storing ASCII is
-    // fiddly to get right (cursor/selection), so the field shows ASCII for now.
+    // TODO(national-numerals): the controller keeps ASCII so the bloc stays
+    // ASCII; a two-way TextInputFormatter that displays national numerals while
+    // storing ASCII is fiddly to get right (cursor/selection), so the field
+    // shows ASCII for now.
     final isEmpty = controller.text.isEmpty;
     final underlineColor = isEmpty ? theme.inactiveColor : theme.activeColor;
 
@@ -262,7 +263,7 @@ class _TypedField extends StatelessWidget {
 }
 
 /// The former [_buildChosenSlot] / `StringPlateItem`: a focusable slot with an
-/// underline and a '؟' placeholder when empty.
+/// underline and the alphabet's placeholder glyph when empty.
 ///
 /// [behavior] is [SlotBehavior.sheet] (tap opens the picker),
 /// [SlotBehavior.hardwareField] (Focus consuming key events) or
@@ -292,7 +293,7 @@ class _ChosenSlot extends StatelessWidget {
 
     final letter = isEmpty
         ? Text(
-            '؟',
+            slot.alphabet.placeholder,
             textAlign: TextAlign.center,
             style: theme.glyphStyle(slot.box.height, theme.inactiveColor),
           )

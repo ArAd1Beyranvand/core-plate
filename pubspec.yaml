@@ -12,7 +12,6 @@ dependencies:
     sdk: flutter
   flutter_bloc: ^9.1.1
   bloc: ^9.2.1
-  country_flags: ^4.1.2
   flutter_svg: ^2.0.0
   args: ^2.3.0
 
@@ -27,3 +26,4 @@ flutter:
     - assets/de_inspection_sticker.png
     - assets/de_state_seal.png
     - assets/flags/Flag_of_Iran.svg
+    - assets/flags/Flag_of_Germany.svg

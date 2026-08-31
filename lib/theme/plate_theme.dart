@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-/// The visual language of a real Iranian licence plate.
+/// The visual styling of a licence plate: chrome colours and the ratios that
+/// scale it.
 ///
 /// This is a pure data class — no widgets. All chrome colours are fixed to the
 /// values sampled from real plate photos and must never be tinted by a caller's
@@ -54,7 +55,8 @@ class PlateTheme {
   /// only; an alert colour is theme data, not a widget literal.
   final Color alertColor;
 
-  /// Standard Iranian plate theme, sampled from real plate photos.
+  /// Standard white-face / black-frame plate theme, sampled from real plate
+  /// photos.
   factory PlateTheme.standard() {
     return const PlateTheme(
       plateBackground: Color(0xFFFFFFFF),

@@ -1,6 +1,8 @@
 export 'model/plate_number.dart';
 export 'model/plate_input_source.dart';
+export 'model/plate_box.dart';
 export 'model/plate_country.dart';
+export 'model/plate_asset.dart';
 export 'model/plate_alphabet.dart';
 export 'model/slot_behavior.dart';
 export 'model/plate_spec.dart';
@@ -14,6 +16,8 @@ export 'widgets/plate_character_picker.dart';
 export 'widgets/plate_keypad.dart';
 export 'widgets/plate_slot_item.dart';
 export 'validators/plate_validator.dart';
-export 'validators/german_plate_validator.dart';
+export 'countries/german_plate_validator.dart';
+export 'countries/iran.dart';
+export 'countries/germany.dart';
 export 'input/plate_input_controller.dart';
 export 'input/plate_input_machine.dart';

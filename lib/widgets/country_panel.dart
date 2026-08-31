@@ -6,8 +6,8 @@ import '../theme/plate_theme.dart';
 import 'plate_flag.dart';
 
 /// The coloured block on the left of a plate: the flag over the country
-/// caption (e.g. "I.R." / "IRAN"). Sized by its parent (square-ish); always
-/// laid out LTR even inside an RTL plate.
+/// caption (a short code beside the flag). Sized by its parent (square-ish);
+/// always laid out LTR even inside an RTL plate.
 ///
 /// Everything country-specific (flag, caption, panel colours) comes from
 /// [country]; adding a new country is a new [PlateCountry], not a new widget.
@@ -16,7 +16,7 @@ class CountryPanel extends StatelessWidget {
     super.key,
     required this.panel,
     this.theme,
-    this.country = PlateCountry.iran,
+    required this.country,
   });
 
   /// Colours to paint with. Falls back to [PlateTheme.of] / standard when null.
@@ -56,7 +56,7 @@ class CountryPanel extends StatelessWidget {
             return Padding(
               padding: resolvedPadding,
               // Flag pinned to the top, caption pinned to the bottom, with the
-              // slack between them (matches a real Iranian plate's panel).
+              // slack between them (matches a real plate's panel).
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -64,7 +64,7 @@ class CountryPanel extends StatelessWidget {
                   SizedBox(
                     width: flagW,
                     height: flagH,
-                    child: PlateFlag(countryCode: country.code),
+                    child: PlateFlag(country: country),
                   ),
                   SizedBox(
                     height: captionH,

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 /// The set of characters a plate slot will accept, and how they are rendered.
 ///
@@ -12,6 +12,8 @@ class PlateAlphabet {
     required this.input,
     required this.isNumeric,
     this.glyphs = const <String, String>{},
+    this.direction = TextDirection.ltr,
+    this.placeholder = '?',
   });
 
   /// Stable identifier. Two alphabets are equal iff their ids match, so ids
@@ -28,6 +30,14 @@ class PlateAlphabet {
   /// Storage form -> display form. Empty means display == storage.
   /// This is where national numerals live.
   final Map<String, String> glyphs;
+
+  /// Reading direction for this alphabet's characters. A property of the
+  /// script, not something to infer by comparing alphabet constants.
+  final TextDirection direction;
+
+  /// Glyph shown in an empty chosen slot. Defaults to an ASCII question mark;
+  /// a script with its own question mark declares it here.
+  final String placeholder;
 
   bool accepts(String value) => characters.contains(value);
 
@@ -55,24 +65,6 @@ class PlateAlphabet {
     isNumeric: true,
   );
 
-  static const PlateAlphabet persianDigits = PlateAlphabet(
-    id: 'fa.digits',
-    characters: ['0','1','2','3','4','5','6','7','8','9'],
-    input: AlphabetInput.typed,
-    isNumeric: true,
-    glyphs: {
-      '0':'۰','1':'۱','2':'۲','3':'۳','4':'۴',
-      '5':'۵','6':'۶','7':'۷','8':'۸','9':'۹',
-    },
-  );
-
-  static const PlateAlphabet persianPlateLetters = PlateAlphabet(
-    id: 'fa.plateLetters',
-    characters: ['ب','ح','د','س','ص','ط','ق','ل','م','ن','و','ه','ی','ت','ژ','گ'],
-    input: AlphabetInput.chosen,
-    isNumeric: false,
-  );
-
   static const PlateAlphabet latinUppercase = PlateAlphabet(
     id: 'latin.upper',
     characters: ['A','B','C','D','E','F','G','H','I','J','K','L','M',
@@ -88,6 +80,6 @@ enum AlphabetInput {
   typed,
 
   /// Selected from a picker, or fed in by the host, because the character is
-  /// not on a normal keyboard (Persian plate letters).
+  /// not on a normal keyboard (e.g. plate letters from a national script).
   chosen,
 }
