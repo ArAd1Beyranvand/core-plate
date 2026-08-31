@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../model/plate_spec.dart';
+import '../validators/plate_validator.dart';
 
 /// What a [PlateInputController] drives: one plate's focus and navigation.
 ///
@@ -24,6 +25,41 @@ abstract class PlateInputTarget {
 /// is proxied to the attached canvas, which owns the focus and the bloc.
 class PlateInputController extends ChangeNotifier {
   PlateInputTarget? _target;
+
+  PlateValidation? Function()? _probe;
+  PlateValidation? _lastVerdict;
+
+  /// The verdict on the attached plate as it stands, or null when the canvas
+  /// has no validator (or none is attached). A host reads this to decide its
+  /// own timing — paint something, enable a submit button — instead of
+  /// validating by hand.
+  ///
+  /// Computed on demand, so it is meaningful whether or not the canvas runs
+  /// `autoValidate`: a host that validates on submit only pays for exactly the
+  /// validations it asks for.
+  PlateValidation? get validation => _probe?.call();
+
+  /// Called by PlateCanvas. Do not call from app code.
+  ///
+  /// Installs the callback behind [validation]; pass null when detaching.
+  void installValidation(PlateValidation? Function()? probe) {
+    _probe = probe;
+    _lastVerdict = null;
+  }
+
+  /// Called by PlateCanvas while it is auto-validating. Do not call from app
+  /// code.
+  ///
+  /// Notifies on a change of *verdict* (over [PlateValidation]'s equality,
+  /// i.e. its reason), not on every committed value — so a listener rebuilds
+  /// on a flip, not on a keystroke. Putting the narrowing here keeps that
+  /// property true for every consumer rather than for whichever one
+  /// remembered to implement it.
+  void reportValidation(PlateValidation? value) {
+    if (_lastVerdict == value) return;
+    _lastVerdict = value;
+    notifyListeners();
+  }
 
   /// Called by PlateCanvas. Do not call from app code.
   void attach(PlateInputTarget target) {

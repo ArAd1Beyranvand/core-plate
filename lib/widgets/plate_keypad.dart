@@ -78,7 +78,6 @@ class PlateKeypad extends StatefulWidget {
     this.digitAlphabet = PlateAlphabet.persianDigits,
     this.letterAlphabet = PlateAlphabet.persianPlateLetters,
     this.activeAlphabet,
-    this.unavailableKeys = const {},
     this.theme = const PlateKeypadTheme(),
   });
 
@@ -117,11 +116,6 @@ class PlateKeypad extends StatefulWidget {
   /// would reject them anyway — since it may be a subset of [digitAlphabet]
   /// or [letterAlphabet]. Null disables no keys (e.g. no slot is focused).
   final PlateAlphabet? activeAlphabet;
-
-  /// Keys that are currently barred by a validation rule (e.g. a forbidden
-  /// letter pair). They stay in the grid at the same position; they render
-  /// disabled and swallow taps. Never affects layout.
-  final Set<String> unavailableKeys;
 
   /// Colours used to paint the pad and its keys.
   final PlateKeypadTheme theme;
@@ -228,13 +222,13 @@ class _PlateKeypadState extends State<PlateKeypad>
   /// Whether [key] should accept taps: always true for backspace, otherwise
   /// only when it is in [PlateAlphabet.characters] for the alphabet driving
   /// the pad it belongs to (the focused slot's alphabet when known, else the
-  /// pad's own alphabet) — submit() would reject anything else — and not
-  /// currently barred by [PlateKeypad.unavailableKeys].
+  /// pad's own alphabet) — submit() would reject anything else. This is a fact
+  /// about the alphabet, not a validation policy: a key in the active alphabet
+  /// is always tappable, even when typing it would make the plate invalid.
   bool _keyEnabled(String key, PlateAlphabet ownAlphabet) {
     if (key.isEmpty) return false;
     if (key == kPlateBackspaceKey) return true;
-    return (widget.activeAlphabet ?? ownAlphabet).accepts(key) &&
-        !widget.unavailableKeys.contains(key);
+    return (widget.activeAlphabet ?? ownAlphabet).accepts(key);
   }
 
   Widget _buildDigitKey(String rawLabel) {
@@ -264,10 +258,10 @@ class _PlateKeypadState extends State<PlateKeypad>
     // lay out sensibly.
     //
     // Layout invariant: columns/rowCount are derived from
-    // letterAlphabet.characters.length only. activeAlphabet and
-    // unavailableKeys must never narrow the list the grid is built from —
-    // they only affect whether an already-placed key renders enabled — or
-    // the pad would reflow when a validation rule fires.
+    // letterAlphabet.characters.length only. activeAlphabet must never narrow
+    // the list the grid is built from — it only affects whether an
+    // already-placed key renders enabled — or the pad would reflow when focus
+    // moves to a slot with a subset alphabet.
     final int columns = math.sqrt(alphabetLetters.length).ceil();
     final int rowCount = (alphabetLetters.length / columns).ceil();
     // Divide the fixed inner height (minus the gaps between rows) so the
@@ -376,10 +370,10 @@ class _Key extends StatelessWidget {
   /// The label this key reports; compared against [highlightListenable].
   final String? highlightKey;
 
-  /// Barred by a validation rule (or outside the active alphabet) when
-  /// false. Stays in the grid at the same position; a disabled key is never
-  /// highlighted — [highlighted] always wins visually because a barred key
-  /// can't be tapped in the first place, so the two never conflict.
+  /// False when [label] is outside the active alphabet. Stays in the grid at
+  /// the same position; a disabled key is never highlighted — [highlighted]
+  /// always wins visually because a disabled key can't be tapped in the first
+  /// place, so the two never conflict.
   final bool enabled;
 
   /// Colours used to paint this key.

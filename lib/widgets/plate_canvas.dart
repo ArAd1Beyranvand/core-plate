@@ -15,6 +15,7 @@ import 'country_panel.dart';
 import 'plate_character_picker.dart';
 import '../input/plate_input_controller.dart';
 import '../input/plate_input_machine.dart';
+import '../validators/plate_validator.dart';
 
 class PlateCanvas extends StatefulWidget {
   const PlateCanvas({
@@ -26,6 +27,8 @@ class PlateCanvas extends StatefulWidget {
     this.onChooseCharacter,
     this.onActiveIndexChanged,
     this.controller,
+    this.validator,
+    this.autoValidate = false,
   });
 
   final PlateSpec spec;
@@ -35,6 +38,16 @@ class PlateCanvas extends StatefulWidget {
   final Future<String?> Function(PlateAlphabet alphabet)? onChooseCharacter;
   final ValueChanged<int?>? onActiveIndexChanged;
   final PlateInputController? controller;
+
+  /// The rule this plate is judged against. Never prevents input; see
+  /// [autoValidate] for when it is consulted.
+  final PlateValidator? validator;
+
+  /// When true, the canvas validates after every committed value and paints
+  /// the invalid state itself. When false (the default), [validator] is
+  /// consulted only when the host asks — read
+  /// [PlateInputController.validation] and decide your own timing.
+  final bool autoValidate;
 
   @override
   State<PlateCanvas> createState() => _PlateCanvasState();
@@ -65,13 +78,16 @@ class _PlateCanvasState extends State<PlateCanvas> {
       _machine.dispose();
       _installMachine();
     } else if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.installValidation(null);
       oldWidget.controller?.detach(_machine);
       widget.controller?.attach(_machine);
+      widget.controller?.installValidation(_probeValidation);
     }
   }
 
   @override
   void dispose() {
+    widget.controller?.installValidation(null);
     widget.controller?.detach(_machine);
     _machine.dispose();
     super.dispose();
@@ -93,6 +109,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     )..onSheetRequested = _openPicker;
     _machine = machine;
     widget.controller?.attach(machine);
+    widget.controller?.installValidation(_probeValidation);
     if (machine.activeIndex != null) {
       // The machine's seeded slot (see its constructor) is announced from here,
       // after the frame, so listeners are attached; a later focus change
@@ -108,6 +125,36 @@ class _PlateCanvasState extends State<PlateCanvas> {
   void _reportActiveIndex(int? index) {
     widget.onActiveIndexChanged?.call(index);
     widget.controller?.notifyActiveSlotChanged();
+  }
+
+  /// The plate as it stands, for a validator to judge. [values] is passed in
+  /// rather than read here so the auto-validating path can take it from the
+  /// value it is already subscribed to.
+  PlateEntry _entryFor(List<String?> values) => PlateEntry(
+        spec: widget.spec,
+        values: values,
+        activeIndex: _machine.activeIndex,
+      );
+
+  /// Backs [PlateInputController.validation]. Null when there is no validator,
+  /// which is what makes that getter null for a host that set none.
+  PlateValidation? _probeValidation() {
+    final validator = widget.validator;
+    if (validator == null) return null;
+    return validator.validate(
+      _entryFor(context.read<PlateCardBloc>().state.plateNumber.values),
+    );
+  }
+
+  /// Publishes an auto-validated verdict to the host's controller. Deferred to
+  /// after the frame because it runs from a build (see [_ValidationBinding])
+  /// and notifying a listener that calls `setState` mid-build is an error.
+  void _publishVerdict(PlateValidation verdict) {
+    final controller = widget.controller;
+    if (controller == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) controller.reportValidation(verdict);
+    });
   }
 
   PlateInputSource _resolveInputSource() {
@@ -174,17 +221,22 @@ class _PlateCanvasState extends State<PlateCanvas> {
     // change one character. The frame and each slot now subscribe to just the
     // part they render (see [_FrameBinding] and [_SlotBinding]), so a keystroke
     // rebuilds one slot, and the plate's static furniture is built once.
+    //
+    // [_ValidationBinding] is the one exception, and only under autoValidate:
+    // it watches the value through a verdict, so it rebuilds on a flip between
+    // valid and invalid rather than on a keystroke.
 
     // The rounded white face, so content (e.g. the blue country panel) is
     // clipped to the same corner radius the frame paints instead of poking
     // square corners into the rounded plate. Kept in sync with PlateFrame's
     // own geometry: border thickness and inner radius both derive from the
-    // plate height.
+    // plate height. Taken off the base theme: the alert only recolours the
+    // underlines, so geometry cannot shift when a verdict flips.
     final border = theme.borderWidthRatio * spec.canvasHeight;
     final outerRadius = theme.plateRadiusRatio * spec.canvasHeight;
     final innerRadius = (outerRadius - border).clamp(0.0, outerRadius);
 
-    final fitted = FittedBox(
+    Widget buildFace(PlateTheme theme) => FittedBox(
       fit: BoxFit.contain,
       child: SizedBox(
         width: spec.canvasWidth,
@@ -258,7 +310,52 @@ class _PlateCanvasState extends State<PlateCanvas> {
       ),
     );
 
-    return Theme(data: selectionTheme, child: fitted);
+    // The alert. With autoValidate on, the canvas judges the plate itself and
+    // paints the completed-field underline in the theme's alert colour — that,
+    // and nothing else: no dialog, no exception, and above all no rejected
+    // keystroke. With it off the validator is never called from here; a host
+    // that wants its own timing reads PlateInputController.validation.
+    final validator = widget.validator;
+    final Widget face = widget.autoValidate && validator != null
+        ? _ValidationBinding(
+            validate: (values) => validator.validate(_entryFor(values)),
+            onVerdict: _publishVerdict,
+            builder: (verdict) => buildFace(
+              verdict.isValid
+                  ? theme
+                  : theme.copyWith(activeColor: theme.alertColor),
+            ),
+          )
+        : buildFace(theme);
+
+    return Theme(data: selectionTheme, child: face);
+  }
+}
+
+/// The plate's face, subscribed to the verdict on the typed value rather than
+/// to the value itself.
+///
+/// `select` returns a [PlateValidation], which compares by reason, so the
+/// subtree rebuilds when the plate crosses between valid and invalid and not
+/// once per keystroke — the property the showcase used to maintain by hand.
+class _ValidationBinding extends StatelessWidget {
+  const _ValidationBinding({
+    required this.validate,
+    required this.onVerdict,
+    required this.builder,
+  });
+
+  final PlateValidation Function(List<String?> values) validate;
+  final ValueChanged<PlateValidation> onVerdict;
+  final Widget Function(PlateValidation verdict) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final verdict = context.select<PlateCardBloc, PlateValidation>(
+      (b) => validate(b.state.plateNumber.values),
+    );
+    onVerdict(verdict);
+    return builder(verdict);
   }
 }
 

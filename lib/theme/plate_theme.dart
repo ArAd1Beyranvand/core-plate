@@ -21,6 +21,7 @@ class PlateTheme {
     required this.plateRadiusRatio,
     required this.activeColor,
     required this.inactiveColor,
+    this.alertColor = const Color(0xFFF87171),
   });
 
   /// Plate background (the white field digits sit on).
@@ -48,6 +49,11 @@ class PlateTheme {
   /// Outline colour for an empty/in-progress input field. Input-mode only.
   final Color inactiveColor;
 
+  /// Outline colour a [PlateCanvas] paints its completed fields when it is
+  /// validating (`autoValidate: true`) and the plate is invalid. Input-mode
+  /// only; an alert colour is theme data, not a widget literal.
+  final Color alertColor;
+
   /// Standard Iranian plate theme, sampled from real plate photos.
   factory PlateTheme.standard() {
     return const PlateTheme(
@@ -71,6 +77,7 @@ class PlateTheme {
     double? plateRadiusRatio,
     Color? activeColor,
     Color? inactiveColor,
+    Color? alertColor,
   }) {
     return PlateTheme(
       plateBackground: plateBackground ?? this.plateBackground,
@@ -81,6 +88,7 @@ class PlateTheme {
       plateRadiusRatio: plateRadiusRatio ?? this.plateRadiusRatio,
       activeColor: activeColor ?? this.activeColor,
       inactiveColor: inactiveColor ?? this.inactiveColor,
+      alertColor: alertColor ?? this.alertColor,
     );
   }
 
@@ -102,6 +110,7 @@ class PlateTheme {
   List<Object?> get _props => [
         plateBackground, plateBorder, ink, dividerColor,
         borderWidthRatio, plateRadiusRatio, activeColor, inactiveColor,
+        alertColor,
       ];
 
   @override
