@@ -6,6 +6,7 @@ import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../model/plate_alphabet.dart';
 import '../model/plate_input_source.dart';
+import '../model/slot_behavior.dart';
 import '../bloc/plate_card_bloc.dart';
 import '../theme/plate_theme.dart';
 import 'plate_slot_item.dart';
@@ -20,7 +21,6 @@ class PlateCanvas extends StatefulWidget {
     required this.spec,
     this.mode = PlateMode.input,
     this.theme,
-    this.letterInputMode,
     this.inputSource,
     this.onChooseCharacter,
     this.onActiveIndexChanged,
@@ -30,8 +30,6 @@ class PlateCanvas extends StatefulWidget {
   final PlateSpec spec;
   final PlateMode mode;
   final PlateTheme? theme;
-  @Deprecated('Use inputSource')
-  final LetterInputMode? letterInputMode;
   final PlateInputSource? inputSource;
   final Future<String?> Function(PlateAlphabet alphabet)? onChooseCharacter;
   final ValueChanged<int?>? onActiveIndexChanged;
@@ -49,14 +47,12 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
   final List<TextEditingController?> _controllers = [];
 
   int? _activeIndex;
-  late LetterInputMode _letterInputMode;
   late PlateInputSource _inputSource;
 
   @override
   void initState() {
     super.initState();
     assert(debugValidateSpec(widget.spec));
-    _letterInputMode = widget.letterInputMode ?? defaultLetterInputMode();
     _inputSource = _resolveInputSource();
     for (var i = 0; i < widget.spec.slots.length; i++) {
       _focusNodes.add(FocusNode()..addListener(_handleFocusChange));
@@ -106,10 +102,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
   }
 
   PlateInputSource _resolveInputSource() {
-    return widget.inputSource ??
-        (widget.letterInputMode != null
-            ? inputSourceFromLetterMode(widget.letterInputMode!)
-            : defaultInputSource());
+    return widget.inputSource ?? defaultInputSource();
   }
 
   void _handleFocusChange() {
@@ -133,9 +126,12 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
       _focusNodes[index].unfocus();
       return;
     }
-    final nextSlot = widget.spec.slots[next];
-    if (nextSlot.alphabet.input == AlphabetInput.chosen &&
-        _inputSource == PlateInputSource.system) {
+    final nextBehavior = resolveSlotBehavior(
+      mode: PlateMode.input,
+      input: widget.spec.slots[next].alphabet.input,
+      source: _inputSource,
+    );
+    if (nextBehavior == SlotBehavior.sheet) {
       _openPicker(next);
     } else {
       _focusNodes[next].requestFocus();
@@ -207,12 +203,35 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     if (spec.borderWidthRatioOverride != null) {
       theme = theme.copyWith(borderWidthRatio: spec.borderWidthRatioOverride!);
     }
-    _letterInputMode = widget.letterInputMode ?? defaultLetterInputMode();
     // PlateMode.display renders inert, picker-like slots regardless of the
     // configured source, so force [PlateInputSource.system] there.
     _inputSource = widget.mode == PlateMode.input
         ? _resolveInputSource()
         : PlateInputSource.system;
+
+    // Resolve each slot's behaviour once, here, from the three things that
+    // decide it. Every gesture and rendering branch downstream is a switch on
+    // this value — nothing re-derives it.
+    final behaviors = <SlotBehavior>[
+      for (final s in spec.slots)
+        resolveSlotBehavior(
+          mode: widget.mode,
+          input: s.alphabet.input,
+          source: _inputSource,
+        ),
+    ];
+
+    // The plate's face is always white, so its cursor and text-selection
+    // colours are pinned to a light Material theme regardless of the host
+    // app's brightness. Built once per canvas build and scoped over the whole
+    // slot list, instead of each typed slot constructing its own.
+    final selectionTheme = ThemeData.light().copyWith(
+      textSelectionTheme: TextSelectionThemeData(
+        selectionColor: theme.activeColor.withValues(alpha: 0.3),
+        cursorColor: theme.activeColor,
+        selectionHandleColor: theme.activeColor,
+      ),
+    );
 
     // NOTE: this build deliberately does NOT watch the plate value.
     //
@@ -284,22 +303,14 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                             child: _SlotBinding(
                               index: i,
                               slot: spec.slots[i],
-                              mode: widget.mode,
+                              behavior: behaviors[i],
                               theme: theme,
                               controller: _controllers[i],
                               focusNode: _focusNodes[i],
-                              letterInputMode: widget.mode == PlateMode.input
-                                  ? _letterInputMode
-                                  : LetterInputMode.picker,
-                              inputSource: _inputSource,
                               onCompleted: widget.mode == PlateMode.input
                                   ? () => _advance(i)
                                   : null,
-                              onPressed:
-                                  (widget.mode == PlateMode.input &&
-                                      spec.slots[i].alphabet.input ==
-                                          AlphabetInput.chosen &&
-                                      _inputSource == PlateInputSource.system)
+                              onPressed: behaviors[i] == SlotBehavior.sheet
                                   ? () => _openPicker(i)
                                   : null,
                             ),
@@ -315,7 +326,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
       ),
     );
 
-    return fitted;
+    return Theme(data: selectionTheme, child: fitted);
   }
 }
 
@@ -366,26 +377,22 @@ class _SlotBinding extends StatelessWidget {
   const _SlotBinding({
     required this.index,
     required this.slot,
-    required this.mode,
+    required this.behavior,
     required this.theme,
     required this.controller,
     required this.focusNode,
-    required this.letterInputMode,
-    required this.inputSource,
     required this.onCompleted,
     required this.onPressed,
   });
 
   final int index;
   final PlateSlot slot;
-  final PlateMode mode;
+  final SlotBehavior behavior;
   final PlateTheme theme;
 
   /// Backs the slot's [TextField]; null for chosen slots.
   final TextEditingController? controller;
   final FocusNode focusNode;
-  final LetterInputMode letterInputMode;
-  final PlateInputSource inputSource;
   final VoidCallback? onCompleted;
   final VoidCallback? onPressed;
 
@@ -413,13 +420,11 @@ class _SlotBinding extends StatelessWidget {
     final bloc = context.read<PlateCardBloc>();
     return PlateSlotItem(
       slot: slot,
-      mode: mode,
+      behavior: behavior,
       theme: theme,
       value: value,
       controller: field,
       focusNode: focusNode,
-      letterInputMode: letterInputMode,
-      inputSource: inputSource,
       onChanged: (v) => bloc.add(ValueIsChanged(index: index, value: v)),
       onCompleted: onCompleted,
       onPressed: onPressed,

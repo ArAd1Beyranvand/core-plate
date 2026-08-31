@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import 'plate_number.dart';
-
 /// How characters get into a plate slot.
 enum PlateInputSource {
   /// Bring up the platform keyboard (the IME) to enter this slot.
@@ -31,20 +29,5 @@ PlateInputSource defaultInputSource() {
       return PlateInputSource.hardwareKeyboard;
     default:
       return PlateInputSource.system;
-  }
-}
-
-/// Maps the deprecated [LetterInputMode] onto its [PlateInputSource]
-/// equivalent: [LetterInputMode.picker] to [PlateInputSource.system],
-/// [LetterInputMode.keyboard] to [PlateInputSource.hardwareKeyboard], and
-/// [LetterInputMode.hostKeypad] to [PlateInputSource.host].
-PlateInputSource inputSourceFromLetterMode(LetterInputMode m) {
-  switch (m) {
-    case LetterInputMode.picker:
-      return PlateInputSource.system;
-    case LetterInputMode.keyboard:
-      return PlateInputSource.hardwareKeyboard;
-    case LetterInputMode.hostKeypad:
-      return PlateInputSource.host;
   }
 }

@@ -4,6 +4,7 @@ export 'model/plate_number.dart';
 export 'model/plate_input_source.dart';
 export 'model/plate_country.dart';
 export 'model/plate_alphabet.dart';
+export 'model/slot_behavior.dart';
 export 'model/plate_spec.dart';
 export 'bloc/plate_card_bloc.dart';
 export 'theme/plate_theme.dart';
