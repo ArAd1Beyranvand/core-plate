@@ -1,5 +1,3 @@
-library plate_number;
-
 export 'model/plate_number.dart';
 export 'model/plate_input_source.dart';
 export 'model/plate_country.dart';
@@ -17,3 +15,4 @@ export 'widgets/plate_keypad.dart';
 export 'widgets/plate_slot_item.dart';
 export 'validators/german_plate_validator.dart';
 export 'input/plate_input_controller.dart';
+export 'input/plate_input_machine.dart';

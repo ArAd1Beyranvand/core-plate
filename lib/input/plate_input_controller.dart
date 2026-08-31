@@ -2,10 +2,11 @@ import 'package:flutter/foundation.dart';
 
 import '../model/plate_spec.dart';
 
-/// Implemented by PlateCanvas's State. Not for app code to implement.
+/// What a [PlateInputController] drives: one plate's focus and navigation.
 ///
-/// The controller talks to the attached canvas through this interface because
-/// the canvas's State is private and cannot be referenced by type from here.
+/// Implemented by [PlateInputMachine], which is the object a [PlateCanvas]
+/// attaches on the host's behalf — and a perfectly ordinary object for a host
+/// to hold and attach itself.
 abstract class PlateInputTarget {
   int? get activeIndex;
   void submitCharacter(String character);
@@ -34,7 +35,8 @@ class PlateInputController extends ChangeNotifier {
   ///
   /// Guarded so that when a PlateCanvas is rebuilt into a new element — the new
   /// state attaches before the old one disposes — the old state's detach does
-  /// not null out the live target.
+  /// not null out the live target. Still load-bearing after a spec swap, which
+  /// retires one machine and attaches its replacement.
   void detach(PlateInputTarget target) {
     if (identical(_target, target)) {
       _target = null;

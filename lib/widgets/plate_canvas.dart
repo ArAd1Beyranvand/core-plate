@@ -14,6 +14,7 @@ import 'plate_frame.dart';
 import 'country_panel.dart';
 import 'plate_character_picker.dart';
 import '../input/plate_input_controller.dart';
+import '../input/plate_input_machine.dart';
 
 class PlateCanvas extends StatefulWidget {
   const PlateCanvas({
@@ -39,105 +40,83 @@ class PlateCanvas extends StatefulWidget {
   State<PlateCanvas> createState() => _PlateCanvasState();
 }
 
-class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
-  // Indexed by slot position: slot identity *is* list order, so a dense list
-  // says that in the type instead of leaving it to convention. Null controller
-  // entries are chosen-alphabet slots, which have no text field.
-  final List<FocusNode> _focusNodes = [];
-  final List<TextEditingController?> _controllers = [];
-
-  int? _activeIndex;
-  late PlateInputSource _inputSource;
+class _PlateCanvasState extends State<PlateCanvas> {
+  /// Focus, active-slot tracking and navigation for [PlateCanvas.spec]. Rebuilt
+  /// whenever that spec changes; see [_installMachine].
+  late PlateInputMachine _machine;
 
   @override
   void initState() {
     super.initState();
-    assert(debugValidateSpec(widget.spec));
-    _inputSource = _resolveInputSource();
-    for (var i = 0; i < widget.spec.slots.length; i++) {
-      _focusNodes.add(FocusNode()..addListener(_handleFocusChange));
-      _controllers.add(
-        widget.spec.slots[i].alphabet.input == AlphabetInput.typed
-            ? TextEditingController()
-            : null,
-      );
-    }
-    // Seed the active slot to the first one before any focus lands, so a host
-    // that renders its own keypad off [activeIndex] (e.g. picking a digit vs.
-    // letters pad from the slot's alphabet) starts on the alphabet the first
-    // slot actually takes — instead of defaulting to one type and visibly
-    // switching the instant focus reaches slot 0. Reported after the first
-    // frame so listeners are attached; a later focus change overrides it.
-    _activeIndex = widget.spec.slots.isNotEmpty ? 0 : null;
-    widget.controller?.attach(this);
-    if (_activeIndex != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        widget.onActiveIndexChanged?.call(_activeIndex);
-        widget.controller?.notifyActiveSlotChanged();
-      });
-    }
+    _installMachine();
   }
 
   @override
   void didUpdateWidget(PlateCanvas oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.controller != oldWidget.controller) {
-      oldWidget.controller?.detach(this);
-      widget.controller?.attach(this);
+    // This used to react to the controller alone, on the assumption that
+    // Flutter hands a spec change a fresh State. It does not, when the host
+    // swaps `spec:` on a canvas that keeps its type and position in the tree —
+    // an ordinary thing for a host to do — and the machine then holds the
+    // previous plate's nodes: wrong slot, or off the end of the list outright.
+    if (widget.spec.id != oldWidget.spec.id) {
+      oldWidget.controller?.detach(_machine);
+      widget.controller?.detach(_machine);
+      _machine.dispose();
+      _installMachine();
+    } else if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.detach(_machine);
+      widget.controller?.attach(_machine);
     }
   }
 
   @override
   void dispose() {
-    widget.controller?.detach(this);
-    for (final c in _controllers) {
-      c?.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.removeListener(_handleFocusChange);
-      f.dispose();
-    }
+    widget.controller?.detach(_machine);
+    _machine.dispose();
     super.dispose();
+  }
+
+  /// Builds the machine for the current spec, hands the host's controller to
+  /// it, and reports the seeded active slot. Everything a fresh mount does —
+  /// which is exactly what a spec change needs too.
+  void _installMachine() {
+    assert(debugValidateSpec(widget.spec));
+    final machine = PlateInputMachine(
+      spec: widget.spec,
+      inputSource: _resolveInputSource(),
+      readValues: () => context.read<PlateCardBloc>().state.plateNumber.values,
+      commit: (index, value) => context.read<PlateCardBloc>().add(
+        ValueIsChanged(index: index, value: value),
+      ),
+      onActiveIndexChanged: _reportActiveIndex,
+    )..onSheetRequested = _openPicker;
+    _machine = machine;
+    widget.controller?.attach(machine);
+    if (machine.activeIndex != null) {
+      // The machine's seeded slot (see its constructor) is announced from here,
+      // after the frame, so listeners are attached; a later focus change
+      // overrides it. Guarded on the machine still being the current one, since
+      // another spec change can land before the callback runs.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !identical(_machine, machine)) return;
+        _reportActiveIndex(machine.activeIndex);
+      });
+    }
+  }
+
+  void _reportActiveIndex(int? index) {
+    widget.onActiveIndexChanged?.call(index);
+    widget.controller?.notifyActiveSlotChanged();
   }
 
   PlateInputSource _resolveInputSource() {
     return widget.inputSource ?? defaultInputSource();
   }
 
-  void _handleFocusChange() {
-    int? active;
-    for (var i = 0; i < _focusNodes.length; i++) {
-      if (_focusNodes[i].hasFocus) {
-        active = i;
-        break;
-      }
-    }
-    if (active != _activeIndex) {
-      _activeIndex = active;
-      widget.onActiveIndexChanged?.call(active);
-      widget.controller?.notifyActiveSlotChanged();
-    }
-  }
-
-  void _advance(int index) {
-    final next = widget.spec.nextIndex(index);
-    if (next == null) {
-      _focusNodes[index].unfocus();
-      return;
-    }
-    final nextBehavior = resolveSlotBehavior(
-      mode: PlateMode.input,
-      input: widget.spec.slots[next].alphabet.input,
-      source: _inputSource,
-    );
-    if (nextBehavior == SlotBehavior.sheet) {
-      _openPicker(next);
-    } else {
-      _focusNodes[next].requestFocus();
-    }
-  }
-
+  /// Presents the character picker for a chosen slot. Stays here rather than in
+  /// the machine: it needs a [BuildContext] and a modal route, and the machine
+  /// never presents UI.
   Future<void> _openPicker(int index) async {
     final slot = widget.spec.slots[index];
     final bloc = context.read<PlateCardBloc>();
@@ -147,53 +126,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     if (chosen == null) return;
     bloc.add(ValueIsChanged(index: index, value: chosen));
     final next = widget.spec.nextIndex(index);
-    if (next != null) _focusNodes[next].requestFocus();
-  }
-
-  @override
-  int? get activeIndex => _activeIndex;
-
-  @override
-  void submitCharacter(String c) {
-    final index = _activeIndex;
-    if (index == null || !widget.spec.slots[index].alphabet.accepts(c)) return;
-    context.read<PlateCardBloc>().add(ValueIsChanged(index: index, value: c));
-    _advance(index);
-  }
-
-  @override
-  void backspaceCharacter() {
-    final index = _activeIndex;
-    if (index == null) return;
-    final values = context.read<PlateCardBloc>().state.plateNumber.values;
-    final current = values[index];
-    final target = (current == null || current.isEmpty)
-        ? widget.spec.previousIndex(index)
-        : index;
-    if (target == null) return;
-    context.read<PlateCardBloc>().add(
-      ValueIsChanged(index: target, value: ''),
-    );
-    _focusNodes[target].requestFocus();
-  }
-
-  @override
-  void focusFirstEmptySlot() {
-    final values = context.read<PlateCardBloc>().state.plateNumber.values;
-    for (var i = 0; i < widget.spec.slots.length; i++) {
-      final v = values[i];
-      if (v == null || v.isEmpty) {
-        _focusNodes[i].requestFocus();
-        return;
-      }
-    }
-    _focusNodes.first.requestFocus();
-  }
-
-  @override
-  void focusSlot(int index) {
-    if (index < 0 || index >= _focusNodes.length) return;
-    _focusNodes[index].requestFocus();
+    if (next != null) _machine.focusSlot(next);
   }
 
   @override
@@ -205,7 +138,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
     }
     // PlateMode.display renders inert, picker-like slots regardless of the
     // configured source, so force [PlateInputSource.system] there.
-    _inputSource = widget.mode == PlateMode.input
+    _machine.inputSource = widget.mode == PlateMode.input
         ? _resolveInputSource()
         : PlateInputSource.system;
 
@@ -217,7 +150,7 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
         resolveSlotBehavior(
           mode: widget.mode,
           input: s.alphabet.input,
-          source: _inputSource,
+          source: _machine.inputSource,
         ),
     ];
 
@@ -305,10 +238,9 @@ class _PlateCanvasState extends State<PlateCanvas> implements PlateInputTarget {
                               slot: spec.slots[i],
                               behavior: behaviors[i],
                               theme: theme,
-                              controller: _controllers[i],
-                              focusNode: _focusNodes[i],
+                              machine: _machine,
                               onCompleted: widget.mode == PlateMode.input
-                                  ? () => _advance(i)
+                                  ? () => _machine.advanceFrom(i)
                                   : null,
                               onPressed: behaviors[i] == SlotBehavior.sheet
                                   ? () => _openPicker(i)
@@ -379,8 +311,7 @@ class _SlotBinding extends StatelessWidget {
     required this.slot,
     required this.behavior,
     required this.theme,
-    required this.controller,
-    required this.focusNode,
+    required this.machine,
     required this.onCompleted,
     required this.onPressed,
   });
@@ -390,9 +321,9 @@ class _SlotBinding extends StatelessWidget {
   final SlotBehavior behavior;
   final PlateTheme theme;
 
-  /// Backs the slot's [TextField]; null for chosen slots.
-  final TextEditingController? controller;
-  final FocusNode focusNode;
+  /// Owns this slot's focus node and text controller. Read here rather than
+  /// passed in, so a new machine (after a spec change) reaches every slot.
+  final PlateInputMachine machine;
   final VoidCallback? onCompleted;
   final VoidCallback? onPressed;
 
@@ -406,16 +337,7 @@ class _SlotBinding extends StatelessWidget {
     // Keep the field's text in step with the bloc, as the canvas used to do for
     // every slot at once. This runs before this slot's own TextField builds in
     // the same frame, so notifying its controller here is safe.
-    final field = controller;
-    if (field != null) {
-      final text = value ?? '';
-      if (field.text != text) {
-        field.value = TextEditingValue(
-          text: text,
-          selection: TextSelection.collapsed(offset: text.length),
-        );
-      }
-    }
+    machine.syncController(index, value);
 
     final bloc = context.read<PlateCardBloc>();
     return PlateSlotItem(
@@ -423,8 +345,8 @@ class _SlotBinding extends StatelessWidget {
       behavior: behavior,
       theme: theme,
       value: value,
-      controller: field,
-      focusNode: focusNode,
+      controller: machine.controllerAt(index),
+      focusNode: machine.focusNodeAt(index),
       onChanged: (v) => bloc.add(ValueIsChanged(index: index, value: v)),
       onCompleted: onCompleted,
       onPressed: onPressed,
