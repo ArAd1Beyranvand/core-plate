@@ -10,17 +10,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_bloc: ^8.1.4
-  bloc_concurrency: ^0.2.2
-  bloc: ^8.1.4
+  flutter_bloc: ^9.1.1
+  bloc_concurrency: ^0.3.0
+  bloc: ^9.2.1
   country_flags: ^4.1.2
   flutter_svg: ^2.0.0
+  args: ^2.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  bloc_test: ^9.1.7
-  flutter_lints: ^3.0.0
+  bloc_test: ^10.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   assets:
