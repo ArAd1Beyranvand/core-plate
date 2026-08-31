@@ -77,7 +77,7 @@ Each is a product decision, asked by exactly one phase, and none of them default
 | question | asked by | `PLAN.md` |
 |---|---|---|
 | does `PlateCharacterPicker` move into `plate_keypad`? — **yes** (2026-08-31) | P7 | §6.7 |
-| does `docs/districts.json` back the German district check? | P8 | §6.8 |
+| does `docs/districts.json` back the German district check? — **no, deleted** (2026-08-31) | P8 | §6.8 |
 | publish to pub.dev, or path-only? | P9 | §6.6 |
 
 Write each answer into `PLAN.md` §6 when it is given. A plan that ends with open questions is a

@@ -7,9 +7,11 @@
 ///
 /// What this package deliberately does not do:
 ///
-/// - **It does not know any country.** The plates and alphabets under
-///   `src/countries/` are data that happens to ship here for now; core names
-///   no country in its own code paths.
+/// - **It does not know any country.** Not one file here names a country, and
+///   it ships no assets. Plates, alphabets and flags are data, and each
+///   country's live in that country's own package. `grep` over `lib/` is the
+///   standing proof, so keep it that way: a country name in this package, even
+///   in a comment, is the bug.
 /// - **It does not police input.** A [PlateValidator] answers "is this plate
 ///   valid?" and never bars a keystroke.
 /// - **It does not own your keyboard.** [PlateInputSource] lets the host
@@ -98,10 +100,8 @@ export 'src/bloc/plate_card_bloc.dart';
 
 export 'src/validators/plate_validator.dart';
 
-// ---------------------------------------------------------------------------
-// Countries — data, not code. Leaves for its own package in P8.
-// ---------------------------------------------------------------------------
-
-export 'src/countries/iran.dart';
-export 'src/countries/germany.dart';
-export 'src/countries/german_plate_validator.dart';
+// The country constants, alphabets, specs, flags and country-specific
+// validators this file used to re-export left for one package each in P8; see
+// CHANGELOG.md for the import a consumer switches to. They are deliberately
+// not named here — see the note above. A host depends on the countries it
+// actually draws, and on none of them to compile.

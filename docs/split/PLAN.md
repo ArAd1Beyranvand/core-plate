@@ -300,12 +300,16 @@ Still open, and each is a question a phase must **ask, not assume**:
    last `package:flutter/cupertino.dart` import. `PlateCanvas.onChooseCharacter` is now
    `required` — the accepted API break; core ships no built-in chooser, and a host with
    `chosen`-alphabet slots passes `PlateCharacterPicker.show` from `plate_keypad`.
-8. **Does `docs/districts.json` back the German district check?** (P8.) ~150 real
-   `Unterscheidungszeichen` codes sit in the repo, read by nothing; the validator's regex
-   accepts any 1–3 Latin letters, so `QQ` passes today. Wiring the real list in is a product
-   decision — stricter validation, a data file to maintain — not a refactor one. It rides
-   along with P8 because that is the phase that already moves the validator, but it is asked
-   separately.
+8. **Does `docs/districts.json` back the German district check?** (P8.)
+   **Answered 2026-08-31: no — the file is deleted.** ~150 real
+   `Unterscheidungszeichen` codes sat in the repo, read by nothing; the validator's regex
+   accepts any 1–3 Latin letters, so `QQ` passed. Wiring the real list in was a product
+   decision — stricter validation, a data file to maintain — not a refactor one, and the
+   answer is that `germany_plate` does not take on a promise to keep a district list current.
+   The permissive regex stays, which is what the validator's doc comment has always claimed
+   ("not obviously forbidden", not an official guarantee); that doc now says explicitly that
+   the district is checked for shape only, and why. A consumer who wants strict district
+   validation composes their own `PlateValidator`. The codes remain in git history.
 
 Also unresolved and deliberately left alone: `docs/forbidden.json` duplicates
 `_forbiddenLetterPairs` / `_forbiddenNumbers` by hand. P2 resolves it while it is already in

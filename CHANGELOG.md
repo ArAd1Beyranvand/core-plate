@@ -1,5 +1,31 @@
 ## Unreleased
 
+### P8 — countries extracted to their own packages
+
+- **Breaking: the countries have left core.** `IranCountry`, `PersianAlphabets`
+  and `IranPlates` are **removed** from `plate_number` and now live in the
+  sibling package `iran_plate` (`path: ../iran-plate`); `GermanyCountry`,
+  `GermanPlates` and `GermanPlateValidator` live in `germany_plate`
+  (`path: ../germany-plate`). Switch
+  `import 'package:plate_number/plate_number.dart';` to
+  `import 'package:iran_plate/iran_plate.dart';` or
+  `import 'package:germany_plate/germany_plate.dart';` for those names; both
+  packages depend on `plate_number`, so the imports coexist. Depend only on the
+  countries you actually draw.
+- **Breaking: core ships no assets.** The `flutter.assets:` block is gone. The
+  two flag SVGs and the two German stickers moved into the packages that name
+  them, and the `package:` argument of every `SvgPlateAsset` / `AssetImage`
+  literal moved with them in the same commit — an asset reference resolves
+  against the bundle of the package that *declares* the file, so a literal and
+  its declaration can never be in different packages, even briefly.
+- `flutter_svg` remains a dependency: `PlateFlag` renders whatever
+  `SvgPlateAsset` a country hands it.
+- `docs/districts.json` deleted — see `docs/split/PLAN.md` §6.8. It was read by
+  no code and declared in no pubspec, and `germany_plate` chose not to take on
+  keeping a district list current.
+- This is the claim the whole split was built to make:
+  `grep -rniE "iran|german|persian" plate-core/lib/` returns nothing.
+
 ### P7 — keypad extracted to its own package
 
 - **Breaking: the on-screen keypad has left core.** `PlateKeypad`,

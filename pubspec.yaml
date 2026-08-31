@@ -19,9 +19,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
-flutter:
-  assets:
-    - assets/de_inspection_sticker.png
-    - assets/de_state_seal.png
-    - assets/flags/Flag_of_Iran.svg
-    - assets/flags/Flag_of_Germany.svg
+# No `flutter:` section: as of P8 the core ships no assets at all. Every image
+# on a plate face belongs to the country package that names it (`iran_plate`,
+# `germany_plate`), because an asset reference resolves against the bundle of
+# the package that declares it. `flutter_svg` stays a dependency — `PlateFlag`
+# renders whatever `SvgPlateAsset` a country hands it.
