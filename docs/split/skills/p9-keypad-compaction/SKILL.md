@@ -9,12 +9,15 @@ Follow `CLAUDE.md` working style. Requires **P8** committed (it removes the Pers
 this phase would otherwise preserve). Independent of everything else — touches
 `lib/widgets/plate_keypad.dart` and nothing else in `lib/`.
 
-Finish analyzer-clean, tests green, committed; report diffstat and hashes only.
+This project does not use automated tests — do not write or update anything under `test/`,
+and do not run `flutter test`. Finish analyzer-clean, committed; report diffstat and hashes
+only.
 
 ## Why
 
-`plate_keypad.dart` is 408 lines, the largest widget file in the library, and it builds the
-same thing twice.
+`plate_keypad.dart` is **458 lines** (it was 408 when this phase was first written; the
+performance pass added `highlightedKeyListenable` and its plumbing), the largest widget file in
+the library, and it builds the same thing twice.
 
 The digit pad walks a hardcoded `_rows` (`['1','2','3'] … ['','0','⌫']`) at 3 columns. The
 letters pad derives `columns = sqrt(n).ceil()` from the alphabet and walks that. Both then run
@@ -24,6 +27,26 @@ are the same loop.
 
 `PlateKeypadTheme.copyWith` is 18 lines and **is never called** — grep both repos before
 deleting to confirm it is still true.
+
+### What the performance pass already did here — do not undo it
+
+Three things in this file post-date the original phase text:
+
+- `_slide` is now a `late final` field built once, not a fresh `Tween` + `CurvedAnimation` per
+  `build`. Keep it that way.
+- `PlateKeypad` takes both `highlightedKey` (a plain `String?`) and `highlightedKeyListenable`
+  (a `ValueListenable<String?>`). When the listenable is supplied it wins and `highlightedKey`
+  is ignored; each `_Key` subscribes for itself and decides its own lit state, so the grid's
+  structure is built once and a press-flash rebuilds one key. The plain field stays for callers
+  that do not flash rapidly.
+- `_Key` therefore carries both `highlighted` (a bool) and `highlightListenable`, and every call
+  site computes `highlighted: widget.highlightedKeyListenable == null && key == widget.highlightedKey`.
+
+`_KeyGrid` must carry **both** inputs through unchanged — a grid that accepts only
+`highlightedKey` would silently re-collapse the pad to one rebuild per flash, which is the
+regression this file was profiled to remove. Better: give `_KeyGrid` the same pair and let it
+pass them to `_Key` exactly as the two loops do today, rather than inventing a third
+representation.
 
 ## Do
 
@@ -44,7 +67,8 @@ class _KeyGrid extends StatelessWidget {
     required this.columns,
     required this.rowHeight,
     required this.direction,
-    required this.highlightedKey,
+    required this.highlightedKey,         // plain fallback; ignored when the listenable is set
+    required this.highlightListenable,    // ValueListenable<String?>?, the flash path
     required this.isEnabled,   // bool Function(String key)
     required this.onKey,
     required this.theme,
@@ -98,14 +122,34 @@ These are tuned behaviour, not incidental complexity.
 Do not move `PlateKeypad` into its own package yet. That is P12, after core exists — moving it
 now means moving it twice.
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — here that is the whole point of the phase: `_buildDigitKey` and `_buildLettersLayer` are the two widget functions left in the library, and `_KeyGrid` below is their replacement. `_buildLettersLayer` also holds state-dependent layout maths, so hoist that into `_KeyGrid`'s own `build` rather than leaving a function that computes and a class that renders.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
 
-The keypad has no unit tests, so verification is visual and must be done at both sizes:
+(Do not run `flutter test` — this project does not use automated tests.)
+
+This project has no automated tests, so verification is visual and must be done at both sizes:
 
 1. Tablet demo (full pad, `compact: false`): digit grid geometry unchanged, letters pad slides
    up flush with the digit pad's bottom edge, RTL letter order preserved for Persian and LTR
@@ -113,8 +157,11 @@ The keypad has no unit tests, so verification is visual and must be done at both
 2. Mobile demo (`compact: true`): 44px rows, same flush behaviour.
 3. Type `8` in the German serial and confirm the second `8` greys out **without the grid
    reflowing** — that is the invariant most at risk in this phase.
-4. Backspace key still highlights when the typist presses it.
+4. Backspace key still highlights when the typist presses it — and, with "Highlight repaints"
+   on, that flash must repaint the one key, not the grid. The listenable path is the thing most
+   easily lost in this refactor and the thing `flutter analyze` will not notice.
 
 Capture before/after screenshots of both pads and attach them to the commit.
 
-Expected: 408 → ~315 lines, ~90 net removed, no behaviour change.
+Expected: 458 → ~365 lines, ~90 net removed, no behaviour change, and the two remaining
+widget functions in the library gone.

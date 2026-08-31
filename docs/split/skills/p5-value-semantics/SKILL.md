@@ -5,27 +5,33 @@ description: "Refactor phase P5 of the plate_number split — put equality where
 
 # P5 — Value semantics
 
-Follow `CLAUDE.md` working style. Requires **P4** committed. Finish analyzer-clean, tests
-green, committed; report diffstat and hashes only.
+Follow `CLAUDE.md` working style. Requires **P4** committed. This project does not use
+automated tests — do not write or update anything under `test/`, and do not run
+`flutter test`. Finish analyzer-clean, committed; report diffstat and hashes only.
 
 ## Why
 
 Equality in this library is exactly backwards: it is hand-written at length where it does not
 matter, and absent where the framework depends on it.
 
-**Absent where it matters.** `PlateNumber` and `PlateCardState` have no `==`. So
-`plate_canvas.dart`'s
+**Absent where it matters.** This was the phase's headline finding and **half of it has already
+been fixed elsewhere** — check the tree before you write the commit message.
 
-```dart
-final plate = context.select<PlateCardBloc, PlateNumber>((b) => b.state.plateNumber);
-```
+`PlateNumber` now has `==`/`hashCode` over `values` (`listEquals` + `Object.hashAll`), added by
+the animation performance pass along with the deeper fix: `PlateCanvas.build` no longer
+`context.select`s the whole `PlateNumber` at all. `_FrameBinding` selects `isCompleted` and
+`_SlotBinding` selects its own `String?`, so a keystroke rebuilds one slot. Both the equality
+and the rebuild bug are done. **Do not re-add `PlateNumber.==`, do not reintroduce a
+whole-value `select`, and do not claim the rebuild fix in this phase's commit message.**
 
-compares two `PlateNumber` instances by identity, which are never identical after a
-`copyWith`. **`select` rebuilds the whole canvas on every bloc emission and has never done
-anything.** Same for `PlateAlphabet`, which has no `==` — so
-`plate_keypad.dart`'s `letterAlphabet == PlateAlphabet.persianPlateLetters` is an identity
-check that silently fails for any caller who builds an equal alphabet inline. (P8 deletes
-that comparison, but `activeAlphabet` comparisons remain.)
+What is left of the finding is real and untouched:
+
+- `PlateCardState` still has no `==` (step 2).
+- `PlateAlphabet` still has no `==` (step 3) — so
+  `plate_keypad.dart`'s `letterAlphabet == PlateAlphabet.persianPlateLetters` is an identity
+  check that silently fails for any caller who builds an equal alphabet inline. (P8 deletes
+  that comparison, but `activeAlphabet` comparisons remain.)
+- `PlateNumber.copyWith` still exists and still has its two call sites (step 1).
 
 **Written at length where it does not.** `PlateSlot` (removed in P1), `PlateCountry` and
 `PlateTheme` carry ~120 lines of field-by-field `==` and `hashCode`, and `PlateCountry` ships
@@ -35,16 +41,14 @@ its own `_listEquals` because `package:flutter/foundation.dart`'s was not import
 
 ### Add equality where the framework needs it
 
-1. `lib/model/plate_number.dart` — `PlateNumber` gets `==`/`hashCode` over `values`
-   (`listEquals` from `foundation`, `Object.hashAll`). Delete `copyWith`. It has one field and
+1. `lib/model/plate_number.dart` — `PlateNumber`'s `==`/`hashCode` over `values` are **already
+   there**; leave them, including the doc comment explaining what they fixed. The remaining work
+   in this file is deleting `copyWith`. It has one field and
    **two** call sites — grep before you delete, both must move in this commit:
    - `lib/bloc/plate_card_bloc.dart`, the production call, becomes `PlateNumber(values: values)`.
-   - `test/bloc_test.dart:25-27` also calls it directly, inside a `seed:` block:
-     `PlateCardState.empty(PlateSpecs.deCar).plateNumber.copyWith(values: ...)`. Rewrite that
-     to a direct `PlateNumber(values: List<String?>.filled(PlateSpecs.deCar.slotCount, null)..[0] = 'D')`
-     or equivalent. Missing this one leaves the test suite failing to compile, not just
-     failing — verify with `flutter test` before considering the phase done, not just
-     `flutter analyze`, since analyze alone does not run `test/`.
+     This project does not use automated tests, so there is no `test/` call site to update —
+     just confirm with a grep that `PlateNumber.copyWith` has no other production callers before
+     deleting it.
 2. `lib/bloc/plate_card_state.dart` — `PlateCardState` gets `==`/`hashCode` over
    `(plateNumber, spec)`. `PlateSpec` equality is `id`-based, so this is cheap.
 3. `lib/model/plate_alphabet.dart` — add `final String id;` as the first required field and
@@ -98,12 +102,17 @@ int get hashCode => Object.hashAll(_props);
    folded in here since you are already touching this file's neighbor for the state equality
    work in step 2 and it costs nothing extra to fix while the file is open.
 
-## Measure the bug you just fixed
+## What used to be here
 
-Before and after, run the holder with a rebuild counter (`debugPrint` in
-`PlateCanvas.build`) and type a full Iranian plate. Record both counts in the commit message.
-The `select` fix should cut canvas rebuilds roughly in half — every `ValueIsChanged` that the
-bloc drops as a no-op currently still rebuilds.
+An earlier version of this phase ended with a "measure the bug you just fixed" step: count
+`PlateCanvas.build` calls before and after, expecting the `select` fix to halve them. That fix
+landed in the performance pass instead, so there is nothing left here to measure — the counter
+would read the same before and after this phase. Removed rather than left as a step that
+produces a meaningless number.
+
+If you want a rebuild count for the record, the useful one now is per-slot: a keystroke should
+rebuild exactly one `_SlotBinding`, and `PlateCardState`'s new `==` (step 2) should stop the
+bloc's no-op emissions from waking any of them.
 
 ## Do not
 
@@ -111,12 +120,32 @@ bloc drops as a no-op currently still rebuilds.
 - Do not reach for `equatable` or `freezed`. Two `_props` getters is less machinery than a
   code generator, and this package's dependency list is something P10 is trying to shrink.
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — this phase touches models, not widgets, so there is nothing to convert. Named here only so the rule is not re-litigated per phase.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Expected: ~85 net lines removed from `lib/`, one dependency dropped, one real rebuild bug
 fixed.

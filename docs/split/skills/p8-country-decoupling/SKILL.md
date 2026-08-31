@@ -5,8 +5,9 @@ description: "Refactor phase P8 of the plate_number split — remove the last fo
 
 # P8 — Country decoupling
 
-Follow `CLAUDE.md` working style. Requires **P7** committed. Finish analyzer-clean, tests
-green, committed; report diffstat and hashes only.
+Follow `CLAUDE.md` working style. Requires **P7** committed. This project does not use
+automated tests — do not write or update anything under `test/`, and do not run
+`flutter test`. Finish analyzer-clean, committed; report diffstat and hashes only.
 
 **This is the last phase before the package split.** After it, no file that will live in
 `core_plate` mentions Iran, Germany, Persian or `'ir'`. Grep is the acceptance test.
@@ -103,6 +104,11 @@ accident was live.
 > Note: after P5 this comparison at least compares correctly (`PlateAlphabet` has `==` on
 > `id`). Before P5 it was an identity check. Either way it goes.
 
+`PlateKeypad` has also gained a second highlight input since this phase was written —
+`highlightedKeyListenable`, a `ValueListenable<String?>` each `_Key` watches for itself so a
+rapid press-flash does not rebuild the grid. It is orthogonal to the alphabet work here; leave
+it alone. It matters to P9, which has to carry both inputs through `_KeyGrid`.
+
 ### 3. `CountryPanel` defaults to Iran
 
 ```dart
@@ -158,7 +164,7 @@ silently exactly because nothing else imports it.
 ## Acceptance
 
 ```bash
-cd plate-number-upgrade
+cd plate-core
 grep -rniE "iran|german|persian|'ir'|'de'" lib/ \
   --exclude-dir=countries \
   --exclude=plate_number.dart
@@ -167,19 +173,40 @@ grep -rniE "iran|german|persian|'ir'|'de'" lib/ \
 Must return nothing but the `country_flags` removal comment, if you left one. Anything else is
 a leak this phase missed.
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — here that is `plate_flag.dart` and `country_panel.dart`, both already widget classes. `plate_keypad.dart`'s two widget functions are P9's, not this phase's — do not pre-empt them.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
 
-Then compare the rendered Iranian flag against `assets/car-plate-iran.jpg` and the German
-plate against `assets/germany-license-plate-english-infographic.jpg` at full poster scale.
-The flag is the one thing in this phase that can regress invisibly in `flutter test` — neither
-flag rendering path has a widget test, and `flag_panel_gallery.dart` (the one file that
-exercises `PlateFlag` outside the full plate canvas) is a `main()` entrypoint that
-`flutter test`/`flutter analyze` won't run for you:
+(Do not run `flutter test` — this project does not use automated tests.)
+
+Then compare the rendered Iranian flag against `docs/references/car-plate-iran.jpg` and the
+German plate against `docs/references/germany-license-plate-english-infographic.jpg` at full
+poster scale. (P0.5 moved both out of `assets/`; earlier drafts of this file pointed at the old
+location.)
+The flag is the one thing in this phase that can regress invisibly — this project has no
+automated tests, and `flag_panel_gallery.dart` (the one file that exercises `PlateFlag` outside
+the full plate canvas) is a `main()` entrypoint that `flutter analyze` won't run for you:
 
 ```bash
 cd plate_number_holder && flutter run -t lib/dev/flag_panel_gallery.dart -d linux

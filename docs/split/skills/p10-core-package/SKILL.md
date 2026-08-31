@@ -6,8 +6,9 @@ description: "Refactor phase P10 of the plate_number split — create the pub wo
 # P10 — The core package
 
 Follow `CLAUDE.md` working style. Requires **P9** committed and the P8 acceptance grep
-returning nothing. Finish analyzer-clean, tests green, committed; report diffstat and hashes
-only.
+returning nothing. This project does not use automated tests — do not write, update, or move
+anything under `test/`, and do not run `flutter test`. Finish analyzer-clean, committed;
+report diffstat and hashes only.
 
 This phase is mechanical. If it turns out not to be — if moving a file forces a logic change —
 stop and report it, because it means an earlier phase left a leak.
@@ -17,6 +18,11 @@ stop and report it, because it means an earlier phase left a leak.
 `docs/split/PLAN.md` §5.1 leaves `core_plate` / `iran_plate` / `germany_plate` versus
 `plate_core` / `plate_ir` / `plate_de` open. Confirm with the user before creating
 directories. Everything below assumes the first form.
+
+Note that the repo itself is now called `plate-core` (renamed from `plate-number-upgrade`,
+commit `8e52fd9`). That is the *repository* directory, not a package name — the package inside
+`packages/` is still `core_plate` and the root package is still `plate_number`. Do not let the
+repo name be mistaken for the naming decision having been settled.
 
 ## Also in this pass: a shared, slightly stricter lint config
 
@@ -107,11 +113,8 @@ lib/bloc/*                            lib/input/plate_input_controller.dart
    `flutter_svg`. **Not** `country_flags` (removed in P8) and **not** `bloc_concurrency`
    (removed in P5). If either reappears, something regressed.
 
-8. Move `test/` files that only exercise core: `slot_behavior_test.dart`,
-   `plate_input_machine_test.dart`, `plate_text_test.dart`, `plate_entry_test.dart`,
-   `bloc_test.dart`, `plate_canvas_test.dart`. `alphabet_test.dart` splits — the
-   `latinDigits` and `latinUppercase` groups go to core, the Persian groups stay behind for
-   P11. `german_plate_validator_test.dart` and `spec_test.dart` stay behind.
+8. This project does not use automated tests, so there is no `test/` directory to split
+   between packages — skip this step entirely; do not create one.
 
 ### The facade
 
@@ -141,21 +144,39 @@ export 'widgets/plate_keypad.dart';
     the package strings in the same commit, so there is never a state where a literal points
     at a package that does not own the file.
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — this phase moves files without editing bodies, so it converts nothing. If a widget function survives into `core_plate`, an earlier phase missed it — report it rather than fixing it here.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade
+cd plate-core
 flutter pub get                      # at the workspace root
 flutter analyze
-flutter test
-cd packages/core_plate && flutter test
-cd ../../../plate_number_holder && flutter analyze && flutter test && flutter run
+cd ../plate_number_holder && flutter analyze && flutter run
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Then confirm the split is real:
 
 ```bash
-grep -rniE "iran|german|persian" plate-number-upgrade/packages/core_plate/lib/
+grep -rniE "iran|german|persian" plate-core/packages/core_plate/lib/
 ```
 
 Must return nothing.

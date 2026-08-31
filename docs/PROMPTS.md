@@ -8,6 +8,10 @@ everything on its screen — shells, plate, keypads, typist, scripts — do not 
 
 Run them in sequence. Commit after each. Every prompt ends with a verification step.
 
+**Testing policy:** this project does not use automated tests. Do not write or generate
+test files, do not create or edit anything under `test/`, and do not run `flutter test`
+as part of any prompt or its verification step, even where one below mentions it.
+
 | # | Prompt | Quality | Budget |
 |---|---|---|---|
 | P1 | Bootstrap & demolition | Sonnet · `think` | Sonnet · — |
@@ -577,10 +581,8 @@ THEN VERIFY, adversarially:
    gallery targets that no longer build, assets nothing loads. Keep
    `example/lib/dev/flag_panel_gallery.dart`; it exercises the frozen package.
 
-7. `flutter analyze` clean. `flutter test` in `example/` passes —
-   `device_cycle_test.dart` must not have been weakened. Update
-   `example/test/widget_test.dart`, which still tests a counter app that no longer
-   exists.
+7. `flutter analyze` clean. This project does not use automated tests — do not run
+   `flutter test`, and do not create or update any file under `test/`.
 
 Report findings ranked, most severe first.
 ```

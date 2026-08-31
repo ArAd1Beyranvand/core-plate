@@ -5,8 +5,9 @@ description: "Refactor phase P11 of the plate_number split — create packages/i
 
 # P11 — The country packages
 
-Follow `CLAUDE.md` working style. Requires **P10** committed. Finish analyzer-clean, tests
-green, committed; report diffstat and hashes only.
+Follow `CLAUDE.md` working style. Requires **P10** committed. This project does not use
+automated tests — do not write, update, or move anything under `test/`, and do not run
+`flutter test`. Finish analyzer-clean, committed; report diffstat and hashes only.
 
 Mechanical, like P10 — with one thing that is not: **asset ownership**. Get that wrong and the
 plates render blank in release mode while looking fine in debug on the machine that has the
@@ -51,18 +52,10 @@ old package still resolved.
 11. The facade `lib/plate_number.dart` re-exports the two new barrels in place of the old
     relative paths. **`plate_number_holder` is still untouched.**
 
-### Tests
-
-12. `test/alphabet_test.dart`'s Persian groups → `packages/iran_plate/test/`.
-13. `test/german_plate_validator_test.dart` → `packages/germany_plate/test/`.
-14. `test/spec_test.dart` splits by spec: `irCar`/`irBicycle` cases to `iran_plate`, `deCar`
-    cases to `germany_plate`. Any case that is really about `PlateSpec` mechanics rather than
-    a particular country belongs in `core_plate` with a locally-declared throwaway spec — and
-    writing that throwaway spec is a useful check that core really can express a plate with no
-    country package present.
-15. Add to each country package one test asserting its assets resolve:
-    `expect(IranPlates.car.country.flag!.package, 'iran_plate')` and equivalents for the
-    German decals. Cheap insurance against the failure mode below.
+This project does not use automated tests, so there is no `test/` directory to split between
+packages — skip that step entirely; do not create test files in any package. Instead, manually
+confirm each country package's assets resolve (e.g. `IranPlates.car.country.flag!.package ==
+'iran_plate'` and the equivalent for the German decals) as part of the release-run check below.
 
 ## The asset trap
 
@@ -78,22 +71,41 @@ flutter clean && flutter pub get && flutter run --release
 in `plate_number_holder` before you commit, and confirm the two German stickers and both flags
 actually appear. A debug run on a warm cache proves nothing here.
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — this phase moves files without editing bodies. Nothing to convert.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade
-flutter pub get && flutter analyze && flutter test
-for p in packages/*; do (cd "$p" && flutter test); done
-cd ../plate_number_holder && flutter clean && flutter pub get && flutter analyze && flutter test
+cd plate-core
+flutter pub get && flutter analyze
+cd ../plate_number_holder && flutter clean && flutter pub get && flutter analyze
 flutter run --release
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Then confirm the dependency graph is what was designed:
 
 ```bash
-grep -rn "iran_plate"    plate-number-upgrade/packages/germany_plate/   # must be empty
-grep -rn "germany_plate" plate-number-upgrade/packages/iran_plate/      # must be empty
-grep -rniE "iran|german|persian" plate-number-upgrade/packages/core_plate/lib/   # must be empty
+grep -rn "iran_plate"    plate-core/packages/germany_plate/   # must be empty
+grep -rn "germany_plate" plate-core/packages/iran_plate/      # must be empty
+grep -rniE "iran|german|persian" plate-core/packages/core_plate/lib/   # must be empty
 ```
 
 Expected: no net line change; four packages where there was one; core compilable without

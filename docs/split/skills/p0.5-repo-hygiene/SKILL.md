@@ -5,6 +5,13 @@ description: "Refactor phase P0.5 of the plate_number split — rewrite README.m
 
 # P0.5 — Repo hygiene
 
+> **Status: landed** — commit `385c34a`, "P0.5: rewrite README for PlateSpec API, purge dead assets".
+> `assets/` now holds only the three declared files; `car-plate-iran.jpg` and
+> `germany-license-plate-english-infographic.jpg` live in `docs/references/`. Later phases that
+> cite those two images must use the `docs/references/` path, not `assets/`.
+>
+> Kept as the record of what the phase did. Do not re-run it.
+
 Follow `CLAUDE.md` working style. Depends on nothing, blocks nothing — run this any time.
 It touches no file any other phase edits except `pubspec.yaml`'s `assets:` list, which every
 phase treats as append-only anyway. Finish with `flutter analyze` clean, committed; report
@@ -111,7 +118,7 @@ paths, so all 9.6 MB would go out on a real publish today.
 ## Verify
 
 ```
-cd plate-number-upgrade && flutter analyze
+cd plate-core && flutter analyze
 ```
 
 No `flutter test` impact expected — this phase touches no Dart source. Manually open the

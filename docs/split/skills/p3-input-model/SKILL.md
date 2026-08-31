@@ -5,8 +5,9 @@ description: "Refactor phase P3 of the plate_number split — delete the depreca
 
 # P3 — Input model
 
-Follow `CLAUDE.md` working style. Requires **P2** committed. Finish analyzer-clean, tests
-green, committed; report diffstat and hashes only.
+Follow `CLAUDE.md` working style. Requires **P2** committed. This project does not use
+automated tests — do not write or update anything under `test/`, and do not run
+`flutter test`. Finish analyzer-clean, committed; report diffstat and hashes only.
 
 ## Why
 
@@ -106,45 +107,67 @@ events.
 
 ### While you are rewriting `_buildTypedField` anyway
 
-`_buildTypedField` currently wraps its `TextField` in:
+**This section has changed since it was first written — read it before acting on memory of it.**
+The original finding was that `_buildTypedField` built a full `ThemeData.light()` per typed
+slot, up to eight per plate per build. That has already been fixed, by the animation
+performance pass rather than by this phase: `plate_slot_item.dart` now opens with a
+**library-level mutable cache**
 
 ```dart
-Theme(
-  data: ThemeData.light().copyWith(
-    textSelectionTheme: TextSelectionThemeData(...),
-  ),
-  child: ...
-)
+final Map<Color, ThemeData> _selectionThemes = <Color, ThemeData>{};
+ThemeData _selectionTheme(Color active) => _selectionThemes.putIfAbsent(active, () => ...);
 ```
 
-`ThemeData.light()` builds a complete Material theme — every color role, every component
-theme, every default — to change three selection-related colors. This runs **per typed slot**,
-so up to eight times per plate, on every rebuild that reaches a typed field. It also silently
-forces light mode on that one `TextField` regardless of the host app's actual `Theme`, which is
-plausibly deliberate (a plate's face is always white, so its cursor/selection colors
-arguably shouldn't follow a dark host theme) but is currently undocumented as a decision — it
-reads as an accident of "which constructor was easiest to reach for."
+so the expensive constructor runs two or three times for the life of the process instead of
+per slot. The performance problem is gone. What is left is a design one, and it is squarely
+this phase's business since you are rewriting the method anyway:
 
-Fix both at once: build the `TextSelectionThemeData` override once, in `PlateCanvas.build`
-(it depends only on `theme.activeColor`/`inactiveColor`, resolved once per canvas build, not
-once per slot), and wrap the whole slot list in one `Theme` scope instead of each
-`PlateSlotItem` wrapping itself. If keeping the light-mode pin is intentional, wrap with
-`Theme(data: Theme.of(context).copyWith(textSelectionTheme: ...))` if the host theme should
-still apply everywhere else, or keep `ThemeData.light()` but say why in a doc comment — don't
-leave it unexplained. Either way, one `Theme` widget per plate instead of one per slot.
+1. A package should not carry a process-wide mutable global that is never evicted. It is small
+   and bounded in practice (a plate sees two or three active colours), but it is invisible
+   shared state in a library, and the reason it exists is that the `Theme` was built at the
+   wrong level of the tree.
+2. The right level is the canvas. `theme.activeColor` / `inactiveColor` are resolved once per
+   `PlateCanvas.build`, so build the `TextSelectionThemeData` there and wrap the whole slot
+   list in **one** `Theme` scope, instead of each slot wrapping itself. Then delete
+   `_selectionThemes` and `_selectionTheme` — with one construction per canvas build there is
+   nothing left to cache.
+3. Settle the light-mode pin while you are there. `ThemeData.light()` forces light on that
+   `TextField` regardless of the host app's theme. That is plausibly deliberate — a plate's
+   face is always white, so its cursor and selection colours arguably should not follow a dark
+   host — but it is undocumented, and reads as an accident of which constructor was nearest.
+   Either keep it and write one sentence saying why, or use
+   `Theme.of(context).copyWith(textSelectionTheme: ...)` so the host theme still applies to
+   everything else. Do not leave it unexplained a second time.
 
-### Tests
+If step 2 turns out to regress the selection colours visually, keep the cache and say so —
+but the expected outcome is one `Theme` per plate and no global.
 
-9. New `test/slot_behavior_test.dart` covering the full table above — seven cases, no widget
-   pumping. This is the point of the phase: the decision becomes testable.
-10. `test/plate_canvas_test.dart` may construct `PlateSlotItem` directly — update it.
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — here that means `PlateSlotItem._buildTypedField` and `_buildChosenSlot`, both of which this phase rewrites anyway. They become `_TypedField` and `_ChosenSlot` widget classes, each taking the resolved `SlotBehavior` — which is what makes the five-arm `switch (behavior)` in `build` read as five widgets rather than five branches of one method.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
 
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Then exercise all four sources in the holder: mobile (IME), desktop (host controller), tablet
 (host + package keypad), and a manual `hardwareKeyboard` run on Linux — type into the Persian
@@ -153,5 +176,6 @@ the sheet. Separately, confirm the `Theme`/`TextSelectionThemeData` change is vi
 identical — selection highlight and cursor color on a typed slot, before and after, side by
 side.
 
-Expected: ~60 net lines removed across both projects, and one `ThemeData.light()` construction
-instead of up to eight.
+Expected: ~60 net lines removed across both projects, the nested input branching replaced by
+one `switch (behavior)`, and `plate_slot_item.dart`'s library-level `_selectionThemes` global
+gone in favour of one `Theme` scope per canvas.

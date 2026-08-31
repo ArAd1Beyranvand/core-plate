@@ -6,8 +6,9 @@ description: "Refactor phase P7.5 of the plate_number split — decide and imple
 # P7.5 — District data
 
 Follow `CLAUDE.md` working style. Requires **P7** committed (this edits the same
-`german_plate_validator.dart` that `ForbiddenByGroup` lands in). Finish analyzer-clean, tests
-green, committed; report diffstat and hash only.
+`german_plate_validator.dart` that `ForbiddenByGroup` lands in). This project does not use
+automated tests — do not write or update anything under `test/`, and do not run
+`flutter test`. Finish analyzer-clean, committed; report diffstat and hash only.
 
 **This phase starts with a decision, not an edit.** Do not write code before the "Decide"
 step below has an answer from the user.
@@ -92,20 +93,39 @@ before writing code.
 5. `git rm docs/districts.json`. Note the removal and why in the commit message. Leave the
    regex check as-is.
 
-## Tests
+## Verification (manual — this project does not use automated tests)
 
-- (1)/(3): add cases to `test/german_plate_validator_test.dart` (or wherever P7 left the
-  validator's tests) for a real code (`'DA'`) passing and a fabricated one (`'QQ'` or similar,
-  confirmed absent from the list) failing — or, for (3), reporting `districtRecognized: false`
+- (1)/(3): manually confirm a real code (`'DA'`) passes and a fabricated one (`'QQ'` or similar,
+  confirmed absent from the list) fails — or, for (3), reports `districtRecognized: false`
   without failing `isValid`.
-- (2): no test changes; confirm the existing district-format tests still pass unchanged.
+- (2): confirm the existing district-format behavior still works unchanged.
+
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — this phase touches a validator, not widgets. Nothing to convert.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
 
 ## Verify
 
 ```
-cd plate-number-upgrade && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 If (1) was chosen, run the tablet demo's German auto-typist script end to end — it types
 district `DA`, which is real and must still pass.

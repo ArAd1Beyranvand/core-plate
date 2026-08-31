@@ -6,8 +6,9 @@ description: "Refactor phase P7 of the plate_number split — introduce a PlateV
 # P7 — Validation as data
 
 Follow `CLAUDE.md` working style. Requires **P6** committed (it uses
-`PlateSpec.effectiveTextGroups`). Finish analyzer-clean, tests green, committed in both
-repos; report diffstat and hashes only.
+`PlateSpec.effectiveTextGroups`). This project does not use automated tests — do not write or
+update anything under `test/`, and do not run `flutter test`. Finish analyzer-clean, committed
+in both repos; report diffstat and hashes only.
 
 ## Why
 
@@ -131,8 +132,8 @@ mixin ForbiddenByGroup on PlateValidator {
    is valid" early return — an in-progress plate must not be flagged.
 5. Keep the standalone
    `validate({required district, required identifierLetters, required identifierDigits})`
-   as a static, since `test/german_plate_validator_test.dart`'s table drives it directly and
-   it is genuinely useful without a spec. `validate(PlateEntry)` delegates to it.
+   as a static — it is genuinely useful without a spec, independent of tests.
+   `validate(PlateEntry)` delegates to it.
 6. `GermanPlateValidationResult` collapses into core's `PlateValidation`. Keep a
    `typedef GermanPlateValidationResult = PlateValidation;` for one release and note it in
    `CHANGELOG.md`.
@@ -149,30 +150,59 @@ mixin ForbiddenByGroup on PlateValidator {
 
 ### `plate_number_holder`
 
-10. Delete `_unavailableKeysFor` entirely from `lib/showcase/device_stage.dart`.
+10. Delete `_unavailableKeysFor` entirely from `lib/showcase/device_stage.dart`. It is index-based
+    since P1 (`final index = _activeIndex;`), so it maps onto `PlateEntry.activeIndex` directly —
+    the group walk moves in unchanged.
 11. `_validateGermanPlate` and `_blocSub` collapse into reading
     `_plateInput.validation` — `PlateInputController` is a `ChangeNotifier`, so the
     `StreamSubscription<PlateCardState>` and its re-subscribe-on-swap dance go away too.
     Keep `DemoConfig.showsValidation` gating.
+
+    **Two things in this method are load-bearing and post-date the original draft of this
+    phase — preserve both.** The performance pass narrowed it so that `setState` fires only when
+    `isValid` actually flips, rather than on every bloc emission (before that, the tablet
+    rebuilt a whole `DeviceFrame`, a fresh page on the glass and a fresh keypad once per
+    character). Whatever replaces the subscription must keep that: notify on a change of
+    verdict, not on every notification from the controller. Related, the full keypad now sits
+    under a `BlocBuilder<PlateCardBloc, PlateCardState>` scoped to itself, because the barred-key
+    set genuinely does track the typed value while the rest of the stage does not. Keep that
+    scoping — feeding it `controller.barredKeys` is a change of *source*, not a licence to hoist
+    the rebuild back up to the stage.
 12. Pass `validator: const GermanPlateValidator()` for the tablet device only, from
     `DemoConfig` — add a `PlateValidator? validator` field to `DemoConfig` so it stays
     variation-as-data (`claude.md` §2) rather than a `device == tablet` branch.
 
-### Tests
+This project does not use automated tests. Verify `activeGroup`/`activePrefix` and
+`barredNext` manually instead, including the edge the holder code had to handle: an active
+index at the **start** of a group yields an empty prefix, and an index outside every keyed
+group yields a null group.
 
-13. `test/german_plate_validator_test.dart`: the `validate` table survives unchanged. Replace
-    the `barredNextDigits` / `barredNextLetters` groups with `barredNext(PlateEntry(...))`
-    cases that go through `deCar`, which is stronger — it tests the group walk too.
-14. New `test/plate_entry_test.dart` for `activeGroup` / `activePrefix`, including the edge
-    the holder code had to handle: an active index at the **start** of a group yields an empty
-    prefix, and an index outside every keyed group yields a null group.
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — here that is the holder's `device_stage.dart`, whose `_buildDevice` is a ~40-line widget function this phase already reaches into. Converting it to a `_DeviceBody` widget class is worthwhile *if* it comes out at a similar length — it closes over a lot of stage state, so if hoisting those into constructor fields balloons the file, leave `_buildDevice` alone and say so. Do not let this hold up the validation work, which is the phase.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
 
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Then run the tablet demo and watch the auto-typist's German sequence: `DA` → `X` → `88` must
 still turn the plate red, the keypad must still grey out the second `8` for interactive taps

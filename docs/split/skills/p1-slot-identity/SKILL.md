@@ -5,9 +5,32 @@ description: "Refactor phase P1 of the plate_number split — delete PlateSlot.i
 
 # P1 — Slot identity
 
+> **Status: landed**, though not as its own commit — the work arrived inside the animation
+> performance pass (see the project's `ANIMATION_PERF` notes) rather than through this prompt.
+> Verified in the tree as of the `plate-core` rename:
+>
+> - `PlateSlot` has no `index` and no `next`, and no `operator ==` / `hashCode`.
+> - `PlateSpec` carries `slotAt`, `nextIndex` and `previousIndex` exactly as steps 3–4 specify.
+> - `debugValidateSpec` is down to the canvas-bounds assertion alone.
+> - `_focusNodes` / `_controllers` are `List<FocusNode>` / `List<TextEditingController?>`
+>   (step 7), and `_advance`, `backspaceCharacter`, `focusFirstEmptySlot` and `focusSlot` are
+>   all index-based.
+> - `PlateInputTarget.activeIndex`, `PlateInputController.activeIndex` and `activeSlotIn(spec)`
+>   all exist (steps 12–13); `PlateCanvas.onActiveIndexChanged` is `ValueChanged<int?>`.
+> - Holder side: `plate_display.dart` forwards `onActiveIndexChanged`; `device_stage.dart` holds
+>   `int? _activeIndex` / `_setActiveIndex`, and the typist wrapper is the one-liner
+>   `onSlotChanged: config.showsValidation ? _setActiveIndex : null` step 16 asked for.
+>
+> **Not** verified, because it left no trace: whether the new `nextIndex`/`previousIndex` checks
+> from the old step 17 were added. This project does not use automated tests, so there is
+> nothing to add here — this loose end is closed.
+>
+> Everything below is kept as the record of what changed and why. Do not re-run the phase.
+
 Follow `CLAUDE.md` working style: no repo survey, no narration, edit only the files named
-below. Finish with `flutter analyze` clean, `flutter test` green in both projects, and a
-`git commit` in each repo you touched. Report the diffstat and the commit hashes only.
+below. This project does not use automated tests — do not write or update anything under
+`test/`, and do not run `flutter test`. Finish with `flutter analyze` clean in both projects,
+and a `git commit` in each repo you touched. Report the diffstat and the commit hashes only.
 
 ## Why
 
@@ -126,7 +149,7 @@ before editing, not just the four call sites a grep for `.index` turns up.
 17. Grep both `lib/` and the holder one more time after editing, before considering the phase
     done:
     ```bash
-    grep -rn "\.index\b" plate-number-upgrade/lib plate_number_holder/lib
+    grep -rn "\.index\b" plate-core/lib plate_number_holder/lib
     ```
     Every remaining hit should be something unrelated to `PlateSlot` (a `List.indexOf`, a loop
     variable literally named `index`, etc.) — if a `PlateSlot`-typed `.index` read survives
@@ -145,24 +168,38 @@ input machine when `widget.spec` changes identity) and needs the bug reproducibl
 swap while testing this phase, that is this bug, not something P1 introduced — confirm by
 checking whether it also happens on the unmodified `main` branch before assuming a regression.
 
-### Tests
-
-17. `test/spec_test.dart` and `test/plate_canvas_test.dart` reference `index`/`next` —
-    update them. Add one new test asserting `spec.nextIndex(spec.slots.length - 1) == null`
-    and `spec.previousIndex(0) == null`.
-
 ## Do not
 
 - Do not introduce a `focusOrder` field on `PlateSpec` "for later". If a future plate ever
   needs a non-sequential order, that is the phase that adds it.
 - Do not touch geometry fields (`left`/`top`/`width`/`height`) — that is P2.
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — nothing in this phase's files is a widget function today, so this is a check, not work: confirm none has appeared.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Then run the holder app and confirm all three demo devices still type and advance correctly,
 including backspace stepping back across a slot boundary. Cycle through all three devices at

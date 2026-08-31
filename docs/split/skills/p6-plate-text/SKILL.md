@@ -6,7 +6,9 @@ description: "Refactor phase P6 of the plate_number split — move plate-string 
 # P6 — Plate text into the model
 
 Follow `CLAUDE.md` working style. Independent of P4 and P5 — runnable any time after P2.
-Finish analyzer-clean, tests green, committed; report diffstat and hashes only.
+This project does not use automated tests — do not write or update anything under `test/`,
+and do not run `flutter test`. Finish analyzer-clean, committed; report diffstat and hashes
+only.
 
 ## Why
 
@@ -76,24 +78,42 @@ class _PlateStateBuilder extends StatelessWidget {
 6. `PlateText.build` reduces to a `Row` over `spec.renderGroups(values)` inside the existing
    `Directionality` and `DefaultTextStyle`.
 
-### Tests
-
-7. New `test/plate_text_test.dart`, no widget pumping:
+This project does not use automated tests. Verify the rendering manually instead, covering:
    - `irCar` with a full value renders four groups, `'IR '` prefix intact on the last
    - a partly-filled plate omits wholly-empty groups but keeps partly-filled ones
    - Persian digits render as `۰`–`۹` through `renderGroups` while `valueOfGroup('serial', …)`
      returns ASCII
    - a spec with no `textGroups` (`irBicycle`) falls back to one group per slot
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — here that is exactly the `_PlateStateBuilder` class specified above — the `builder:` callback it takes is the permitted exception, not a violation.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Then check the holder's callout cards, which render plate strings — the German plate should
 still read `DA X1953` with the same spacing.
 
-Expected: ~35 net lines removed from `lib/`, and plate-string rendering becomes testable
-without Flutter.
+Expected: ~35 net lines removed from `lib/`, and plate-string rendering moves into the model,
+independent of any widget.

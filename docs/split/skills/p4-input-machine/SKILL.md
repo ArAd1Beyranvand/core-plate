@@ -5,8 +5,9 @@ description: "Refactor phase P4 of the plate_number split — extract focus-node
 
 # P4 — Extract the input machine
 
-Follow `CLAUDE.md` working style. Requires **P3** committed. Finish analyzer-clean, tests
-green, committed; report diffstat and hashes only.
+Follow `CLAUDE.md` working style. Requires **P3** committed. This project does not use
+automated tests — do not write or update anything under `test/`, and do not run
+`flutter test`. Finish analyzer-clean, committed; report diffstat and hashes only.
 
 **This phase removes almost no lines, and it is the most important phase in the plan anyway.**
 It carries a fix for a confirmed live bug — not a theoretical one, a bug the current showcase
@@ -35,9 +36,21 @@ attaches its new State before the old one disposes.
 
 ### The bug, confirmed
 
-`_focusNodes`/`_controllers` (a `List<FocusNode>` / `List<TextEditingController?>` after P1)
-are built exactly once, in `initState`, from `widget.spec.slots`. `didUpdateWidget` reacts only
-to `widget.controller` changing — never to `widget.spec` changing. That is only safe if
+Still live, re-verified against the current tree. `_focusNodes`/`_controllers` (`List<FocusNode>`
+/ `List<TextEditingController?>` since P1) are built exactly once, in `initState`, from
+`widget.spec.slots`, and `didUpdateWidget` is four lines long:
+
+```dart
+void didUpdateWidget(PlateCanvas oldWidget) {
+  super.didUpdateWidget(oldWidget);
+  if (widget.controller != oldWidget.controller) {
+    oldWidget.controller?.detach(this);
+    widget.controller?.attach(this);
+  }
+}
+```
+
+It reacts only to `widget.controller` changing — never to `widget.spec` changing. That is only safe if
 Flutter gives `PlateCanvas` a fresh `State` whenever its spec changes.
 
 It does not, in `plate_number_holder`. Checked, not assumed:
@@ -133,8 +146,20 @@ translations to make:
 `_openPicker` stays in the canvas (it needs a `BuildContext` and `showModalBottomSheet`); the
 machine signals it through `onSheetRequested`.
 
-`syncControllers` is the loop currently at the top of `PlateCanvas.build` that pushes bloc
-values into the `TextEditingController`s. It belongs with the controllers it owns.
+**`syncControllers` has moved since this was written.** The bloc→controller sync is no longer a
+loop at the top of `PlateCanvas.build`; the performance pass pushed it down into `_SlotBinding`,
+which `context.select`s its own `String?` and writes that one controller inside its own `build`,
+with a comment explaining the ordering (it runs before that slot's `TextField` builds in the
+same frame). That is a real improvement — a keystroke now rebuilds one slot instead of the
+whole canvas — and this phase must not undo it by pulling the sync back up into a
+`machine.syncControllers(values)` call over all slots.
+
+So the machine owns the controllers but does **not** drive them in bulk. Give it
+`void syncController(int index, String? value)` — the single-slot body currently inlined in
+`_SlotBinding.build` — and have `_SlotBinding` call `machine.syncController(index, value)`
+instead of touching `controller.value` itself. The machine keeps ownership and disposal; the
+per-slot subscription keeps the rebuild isolation. If you write a `syncControllers(List<String?>)`
+that walks every slot, you have reintroduced the rebuild this app was profiled to remove.
 
 ### `lib/widgets/plate_canvas.dart`
 
@@ -154,7 +179,11 @@ values into the `TextEditingController`s. It belongs with the controllers it own
    `initState` does. Also reset `_activeIndex`-adjacent state the same way a fresh mount would
    — a slot index valid in the old spec may not exist, or may mean something different, in the
    new one.
-4. `build` reduces to: resolve theme, `machine.syncControllers(values)`, and the widget tree.
+4. `build` reduces to: resolve theme and build the widget tree. It must keep the comment
+   explaining that it deliberately does **not** watch the plate value — `_FrameBinding` selects
+   `isCompleted`, `_SlotBinding` selects its own character, and that split is load-bearing.
+   Both binding widgets keep their own `context.select`; they read focus nodes and controllers
+   off the machine instead of off `_PlateCanvasState`.
 
 ### `lib/input/plate_input_controller.dart`
 
@@ -162,9 +191,9 @@ values into the `TextEditingController`s. It belongs with the controllers it own
    object a host could legitimately hold.
 6. Keep the identity guard in `detach`. It is still correct for spec swaps.
 
-### Tests
-
-7. New `test/plate_input_machine_test.dart`, no `pumpWidget`. At minimum:
+This project does not use automated tests, so the machine's behavior below is verified
+manually instead of by a new test file. Before trusting your port, manually walk each case
+against the running holder app:
    - `submitCharacter` rejects a character the active alphabet does not accept
    - `advanceFrom` on the last slot unfocuses rather than wrapping
    - backspace on a filled slot clears it in place
@@ -172,21 +201,45 @@ values into the `TextEditingController`s. It belongs with the controllers it own
    - backspace on the first slot when empty is a no-op
    - `focusFirstEmptySlot` on a full plate falls back to slot 0
 
-   The fourth and fifth cases have never been tested. Verify them against the current
+   The fourth and fifth cases have never been verified. Check them against the current
    behaviour before you trust your port.
+
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — this phase adds no widget functions and should remove none; `plate_canvas.dart`'s `_FrameBinding` and `_SlotBinding` are already classes. Keep them that way when the machine lands under them.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
 
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Then confirm the bug fix specifically, not just that nothing crashed:
 
 1. Re-run the same `debugPrint` in `_PlateCanvasState.initState()` (or wherever the fresh
    machine gets constructed after your change) through a full device cycle. It must now fire
    **once per device swap**, not once total — that is the fix, made visible.
+1b. Then confirm you did not pay for it in rebuilds: with "Highlight repaints" on, a single
+   keystroke must still flash one plate slot, not the whole plate face. If the whole canvas
+   lights up, the controller sync went back to a whole-plate walk — see the note under
+   `syncControllers` above.
 2. Cycle all three devices twice, including the auto-typist's German "88 → backspace → 1953"
    sequence, which exercises backspace-across-boundary and the controller path together.
 3. Watch specifically the desktop→tablet transition (8 slots → 7) and the tablet→mobile
@@ -194,6 +247,6 @@ Then confirm the bug fix specifically, not just that nothing crashed:
    places a stale focus/controller list would have been most likely to show something wrong.
 4. Remove the temporary `debugPrint` before committing.
 
-Expected: ~0 net lines. A new file, a smaller `plate_canvas.dart`, six tests that could not
-previously exist, and one bug that was live in the shipped showcase now fixed and verified
-fixed — not just refactored around.
+Expected: ~0 net lines. A new file, a smaller `plate_canvas.dart`, six behaviors that could not
+previously be exercised in isolation, and one bug that was live in the shipped showcase now
+fixed and verified fixed — not just refactored around.

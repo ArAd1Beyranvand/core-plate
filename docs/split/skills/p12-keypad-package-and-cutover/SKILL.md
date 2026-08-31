@@ -5,8 +5,10 @@ description: "Refactor phase P12 of the plate_number split — extract packages/
 
 # P12 — Keypad package and cutover
 
-Follow `CLAUDE.md` working style. Requires **P11** committed. Finish analyzer-clean, tests
-green, committed in both repos; report diffstat and hashes only.
+Follow `CLAUDE.md` working style. Requires **P11** committed. This project does not use
+automated tests — do not write, update, or move anything under `test/`, and do not run
+`flutter test`. Finish analyzer-clean, committed in both repos; report diffstat and hashes
+only.
 
 The last phase. After it, `plate_number_holder` depends on exactly the packages it uses, and
 no consumer compiles a country or a soft keyboard they did not ask for.
@@ -38,16 +40,18 @@ no consumer compiles a country or a soft keyboard they did not ask for.
 ```yaml
 dependencies:
   flutter: {sdk: flutter}
-  core_plate:    {path: ../plate-number-upgrade/packages/core_plate}
-  iran_plate:    {path: ../plate-number-upgrade/packages/iran_plate}
-  germany_plate: {path: ../plate-number-upgrade/packages/germany_plate}
-  plate_keypad:  {path: ../plate-number-upgrade/packages/plate_keypad}
+  core_plate:    {path: ../plate-core/packages/core_plate}
+  iran_plate:    {path: ../plate-core/packages/iran_plate}
+  germany_plate: {path: ../plate-core/packages/germany_plate}
+  plate_keypad:  {path: ../plate-core/packages/plate_keypad}
   flutter_bloc: ^8.1.4
 ```
 
-   Update the comment block explaining the layout — it currently describes the pre-split
-   single-package arrangement and predicts this change. Replace the prediction with what
-   actually happened.
+   Update the comment block explaining the layout. It already names `../plate-core` as the path
+   dependency and predicts this exact change (it even sketches the `iran_plate` /
+   `germany_plate` entries) — but its directory diagram still calls the package repo
+   `plate-number-upgrade/`. Fix that line and replace the prediction with what actually
+   happened.
 
 6. Rewrite the ten `package:plate_number/...` imports across `lib/`. The mapping:
    - `PlateSpecs.irCar` / `irBicycle` → `IranPlates.car` / `IranPlates.bicycle` (`iran_plate`)
@@ -92,17 +96,37 @@ dependencies:
     the estimates in `PLAN.md` §3, and note where the estimates were wrong. That table is the
     only honest record of whether this refactor was worth it.
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — the library should have none left by now. The holder still does (`device_stage.dart`, the poster layer); those are out of scope here.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade
-flutter pub get && flutter analyze && flutter test
-for p in packages/*; do (cd "$p" && flutter analyze && flutter test); done
+cd plate-core
+flutter pub get && flutter analyze
+for p in packages/*; do (cd "$p" && flutter analyze); done
 
 cd ../plate_number_holder
-flutter clean && flutter pub get && flutter analyze && flutter test
+flutter clean && flutter pub get && flutter analyze
 flutter run --release
 ```
+
+(Do not run `flutter test` — this project does not use automated tests.)
 
 Then prove the isolation the whole refactor was for — build a throwaway app that depends on
 `core_plate` + `iran_plate` only, renders `IranPlates.car`, and does **not** compile:
@@ -113,9 +137,6 @@ grep -rn "germany_plate\|plate_keypad" <throwaway>/.dart_tool/package_config.jso
 
 Both must be absent. If either is pulled in transitively, a dependency arrow points the wrong
 way and P11 or this phase put something in the wrong package.
-
-Finally, delete `plate-number-upgrade/example/` — it has been a dead working copy since Phase 0
-and now diverges from the holder in every import.
 
 Expected: no net line change. One more package, the holder honest about what it uses, and the
 `~1 600`-lines-for-one-country figure from `PLAN.md` §3 verifiable for the first time.

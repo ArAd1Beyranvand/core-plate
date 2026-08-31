@@ -5,8 +5,13 @@ description: "Refactor phase P2 of the plate_number split — introduce PlateBox
 
 # P2 — Plate geometry
 
-Follow `CLAUDE.md` working style. Requires **P1** to be committed. Finish analyzer-clean,
-tests green, committed; report diffstat and hashes only.
+Follow `CLAUDE.md` working style. Requires **P1**, which is already landed — it arrived inside
+the animation performance pass rather than as its own commit, so there is no P1 hash to look
+for. Confirm it by reading `plate_spec.dart`: `PlateSlot` must have no `index` and no `next`,
+and `PlateSpec` must carry `nextIndex`/`previousIndex`. **This is the first phase in the plan
+that still has work to do.** This project does not use automated tests — do not write or update
+anything under `test/`, and do not run `flutter test`. Finish analyzer-clean, committed; report
+diffstat and hashes only.
 
 ## Why
 
@@ -96,16 +101,17 @@ class _Placed extends StatelessWidget {
 9. Replace all four `Positioned(...)` blocks (panel, rules, labels, decals) and the slot loop
    with `_Placed`. The build method should lose ~25 lines and gain no nesting.
 
+   Note the shape `build` has now: the two `Positioned.fill`s wrapping `_FrameBinding` and the
+   clipped face are **not** among the four — they are full-bleed layers, not plate-space boxes,
+   and they stay as they are. The slot loop's `Positioned` wraps a `_SlotBinding`; `_Placed`
+   goes outside it, so `_SlotBinding` keeps its own `context.select` and its own rebuild scope.
+   Do not merge the two.
+
 ### `lib/widgets/country_panel.dart`
 
 10. `CountryPanel` takes `required PlatePanel panel` instead of `flagScale`, `captionScale`
     and `padding`. Its internal use of `constraints.maxHeight * 0.10` as the default padding
     is unchanged.
-
-### Tests
-
-11. `test/spec_test.dart` and `test/plate_canvas_test.dart` construct slots and read
-    geometry — update to `box`.
 
 ## Considered and rejected
 
@@ -116,15 +122,37 @@ lines saved, one more layer of indirection between the spec literal and the pixe
 four lists are individually useful (`spec.slots.length` drives `PlateNumber`). Not worth it.
 If a fifth element kind ever appears, revisit.
 
+## Widgets, not widget functions
+
+`claude.md` §1 forbids widget-returning functions, and from here on every phase enforces it in
+the files it already edits — here that is `_Placed` above, which is already specified as a class. `plate_canvas.dart` has no `_buildX` methods left; confirm it stays that way.
+
+Convert each such method into a private `StatelessWidget` (or `StatefulWidget`) class. A real
+widget gets its own element and its own rebuild scope, and can take a `const` constructor;
+that is why every fix in the project's `ANIMATION_PERF` notes had to start by inventing one.
+
+**Use judgement, and say so in the report.** Convert only where the class is not materially
+longer than what it replaces. A three-line helper used once inside a single `build`, or one
+that closes over five locals that would each become a constructor field, a `final` and an
+argument, is clearer inlined into its caller than promoted to a class — inline it instead.
+If a conversion would roughly double the lines it removes and buy no rebuild isolation, leave
+it and name it in the report. Do not pad the codebase to satisfy a rule. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are not widget
+functions and stay as they are.
+
 ## Verify
 
 ```
-cd plate-number-upgrade   && flutter analyze && flutter test
-cd ../plate_number_holder && flutter analyze && flutter test
+cd plate-core   && flutter analyze
+cd ../plate_number_holder && flutter analyze
 ```
 
-Then screenshot the three demo plates and diff against `screenshot.png` /
-`.scratch/showcase_after_max.png`. **This phase must be pixel-identical.** The panel-overlap
+(Do not run `flutter test` — this project does not use automated tests.)
+
+Then screenshot the three demo plates and diff against a baseline **you capture yourself before
+starting** — the old `screenshot.png` at the repo root was removed by P0.5, and
+`.scratch/showcase_after_max.png` predates the poster changes, so neither is a valid reference
+any more. Capture before, capture after, diff those. **This phase must be pixel-identical.** The panel-overlap
 geometry in particular is easy to get subtly wrong; if the thin white seam between the blue
 panel and the black frame reappears, the overlap comments were not carried across correctly.
 

@@ -1,9 +1,25 @@
 # `plate_number` → `core_plate` + country packages
 
-Master plan. Phases live as runnable prompts in `.claude/skills/p1-…` … `.claude/skills/p12-…`;
-progress is tracked in `PROGRESS.md` beside this file.
+Master plan. Phases live as runnable prompts in `docs/split/skills/p1-…` … `docs/split/skills/p12-…`;
+progress is tracked in `PROGRESS.md` beside this file. (They were briefly `.claude/skills/`;
+they are not there now, and a prompt that tells you to read `.claude/skills/...` is stale.)
 
-Phase 0 (splitting `example/` out into `plate_number_holder`) is **done**.
+**Repo layout as of the last rename.** The package repo is `plate-core` — renamed from
+`plate-number-upgrade` in commit `8e52fd9`, which also deleted `example/` outright now that
+`plate_number_holder` supersedes it. The two repos sit side by side:
+
+```
+StudioProjects/
+  plate-core/             the package (still named `plate_number` in pubspec.yaml)
+  plate_number_holder/    the showcase app, path-depends on ../plate-core
+```
+
+`plate-core` is a directory name, not a package name. The package inside it is still
+`plate_number`, and the naming decision in §5.1 below is still open.
+
+Phase 0 (splitting `example/` out into `plate_number_holder`) is **done**, and so are P0.5,
+P0.75 and — through the animation performance pass rather than through its own prompt — P1.
+See `PROGRESS.md` for commits.
 
 ---
 
@@ -100,7 +116,8 @@ sequenced right after the README/asset cleanup and before any Dart source change
 
 | | |
 |---|---|
-| `PlateNumber`, `PlateCardState` have no `==` | `context.select<PlateCardBloc, PlateNumber>` in `plate_canvas.dart:220` therefore rebuilds the entire canvas on **every** bloc emission, including no-op ones. `select` is doing nothing. |
+| ~~`PlateNumber` has no `==`~~ — **fixed** | Fixed outside this plan, in the animation performance pass. `PlateNumber` now has `==`/`hashCode` over `values`, *and* the canvas no longer selects the whole value: `_FrameBinding` selects `isCompleted`, `_SlotBinding` selects its own `String?`, so a keystroke rebuilds one slot. P5 must not re-add either. |
+| `PlateCardState` has no `==` | Still true. Cheap to add (`PlateSpec` equality is `id`-based) and it is what stops the bloc's no-op emissions waking the per-slot subscriptions. P5. |
 | `PlateAlphabet` has no `==` | `plate_keypad.dart:254` decides RTL with `letterAlphabet == PlateAlphabet.persianPlateLetters`. That is *identity* comparison. A caller who builds an equal alphabet inline silently gets LTR. |
 | `bloc_concurrency` in `pubspec.yaml` | Zero references in `lib/`, `test/` or the holder. Dead dependency shipped to every consumer. |
 | `PlateKeypadTheme.copyWith` | Never called anywhere. 18 dead lines. |
@@ -120,7 +137,7 @@ sequenced right after the README/asset cleanup and before any Dart source change
 ## 2. Target package layout
 
 ```
-plate-number-upgrade/
+plate-core/
   pubspec.yaml            pub workspace root (Dart ≥3.6; SDK constraint already allows it)
   packages/
     core_plate/           the engine — no country knows about it, it knows no country
@@ -141,7 +158,7 @@ plate_number ──> all four        (compatibility shim, retired in P12)
 `iran_plate` and `germany_plate` never see each other. An app shipping only Iranian plates
 compiles neither the German validator nor its PNGs nor the soft keyboard.
 
-**Why `plate_keypad` is its own package.** It is 408 lines of fake soft keyboard with its own
+**Why `plate_keypad` is its own package.** It is ~460 lines of fake soft keyboard with its own
 theme class, useful only under `PlateInputSource.packageKeypad`. Consumers who drive input
 from the IME or their own pad — which is most of them — should not compile it. It is the one
 piece of the library that is genuinely optional.
@@ -158,7 +175,7 @@ Each phase's number is what that phase removes from `lib/`, net of what it adds.
 
 | phase | | net lines |
 |---|---|---|
-| P1 | slot identity — drop `index` / `next` | −70 |
+| ~~P1~~ | slot identity — drop `index` / `next` — **landed** | −70 (claimed; not measured separately, it arrived inside the performance pass) |
 | P2 | plate geometry — `PlateBox`, `PlatePanel` | −80 |
 | P3 | input model — delete `LetterInputMode`, add `SlotBehavior` | −60 |
 | P4 | extract the input machine from `PlateCanvas`; **fixes the confirmed live state-reuse bug** (§1 above) | ±0 (structural — but this is the highest-risk phase in the plan, not the lightest) |
@@ -182,6 +199,10 @@ Then P10–P12 redistribute those ~2 075 lines:
 **Core ends at ~57 % of today's single package**, and the number a consumer actually compiles
 for one country is ~1 600 rather than 2 588 — before counting the two dependencies (`bloc_concurrency`,
 `country_flags`) that stop shipping at all.
+
+**The 2 588-line baseline is stale.** It predates P1, P0.5, P0.75 and the performance pass, all
+of which changed `lib/`. Re-measure before quoting a percentage; the *shape* of the budget —
+where the weight is and which phase removes it — is what still holds.
 
 P1–P9 are worth doing on their own merits. If the split were abandoned after P9 the library
 would still be materially better. P10–P12 are then close to mechanical.
@@ -230,6 +251,30 @@ Dependencies:
   because it is a product decision — validate against a real district list or not — not a
   mechanical refactor, and bundling a decision into a refactor phase is how decisions get made
   by default instead of on purpose.
+
+---
+
+## 4b. Widgets, not widget functions
+
+Added after the first pass through this plan, and folded into every phase from P1 on rather
+than given a phase of its own: `claude.md` §1 forbids widget-returning functions, and the
+codebase still has a few. Each phase converts the ones in the files it already edits, under one
+constraint — **only where the widget class is not materially longer than the function it
+replaces.** A short helper used once inside a single `build`, or one closing over several
+locals that would each become a field, an argument and a `final`, gets inlined into its caller
+instead of promoted. If a conversion would roughly double what it removes and buy no rebuild
+isolation, the phase leaves it and says so. Builder callbacks are the standing exception.
+
+Where they actually are, so no phase has to go looking:
+
+| file | functions | phase |
+|---|---|---|
+| `plate_slot_item.dart` | `_buildTypedField`, `_buildChosenSlot` | P3 (rewrites both anyway) |
+| `plate_keypad.dart` | `_buildDigitKey`, `_buildLettersLayer` | P9 (`_KeyGrid` is their replacement) |
+| holder `showcase/device_stage.dart` | `_buildDevice` | P7, if it comes out at a similar length |
+
+`plate_canvas.dart` has none left — `_FrameBinding`, `_SlotBinding` and `_PlateFaceClipper` are
+already classes, which is exactly why the performance pass could isolate their rebuilds.
 
 ---
 

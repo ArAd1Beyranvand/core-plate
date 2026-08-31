@@ -5,10 +5,18 @@ description: "Refactor phase P0.75 of the plate_number split — remove the andr
 
 # P0.75 — Package template correction
 
+> **Status: landed** — commit `803c795`, "P0.75: Remove platform scaffolding, correct package
+> template". `.metadata` reads `project_type: package`; `android/`, `linux/`, `windows/` and
+> `web/` are gone from the repo root. One leftover: `.metadata`'s `migration.platforms` still
+> lists an `android` entry. That is history, not configuration (step 3 says to leave it), so it
+> is not a defect — noted so nobody re-opens the phase over it.
+>
+> Kept as the record of what the phase did. Do not re-run it.
+
 Follow `CLAUDE.md` working style. Depends on nothing, blocks nothing downstream — safe to run
-any time, independently of P0.5 and independently of every numbered phase. Finish with
-`flutter analyze` clean, `flutter pub get` succeeding, `flutter test` green, committed; report
-diffstat and commit hash only.
+any time, independently of P0.5 and independently of every numbered phase. This project does
+not use automated tests — do not run `flutter test`. Finish with `flutter analyze` clean,
+`flutter pub get` succeeding, committed; report diffstat and commit hash only.
 
 ## What was found
 
@@ -49,7 +57,7 @@ rule was added stays tracked until explicitly removed from the index. Check both
 1. Confirm what git actually has tracked before deleting anything:
 
 ```bash
-cd plate-number-upgrade
+cd plate-core
 git ls-files | grep -E '^(android|ios|linux|windows|web|macos)/' | head -50
 ```
 
@@ -76,9 +84,11 @@ git ls-files | grep -E '^(android|ios|linux|windows|web|macos)/' | head -50
 
 ## Do not
 
-- Do not touch `example/` — it is a Flutter **app** (correctly so; an example app for a package
-  legitimately needs platform runners) and is out of scope for this phase, already slated for
-  deletion in P12 once `plate_number_holder` fully replaces it.
+- `example/` no longer exists — it was deleted along with the repo rename to `plate-core`
+  (commit `8e52fd9`, "Rename package repo to plate-core; drop example/ (superseded by
+  plate_number_holder)"). Earlier drafts of this plan told you to leave it alone and let P12
+  delete it; there is nothing left to leave alone. If you find an `example/` directory, someone
+  restored it and that is worth reporting.
 - Do not touch `plate_number_holder`'s own platform folders — it is an app, this finding does
   not apply to it.
 - Do not run `flutter create --template=package .` to "properly" rescaffold. That rewrites
@@ -89,16 +99,15 @@ git ls-files | grep -E '^(android|ios|linux|windows|web|macos)/' | head -50
 ## Verify
 
 ```bash
-cd plate-number-upgrade
+cd plate-core
 flutter pub get
 flutter analyze
-flutter test
 ```
 
-A package with no platform folders builds and tests fine via `flutter test` (which runs on the
-host, not a target platform) — if `flutter pub get` or `flutter analyze` complain about a
-missing platform, something in `pubspec.yaml` unexpectedly depended on one of the removed
-directories, which would itself be worth reporting rather than working around.
+Do not run `flutter test` — this project does not use automated tests. If `flutter pub get` or
+`flutter analyze` complain about a missing platform, something in `pubspec.yaml` unexpectedly
+depended on one of the removed directories, which would itself be worth reporting rather than
+working around.
 
 ```bash
 du -sh .   # repo size drop is the visible win
