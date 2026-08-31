@@ -12,15 +12,15 @@ class PlateCardBloc extends Bloc<PlateCardEvent, PlateCardState> {
   final PlateSpec spec;
 
   PlateCardBloc(this.spec) : super(PlateCardState.empty(spec)) {
-    on<ValueIsChanged>((ValueIsChanged event, Emitter emit) {
+    on<ValueIsChanged>((ValueIsChanged event, Emitter<PlateCardState> emit) {
       if ((state.plateNumber.values[event.index] ?? '') == (event.value ?? '')) return;
       final values = List<String?>.of(state.plateNumber.values)..[event.index] = event.value;
-      emit(state.copyWith(plateNumber: state.plateNumber.copyWith(values: values)));
+      emit(state.copyWith(plateNumber: PlateNumber(values: values)));
     });
-    on<RemovePlateCard>((RemovePlateCard event, Emitter emit) {
+    on<RemovePlateCard>((RemovePlateCard event, Emitter<PlateCardState> emit) {
       emit(PlateCardState.empty(state.spec));
     });
-    on<SpecIsChanged>((SpecIsChanged event, Emitter emit) {
+    on<SpecIsChanged>((SpecIsChanged event, Emitter<PlateCardState> emit) {
       emit(PlateCardState.empty(event.spec));
     });
   }

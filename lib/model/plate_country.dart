@@ -54,30 +54,9 @@ class PlateCountry {
   );
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is PlateCountry &&
-        other.code == code &&
-        _listEquals(other.captionLines, captionLines) &&
-        other.panelColor == panelColor &&
-        other.panelTextColor == panelTextColor &&
-        other.flagAspectRatio == flagAspectRatio;
-  }
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is PlateCountry && other.code == code);
 
   @override
-  int get hashCode => Object.hash(
-        code,
-        Object.hashAll(captionLines),
-        panelColor,
-        panelTextColor,
-        flagAspectRatio,
-      );
-
-  static bool _listEquals(List<String> a, List<String> b) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
+  int get hashCode => code.hashCode;
 }

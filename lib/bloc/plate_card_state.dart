@@ -23,4 +23,15 @@ class PlateCardState {
         plateNumber: PlateNumber(values: List<String?>.filled(spec.slotCount, null)),
         spec: spec,
       );
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is PlateCardState &&
+        other.plateNumber == plateNumber &&
+        other.spec == spec;
+  }
+
+  @override
+  int get hashCode => Object.hash(plateNumber, spec);
 }

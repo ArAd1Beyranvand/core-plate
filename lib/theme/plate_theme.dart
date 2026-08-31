@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// The visual language of a real Iranian licence plate.
@@ -98,31 +99,18 @@ class PlateTheme {
     return scope?.theme ?? PlateTheme.standard();
   }
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is PlateTheme &&
-        other.plateBackground == plateBackground &&
-        other.plateBorder == plateBorder &&
-        other.ink == ink &&
-        other.dividerColor == dividerColor &&
-        other.borderWidthRatio == borderWidthRatio &&
-        other.plateRadiusRatio == plateRadiusRatio &&
-        other.activeColor == activeColor &&
-        other.inactiveColor == inactiveColor;
-  }
+  List<Object?> get _props => [
+        plateBackground, plateBorder, ink, dividerColor,
+        borderWidthRatio, plateRadiusRatio, activeColor, inactiveColor,
+      ];
 
   @override
-  int get hashCode => Object.hashAll([
-        plateBackground,
-        plateBorder,
-        ink,
-        dividerColor,
-        borderWidthRatio,
-        plateRadiusRatio,
-        activeColor,
-        inactiveColor,
-      ]);
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PlateTheme && listEquals(other._props, _props);
+
+  @override
+  int get hashCode => Object.hashAll(_props);
 }
 
 /// Provides a [PlateTheme] to descendants via [PlateTheme.of].

@@ -5,12 +5,6 @@ class PlateNumber {
 
   PlateNumber({required this.values});
 
-  PlateNumber copyWith({List<String?>? values}) {
-    return PlateNumber(
-      values: values ?? this.values,
-    );
-  }
-
   bool isCompleted() => !values.any((e) => e == null || e == '');
 
   bool isEmpty() => !values.any((e) => e != null);
