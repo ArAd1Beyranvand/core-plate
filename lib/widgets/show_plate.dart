@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/plate_card_bloc.dart';
 import '../model/plate_number.dart';
-import '../model/plate_spec.dart';
 import 'plate_canvas.dart';
 
 /// Read-only plate view. Renders the real graphical plate (pixel-identical to
@@ -21,15 +20,31 @@ class ShowPlate extends StatelessWidget {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
       builder: (context, state) {
         if (state.plateNumber.isEmpty()) {
-          return emptyPlate ??
-              const Text(
-                'Default Widget for Empty Plate Value',
-                style: TextStyle(fontSize: 18),
-              );
+          return _EmptyPlate(emptyPlate);
         }
         return PlateCanvas(spec: state.spec, mode: PlateMode.display);
       },
     );
+  }
+}
+
+/// The shared fallback shown by [ShowPlate] and [PlateText] when the plate has
+/// no value: the caller's [replacement] if given, else a plain placeholder.
+///
+/// "Default Widget for Empty Plate Value" is developer-facing copy sitting in a
+/// shipping default; kept verbatim here because changing it is a product call.
+class _EmptyPlate extends StatelessWidget {
+  const _EmptyPlate(this.replacement);
+
+  final Widget? replacement;
+
+  @override
+  Widget build(BuildContext context) {
+    return replacement ??
+        const Text(
+          'Default Widget for Empty Plate Value',
+          style: TextStyle(fontSize: 18),
+        );
   }
 }
 
@@ -47,17 +62,10 @@ class PlateText extends StatelessWidget {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
       builder: (context, state) {
         if (state.plateNumber.isEmpty()) {
-          return emptyPlate ??
-              const Text(
-                'Default Widget for Empty Plate Value',
-                style: TextStyle(fontSize: 18),
-              );
+          return _EmptyPlate(emptyPlate);
         }
         final spec = state.spec;
         final values = state.plateNumber.values;
-        final groups = spec.textGroups.isEmpty
-            ? [for (var i = 0; i < spec.slots.length; i++) PlateTextGroup([i])]
-            : spec.textGroups;
         return DefaultTextStyle(
           style: textStyle ?? const TextStyle(color: Colors.black),
           child: Directionality(
@@ -65,14 +73,9 @@ class PlateText extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                for (final g in groups)
+                for (final g in spec.effectiveTextGroups)
                   if (g.indices.any((i) => (values[i] ?? '').isNotEmpty))
-                    Text(g.prefix +
-                        g.indices
-                            .map((i) =>
-                                spec.slotAt(i)?.alphabet.render(values[i] ?? '') ??
-                                '')
-                            .join()),
+                    Text(spec.renderGroup(g, values)),
               ],
             ),
           ),

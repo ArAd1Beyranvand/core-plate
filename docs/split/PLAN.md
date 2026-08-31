@@ -1,305 +1,340 @@
-# `plate_number` → `core_plate` + country packages
+# `plate_number` → `core_plate` + sibling country packages
 
-Master plan. Phases live as runnable prompts in `docs/split/skills/p1-…` … `docs/split/skills/p12-…`;
-progress is tracked in `PROGRESS.md` beside this file. (They were briefly `.claude/skills/`;
-they are not there now, and a prompt that tells you to read `.claude/skills/...` is stale.)
+Master plan, **second edition**. The first edition (P0.5 → P12, workspace-with-`packages/`
+layout, blocking validation) is superseded from its P6 onward. Everything through the old P5
+has landed and is history; everything after it has been rewritten around two decisions the
+user made on 2026-08-31:
 
-**Repo layout as of the last rename.** The package repo is `plate-core` — renamed from
-`plate-number-upgrade` in commit `8e52fd9`, which also deleted `example/` outright now that
-`plate_number_holder` supersedes it. The two repos sit side by side:
+1. **Validation never blocks input.** The library may *tell* a host that a plate is invalid.
+   It may not stop a key from being typed. The whole barred-key path — `barredNextDigits`,
+   `barredNextLetters`, `PlateKeypad.unavailableKeys`, the holder's `_unavailableKeysFor` —
+   is deleted, not refactored. What survives is a verdict, opt-in, painted red.
+2. **The country packages are siblings of `core-plate`, not children of it.** There is no
+   `packages/` directory and no pub workspace. `iran-plate`, `germany-plate` and
+   `plate-keypad` are their own repositories beside `core-plate`, each a publishable package
+   that depends on `core_plate`.
+
+Phases live as runnable prompts in `docs/split/phases/p1-…` … `p9-…`; progress is tracked in
+`PROGRESS.md` beside this file; paste-ready wrappers are in `PROMPTS.md`.
+
+> **The old `docs/split/skills/` directory is dead.** `p0.5` … `p5` are the record of work that
+> landed; `p6` … `p12` describe a target that no longer exists and must not be run. See
+> "What happened to the old numbering" at the end of this file.
+
+---
+
+## 0. Where things stand
+
+**Landed** (first edition, committed): repo hygiene, package-template correction, slot
+identity, plate geometry, input model, the input machine and its live state-reuse bug fix, and
+value semantics. `lib/` today is 26 files across `bloc/ input/ model/ theme/ validators/
+widgets/`, with `lib/plate_number.dart` as an 18-line barrel. `pubspec.yaml` no longer carries
+`bloc_concurrency`.
+
+**Not started**: everything in this file.
+
+**Repo layout today:**
 
 ```
-StudioProjects/
+StudioProjects/plate/
   plate-core/             the package (still named `plate_number` in pubspec.yaml)
   plate_number_holder/    the showcase app, path-depends on ../plate-core
 ```
 
-`plate-core` is a directory name, not a package name. The package inside it is still
-`plate_number`, and the naming decision in §5.1 below is still open.
-
-Phase 0 (splitting `example/` out into `plate_number_holder`) is **done**, and so are P0.5,
-P0.75 and — through the animation performance pass rather than through its own prompt — P1.
-See `PROGRESS.md` for commits.
-
----
-
-## 1. What the recon actually found
-
-2 588 lines in `lib/`. The headline: **the widget layer is already country-agnostic.**
-`PlateCanvas`, `PlateSlotItem`, `PlateFrame`, `PlateCharacterPicker` and the bloc hold no
-country knowledge — they read geometry, alphabets and direction off the spec, exactly as
-`claude.md` §2/§3 demand. Only four call sites in the whole library name a country.
-
-So the split is cheap. What is *not* cheap, and is where the real work is, is that the
-library carries four kinds of avoidable weight:
-
-**(a) Redundant data that must be kept in sync by hand.**
-`PlateSlot` carries `index` and `next`. Verified across all three specs:
+**Repo layout this plan produces:**
 
 ```
-irCar        slots= 8   index==position: True   next==index+1: True
-irBicycle    slots= 8   index==position: True   next==index+1: True
-deCar        slots= 7   index==position: True   next==index+1: True
-```
-
-Both fields are derivable from list position in every spec that exists. They cost a
-duplicate-index assertion, a `next`-resolves assertion, a cycle-detection walk, a
-reverse-scan `_previousSlot`, and a linear `slotAt`. ~70 lines exist only to defend data
-that never varies.
-
-**(b) One concept spelled two ways.**
-`LetterInputMode` (3 values) and `PlateInputSource` (4 values) describe the same thing, with
-an `inputSourceFromLetterMode` adapter between them and a `@Deprecated` parameter on
-`PlateCanvas` threading the old one through. `PlateSlotItem.letterInputMode` is declared,
-documented — and **never read in its body**. Verified.
-
-**(c) Logic that lives in the widget tree and therefore cannot be tested.**
-`_PlateCanvasState` does five unrelated jobs: focus-node lifecycle, active-slot tracking,
-navigation (advance / backspace / first-empty), picker presentation, and painting. The first
-four are pure state machine, reachable today only through `pumpWidget`.
-
-**(d) Derivations pushed onto the host app.**
-`plate_number_holder`'s `device_stage.dart` contains 35 lines (`_unavailableKeysFor`) that
-walk the spec's text groups, build the prefix typed so far, and ask the German validator what
-to bar next. Nothing in it is app-specific. Every consumer that wants validated input would
-have to write it again.
-
-### A third close pass: two things that outrank everything above
-
-Two more passes through the repo — one hunting specifically for state/lifecycle bugs across
-the `PlateCanvas` ↔ holder boundary, one just looking at what sits in the repo root rather
-than `lib/` — found two things serious enough to reorder the plan around.
-
-**A confirmed, live bug: the showcase silently reuses plate state across incompatible specs on
-every device cycle.** `PlateCanvas`'s focus nodes and `TextEditingController`s are built once
-in `initState` from `widget.spec.slots` (`plate_canvas.dart:57-61`) and never rebuilt.
-`_PlateCanvasState.didUpdateWidget` reacts only to `widget.controller` changing — never to
-`widget.spec` changing. That is only safe if Flutter gives `PlateCanvas` a fresh `State` every
-time the showcase swaps devices. It does not:
-
-```bash
-grep -n "key:\|Key(\|ValueKey\|GlobalKey" device_frame.dart plate_display.dart device_stage.dart
-# → one match, on an unrelated method named _onDeckKey
-```
-
-Zero `Key`s anywhere from `DeviceFrame` down to `PlateCanvas`. `DeviceFrame`'s content fades
-via a plain `Opacity` wrapper around `builder: widget.builder` — no `AnimatedSwitcher`, no
-`IndexedStack`, nothing that would force Flutter to discard and rebuild the subtree. The
-widget stays at the same type and the same position in the tree across every device hop, so
-Flutter's default reconciliation **reuses the same `_PlateCanvasState` object** while
-`device_stage.dart` swaps `spec:` underneath it — from `irCar` (8 slots) to `deCar` (7 slots)
-to `irBicycle` (8 slots) and back, each with a different slot count and a different
-typed/chosen pattern per index. The focus-node and controller maps built for the first spec
-are silently reused for every spec after it.
-
-This is corrected from an earlier draft of this plan, which claimed under what is now P4 that
-"the holder never hits it because it recreates the whole subtree on device swap." That claim
-was wrong — checked against the actual code, not assumed — and is struck from P4 below. The
-bug is live, in the showcase you can run today, on every single device transition. P4 (already
-the phase that gives `PlateCanvas` a proper input-machine lifecycle) now treats this as its
-primary deliverable, not an incidental fix, and gets a before/after repro step in its
-verification. See P4 for the fix; nothing before P4 needs to change to accommodate this, but
-P1 and P3's holder-side edits are written knowing it's there.
-
-**The package is scaffolded as an app, not a package.** `.metadata` declares
-`project_type: app`. The repo root carries full platform-runner directories — `android/`
-(Gradle, `build.gradle.kts`, a `gradlew`), `linux/` (CMake, a C++ `runner/`), `windows/`
-(same), `web/` (`index.html`, `manifest.json`, a favicon) — for a pure-Dart-and-Flutter-widgets
-library with no platform channel and no native code. `android/`, `web/` and `macos/` are at
-least listed in `.gitignore`; `linux/` and `windows/` are not (only their `build/`
-subdirectories are), so those two are almost certainly tracked in git today. None of this
-belongs in a package meant to be split into five publishable units in P10-P12 — a real
-`flutter create --template=package` scaffold has none of it. Given its own phase, **P0.75**,
-sequenced right after the README/asset cleanup and before any Dart source changes.
-
-### Latent bugs found on the way
-
-| | |
-|---|---|
-| ~~`PlateNumber` has no `==`~~ — **fixed** | Fixed outside this plan, in the animation performance pass. `PlateNumber` now has `==`/`hashCode` over `values`, *and* the canvas no longer selects the whole value: `_FrameBinding` selects `isCompleted`, `_SlotBinding` selects its own `String?`, so a keystroke rebuilds one slot. P5 must not re-add either. |
-| `PlateCardState` has no `==` | Still true. Cheap to add (`PlateSpec` equality is `id`-based) and it is what stops the bloc's no-op emissions waking the per-slot subscriptions. P5. |
-| `PlateAlphabet` has no `==` | `plate_keypad.dart:254` decides RTL with `letterAlphabet == PlateAlphabet.persianPlateLetters`. That is *identity* comparison. A caller who builds an equal alphabet inline silently gets LTR. |
-| `bloc_concurrency` in `pubspec.yaml` | Zero references in `lib/`, `test/` or the holder. Dead dependency shipped to every consumer. |
-| `PlateKeypadTheme.copyWith` | Never called anywhere. 18 dead lines. |
-| `PlateSpec.slotAt` | Linear scan, called once per glyph per frame. |
-| `test/bloc_test.dart:25-27` calls `PlateNumber.copyWith` directly | A **second** call site P5 originally missed — the plan said "one call site" (in `PlateCardBloc`). Both must move to a direct constructor call in the same phase, or the test won't compile after `copyWith` is deleted. |
-| `GermanPlateValidator`'s district regex accepts any 1–3 Latin letters | `docs/districts.json` — untracked by any `pubspec.yaml`, staged into this session by hand — lists ~150 real `Unterscheidungszeichen` codes. The validator never reads it: `AA`, `ZZ`, `QQ` all pass today though none is a real district. Whether to wire the real list in is a product decision, not a refactor one, but the fact that curated real-world data sits in the repo unused belongs in the plan. See **P7.5** below. |
-| `docs/forbidden.json` duplicates `_forbiddenLetterPairs`/`_forbiddenNumbers` | Same pairs, same comment about FZV §8, hand-copied into `german_plate_validator.dart` as Dart `const Set`s instead of the JSON being the source of truth. Two places to update if the list ever changes. Fold into P7 — load-or-inline is one decision, not two files. |
-| **`README.md` documents a package that no longer exists** | Every code sample imports `bicycle_plate/index.dart` and `car_plate/index.dart` (deleted), constructs `PlateCardBloc(PlateType.irCar)` (no `PlateType` in the codebase — the bloc takes a `PlateSpec`), references `TypeIsChanged`, `PlateTypeSelector`, `bloc.plateType`, and a "Features" list (`spacingScale`, custom letter widgets) describing an API that predates `PlateSpec` entirely. This is the first thing anyone evaluating the package reads, and none of it compiles. New phase — **P0.5**, see below; it does not depend on the split and should not wait for it. |
-| **9.6 MB of untracked-by-pubspec assets ship inside the package** | `assets/CopyQ.ckUzym.png` (584 KB), `CopyQ.emHrGZ.png` (361 KB), `CopyQ.fSSaTj.png` (513 KB) — clipboard-tool screenshots, by their name — plus `example1.png`, `example2.gif` (1.1 MB), `motor.png`. None is declared in `pubspec.yaml`'s `flutter.assets:`, so Flutter's bundler never pulls them into an app build, but `.gitignore` doesn't exclude them either (`flutter_*.png` is ignored; these don't match), so they are tracked in git and would ship in the tarball on `flutter pub publish`. `example1.png` and `example2.gif` are at least referenced — by the stale `README.md` above. The three `CopyQ.*` files and `motor.png` are referenced nowhere. Two root-level `screenshot2.png`/`screenshot3.png` (1.1 MB combined) are also untracked-by-ignore and unreferenced by anything in `lib/` or `README.md`. Covered by **P0.5**. |
-| `PlateCardBloc`'s three `on<...>` handlers take a raw, ungenericized `Emitter emit` | Should be `Emitter<PlateCardState> emit`. `analysis_options.yaml` includes only stock `flutter_lints` with zero project-specific rules, so nothing catches this today. Two-line fix, folded into **P5**, which is already open in this area for the equality work. |
-| `PlateSlotItem._buildTypedField` builds a full `ThemeData.light()` per slot | To override three `textSelectionTheme` colors. Up to 8 times per plate, every build that reaches a typed field — a real object, not a cheap one, and it hardcodes light mode regardless of the host app's actual theme. Folded into **P3**, which already rewrites this method for `SlotBehavior`. |
-| `lib/dev/flag_panel_gallery.dart` is a third, previously-unchecked call site of `PlateFlag`'s old constructor | `PlateFlag(countryCode: 'ir')` and `CountryPanel(country: PlateCountry.iran)`, reached through four deep `package:plate_number/model/...` imports rather than the barrel. Every symbol it touches moves in P8/P11. Folded explicitly into **P8** below — the original draft only anticipated `plate_canvas.dart` and `country_panel.dart` as call sites, which was incomplete. |
-| `plate_typist.dart`'s letter-picker path is dead code at the one real call site | `useLetterPicker: false` always, in `device_stage.dart`'s only call to `PlateTypist.run`. `_pickLetter` (44 lines) and the `if (useLetterPicker)` branch in `_runStep` never execute. Holder-only, demo-only code — noted here for completeness, deliberately **not** given a phase: it costs nothing to leave (dead code in an unpublished showcase app is a different order of problem than dead code in a published package), and this plan already has enough holder-side surface area in P1/P4/P7. Worth a one-line mention in a future holder cleanup, not a reason to add a fifteenth phase. |
-
----
-
-## 2. Target package layout
-
-```
-plate-core/
-  pubspec.yaml            pub workspace root (Dart ≥3.6; SDK constraint already allows it)
-  packages/
-    core_plate/           the engine — no country knows about it, it knows no country
-    plate_keypad/         optional soft keyboard (depends on core_plate)
-    iran_plate/           country + alphabets + ir.car + ir.bicycle + flag
-    germany_plate/        country + de.car + decals + validator + flag
-  plate_number/           thin facade: depends on all four, re-exports them
+StudioProjects/plate/
+  core-plate/             package `core_plate`   — the engine, knows no country
+  iran-plate/             package `iran_plate`   — depends on core_plate
+  germany-plate/          package `germany_plate`— depends on core_plate
+  plate-keypad/           package `plate_keypad` — depends on core_plate
+  plate_number_holder/    depends on all four by path
 ```
 
 ```
 iran_plate ────┐
 germany_plate ─┼──> core_plate
 plate_keypad ──┘
-
-plate_number ──> all four        (compatibility shim, retired in P12)
 ```
 
-`iran_plate` and `germany_plate` never see each other. An app shipping only Iranian plates
-compiles neither the German validator nor its PNGs nor the soft keyboard.
+`iran_plate` and `germany_plate` never see each other. `core_plate` sees neither. An app
+shipping only Iranian plates compiles no German validator, no German PNGs, and no soft
+keyboard.
 
-**Why `plate_keypad` is its own package.** It is ~460 lines of fake soft keyboard with its own
-theme class, useful only under `PlateInputSource.packageKeypad`. Consumers who drive input
-from the IME or their own pad — which is most of them — should not compile it. It is the one
-piece of the library that is genuinely optional.
-
-**Why the `plate_number` facade survives until P12.** So `plate_number_holder` keeps a single
-import through the entire refactor and every phase stays independently verifiable. It is
-~25 lines of `export`.
+**Directory name vs package name.** `plate-core` is a directory. The package inside it is
+still called `plate_number` and is renamed to `core_plate` in P9. The directory is renamed to
+`core-plate` in the same phase. Do not treat the current directory name as evidence that the
+naming decision was already applied.
 
 ---
 
-## 3. Line budget
+## 1. Change 1 — validation stops policing input
 
-Each phase's number is what that phase removes from `lib/`, net of what it adds.
+### What exists today
+
+Three pieces, in three places, all built to *prevent* a keystroke:
+
+| where | what |
+|---|---|
+| `lib/validators/german_plate_validator.dart:136,152` | `barredNextDigits` / `barredNextLetters` — given a prefix, return the characters that would complete a forbidden value |
+| `lib/widgets/plate_keypad.dart:81,121,237` | `unavailableKeys` parameter; `_keyEnabled` returns false for a key in that set; `_Key.enabled: false` greys it out and `onTap` is set to `null` |
+| holder `lib/showcase/device_stage.dart:114-148,350` | `_unavailableKeysFor` — 35 lines that find the active slot's group, build the typed prefix, and ask the German validator what to bar; fed to `PlateKeypad.unavailableKeys` |
+
+The showcase's auto-typist already exposes how uncomfortable this is: the scripted typist
+commits `88` while the interactive keypad greys out the second `8`. That tension was
+*commented and deliberate*. It is now simply gone — the second `8` is tappable, and the plate
+turns red once it lands.
+
+### What it becomes
+
+A validator answers one question — *is this plate, as it stands, valid?* — and nothing else.
+
+- `PlateValidation { bool get isValid; String? reason; }` in core.
+- `PlateValidator.validate(PlateEntry entry) → PlateValidation`. No `barredNext`. No
+  `completionsOf`. No `ForbiddenByGroup` mixin (there is no per-keystroke rule left for it to
+  serve).
+- `PlateCanvas` takes `validator` **and** `autoValidate` (default `false`). With
+  `autoValidate: false` the canvas never calls the validator and never paints red — a
+  developer who wants their own timing reads `PlateInputController.validation` and decides.
+  With `autoValidate: true` the canvas validates on every committed value and paints the
+  alert.
+- The alert is exactly what the holder paints today: the frame/underline goes red. No dialog,
+  no snackbar, no thrown exception, no rejected keystroke.
+- `PlateKeypad` loses `unavailableKeys` entirely. `_keyEnabled` keeps its *other* reason for
+  disabling a key — "this character is not in the active alphabet, so `submit()` would reject
+  it anyway" — which is a fact about the alphabet, not a validation policy, and stays.
+  `_Key.enabled` and `theme.disabledInk` therefore survive; only the validation input goes.
+
+**The one thing to be careful about.** `_Key`'s disabled state is currently reached by two
+routes and the doc comments conflate them. After P2 there is one route. Reword the comments;
+do not delete the mechanism.
+
+This is P2. It is a deletion phase that happens to add a small interface, and it should come
+out net-negative on lines in both repos.
+
+---
+
+## 2. Change 2 — the split is siblings, and the core has to earn it
+
+The user's framing: *"it needs actually cleaning the core. So it's 80 % of your focus."*
+That is reflected directly in the phase count — **six phases clean the core, three extract
+packages** — and in the ordering rule below.
+
+### Why sibling packages change the plan more than they look like they should
+
+The first edition put everything under one repo root with a pub workspace and a `plate_number`
+facade absorbing every move, so the holder's imports never changed until the very last phase.
+Siblings give that up. There is no workspace to resolve members, no facade sitting above them,
+and each package has its own `pubspec.yaml`, version, `CHANGELOG.md` and `LICENSE` from the
+moment it exists. Consequences the phases below are written around:
+
+- **Every extraction phase is a two-repo commit minimum** (the new package + the holder), and
+  P8 is a four-repo commit. There is no "the facade absorbs it" escape hatch.
+- **Path dependencies are the wiring during development.** `iran-plate/pubspec.yaml` gets
+  `core_plate: {path: ../core-plate}`. If and when these are published, those become version
+  ranges; the layout does not change.
+- **An extracted package can never import back into core's `src/`.** With one package that was
+  a style rule. With four it is a compile error — which is the point, and why the core surface
+  has to be settled (P5) *before* anything moves out.
+- **The `plate_number` facade does not survive.** With siblings there is no natural home for
+  it: it would be a fifth repo whose only content is four `export` lines. The holder depends
+  on the four packages directly. If a convenience meta-package is wanted later it is a new
+  repo, not a leftover.
+
+### Why six cleaning phases
+
+Everything that is wrong with the core is wrong in a way that only *becomes* a problem when it
+is split. Fixing it after the split means fixing it four times across four repos, with a
+version bump each. Fixing it before means one commit in one repo. Concretely, what P1–P6
+clear out:
+
+- **Country knowledge in core** (P3). `PlateFlag` hard-codes Iran's SVG path;
+  `PlateKeypad` defaults to the Persian alphabets and infers RTL by comparing against
+  `PlateAlphabet.persianPlateLetters`; `CountryPanel` defaults to `PlateCountry.iran`;
+  `PlateSlotItem` hard-codes `'؟'` as its placeholder; `PlateCountry.iran` / `.germany` are
+  static members of a class that will live in core. Every one of these is a compile error
+  waiting for P8.
+- **Validation in the wrong shape** (P2) — see §1.
+- **Rendering logic in the widget rather than the model** (P1). Grouping lives partly in
+  `ShowPlate`, partly in `PlateSpec`. `PlateEntry` in P2 needs it in the model.
+- **Two of everything in the keypad** (P4). Two grids, two highlight paths, two widget
+  functions.
+- **An undecided public surface** (P5). Today every file is public because
+  `lib/plate_number.dart` exports all of them and nothing is under `src/`. A package's export
+  list is its contract; four packages need four honest ones, and they are impossible to write
+  while the core's own is accidental.
+- **Dead weight and stale documentation** (P6). Known-dead: `PlateKeypadTheme.copyWith` (never
+  called, 18 lines), the `args` dependency in `pubspec.yaml`, doc comments across
+  `plate_alphabet.dart` and `plate_theme.dart` that describe "a real Iranian licence plate"
+  for country-neutral code, a `README.md` and `CHANGELOG.md` that predate all of this.
+
+Only after all of that is P7 (keypad out), P8 (countries out), P9 (rename + cutover) close to
+mechanical — which is the test of whether P1–P6 did their job. **If an extraction phase finds
+itself changing logic, an earlier phase left a leak; stop and report rather than fixing it
+in place.**
+
+---
+
+## 3. Phase index
+
+Ordering principle unchanged from the first edition: **data-structure changes first**, then
+behaviour, then surface, then packaging. Each phase ends analyzer-clean with
+`plate_number_holder` still running.
+
+| | phase | what it changes | breaks |
+|---|---|---|---|
+| P1 | `p1-plate-text` | group rendering moves into `PlateSpec`; one empty-state widget | `show_plate`, `plate_spec` |
+| P2 | `p2-validation-advisory` | **validation stops blocking input**; `PlateValidator` + `autoValidate` in core; `unavailableKeys` and both `barredNext*` deleted | validator, canvas, keypad, holder |
+| P3 | `p3-country-decoupling` | `PlateAsset` on `PlateCountry`; alphabet `direction` + `placeholder`; country constants into `lib/countries/` | `plate_flag`, `plate_keypad`, `country_panel`, `plate_slot_item`, pubspec |
+| P4 | `p4-keypad-compaction` | one `_KeyGrid` for both pads | `plate_keypad` only |
+| P5 | `p5-core-surface` | `lib/src/` layout; the barrel becomes a decision, not a dump | every import in both repos |
+| P6 | `p6-core-dead-weight` | dead code, dead deps, docs that lie | pubspec, docs, scattered comments |
+| P7 | `p7-extract-keypad` | `../plate-keypad` package | holder pubspec + keypad imports |
+| P8 | `p8-extract-countries` | `../iran-plate`, `../germany-plate` | specs, assets, validator, holder |
+| P9 | `p9-cutover` | `plate_number` → `core_plate`; `plate-core/` → `core-plate/`; isolation proof; docs | everything left |
+
+Dependencies, stated honestly rather than "strictly linear":
+
+- **P1 → P2.** P2's `PlateEntry` is built on the grouping P1 moves into `PlateSpec`.
+- **P2 → P4.** P4 rewrites the grids; it must not carry `unavailableKeys` through into
+  `_KeyGrid` only for P2 to have deleted it. Run P2 first or P4 does double work.
+- **P3 → P4.** P3 removes the Persian defaults and the `letterAlphabet ==
+  persianPlateLetters` RTL sniff; P4 would otherwise re-introduce them into the shared grid.
+- **P5 depends on P1–P4** because it decides what is public, and P1–P4 are still adding and
+  deleting public names. Running it earlier means running it twice.
+- **P6 is independent** of everything except that it should not run *before* P5 (P5 may make
+  something dead that P6 would otherwise have kept).
+- **P7 depends on P5** and nothing else in the cleaning set — the keypad is the least entangled
+  thing in the library, which is exactly why it goes first among the extractions.
+- **P8 depends on P3 and P7.** P3's acceptance grep is P8's precondition.
+- **P9 depends on everything.**
+
+---
+
+## 4. Line budget
+
+Estimates, not measurements. The 2 588-line baseline from the first edition is stale — it
+predates four landed phases — so **re-measure `lib/` before P1 and record it in
+`PROGRESS.md`**; a percentage quoted against a stale baseline is worse than no percentage.
 
 | phase | | net lines |
 |---|---|---|
-| ~~P1~~ | slot identity — drop `index` / `next` — **landed** | −70 (claimed; not measured separately, it arrived inside the performance pass) |
-| P2 | plate geometry — `PlateBox`, `PlatePanel` | −80 |
-| P3 | input model — delete `LetterInputMode`, add `SlotBehavior` | −60 |
-| P4 | extract the input machine from `PlateCanvas`; **fixes the confirmed live state-reuse bug** (§1 above) | ±0 (structural — but this is the highest-risk phase in the plan, not the lightest) |
-| P5 | value semantics — equality, `_props`, kill `copyWith` | −85 |
-| P6 | plate text into the model, merge `ShowPlate`/`PlateText` | −35 |
-| P7 | validation as data | −60 lib, −35 holder |
-| P8 | country decoupling — `PlateAsset`, alphabet `direction` | −35 |
-| P9 | keypad compaction — one `_KeyGrid` | −90 |
-| | **`lib/` after P9** | **2 588 → ~2 075** |
+| P1 | plate text into the model | −35 |
+| P2 | validation stops blocking | −45 lib, −45 holder |
+| P3 | country decoupling | −35 |
+| P4 | keypad compaction | −90 |
+| P5 | core surface | ±0 (moves, plus a barrel that shrinks) |
+| P6 | dead weight | −40 lib, −1 dependency |
 
-Then P10–P12 redistribute those ~2 075 lines:
+P2's holder number is bigger than the first edition's −35 because `_unavailableKeysFor`
+(35 lines) now goes away *entirely* rather than moving into core, and the keypad's
+`unavailableKeys` plumbing goes with it.
+
+Then P7–P9 redistribute what is left:
 
 | package | ~lines |
 |---|---|
-| `core_plate` | 1 475 |
-| `plate_keypad` | 315 |
+| `core_plate` | 1 400 |
+| `plate_keypad` | 280 |
 | `iran_plate` | 130 |
 | `germany_plate` | 130 |
-| `plate_number` facade | 25 |
 
-**Core ends at ~57 % of today's single package**, and the number a consumer actually compiles
-for one country is ~1 600 rather than 2 588 — before counting the two dependencies (`bloc_concurrency`,
-`country_flags`) that stop shipping at all.
-
-**The 2 588-line baseline is stale.** It predates P1, P0.5, P0.75 and the performance pass, all
-of which changed `lib/`. Re-measure before quoting a percentage; the *shape* of the budget —
-where the weight is and which phase removes it — is what still holds.
-
-P1–P9 are worth doing on their own merits. If the split were abandoned after P9 the library
-would still be materially better. P10–P12 are then close to mechanical.
+The number that matters is not the total; it is **what one consumer compiles**. An app that
+wants Iranian car plates and drives input from the system keyboard compiles `core_plate` +
+`iran_plate` and nothing else. P9's isolation check is what proves it, and it is the only
+place in this plan where the claim is verified rather than asserted.
 
 ---
 
-## 4. Phase index
+## 5. Widgets, not widget functions
 
-Ordering principle: **data-structure changes first** (they cascade into everything downstream),
-then behaviour extraction, then packaging. Each phase ends analyzer-clean with
-`plate_number_holder` still running.
+Unchanged from the first edition, restated here so no phase has to go looking. `claude.md` §1
+forbids widget-returning functions. Each phase converts the ones in the files it already
+edits, under one constraint: **only where the widget class is not materially longer than the
+function it replaces.** A short helper used once inside a single `build`, or one closing over
+several locals that would each become a field, an argument and a `final`, gets inlined into
+its caller instead of promoted. If a conversion would roughly double what it removes and buy
+no rebuild isolation, the phase leaves it and says so in its report. Builder callbacks
+(`BlocBuilder`, `AnimatedBuilder`, `LayoutBuilder`, `ValueListenableBuilder`) are the standing
+exception.
 
-| | skill | what it changes | breaks |
-|---|---|---|---|
-| P0.5 | `p0.5-repo-hygiene` | rewrites `README.md` to the real API; deletes/relocates dead assets | `README.md`, `assets/`, `.gitignore`, `pubspec.yaml` |
-| P0.75 | `p0.75-package-template` | removes `android/`/`linux/`/`windows/`/`web/` app scaffolding; `.metadata` → `project_type: package` | repo root only, no Dart source |
-| P1 | `p1-slot-identity` | `PlateSlot` loses `index`/`next`; positions come from list order | `plate_canvas`, `plate_spec`, **and the full `device_stage.dart` chain — see its expanded holder section** |
-| P2 | `p2-plate-geometry` | `PlateBox` + `PlatePanel`; `PlateSpec` 12 face fields → 5 | all three specs, `plate_canvas`, `country_panel` |
-| P3 | `p3-input-model` | `LetterInputMode` deleted; `SlotBehavior` resolved once | `plate_slot_item`, `plate_canvas`, holder's `plate_display` |
-| P4 | `p4-input-machine` | focus/navigation out of `_PlateCanvasState` | `plate_canvas`, `plate_input_controller` |
-| P5 | `p5-value-semantics` | `==` where it is load-bearing; `_props`; ids | models, theme, bloc state, **and `test/bloc_test.dart`'s direct `copyWith` call** |
-| P6 | `p6-plate-text` | group rendering into `PlateSpec`; one empty-state widget | `show_plate`, `plate_spec` |
-| P7 | `p7-validation-as-data` | `PlateValidator` in core; Germany becomes two `Set`s; forbidden-pairs sourced from `docs/forbidden.json` once, not duplicated | validator, canvas, holder |
-| P7.5 | `p7.5-district-data` | decide + implement whether `docs/districts.json`'s ~150 real codes back the district check | `german_plate_validator`, `docs/districts.json` |
-| P8 | `p8-country-decoupling` | `PlateAsset` on `PlateCountry`; alphabet `direction` | `plate_flag`, `plate_keypad`, `country_panel`, pubspec |
-| P9 | `p9-keypad-compaction` | one `_KeyGrid` for both pads | `plate_keypad` only |
-| P10 | `p10-core-package` | `packages/core_plate` + workspace + facade | every import |
-| P11 | `p11-country-packages` | `iran_plate`, `germany_plate` | specs, assets, tests |
-| P12 | `p12-keypad-package-and-cutover` | `plate_keypad`; holder points at real packages | holder pubspec |
-
-Dependencies:
-
-- **P0.5 depends on nothing** and blocks nothing downstream. It touches no Dart code that later
-  phases edit. Run it whenever — first, if the goal is "stop the bleeding" before a long
-  refactor; last, if the goal is momentum on the actual code. It is listed first because it is
-  the cheapest, highest-visibility fix in the whole plan: a stranger reading this package today
-  cannot get past the README's first `import`.
-- **P0.75 depends on nothing** either, and is sequenced right after P0.5 rather than anywhere
-  else purely by convention (both are "fix the repo, not the code" phases). It touches no file
-  any Dart phase edits. Safe to run in parallel with P0.5, or skip entirely if the team decides
-  the platform folders are staying for now — nothing downstream assumes they are gone.
-- **P9 is independent.** It touches only `plate_keypad.dart` and can be run any time after P8
-  (which removes the Persian defaults it would otherwise re-introduce).
-- **P6 is independent** of P4/P5 and can be pulled forward if you want an early win.
-- **P7.5 depends on P7** (it edits the same file `ForbiddenByGroup` lands in) but is split out
-  because it is a product decision — validate against a real district list or not — not a
-  mechanical refactor, and bundling a decision into a refactor phase is how decisions get made
-  by default instead of on purpose.
-
----
-
-## 4b. Widgets, not widget functions
-
-Added after the first pass through this plan, and folded into every phase from P1 on rather
-than given a phase of its own: `claude.md` §1 forbids widget-returning functions, and the
-codebase still has a few. Each phase converts the ones in the files it already edits, under one
-constraint — **only where the widget class is not materially longer than the function it
-replaces.** A short helper used once inside a single `build`, or one closing over several
-locals that would each become a field, an argument and a `final`, gets inlined into its caller
-instead of promoted. If a conversion would roughly double what it removes and buy no rebuild
-isolation, the phase leaves it and says so. Builder callbacks are the standing exception.
-
-Where they actually are, so no phase has to go looking:
+Where they are today:
 
 | file | functions | phase |
 |---|---|---|
-| `plate_slot_item.dart` | `_buildTypedField`, `_buildChosenSlot` | P3 (rewrites both anyway) |
-| `plate_keypad.dart` | `_buildDigitKey`, `_buildLettersLayer` | P9 (`_KeyGrid` is their replacement) |
-| holder `showcase/device_stage.dart` | `_buildDevice` | P7, if it comes out at a similar length |
+| `plate_keypad.dart` | `_buildDigitKey`, `_buildLettersLayer` | P4 (`_KeyGrid` is their replacement) |
+| holder `showcase/device_stage.dart` | `_buildDevice` | P2, if it comes out at a similar length |
 
-`plate_canvas.dart` has none left — `_FrameBinding`, `_SlotBinding` and `_PlateFaceClipper` are
-already classes, which is exactly why the performance pass could isolate their rebuilds.
+`plate_canvas.dart` has none — `_FrameBinding`, `_SlotBinding` and `_PlateFaceClipper` are
+already classes, which is why the animation performance pass could isolate their rebuilds.
+**Nothing in this plan may undo that isolation.** Every phase that touches the canvas or the
+holder's stage inherits the rule: a rebuild that is currently scoped to one slot, one frame or
+one key stays scoped there.
 
 ---
 
-## 5. Decisions still open
+## 6. Decisions
 
-These change the shape of P10–P12. Worth settling before P10, cheap to settle now.
+Settled on 2026-08-31, recorded here so no phase re-opens them:
 
-1. **Package names.** `core_plate` / `iran_plate` / `germany_plate` (as requested) versus
-   `plate_core` / `plate_ir` / `plate_de`. The prefixed form sorts together on pub.dev and
-   reads as a family; the suffixed form reads better in code (`iran_plate` is a noun).
-   The plan is written for the suffixed form; a rename is one `sed` before P10.
+1. **Layout: siblings.** Separate directories beside `core-plate`, each its own package
+   depending on `core_plate`. No `packages/` subdirectory, no pub workspace.
+2. **Validation: verdict only, opt-in.** Red when `autoValidate` is on and the plate is
+   invalid. Never blocks a key. See §1.
+3. **Package names:** `core_plate`, `iran_plate`, `germany_plate`, `plate_keypad` (directories
+   `core-plate`, `iran-plate`, `germany-plate`, `plate-keypad`).
+4. **The `plate_number` facade is retired.** The holder depends on the four packages directly.
+5. **Keep `bloc`.** `PlateCardBloc` is the package's published contract and the holder is
+   bloc-shaped throughout. P5 nonetheless keeps the input machine free of any bloc dependency,
+   so this stays a one-file decision if it is ever revisited.
 
-2. **Publish to pub.dev, or path-only?** If published, each package needs its own version,
-   CHANGELOG and LICENSE, and `iran_plate` must depend on a published `core_plate` *range*
-   rather than a path — which makes the `plate_number` facade permanent rather than
-   temporary, since that is what a user would sensibly depend on. If path-only, retire the
-   facade in P12 as planned.
+Still open, and each is a question a phase must **ask, not assume**:
 
-3. **Keep `bloc`?** `PlateCardBloc` is 27 lines over three events. It costs consumers `bloc`,
-   `flutter_bloc` and `bloc_test`. A `ValueNotifier<PlateCardState>` would do the same job with
-   zero dependencies. **Recommendation: keep it** — it is the package's published contract and
-   the holder app is bloc-shaped throughout — but P4 deliberately gives the input machine *no*
-   bloc dependency (it takes a read callback and a commit callback), so this stays a
-   one-file decision later rather than a rewrite.
+6. **Publish to pub.dev, or path-only?** (P9.) If published, each package needs its own
+   version, `CHANGELOG.md` and `LICENSE`, and the three dependants must name a published
+   `core_plate` range rather than a path — with the paths kept only as
+   `dependency_overrides` for local development. If path-only, the paths stay as they are.
+7. **Does `PlateCharacterPicker` belong in core?** (P7.) It is Cupertino-flavoured, ~62 lines,
+   and `PlateCanvas.onChooseCharacter` already lets a host supply its own. Moving it into
+   `plate_keypad` would take core's last `package:flutter/cupertino.dart` import with it and
+   make `onChooseCharacter` required — an API break.
+8. **Does `docs/districts.json` back the German district check?** (P8.) ~150 real
+   `Unterscheidungszeichen` codes sit in the repo, read by nothing; the validator's regex
+   accepts any 1–3 Latin letters, so `QQ` passes today. Wiring the real list in is a product
+   decision — stricter validation, a data file to maintain — not a refactor one. It rides
+   along with P8 because that is the phase that already moves the validator, but it is asked
+   separately.
 
-4. **Does `PlateCharacterPicker` belong in core?** It is Cupertino-flavoured and 62 lines, and
-   `PlateCanvas.onChooseCharacter` already lets a host supply its own. Candidate for
-   `plate_keypad` (renamed `plate_input_ui`) in P12. Not decided here.
+Also unresolved and deliberately left alone: `docs/forbidden.json` duplicates
+`_forbiddenLetterPairs` / `_forbiddenNumbers` by hand. P2 resolves it while it is already in
+that file — one source of truth, either direction, stated in the commit message.
+
+---
+
+## What happened to the old numbering
+
+The first edition ran P0.5, P0.75, P1 … P12, with a P7.5 wedged in. Everything from its P6 on
+described the `packages/`-inside-one-repo target and the blocking validator, both of which are
+now wrong. Rather than patch fourteen files, the remaining work is renumbered as a clean
+**P1 … P9** in `docs/split/phases/`.
+
+Mapping, for anyone reading an old commit message or an old note:
+
+| old | new |
+|---|---|
+| P0.5, P0.75, P1–P5 | landed; history, not re-run |
+| P6 plate text | **P1**, unchanged in substance |
+| P7 validation as data | **P2**, *inverted* — it no longer bars keys |
+| P7.5 district data | folded into **P8** as a question |
+| P8 country decoupling | **P3**, unchanged in substance |
+| P9 keypad compaction | **P4**, minus the `unavailableKeys` plumbing |
+| — | **P5** core surface (new — the split needs it) |
+| — | **P6** dead weight (new — was scattered through the old phases) |
+| P10 core package | **P9**, and it is a rename rather than a `packages/` move |
+| P11 country packages | **P8**, as sibling repos |
+| P12 keypad + cutover | split: **P7** (extract) and **P9** (cut over) |
+
+`docs/split/skills/p6-…` through `p12-…` are superseded and should be deleted. `p0.5` …
+`p5` are the record of what landed and are worth keeping until P9, which rewrites the
+documentation anyway.
