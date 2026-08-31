@@ -43,24 +43,6 @@ class PlateKeypadTheme {
 
   /// Label colour of a flashed (highlighted) key.
   final Color highlightInk;
-
-  PlateKeypadTheme copyWith({
-    Color? surface,
-    Color? keyBorder,
-    Color? ink,
-    Color? disabledInk,
-    Color? highlight,
-    Color? highlightInk,
-  }) {
-    return PlateKeypadTheme(
-      surface: surface ?? this.surface,
-      keyBorder: keyBorder ?? this.keyBorder,
-      ink: ink ?? this.ink,
-      disabledInk: disabledInk ?? this.disabledInk,
-      highlight: highlight ?? this.highlight,
-      highlightInk: highlightInk ?? this.highlightInk,
-    );
-  }
 }
 
 /// A fake soft keyboard drawn inside the device screen, below the plate.
@@ -311,7 +293,7 @@ class _KeyGrid extends StatelessWidget {
   final String? highlightedKey;
   final ValueListenable<String?>? highlightedKeyListenable;
   final ValueChanged<String>? onKey;
-  final Function(String) keyEnabled;
+  final bool Function(String) keyEnabled;
 
   @override
   Widget build(BuildContext context) {

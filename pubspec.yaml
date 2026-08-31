@@ -13,12 +13,10 @@ dependencies:
   flutter_bloc: ^9.1.1
   bloc: ^9.2.1
   flutter_svg: ^2.0.0
-  args: ^2.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  bloc_test: ^10.0.0
   flutter_lints: ^6.0.0
 
 flutter:
