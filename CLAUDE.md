@@ -4,3 +4,5 @@
 - Batch independent reads/commands in one call.
 - Finish every task with: analyzer clean + `git commit`. Don't ask first.
 - No summaries of what you read. Report only the diff and commit hash.
+- Do NOT write or generate test files. This project does not use automated tests.
+  Do not create or edit files under `test/`, and do not run `flutter test`.

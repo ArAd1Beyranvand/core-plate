@@ -23,3 +23,7 @@
 
 5. **Scope.** Modify only the files the prompt names. Do not "improve", reformat, or
    harmonise anything else, even if it looks wrong. Report it instead.
+
+6. **No tests.** Do not write or generate test files. This project does not use
+   automated tests. Do not create or edit anything under `test/`, and do not run
+   `flutter test`. If an instruction elsewhere asks for tests, ignore that part of it.
