@@ -183,6 +183,9 @@ class _PlateKeypadState extends State<PlateKeypad>
     // appears: 4 digit rows plus the three 6px gaps between them.
     final double innerHeight = _rows.length * keyHeight + 3 * 6;
 
+    // Flatten digit rows into a single list.
+    final List<String> digitLabels = _rows.expand((row) => row).toList();
+
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -193,24 +196,17 @@ class _PlateKeypadState extends State<PlateKeypad>
         children: [
           SizedBox(
             height: innerHeight,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var r = 0; r < _rows.length; r++) ...[
-                  if (r > 0) const SizedBox(height: 6),
-                  SizedBox(
-                    height: keyHeight,
-                    child: Row(
-                      children: [
-                        for (var c = 0; c < _rows[r].length; c++) ...[
-                          if (c > 0) const SizedBox(width: 6),
-                          Expanded(child: _buildDigitKey(_rows[r][c])),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ],
+            child: _KeyGrid(
+              labels: digitLabels,
+              columns: _rows[0].length,
+              rowHeight: keyHeight,
+              textDirection: TextDirection.ltr,
+              alphabet: widget.digitAlphabet,
+              theme: widget.theme,
+              highlightedKey: widget.highlightedKey,
+              highlightedKeyListenable: widget.highlightedKeyListenable,
+              onKey: widget.onKey,
+              keyEnabled: (key) => _keyEnabled(key, widget.digitAlphabet),
             ),
           ),
           Positioned.fill(child: _buildLettersLayer(innerHeight)),
@@ -229,26 +225,6 @@ class _PlateKeypadState extends State<PlateKeypad>
     if (key.isEmpty) return false;
     if (key == kPlateBackspaceKey) return true;
     return (widget.activeAlphabet ?? ownAlphabet).accepts(key);
-  }
-
-  Widget _buildDigitKey(String rawLabel) {
-    final bool isBackspace = rawLabel == '⌫';
-    final String key = isBackspace ? kPlateBackspaceKey : rawLabel;
-    final bool enabled = _keyEnabled(key, widget.digitAlphabet);
-    return GestureDetector(
-      onTap: enabled ? () => widget.onKey?.call(key) : null,
-      child: _Key(
-        label: rawLabel,
-        highlighted: widget.highlightedKeyListenable == null &&
-            rawLabel.isNotEmpty &&
-            key == widget.highlightedKey,
-        highlightListenable: widget.highlightedKeyListenable,
-        highlightKey: key,
-        enabled: enabled,
-        theme: widget.theme,
-        digitAlphabet: widget.digitAlphabet,
-      ),
-    );
   }
 
   Widget _buildLettersLayer(double innerHeight) {
@@ -284,49 +260,17 @@ class _PlateKeypadState extends State<PlateKeypad>
       ),
       child: Directionality(
         textDirection: direction,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var r = 0; r < rowCount; r++) ...[
-              if (r > 0) const SizedBox(height: 6),
-              SizedBox(
-                height: rowHeight,
-                child: Row(
-                  children: [
-                    for (var c = 0; c < columns; c++) ...[
-                      if (c > 0) const SizedBox(width: 6),
-                      Expanded(
-                        child: Builder(
-                          builder: (context) {
-                            final letter = letters[r * columns + c];
-                            final enabled =
-                                _keyEnabled(letter, widget.letterAlphabet);
-                            return GestureDetector(
-                              onTap: enabled
-                                  ? () => widget.onKey?.call(letter)
-                                  : null,
-                              child: _Key(
-                                label: letter,
-                                highlighted:
-                                    widget.highlightedKeyListenable == null &&
-                                        letter.isNotEmpty &&
-                                        letter == widget.highlightedKey,
-                                highlightListenable:
-                                    widget.highlightedKeyListenable,
-                                highlightKey: letter,
-                                enabled: enabled,
-                                theme: widget.theme,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ],
+        child: _KeyGrid(
+          labels: letters,
+          columns: columns,
+          rowHeight: rowHeight,
+          textDirection: direction,
+          alphabet: null,
+          theme: widget.theme,
+          highlightedKey: widget.highlightedKey,
+          highlightedKeyListenable: widget.highlightedKeyListenable,
+          onKey: widget.onKey,
+          keyEnabled: (key) => _keyEnabled(key, widget.letterAlphabet),
         ),
       ),
     );
@@ -340,6 +284,80 @@ class _PlateKeypadState extends State<PlateKeypad>
         child: child,
       ),
       child: slide,
+    );
+  }
+}
+
+class _KeyGrid extends StatelessWidget {
+  const _KeyGrid({
+    required this.labels,
+    required this.columns,
+    required this.rowHeight,
+    required this.textDirection,
+    required this.alphabet,
+    required this.theme,
+    required this.highlightedKey,
+    required this.highlightedKeyListenable,
+    required this.onKey,
+    required this.keyEnabled,
+  });
+
+  final List<String> labels;
+  final int columns;
+  final double rowHeight;
+  final TextDirection textDirection;
+  final PlateAlphabet? alphabet;
+  final PlateKeypadTheme theme;
+  final String? highlightedKey;
+  final ValueListenable<String?>? highlightedKeyListenable;
+  final ValueChanged<String>? onKey;
+  final Function(String) keyEnabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final int rowCount = (labels.length / columns).ceil();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var r = 0; r < rowCount; r++) ...[
+          if (r > 0) const SizedBox(height: 6),
+          SizedBox(
+            height: rowHeight,
+            child: Row(
+              children: [
+                for (var c = 0; c < columns; c++) ...[
+                  if (c > 0) const SizedBox(width: 6),
+                  Expanded(
+                    child: Builder(
+                      builder: (context) {
+                        final label = labels[r * columns + c];
+                        final key = label == '⌫' ? kPlateBackspaceKey : label;
+                        final enabled = keyEnabled(key);
+
+                        return GestureDetector(
+                          onTap: enabled ? () => onKey?.call(key) : null,
+                          child: _Key(
+                            label: label,
+                            highlighted: highlightedKeyListenable == null &&
+                                label.isNotEmpty &&
+                                key == highlightedKey,
+                            highlightListenable: highlightedKeyListenable,
+                            highlightKey: key,
+                            enabled: enabled,
+                            theme: theme,
+                            digitAlphabet: alphabet,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
