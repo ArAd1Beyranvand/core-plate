@@ -33,7 +33,7 @@ plan any more. Delete those directories; see `PLAN.md`'s closing mapping.
 | P4 | keypad compaction | `p4-keypad-compaction` | −90 | todo | | |
 | P5 | core public surface | `p5-core-surface` | ±0 | todo | | |
 | P6 | dead weight | `p6-core-dead-weight` | −40, −1 dep | todo | | |
-| P7 | extract `plate-keypad` | `p7-extract-keypad` | ±0 | todo | | |
+| P7 | extract `plate-keypad` | `p7-extract-keypad` | ±0 | done | | see log |
 | P8 | extract `iran-plate` + `germany-plate` | `p8-extract-countries` | ±0 | todo | | |
 | P9 | cutover: rename, docs, isolation proof | `p9-cutover` | ±0 | todo | | |
 
@@ -76,7 +76,7 @@ Each is a product decision, asked by exactly one phase, and none of them default
 
 | question | asked by | `PLAN.md` |
 |---|---|---|
-| does `PlateCharacterPicker` move into `plate_keypad`? | P7 | §6.7 |
+| does `PlateCharacterPicker` move into `plate_keypad`? — **yes** (2026-08-31) | P7 | §6.7 |
 | does `docs/districts.json` back the German district check? | P8 | §6.8 |
 | publish to pub.dev, or path-only? | P9 | §6.6 |
 
@@ -115,6 +115,19 @@ phase inherits the same mistake.
   there; that call site is P2's. No widget functions in `show_plate.dart` to convert.
   Net +41 lib lines vs the −35 estimate — `SKILL.md`'s own budget was optimistic about how
   much three documented model methods cost.
+- 2026-08-31 — P7 landed. `../plate-keypad` (package `plate_keypad`) created as a sibling,
+  `git init` + scaffold commit, then `plate_keypad.dart` and `plate_character_picker.dart`
+  moved in as a plain add/delete (cross-repo, history not preserved; "extracted from
+  plate-core at 9c443e6" in the commit). Barrel exports both files whole — every non-private
+  top-level name was already public, so no `show:` clauses. `analysis_options.yaml` copied
+  from core (4th hand-synced copy; noted in-file). Only core import is
+  `package:plate_number/plate_number.dart` for `PlateAlphabet` — analyzer confirms nothing
+  else leaked. **PlateCharacterPicker question answered yes**, so `PlateCanvas.onChooseCharacter`
+  became `required` (SKILL's "moves files without editing bodies" held for the moved files,
+  but this one caller in core and three holder call sites had to change). Core lost its last
+  `package:flutter/cupertino.dart`. Holder gained `plate_keypad` path dep; keypad/picker
+  imports rewritten in `device_stage.dart`, `plate_typist.dart`, `minimal/main.dart`; pubspec
+  layout comment updated to the sibling plan.
 - 2026-08-31 — second edition written. Old P6–P12 superseded: validation inverted (no longer
   blocks input), packages become siblings of `core-plate` rather than a `packages/` directory
   inside it, and two new phases (P5 core surface, P6 dead weight) added because the split needs

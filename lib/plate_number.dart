@@ -72,11 +72,10 @@ export 'src/widgets/show_plate.dart';
 export 'src/widgets/country_panel.dart';
 export 'src/widgets/plate_flag.dart';
 
-/// The optional in-package keypad, for hosts that do not render their own.
-export 'src/widgets/plate_keypad.dart';
-
-/// The modal wheel a `chosen` alphabet slot opens.
-export 'src/widgets/plate_character_picker.dart';
+// The on-screen keypad and the `chosen`-slot character picker moved to the
+// `plate_keypad` package in P7. A host that wants either now depends on
+// `plate_keypad` and passes `PlateCharacterPicker.show` as
+// [PlateCanvas.onChooseCharacter].
 
 // ---------------------------------------------------------------------------
 // Input — driving character entry from outside the plate.

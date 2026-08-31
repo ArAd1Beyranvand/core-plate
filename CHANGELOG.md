@@ -1,5 +1,21 @@
 ## Unreleased
 
+### P7 — keypad extracted to its own package
+
+- **Breaking: the on-screen keypad has left core.** `PlateKeypad`,
+  `PlateKeypadTheme`, `kPlateBackspaceKey`, `kPlateKeypadSlide` and
+  `PlateCharacterPicker` are **removed** from `plate_number` and now live in the
+  sibling package `plate_keypad` (`path: ../plate-keypad`). Switch
+  `import 'package:plate_number/plate_number.dart';` to
+  `import 'package:plate_keypad/plate_keypad.dart';` for those names; the keypad
+  package depends on `plate_number` for `PlateAlphabet`, so both imports coexist.
+- **Breaking: `PlateCanvas.onChooseCharacter` is now `required`.** It used to
+  default to an internal `PlateCharacterPicker`; that picker moved out with the
+  keypad, so core no longer has a fallback. Pass
+  `PlateCharacterPicker.show` from `plate_keypad`, or any
+  `Future<String?> Function(PlateAlphabet)` of your own.
+- Core no longer imports `package:flutter/cupertino.dart` anywhere.
+
 ### P3 — country decoupling
 
 - **Breaking: the core no longer names a country.** `PlateCountry.iran` /

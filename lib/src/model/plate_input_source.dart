@@ -8,8 +8,8 @@ enum PlateInputSource {
   /// Accept physical key presses only; the on-screen IME is suppressed.
   hardwareKeyboard,
 
-  /// Route input through the library's own on-screen [PlateKeypad]; the IME
-  /// is suppressed.
+  /// Route input through the on-screen keypad from the `plate_keypad` package;
+  /// the IME is suppressed.
   packageKeypad,
 
   /// The host app supplies every character through [PlateInputController];

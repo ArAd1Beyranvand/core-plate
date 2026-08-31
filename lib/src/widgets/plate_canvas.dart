@@ -12,7 +12,6 @@ import '../theme/plate_theme.dart';
 import 'plate_slot_item.dart';
 import 'plate_frame.dart';
 import 'country_panel.dart';
-import 'plate_character_picker.dart';
 import '../input/plate_input_controller.dart';
 import '../input/plate_input_machine.dart';
 import '../validators/plate_validator.dart';
@@ -24,7 +23,7 @@ class PlateCanvas extends StatefulWidget {
     this.mode = PlateMode.input,
     this.theme,
     this.inputSource,
-    this.onChooseCharacter,
+    required this.onChooseCharacter,
     this.onActiveIndexChanged,
     this.controller,
     this.validator,
@@ -35,7 +34,12 @@ class PlateCanvas extends StatefulWidget {
   final PlateMode mode;
   final PlateTheme? theme;
   final PlateInputSource? inputSource;
-  final Future<String?> Function(PlateAlphabet alphabet)? onChooseCharacter;
+
+  /// Presents a character chooser for a `chosen`-alphabet slot and returns the
+  /// picked character, or null if dismissed. Required: core ships no built-in
+  /// chooser — the `plate_keypad` package's `PlateCharacterPicker.show` is the
+  /// usual value, but any modal that resolves to a `String?` works.
+  final Future<String?> Function(PlateAlphabet alphabet) onChooseCharacter;
   final ValueChanged<int?>? onActiveIndexChanged;
   final PlateInputController? controller;
 
@@ -167,9 +171,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
   Future<void> _openPicker(int index) async {
     final slot = widget.spec.slots[index];
     final bloc = context.read<PlateCardBloc>();
-    final chosen = widget.onChooseCharacter != null
-        ? await widget.onChooseCharacter!(slot.alphabet)
-        : await PlateCharacterPicker.show(context, slot.alphabet);
+    final chosen = await widget.onChooseCharacter(slot.alphabet);
     if (chosen == null) return;
     bloc.add(ValueIsChanged(index: index, value: chosen));
     final next = widget.spec.nextIndex(index);

@@ -295,10 +295,11 @@ Still open, and each is a question a phase must **ask, not assume**:
    version, `CHANGELOG.md` and `LICENSE`, and the three dependants must name a published
    `core_plate` range rather than a path — with the paths kept only as
    `dependency_overrides` for local development. If path-only, the paths stay as they are.
-7. **Does `PlateCharacterPicker` belong in core?** (P7.) It is Cupertino-flavoured, ~62 lines,
-   and `PlateCanvas.onChooseCharacter` already lets a host supply its own. Moving it into
-   `plate_keypad` would take core's last `package:flutter/cupertino.dart` import with it and
-   make `onChooseCharacter` required — an API break.
+7. **Does `PlateCharacterPicker` belong in core?** (P7.) **Answered 2026-08-31: no — it moves
+   into `plate_keypad`.** The Cupertino slot picker leaves core with the keypad, taking core's
+   last `package:flutter/cupertino.dart` import. `PlateCanvas.onChooseCharacter` is now
+   `required` — the accepted API break; core ships no built-in chooser, and a host with
+   `chosen`-alphabet slots passes `PlateCharacterPicker.show` from `plate_keypad`.
 8. **Does `docs/districts.json` back the German district check?** (P8.) ~150 real
    `Unterscheidungszeichen` codes sit in the repo, read by nothing; the validator's regex
    accepts any 1–3 Latin letters, so `QQ` passes today. Wiring the real list in is a product

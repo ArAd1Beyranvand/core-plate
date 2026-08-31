@@ -3,7 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../bloc/plate_card_bloc.dart';
 import '../model/plate_number.dart';
+import '../model/plate_alphabet.dart';
 import 'plate_canvas.dart';
+
+Future<String?> _noCharacterChooser(PlateAlphabet _) async => null;
 
 /// Read-only plate view. Renders the real graphical plate (pixel-identical to
 /// the input widget) driven straight off [PlateCardBloc] state, in
@@ -22,7 +25,13 @@ class ShowPlate extends StatelessWidget {
         if (state.plateNumber.isEmpty()) {
           return _EmptyPlate(emptyPlate);
         }
-        return PlateCanvas(spec: state.spec, mode: PlateMode.display);
+        return PlateCanvas(
+          spec: state.spec,
+          mode: PlateMode.display,
+          // Display mode never opens a chooser; onChooseCharacter is required
+          // since the keypad split, so satisfy it with one that is never called.
+          onChooseCharacter: _noCharacterChooser,
+        );
       },
     );
   }
