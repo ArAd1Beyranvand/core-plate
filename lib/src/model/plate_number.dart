@@ -1,13 +1,16 @@
 import 'package:flutter/foundation.dart';
 
+@immutable
 class PlateNumber {
-  final List<String?> values;
+  final List<String?> _values;
 
-  PlateNumber({required this.values});
+  PlateNumber({required List<String?> values}) : _values = List.unmodifiable(values);
 
-  bool isCompleted() => !values.any((e) => e == null || e == '');
+  List<String?> get values => _values;
 
-  bool isEmpty() => !values.any((e) => e != null);
+  bool get isCompleted => !values.any((e) => e == null || e == '');
+
+  bool get isEmpty => !values.any((e) => e != null);
 
   /// Value equality over [values].
   ///

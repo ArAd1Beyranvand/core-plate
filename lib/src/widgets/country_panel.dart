@@ -95,13 +95,15 @@ class _Caption extends StatelessWidget {
   final Color color;
   final double scale;
 
+  static const double _baseFontSize = 24.0;
+
   @override
   Widget build(BuildContext context) {
     final style = TextStyle(
       color: color,
       fontWeight: FontWeight.w800,
       height: 1.0,
-      fontSize: 24 * scale,
+      fontSize: _baseFontSize * scale,
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

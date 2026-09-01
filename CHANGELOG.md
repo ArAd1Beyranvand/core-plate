@@ -1,4 +1,15 @@
-## Unreleased
+## 0.1.0
+
+First pub.dev release. The four packages (`core_plate`, `iran_plate`,
+`germany_plate`, `plate_keypad`) are now published with versioned
+dependencies — the country and keypad packages depend on `core_plate: ^0.1.0`
+rather than a sibling `path:`.
+
+- `PlateCanvas` now wraps its face in a `Material`, so it renders outside a
+  `Scaffold` without throwing.
+- `PlateCanvas` dispatches `SpecIsChanged` to the `PlateCardBloc` when its
+  `spec` changes, keeping the bloc's value list the right length for the new
+  spec.
 
 ### P9 — the rename, and the split settles
 
@@ -167,7 +178,7 @@ its name; it is a domain type, not the package.
   the source of truth.
 - Rewrote `README.md` against the current `PlateSpec`/`PlateCanvas` API.
 
-## 0.1.0
+## 0.0.1 — history as `plate_number`
 
 - **Breaking:** Removed `CarPlateNumber` and `BicyclePlateNumber`. Use
   `PlateCanvas(spec: PlateSpecs.irCar)` and

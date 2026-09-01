@@ -1,0 +1,28 @@
+name: core_plate_example
+description: Minimal example — a PlateCanvas driven by a PlateCardBloc.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  core_plate: ^0.1.0
+  # A concrete spec to render; core_plate itself ships none.
+  iran_plate: ^0.1.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+# Local development only — resolves the sibling packages from this checkout
+# before they are on pub.dev. A fresh consumer copying this example deletes
+# this block and relies on the versioned dependencies above.
+dependency_overrides:
+  core_plate:
+    path: ../
+  iran_plate:
+    path: ../../iran-plate

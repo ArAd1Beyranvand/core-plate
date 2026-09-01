@@ -22,7 +22,7 @@ class ShowPlate extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
       builder: (context, state) {
-        if (state.plateNumber.isEmpty()) {
+        if (state.plateNumber.isEmpty) {
           return _EmptyPlate(emptyPlate);
         }
         return PlateCanvas(
@@ -38,10 +38,7 @@ class ShowPlate extends StatelessWidget {
 }
 
 /// The shared fallback shown by [ShowPlate] and [PlateText] when the plate has
-/// no value: the caller's [replacement] if given, else a plain placeholder.
-///
-/// "Default Widget for Empty Plate Value" is developer-facing copy sitting in a
-/// shipping default; kept verbatim here because changing it is a product call.
+/// no value: the caller's [replacement] if given, else an empty widget.
 class _EmptyPlate extends StatelessWidget {
   const _EmptyPlate(this.replacement);
 
@@ -49,11 +46,7 @@ class _EmptyPlate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return replacement ??
-        const Text(
-          'Default Widget for Empty Plate Value',
-          style: TextStyle(fontSize: 18),
-        );
+    return replacement ?? SizedBox.shrink();
   }
 }
 
@@ -70,7 +63,7 @@ class PlateText extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
       builder: (context, state) {
-        if (state.plateNumber.isEmpty()) {
+        if (state.plateNumber.isEmpty) {
           return _EmptyPlate(emptyPlate);
         }
         final spec = state.spec;

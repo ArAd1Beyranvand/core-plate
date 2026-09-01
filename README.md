@@ -37,10 +37,8 @@ keyboard. Depend on two packages.
 
 ```yaml
 dependencies:
-  core_plate:
-    path: ../core-plate
-  iran_plate:
-    path: ../iran-plate
+  core_plate: ^0.1.0
+  iran_plate: ^0.1.0
 ```
 
 ```dart
@@ -49,17 +47,22 @@ import 'package:iran_plate/iran_plate.dart';
 ```
 
 Add `plate_keypad` only if you want the bundled on-screen keyboard; add
-`germany_plate` only if you also draw German plates.
-
-> These packages are **path-only** — they resolve against sibling checkouts, not
-> pub.dev (see `docs/split/PLAN.md` §6.6). Use them from a working tree that has all
-> the directories you need side by side.
+`germany_plate` only if you also draw German plates. `iran_plate`,
+`germany_plate` and `plate_keypad` each depend on `core_plate`, so you never
+name a version for it that they don't already agree on.
 
 ## Usage
 
 `PlateCanvas` renders a plate for a given `PlateSpec` and reads its state from a
-`PlateCardBloc` you provide above it in the widget tree. Create the bloc with the
-same spec you pass to the canvas:
+`PlateCardBloc` you provide above it in the widget tree. **The bloc is a required
+dependency** — `PlateCanvas` calls `context.read<PlateCardBloc>()` and has no
+fallback; wrap it in a `BlocProvider<PlateCardBloc>` (or otherwise make one
+available) or it throws on build. Create the bloc with the same spec you pass to
+the canvas, and if you later swap `spec:` on the canvas, the canvas resets the
+bloc to match.
+
+`PlateCanvas` supplies its own `Material`, so it renders correctly outside a
+`Scaffold`.
 
 ```dart
 import 'package:flutter/material.dart';

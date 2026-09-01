@@ -1,21 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../model/plate_box.dart';
-import '../model/plate_number.dart';
-import '../model/plate_spec.dart';
-import '../model/plate_alphabet.dart';
-import '../model/plate_input_source.dart';
-import '../model/slot_behavior.dart';
 import '../bloc/plate_card_bloc.dart';
-import '../theme/plate_theme.dart';
-import 'plate_slot_item.dart';
-import 'plate_frame.dart';
-import 'country_panel.dart';
 import '../input/plate_input_controller.dart';
 import '../input/plate_input_machine.dart';
+import '../model/plate_alphabet.dart';
+import '../model/plate_box.dart';
+import '../model/plate_input_source.dart';
+import '../model/plate_number.dart';
+import '../model/plate_spec.dart';
+import '../model/slot_behavior.dart';
+import '../theme/plate_theme.dart';
 import '../validators/plate_validator.dart';
+import 'country_panel.dart';
+import 'plate_frame.dart';
+import 'plate_slot_item.dart';
 
+/// The editable plate for a [PlateSpec].
+///
+/// **Requires a [PlateCardBloc] above it in the tree.** `PlateCanvas` reads and
+/// writes the plate's characters through `context.read<PlateCardBloc>()` and
+/// has no fallback — wrap it in a `BlocProvider<PlateCardBloc>` (created with
+/// the same spec) or it throws on first build. If you change [spec] on a live
+/// canvas, it dispatches `SpecIsChanged` so the bloc's value list stays the
+/// right length for the new spec.
+///
+/// `PlateCanvas` provides its own [Material], so it renders correctly without a
+/// [Scaffold] ancestor.
 class PlateCanvas extends StatefulWidget {
   const PlateCanvas({
     super.key,
@@ -77,6 +88,12 @@ class _PlateCanvasState extends State<PlateCanvas> {
     // an ordinary thing for a host to do — and the machine then holds the
     // previous plate's nodes: wrong slot, or off the end of the list outright.
     if (widget.spec.id != oldWidget.spec.id) {
+      // Keep the bloc's state in step with the new spec. The bloc still holds
+      // the previous plate's values — a different slot count — and every
+      // `values[index]` read below (slots, validation, commit) would be
+      // against the wrong-length list, off the end for a shorter spec. Reset
+      // it to the new spec's empty state before rebuilding the machine.
+      context.read<PlateCardBloc>().add(SpecIsChanged(widget.spec));
       oldWidget.controller?.detach(_machine);
       widget.controller?.detach(_machine);
       _machine.dispose();
@@ -330,7 +347,15 @@ class _PlateCanvasState extends State<PlateCanvas> {
           )
         : buildFace(theme);
 
-    return Theme(data: selectionTheme, child: face);
+    // Wrap in a Material so the typed slots' TextFields have the Material
+    // ancestor they require. Without this a consumer must place PlateCanvas
+    // under a Scaffold (or their own Material) or it throws on first build.
+    // `type: transparency` adds no ink or surface colour — the plate paints
+    // its own white face.
+    return Theme(
+      data: selectionTheme,
+      child: Material(type: MaterialType.transparency, child: face),
+    );
   }
 }
 
@@ -353,12 +378,59 @@ class _ValidationBinding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final verdict = context.select<PlateCardBloc, PlateValidation>(
-      (b) => validate(b.state.plateNumber.values),
+    // A `BlocSelector` folds the bloc state down to the verdict; because
+    // `PlateValidation` compares by reason, the builder runs only when the
+    // plate crosses between valid and invalid, not once per keystroke.
+    //
+    // The verdict is handed to `_VerdictListener`, which publishes it from its
+    // own lifecycle callbacks (`initState` / `didUpdateWidget`) rather than
+    // from `build`. `build` here no longer notifies anyone, and a rebuild that
+    // leaves the verdict unchanged publishes nothing.
+    return BlocSelector<PlateCardBloc, PlateCardState, PlateValidation>(
+      selector: (state) => validate(state.plateNumber.values),
+      builder: (context, verdict) => _VerdictListener(
+        verdict: verdict,
+        onVerdict: onVerdict,
+        child: builder(verdict),
+      ),
     );
-    onVerdict(verdict);
-    return builder(verdict);
   }
+}
+
+/// Publishes [verdict] to [onVerdict] from lifecycle callbacks — never from
+/// `build` — so the side effect fires exactly once per verdict flip.
+class _VerdictListener extends StatefulWidget {
+  const _VerdictListener({
+    required this.verdict,
+    required this.onVerdict,
+    required this.child,
+  });
+
+  final PlateValidation verdict;
+  final ValueChanged<PlateValidation> onVerdict;
+  final Widget child;
+
+  @override
+  State<_VerdictListener> createState() => _VerdictListenerState();
+}
+
+class _VerdictListenerState extends State<_VerdictListener> {
+  @override
+  void initState() {
+    super.initState();
+    widget.onVerdict(widget.verdict);
+  }
+
+  @override
+  void didUpdateWidget(_VerdictListener oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.verdict != oldWidget.verdict) {
+      widget.onVerdict(widget.verdict);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Positions a child in plate-space from a [PlateBox]. The one place the four
@@ -393,7 +465,7 @@ class _FrameBinding extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCompleted = context.select<PlateCardBloc, bool>(
-      (b) => b.state.plateNumber.isCompleted(),
+      (b) => b.state.plateNumber.isCompleted,
     );
     return PlateFrame(isCompleted: isCompleted, theme: theme);
   }
