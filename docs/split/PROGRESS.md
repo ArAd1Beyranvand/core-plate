@@ -27,15 +27,18 @@ plan any more. Delete those directories; see `PLAN.md`'s closing mapping.
 
 | | phase | skill | est. net lines | status | commit | actual |
 |---|---|---|---|---|---|---|
-| P1 | plate text into the model | `p1-plate-text` | −35 | done | | +41 |
-| P2 | validation stops blocking | `p2-validation-advisory` | −45 lib, −45 holder | todo | | |
-| P3 | country decoupling | `p3-country-decoupling` | −35 | todo | | |
-| P4 | keypad compaction | `p4-keypad-compaction` | −90 | todo | | |
-| P5 | core public surface | `p5-core-surface` | ±0 | todo | | |
-| P6 | dead weight | `p6-core-dead-weight` | −40, −1 dep | todo | | |
-| P7 | extract `plate-keypad` | `p7-extract-keypad` | ±0 | done | | see log |
-| P8 | extract `iran-plate` + `germany-plate` | `p8-extract-countries` | ±0 | todo | | |
-| P9 | cutover: rename, docs, isolation proof | `p9-cutover` | ±0 | todo | | |
+| P1 | plate text into the model | `p1-plate-text` | −35 | done | `41ea6b0` | +41 |
+| P2 | validation stops blocking | `p2-validation-advisory` | −45 lib, −45 holder | done | `71297ce` | see log |
+| P3 | country decoupling | `p3-country-decoupling` | −35 | done | `ce4b538` | see log |
+| P4 | keypad compaction | `p4-keypad-compaction` | −90 | done | `89961e9` | see log |
+| P5 | core public surface | `p5-core-surface` | ±0 | done | `c9299a0` | see log |
+| P6 | dead weight | `p6-core-dead-weight` | −40, −1 dep | done | `9c443e6` | see log |
+| P7 | extract `plate-keypad` | `p7-extract-keypad` | ±0 | done | `86a0999` | see log |
+| P8 | extract `iran-plate` + `germany-plate` | `p8-extract-countries` | ±0 | done | `d3a8009` | see log |
+| P9 | cutover: rename, docs, isolation proof | `p9-cutover` | ±0 | done | — (see Log) | +0 net; see below |
+
+(The `todo` rows above were stale — P2–P8 all landed on the dates in the Log; the table was
+not kept current between phases. The git log in each repo is authoritative.)
 
 **Baseline: not yet measured.** The first edition's 2 588 figure predates four landed phases
 and the animation performance pass; it is stale and must not be quoted. P1's verify step
@@ -53,6 +56,33 @@ grouping saved in `show_plate.dart`).
 
 Targets, per `PLAN.md` §4: `core_plate` ~1 400, `plate_keypad` ~280, `iran_plate` ~130,
 `germany_plate` ~130. P9 measures all four for real.
+
+### P9 — the real per-package `lib/` line counts (measured 2026-09-01, `dart-lang` `wc -l`)
+
+| package | `PLAN.md` §4 estimate | actual | delta | where the estimate was wrong |
+|---|---:|---:|---:|---|
+| `core_plate` | ~1 400 | **2 441** | **+74 %** | The estimate was the deepest miss in the plan. It assumed P1–P6 would come out net-negative (−285 lines of the six estimates combined); P1 alone came in +41 against −35, and the "moves, plus a barrel that shrinks" P5 estimate of ±0 ignored that `plate_canvas.dart` (485), `plate_slot_item.dart` (357) and `plate_spec.dart` (264) are large, documented widgets/models that never left core and were never going to. `core_plate` was always going to be ~2 400: subtract keypad (~530) and countries (~380) from the ~2 940 P1 baseline and the arithmetic was there to be done. The ~1 400 figure looks like it was carried over from the stale 2 588 first-edition baseline without re-deriving it. |
+| `plate_keypad` | ~280 | **530** | **+89 %** | `plate_keypad.dart` is 449 lines on its own. The estimate predates P4's `_KeyGrid` collapse landing *inside* the package's history and predates `PlateCharacterPicker` (62 lines) moving in — §6.7 was answered "yes" after §4 was written. Even so, 280 was optimistic: the keypad has a themed grid, a slide animation, RTL handling and press-flash isolation, none of it free. |
+| `iran_plate` | ~130 | **164** | +26 % | Closest of the four. `iran_plates.dart` (93) carries both the car and bicycle specs with their geometry comments; the rest (country, alphabets, barrel) is 71 lines. The estimate was for one spec's worth of data and got two. |
+| `germany_plate` | ~130 | **217** | +67 % | `german_plate_validator.dart` is 122 lines — the forbidden-pairs tables and the format regex with its doc comment. The §4 estimate treated Germany as symmetric with Iran (both "~130"), but Germany ships a validator and Iran does not. The asymmetry was visible in the plan's own phase table (P8 "specs, assets, **validator**") and should have been priced in. |
+| **total** | ~1 740 | **3 352** | **+93 %** | |
+
+**The headline the isolation check actually verified.** `PLAN.md` §4: "an app that wants
+Iranian car plates and drives input from the system keyboard compiles `core_plate` +
+`iran_plate` and nothing else." Measured: `core_plate` (2 441) + `iran_plate` (164) = **2 605
+lines** of first-party plate code, versus 3 352 for all four packages. The consumer compiles
+**neither** `germany_plate` (217) **nor** `plate_keypad` (530) — confirmed by
+`/tmp/plate_isolation_check/.dart_tool/package_config.json`, which resolves 44 packages and
+names neither. The "~1 500 lines" phrasing in §4 was low by ~70 %; the *shape* of the claim —
+one country is a strict subset, the German validator and the soft keyboard are never pulled in
+transitively — held exactly.
+
+**What the estimates got right.** The relative ordering (`core_plate` >> `plate_keypad` >
+countries) and the direction of every dependency arrow. What they got wrong was the absolute
+scale, uniformly, by assuming the six cleaning phases would net out negative — they netted
+roughly flat, because every deletion was matched by a documented replacement API. A cleaning
+pass that adds an interface for everything it removes does not shrink a package; it improves
+it at constant size. That is the single most useful line for the next refactor.
 
 Fill in `actual` as you go — the gap between estimate and reality is the useful part, and it is
 the only evidence the next refactor will have.
@@ -78,10 +108,10 @@ Each is a product decision, asked by exactly one phase, and none of them default
 |---|---|---|
 | does `PlateCharacterPicker` move into `plate_keypad`? — **yes** (2026-08-31) | P7 | §6.7 |
 | does `docs/districts.json` back the German district check? — **no, deleted** (2026-08-31) | P8 | §6.8 |
-| publish to pub.dev, or path-only? | P9 | §6.6 |
+| publish to pub.dev, or path-only? — **path-only** (2026-09-01) | P9 | §6.6 |
 
-Write each answer into `PLAN.md` §6 when it is given. A plan that ends with open questions is a
-plan someone reopens.
+All three are answered, and all three are written into `PLAN.md` §6. The plan ends with no
+open questions.
 
 ## Not tracked as a phase: widgets instead of widget functions
 
@@ -132,3 +162,48 @@ phase inherits the same mistake.
   blocks input), packages become siblings of `core-plate` rather than a `packages/` directory
   inside it, and two new phases (P5 core surface, P6 dead weight) added because the split needs
   a core that has been cleaned rather than one that has merely been rearranged.
+- 2026-09-01 — P9 landed. **The rename:** `plate_number` → `core_plate` in
+  `pubspec.yaml`; `lib/plate_number.dart` → `lib/core_plate.dart` (`git mv`); directory
+  `plate-core/` → `core-plate/` (plain `mv`, git history intact). `lib/src/model/plate_number.dart`
+  keeps its name — it holds the `PlateNumber` entered-value type, a domain type, not the
+  package. Every `package:plate_number/plate_number.dart` import rewritten to
+  `package:core_plate/core_plate.dart` across `iran-plate`, `germany-plate`, `plate-keypad`
+  and `plate_number_holder` — all were the barrel form, no deep imports had leaked past P5.
+  The four sibling pubspecs and the holder pubspec repointed `plate_number: {path: ../plate-core}`
+  → `core_plate: {path: ../core-plate}`. **The decision:** path-only (§6.6) — no version
+  ranges, no `dependency_overrides`, no `RELEASING.md`; the three dependants keep
+  `publish_to: none`. **The proof:** `/tmp/plate_isolation_check`, a `flutter create` app
+  depending on `core_plate` + `iran_plate` (+ `flutter_bloc`) by path only, rendering
+  `IranPlates.car`. `flutter build linux --release` succeeded; its
+  `.dart_tool/package_config.json` resolves 44 packages and names **neither `germany_plate`
+  nor `plate_keypad`**. The "one country compiles a strict subset" claim from §4 is verified
+  for the first time. **The numbers:** all four packages came in well over the §4 estimates
+  (`core_plate` +74 %, `plate_keypad` +89 %, `iran_plate` +26 %, `germany_plate` +67 %); the
+  full reckoning and the reason (six cleaning phases that netted flat, not negative, because
+  every deletion shipped a replacement API) is in the P9 line-count table above.
+  **`plate_number_holder` keeps its name** — it is an app, not a package. The `plate_number`
+  facade stays retired (§6.4); no meta-package was created.
+  **SKILL inaccuracy worth noting:** P9's SKILL says `lib/minimal/main.dart` should be "two
+  imports and one `PlateCanvas`" and to stop-and-report if it needs `plate_keypad` to render
+  an Iranian plate. It does need it: `IranPlates.car` has an `AlphabetInput.chosen` letter
+  slot, and §6.7 (answered in P7) deliberately made `PlateCanvas.onChooseCharacter` `required`
+  with the picker living in `plate_keypad`. That is not a wrong seam — it is the direct,
+  approved consequence of §6.7 — but the SKILL's "two imports" ideal predates that decision
+  and is stale. `minimal/main.dart` correctly keeps three imports and passes
+  `PlateCharacterPicker.show`. A future edit to `p9-cutover/SKILL.md` should reconcile the
+  two.
+- P9 also swept the leftover `flutter create` scaffold: `iran-plate/test/` and
+  `germany-plate/test/` held `Calculator`/`expect` stubs that broke `flutter analyze`
+  (undefined identifiers). Removed — this project runs no automated tests (`CLAUDE.md`).
+  The holder's own scaffold `test/widget_test.dart` was already gone.
+- **Known remaining work, unchanged from the plan:** the holder still has widget-returning
+  functions in `device_stage.dart` and the poster layer (`PLAN.md` §5). That is a future
+  holder cleanup, explicitly out of scope for the split. The libraries have none.
+
+## The split is done
+
+P1 → P9 complete. Four packages with honest names (`core_plate`, `iran_plate`, `germany_plate`,
+`plate_keypad`), each depending on exactly what it uses; a holder that depends on all four by
+path and would not compile a German validator or a soft keyboard to show an Iranian plate; and
+the "one consumer compiles a subset" claim proven by a throwaway app rather than asserted. No
+open decisions remain in `PLAN.md` §6. This log is closed.

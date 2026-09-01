@@ -1,5 +1,5 @@
-name: plate_number
-description: " A Flutter package for capturing and displaying vehicle plate numbers."
+name: core_plate
+description: "The country-neutral engine for data-driven vehicle licence plates in Flutter — geometry, slots, alphabets, the input machine and advisory validation. Countries and the on-screen keypad ship as sibling packages."
 version: 0.1.0
 homepage: https://github.com/ArAdBey/plate-number
 

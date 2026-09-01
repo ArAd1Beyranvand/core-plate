@@ -289,12 +289,14 @@ Settled on 2026-08-31, recorded here so no phase re-opens them:
    bloc-shaped throughout. P5 nonetheless keeps the input machine free of any bloc dependency,
    so this stays a one-file decision if it is ever revisited.
 
-Still open, and each is a question a phase must **ask, not assume**:
+All resolved as of P9:
 
-6. **Publish to pub.dev, or path-only?** (P9.) If published, each package needs its own
-   version, `CHANGELOG.md` and `LICENSE`, and the three dependants must name a published
-   `core_plate` range rather than a path — with the paths kept only as
-   `dependency_overrides` for local development. If path-only, the paths stay as they are.
+6. **Publish to pub.dev, or path-only?** (P9.) **Answered 2026-09-01: path-only.** The
+   `{path: ../core-plate}` dependencies stay as they are. `iran_plate`, `germany_plate` and
+   `plate_keypad` keep `publish_to: none`; no version ranges, no `dependency_overrides`, no
+   `docs/RELEASING.md`. The four packages are usable together by a checkout that has all four
+   directories side by side. If they are ever published, the paths become version ranges and
+   the layout does not otherwise change — but that is a future decision, not this one.
 7. **Does `PlateCharacterPicker` belong in core?** (P7.) **Answered 2026-08-31: no — it moves
    into `plate_keypad`.** The Cupertino slot picker leaves core with the keypad, taking core's
    last `package:flutter/cupertino.dart` import. `PlateCanvas.onChooseCharacter` is now
@@ -311,9 +313,10 @@ Still open, and each is a question a phase must **ask, not assume**:
    the district is checked for shape only, and why. A consumer who wants strict district
    validation composes their own `PlateValidator`. The codes remain in git history.
 
-Also unresolved and deliberately left alone: `docs/forbidden.json` duplicates
-`_forbiddenLetterPairs` / `_forbiddenNumbers` by hand. P2 resolves it while it is already in
-that file — one source of truth, either direction, stated in the commit message.
+Resolved in P2: `docs/forbidden.json` duplicated `_forbiddenLetterPairs` / `_forbiddenNumbers`
+by hand and nothing read it. **P2 deleted the JSON** (commit `71297ce`); the Dart consts
+always were the single source of truth. The file moved to `germany_plate` history along with
+the validator in P8 and is not in any package today.
 
 ---
 
