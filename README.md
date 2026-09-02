@@ -2,6 +2,7 @@
 > GO VEGAN 🌱
 > ==================================
 
+
 # core_plate
 
 The backbone of license plate packages for countries that actually exist (we checked).
