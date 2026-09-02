@@ -9,7 +9,7 @@ The backbone of license plate packages for countries that actually exist (we che
 
 A plate here is just a `const PlateSpec`: some geometry, a country panel, and a row of
 slots over alphabets. The widget layer paints whatever the spec says, so adding a plate
-means adding a const — never a widget, never a subclass, never a meeting.
+means adding a const - never a widget, never a subclass, never a meeting.
 
 `core_plate` knows no country and ships no assets. It hands you the plate face, the
 slots, the input machine, and a `PlateValidator` that gives opinions but never blocks a
