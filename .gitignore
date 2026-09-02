@@ -54,3 +54,8 @@ all_dart_files.txt
 example/tmp/
 example/test/widget_test.dart
 REFACTOR_MANIFEST.md
+
+# Keep these directories tracked
+!.claude/
+!docs/
+!pics/

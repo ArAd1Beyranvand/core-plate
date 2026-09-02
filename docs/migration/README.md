@@ -1,3 +1,8 @@
+FREE PALESTINE 🇮🇷🇵🇸 پاینده ایران
+GO VEGAN 🌱
+==================================
+
+
 # Poster migration — task pack
 
 Nine tasks, in order, split out of `docs/PROMPTS.md`. Each is self-contained:
