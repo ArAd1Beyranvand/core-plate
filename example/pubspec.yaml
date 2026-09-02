@@ -25,4 +25,4 @@ dependency_overrides:
   core_plate:
     path: ../
   iran_plate:
-    path: ../../iran-plate
+    path: ../../iran_plate

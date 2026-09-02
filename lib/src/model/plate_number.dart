@@ -4,7 +4,8 @@ import 'package:flutter/foundation.dart';
 class PlateNumber {
   final List<String?> _values;
 
-  PlateNumber({required List<String?> values}) : _values = List.unmodifiable(values);
+  PlateNumber({required List<String?> values})
+    : _values = List.unmodifiable(values);
 
   List<String?> get values => _values;
 
@@ -30,7 +31,4 @@ class PlateNumber {
 
 /// How a plate (and its items) render: [input] shows editable fields, [display]
 /// shows bare glyphs on the white face like a real plate photo.
-enum PlateMode {
-  input,
-  display,
-}
+enum PlateMode { input, display }

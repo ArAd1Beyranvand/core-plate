@@ -4,10 +4,7 @@ class PlateCardState {
   final PlateNumber plateNumber;
   final PlateSpec spec;
 
-  PlateCardState({
-    required this.plateNumber,
-    required this.spec,
-  });
+  PlateCardState({required this.plateNumber, required this.spec});
 
   PlateCardState copyWith({
     final PlateSpec? spec,
@@ -20,9 +17,11 @@ class PlateCardState {
   }
 
   static PlateCardState empty(PlateSpec spec) => PlateCardState(
-        plateNumber: PlateNumber(values: List<String?>.filled(spec.slotCount, null)),
-        spec: spec,
-      );
+    plateNumber: PlateNumber(
+      values: List<String?>.filled(spec.slotCount, null),
+    ),
+    spec: spec,
+  );
 
   @override
   bool operator ==(Object other) {

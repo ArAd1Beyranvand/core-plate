@@ -108,9 +108,7 @@ class _Caption extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final line in lines) Text(line, style: style),
-      ],
+      children: [for (final line in lines) Text(line, style: style)],
     );
   }
 }

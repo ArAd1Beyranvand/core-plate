@@ -31,15 +31,15 @@ class PlateFlag extends StatelessWidget {
 
     final Widget flag = switch (asset) {
       SvgPlateAsset() => SvgPicture.asset(
-          asset.path,
-          package: asset.package,
-          fit: BoxFit.fill,
-        ),
+        asset.path,
+        package: asset.package,
+        fit: BoxFit.fill,
+      ),
       RasterPlateAsset() => Image.asset(
-          asset.path,
-          package: asset.package,
-          fit: BoxFit.fill,
-        ),
+        asset.path,
+        package: asset.package,
+        fit: BoxFit.fill,
+      ),
     };
 
     if (borderRadius == null) return flag;

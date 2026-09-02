@@ -152,10 +152,10 @@ class _PlateCanvasState extends State<PlateCanvas> {
   /// rather than read here so the auto-validating path can take it from the
   /// value it is already subscribed to.
   PlateEntry _entryFor(List<String?> values) => PlateEntry(
-        spec: widget.spec,
-        values: values,
-        activeIndex: _machine.activeIndex,
-      );
+    spec: widget.spec,
+    values: values,
+    activeIndex: _machine.activeIndex,
+  );
 
   /// Backs [PlateInputController.validation]. Null when there is no validator,
   /// which is what makes that getter null for a host that set none.
@@ -443,12 +443,12 @@ class _Placed extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Positioned(
-        left: box.left,
-        top: box.top,
-        width: box.width,
-        height: box.height,
-        child: child,
-      );
+    left: box.left,
+    top: box.top,
+    width: box.width,
+    height: box.height,
+    child: child,
+  );
 }
 
 /// The plate's border and white face, subscribed only to whether the plate is

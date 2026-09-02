@@ -1,4 +1,3 @@
-
 import 'package:bloc/bloc.dart';
 
 import '../model/plate_number.dart';
@@ -13,8 +12,10 @@ class PlateCardBloc extends Bloc<PlateCardEvent, PlateCardState> {
 
   PlateCardBloc(this.spec) : super(PlateCardState.empty(spec)) {
     on<ValueIsChanged>((ValueIsChanged event, Emitter<PlateCardState> emit) {
-      if ((state.plateNumber.values[event.index] ?? '') == (event.value ?? '')) return;
-      final values = List<String?>.of(state.plateNumber.values)..[event.index] = event.value;
+      if ((state.plateNumber.values[event.index] ?? '') == (event.value ?? ''))
+        return;
+      final values = List<String?>.of(state.plateNumber.values)
+        ..[event.index] = event.value;
       emit(state.copyWith(plateNumber: PlateNumber(values: values)));
     });
     on<RemovePlateCard>((RemovePlateCard event, Emitter<PlateCardState> emit) {

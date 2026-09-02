@@ -27,7 +27,11 @@ class PlateValidation {
 /// Everything a validator needs about a plate as it stands.
 @immutable
 class PlateEntry {
-  const PlateEntry({required this.spec, required this.values, this.activeIndex});
+  const PlateEntry({
+    required this.spec,
+    required this.values,
+    this.activeIndex,
+  });
 
   final PlateSpec spec;
   final List<String?> values;

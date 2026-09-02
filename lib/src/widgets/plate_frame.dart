@@ -9,11 +9,7 @@ import '../theme/plate_theme.dart';
 /// The border and face are painted by a single [CustomPainter] (no nested
 /// bordered containers or clippers, which paint visible seams at the corners).
 class PlateFrame extends StatelessWidget {
-  const PlateFrame({
-    super.key,
-    this.theme,
-    this.isCompleted = false,
-  });
+  const PlateFrame({super.key, this.theme, this.isCompleted = false});
 
   /// Colours and ratios. Falls back to [PlateTheme.of] / standard when null.
   final PlateTheme? theme;
@@ -24,19 +20,16 @@ class PlateFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CustomPaint(
-        painter: _PlateFramePainter(
-          theme: theme ?? PlateTheme.of(context),
-          isCompleted: isCompleted,
-        ),
-        child: const SizedBox.expand(),
-      );
+    painter: _PlateFramePainter(
+      theme: theme ?? PlateTheme.of(context),
+      isCompleted: isCompleted,
+    ),
+    child: const SizedBox.expand(),
+  );
 }
 
 class _PlateFramePainter extends CustomPainter {
-  _PlateFramePainter({
-    required this.theme,
-    required this.isCompleted,
-  });
+  _PlateFramePainter({required this.theme, required this.isCompleted});
 
   final PlateTheme theme;
   final bool isCompleted;
@@ -51,21 +44,19 @@ class _PlateFramePainter extends CustomPainter {
 
     // Outer rounded rect: the black frame.
     final outerRect = Offset.zero & size;
-    final outerRRect =
-        RRect.fromRectAndRadius(outerRect, Radius.circular(outerRadius));
-    canvas.drawRRect(
-      outerRRect,
-      Paint()..color = _borderColor(),
+    final outerRRect = RRect.fromRectAndRadius(
+      outerRect,
+      Radius.circular(outerRadius),
     );
+    canvas.drawRRect(outerRRect, Paint()..color = _borderColor());
 
     // Inner rounded rect: the white face, inset by the border thickness.
     final innerRect = outerRect.deflate(border);
-    final innerRRect =
-        RRect.fromRectAndRadius(innerRect, Radius.circular(innerRadius));
-    canvas.drawRRect(
-      innerRRect,
-      Paint()..color = theme.plateBackground,
+    final innerRRect = RRect.fromRectAndRadius(
+      innerRect,
+      Radius.circular(innerRadius),
     );
+    canvas.drawRRect(innerRRect, Paint()..color = theme.plateBackground);
   }
 
   /// isCompleted shifts the border ~2% lighter (never recolours the plate).
@@ -77,6 +68,5 @@ class _PlateFramePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PlateFramePainter old) =>
-      old.theme != theme ||
-      old.isCompleted != isCompleted;
+      old.theme != theme || old.isCompleted != isCompleted;
 }

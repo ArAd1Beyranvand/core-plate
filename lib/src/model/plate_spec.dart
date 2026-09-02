@@ -157,7 +157,9 @@ class PlateSpec {
   /// const to install a lazy field.
   List<PlateTextGroup> get effectiveTextGroups => textGroups.isNotEmpty
       ? textGroups
-      : [for (var i = 0; i < slots.length; i++) PlateTextGroup([i])];
+      : [
+          for (var i = 0; i < slots.length; i++) PlateTextGroup([i]),
+        ];
 
   /// The group in [effectiveTextGroups] containing [index], or null when
   /// [index] is outside every group.

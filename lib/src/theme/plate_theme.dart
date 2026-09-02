@@ -96,24 +96,29 @@ class PlateTheme {
 
   /// Text style for plate glyphs (digits/letters) at a given slot height.
   TextStyle glyphStyle(double slotHeight, Color color) => TextStyle(
-        color: color,
-        fontWeight: FontWeight.w700,
-        fontSize: slotHeight * 0.72,
-        height: 1.0,
-      );
+    color: color,
+    fontWeight: FontWeight.w700,
+    fontSize: slotHeight * 0.72,
+    height: 1.0,
+  );
 
   /// The nearest enclosing [PlateTheme], or [PlateTheme.standard] if none.
   static PlateTheme of(BuildContext context) {
-    final scope =
-        context.dependOnInheritedWidgetOfExactType<PlateThemeScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<PlateThemeScope>();
     return scope?.theme ?? PlateTheme.standard();
   }
 
   List<Object?> get _props => [
-        plateBackground, plateBorder, ink, dividerColor,
-        borderWidthRatio, plateRadiusRatio, activeColor, inactiveColor,
-        alertColor,
-      ];
+    plateBackground,
+    plateBorder,
+    ink,
+    dividerColor,
+    borderWidthRatio,
+    plateRadiusRatio,
+    activeColor,
+    inactiveColor,
+    alertColor,
+  ];
 
   @override
   bool operator ==(Object other) =>
@@ -126,11 +131,7 @@ class PlateTheme {
 
 /// Provides a [PlateTheme] to descendants via [PlateTheme.of].
 class PlateThemeScope extends InheritedWidget {
-  const PlateThemeScope({
-    super.key,
-    required this.theme,
-    required super.child,
-  });
+  const PlateThemeScope({super.key, required this.theme, required super.child});
 
   final PlateTheme theme;
 
