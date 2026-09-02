@@ -2,10 +2,10 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/core-plate" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/germany-plate" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/iran-plate" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/plate-keypad" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/core_plate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/germany_plate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/iran_plate" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/plate_keypad" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/plate_number_holder" vcs="Git" />
   </component>
 </project>
