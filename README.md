@@ -4,10 +4,16 @@ GO VEGAN 🌱
 
 ==================================
 
+The backbone of license plate packages for countries that actually exist (we checked).
+
+## Available plates
+
+- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's license plates.
+- [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's license plates.
+- [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
 
 # core_plate
-
-The backbone of license plate packages for countries that actually exist (we checked).
 
 A plate here is just a `const PlateSpec`: some geometry, a country panel, and a row of
 slots over alphabets. The widget layer paints whatever the spec says, so adding a plate
