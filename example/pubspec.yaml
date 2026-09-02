@@ -18,11 +18,10 @@ dependencies:
 dev_dependencies:
   flutter_lints: ^6.0.0
 
-# Local development only — resolves the sibling packages from this checkout
-# before they are on pub.dev. A fresh consumer copying this example deletes
-# this block and relies on the versioned dependencies above.
+# Local development only — resolves the iran_plate package from the sibling
+# checkout until it is published on pub.dev. A fresh consumer copying this
+# example deletes this block and relies on the versioned dependencies above.
 dependency_overrides:
-  core_plate:
-    path: ../
   iran_plate:
     path: ../../iran_plate
+
