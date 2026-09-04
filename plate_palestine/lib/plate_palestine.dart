@@ -13,7 +13,7 @@
 /// PlateCanvas(
 ///   spec: PSWestBankPlates.modernCar,
 ///   theme: PSThemes.forUsage(PSUsage.private),
-///   onChooseCharacter: PlateCharacterPicker.show, // from plate_keypad
+///   onChooseCharacter: showMyPicker, // the host's; core ships no picker
 /// );
 /// ```
 library;

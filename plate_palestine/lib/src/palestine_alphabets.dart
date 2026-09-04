@@ -51,7 +51,7 @@ abstract final class PSAlphabets {
   /// keyboard in front of the user, and a keyboard offers `I` and `O` — which
   /// are never issued — alongside `P`–`T`, which were allocated to Gaza and
   /// never issued either. A chosen slot opens a picker over exactly this list,
-  /// so `plate_keypad`'s `PlateCharacterPicker` shows thirteen letters and the
+  /// so whatever picker the host supplies shows thirteen letters and the
   /// illegal ones are not on screen to be pressed. The validator still names
   /// them, for a value that did not come from the picker.
   ///

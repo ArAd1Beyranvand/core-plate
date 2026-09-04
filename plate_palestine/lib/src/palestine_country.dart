@@ -8,7 +8,7 @@ import 'palestine_colors.dart';
 ///
 /// A West Bank plate carries no flag. The block right of the vertical rule is
 /// `ف` over `P`, printed in the plate's own ink on the plate's own field: not a
-/// coloured slab like Iran's or Germany's, just lettering. `P` is **Portugal's**
+/// coloured slab of its own, just lettering. `P` is **Portugal's**
 /// code, used unofficially because Palestine has no assigned international
 /// vehicle code. It is a literal glyph on the plate, never the result of a
 /// country-code lookup, and nothing here should be tempted to resolve it.

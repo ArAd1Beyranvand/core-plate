@@ -79,9 +79,9 @@ abstract final class PSWestBankPlates {
     PlateRule(box: PlateBox(452, 53, 46, 3)),
   ];
 
-  /// The `ف / P` block. Not a coloured slab like Iran's panel — it is ink on
-  /// the plate face — so the box sits flush where the printing does and there
-  /// is no seam to hide under the border.
+  /// The `ف / P` block. Not a coloured panel slab — it is ink on the plate
+  /// face — so the box sits flush where the printing does and there is no seam
+  /// to hide under the border.
   ///
   /// `flagScale: 0` because there is no flag: hand the caption the block's
   /// whole height rather than reserving a strip for a null image.
