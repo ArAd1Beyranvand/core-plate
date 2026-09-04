@@ -52,9 +52,16 @@ abstract final class YemenNorthernPlates {
   // Shared geometry.
   // ---------------------------------------------------------------------------
 
-  static const double _carWidth = 520; // CALIBRATE
+  /// 540 x 288 is an aspect of 1.875, against the 1.871 measured off a
+  /// photograph of an issued blue private plate. Every car number below was
+  /// measured from that photograph as a fraction of the plate and multiplied
+  /// out; the comments give the fraction and the code gives the unit.
+  static const double _carWidth = 540;
+  static const double _height = 288;
+
+  /// The motorcycle canvas is **not** measured — no photograph of a northern
+  /// motorcycle plate was available, so it stays `// CALIBRATE` throughout.
   static const double _motoWidth = 289; // CALIBRATE
-  static const double _height = 288; // CALIBRATE
 
   /// Mirrors `YemenThemes._borderWidthRatio` onto every spec, so the frame
   /// keeps its thickness under a host that supplies its own theme. The frame is
@@ -64,10 +71,19 @@ abstract final class YemenNorthernPlates {
 
   // --- Car: top band, then two registers split by a rule. -------------------
   //
-  //   top band     y   0 ..  81   (~28% of height)
-  //   governorate  y  86 .. 158
-  //   rule         y 166 .. 174   (~3% of height)
-  //   serial       y 178 .. 272
+  // Measured off the photograph, as fractions of the plate:
+  //
+  //   top band     y 0.038 .. 0.219    اليمن x 0.076 .. 0.231
+  //                                    خصوصي x 0.327 .. 0.703
+  //   governorate  y 0.344 .. 0.482    x 0.440 .. 0.561, pitch 0.072
+  //   rule         y 0.584 .. 0.609    x 0.268 .. 0.732
+  //   serial       y 0.715 .. 0.892    x 0.282 .. 0.713 (five digits)
+  //
+  // Two things the photograph settles that the previous guess had wrong. The
+  // usage word is the *larger* of the two runs in the top band and takes more
+  // than twice the width of اليمن, where this file used to set them nearly
+  // equal. And both registers are centred on the plate's midline — the
+  // governorate on x 0.50, the serial on x 0.497 — rather than sitting left.
 
   /// `اليمن`, on the left of the top band.
   ///
@@ -76,8 +92,23 @@ abstract final class YemenNorthernPlates {
   /// core lays a label out exactly as given, so an Arabic string on its own is
   /// an isolated run that renders correctly. Joining two runs into one label
   /// would hand the bidi algorithm a paragraph to reorder.
+  ///
+  /// The measured run is x 0.076 .. 0.231, i.e. 41 .. 125, and 76 units of
+  /// glyph is what fills the band's measured 0.181 of the plate (that band is
+  /// deeper than a cap height: it includes the lam's ascender and the nun's
+  /// tail).
+  ///
+  /// **The box is deliberately much wider than the measured run**, and centred
+  /// on it rather than starting at it. Core renders a label as a plain `Text`
+  /// inside a fixed-width `Positioned`, so a string wider than its box does not
+  /// overhang — it wraps and clips. The measured 84 units is the width in the
+  /// plate's own square Kufic; this package ships no font (see the README), so
+  /// the string is actually shaped in whatever Arabic face the platform falls
+  /// back to, which is wider and was clipping `اليمن` to `الي`. 140 units gives
+  /// that fallback 66% of headroom and still clears the usage word at x 177,
+  /// and `TextAlign.center` keeps the run on its measured centre either way.
   static const List<PlateLabel> _carLabels = <PlateLabel>[
-    PlateLabel(text: 'اليمن', box: PlateBox(28, 18, 130, 50), glyphHeight: 50),
+    PlateLabel(text: 'اليمن', box: PlateBox(13, 6, 140, 62), glyphHeight: 76),
   ];
 
   /// The usage word, as the country panel's caption.
@@ -88,134 +119,260 @@ abstract final class YemenNorthernPlates {
   /// because [PlateCountry.captionLines] is the one place on a `const`
   /// [PlateSpec] where text can vary without the geometry varying too. See the
   /// `YemenCountry` class doc.
+  ///
+  /// x 0.327 .. 0.703, y 0.038 .. 0.219 — the measured box of the usage word,
+  /// which is the wider of the two runs in the top band.
+  ///
+  /// [PlatePanel.captionScale] is a size to fit *down* from, not the rendered
+  /// size: `CountryPanel` wraps the caption in a `FittedBox(scaleDown)`, which
+  /// shrinks to the box but never grows to it. So the scale has to put the text
+  /// over the box for the fit to bind and the word to fill its measured width;
+  /// 3.0 does that for every usage word in `YemenCountry`, the longest of which
+  /// is خصوصي.
   static const PlatePanel _carPanel = PlatePanel(
-    box: PlateBox(170, 18, 210, 50), // CALIBRATE
+    box: PlateBox(177, 6, 203, 62),
     // No flag on a Yemeni plate.
     flagScale: 0,
-    captionScale: 1.9, // CALIBRATE
+    captionScale: 3.0,
     padding: EdgeInsets.zero,
   );
 
-  // The governorate register. Two cells at 32 x 72, or one centred.
+  // The governorate register. Two cells at 39 x 78, or one centred.
   //
   // The tens cell is drawn over `YemenAlphabets.governorateTens` — three
   // characters, because a code that never exceeds 22 can only start 0, 1 or 2.
   // That restriction is an input affordance, not validation: entering 23 is
   // still possible through other paths and `YemenNorthernValidator` is what
   // rejects it.
+  // The pair is centred on the plate's midline: the measured glyphs sit at
+  // x 0.440 .. 0.561 on a 0.072 pitch, so 39-unit cells at 231 and 270. The
+  // cell height is the measured cap, 0.139 of the plate, divided by core's
+  // 0.512 cap-per-cell — see the note on the serial register.
   static const PlateSlot _carGovTens = PlateSlot(
     alphabet: YemenAlphabets.governorateTens,
-    box: PlateBox(226, 86, 32, 72), // CALIBRATE
+    box: PlateBox(231, 80, 39, 78),
   );
   static const PlateSlot _carGovUnits = PlateSlot(
     alphabet: YemenAlphabets.digits,
-    box: PlateBox(262, 86, 32, 72), // CALIBRATE
+    box: PlateBox(270, 80, 39, 78),
   );
+
+  /// A lone governorate digit, centred on the same midline the pair straddles.
   static const PlateSlot _carGovSingle = PlateSlot(
     alphabet: YemenAlphabets.digits,
-    box: PlateBox(244, 86, 32, 72), // CALIBRATE
+    box: PlateBox(250, 80, 39, 78),
   );
 
   /// The rule between the registers, sized to the width of the serial block
   /// below it — which is why there is one per serial length rather than one
-  /// shared const. `~3%` of 288 is 8.6 units; 8 is the shipped value.
+  /// shared const.
+  ///
+  /// y 0.584 .. 0.609 of the plate, so 168 and 7 units deep. The photograph's
+  /// rule runs x 0.268 .. 0.732, which is the five-digit serial block plus
+  /// about 9 units of overhang at each end; the four- and six-digit rules keep
+  /// that overhang against their own blocks.
   static const List<PlateRule> _carRule4 = <PlateRule>[
-    PlateRule(box: PlateBox(166, 166, 187, 8)), // CALIBRATE
+    PlateRule(box: PlateBox(166, 168, 205, 7)),
   ];
   static const List<PlateRule> _carRule5 = <PlateRule>[
-    PlateRule(box: PlateBox(143, 166, 233, 8)), // CALIBRATE
+    PlateRule(box: PlateBox(143, 168, 251, 7)),
   ];
   static const List<PlateRule> _carRule6 = <PlateRule>[
-    PlateRule(box: PlateBox(120, 166, 279, 8)), // CALIBRATE
+    PlateRule(box: PlateBox(120, 168, 298, 7)),
   ];
 
-  // The serial register: 41 x 94 cells, taller than the 32 x 72 of the code
-  // above. Reference images show the lower register optically larger, and the
-  // ratio below is that reading, not a measurement.
+  // The serial register: 47 x 99 cells against the governorate's 39 x 78, so
+  // the lower register really is optically larger, and now by a measured ratio
+  // rather than a guessed one — caps of 0.177 and 0.139 of the plate.
   //
-  // CALIBRATE: the register split, and the size difference between them.
+  // On turning a measured cap height into a cell height: core sets a glyph at
+  // `0.72 * cellHeight` and names no font family, so these render in Roboto,
+  // whose cap is 0.711 em. A cell is therefore `0.512 * cellHeight` of cap, and
+  // every cell height here is the measured cap divided by that. The same
+  // arithmetic gives a digit advance of `0.41 * cellHeight`, which is what the
+  // pitches below are checked against — 41 units of advance in a 47-unit cell
+  // for the serial, 32 in 39 for the governorate.
   //
-  // On cell width: core sets a glyph at `0.72 * cellHeight` and a weight-700
-  // digit runs about 0.57 em, so a cell holds its digit at about 0.44 of its
-  // own height. These plates are set in FE-Schrift, which is far narrower than
-  // that, so a host that supplies the real face will see the digits sit looser
-  // in their cells than a photograph does. This package cannot supply a font —
-  // see the README's `## Fonts`.
+  // Unlike the unified plate, nothing here is width-bound: the northern
+  // registers are short enough that Roboto fits at the measured cap. The real
+  // plates are set in a square Kufic that is narrower still, so a host that
+  // supplies one will see the digits sit tighter, not overflow. This package
+  // cannot supply a font — see the README's `## Fonts`.
+  //
+  // All four blocks are centred on x 268.6, the measured midline of the serial.
+  //
+  // The serial's cells sit 3 units above where the measurement puts them —
+  // cap top 0.695 against a measured 0.715 — and that is deliberate. Centring
+  // the cell on the measured cap band would put its bottom edge at 0.975 of
+  // the plate, past the frame's inner edge at 0.965. A glyph would still land
+  // correctly, because a slot centres its text, but the underline an input
+  // slot draws at the cell's bottom would fall under the frame and vanish. The
+  // 3 units buy that underline back at a cost of 2% of the plate.
 
   static const List<PlateSlot> _carGov2Serial4 = <PlateSlot>[
     _carGovTens,
     _carGovUnits,
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(170, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(216, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(262, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(308, 178, 41, 94)),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(175, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(222, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(269, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(315, 176, 47, 99),
+    ),
   ];
 
   static const List<PlateSlot> _carGov2Serial5 = <PlateSlot>[
     _carGovTens,
     _carGovUnits,
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(147, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(193, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(239, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(285, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(331, 178, 41, 94)),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(152, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(199, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(245, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(292, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(338, 176, 47, 99),
+    ),
   ];
 
   static const List<PlateSlot> _carGov2Serial6 = <PlateSlot>[
     _carGovTens,
     _carGovUnits,
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(124, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(170, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(216, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(262, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(308, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(354, 178, 41, 94)),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(129, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(175, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(222, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(269, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(315, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(362, 176, 47, 99),
+    ),
   ];
 
   static const List<PlateSlot> _carGov1Serial5 = <PlateSlot>[
     _carGovSingle,
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(147, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(193, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(239, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(285, 178, 41, 94)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(331, 178, 41, 94)),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(152, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(199, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(245, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(292, 176, 47, 99),
+    ),
+    PlateSlot(
+      alphabet: YemenAlphabets.digits,
+      box: PlateBox(338, 176, 47, 99),
+    ),
   ];
 
   // --- Motorcycle. ----------------------------------------------------------
   //
   // The northern layout is already stacked, so it compresses into the square
   // canvas without reflowing: the top band stays, the rule stays, and the two
-  // registers shrink. See the @Deprecated note on every moto const below.
+  // registers shrink.
+  //
+  // **No photograph of a northern motorcycle plate was available**, so none of
+  // the horizontal numbers here are measured. What they are instead is derived,
+  // and the derivation is worth stating because it is why they are no longer
+  // marked `// CALIBRATE` one by one:
+  //
+  // - The **vertical** layout is the car's, unchanged. Both canvases are 288
+  //   units tall, so every y fraction measured off the car photograph — top
+  //   band 0.038, governorate 0.344, rule 0.584, serial 0.715 — carries across
+  //   as the same absolute unit. These are as good as the car's.
+  // - The **horizontal** layout keeps the car's measured *ratios* and
+  //   renormalises them onto the narrower canvas. The top band's two runs keep
+  //   their 1 : 2.41 width ratio, so the usage word stays the larger of the
+  //   two; the registers stay centred on the plate's midline.
+  //
+  // So this is a reflow of measured proportions rather than a record of a real
+  // plate, and a photograph could still move the x numbers. The y numbers it
+  // would leave alone.
 
+  /// `اليمن`, keeping its 1 : 2.41 width ratio against the usage word.
+  ///
+  /// The glyph height is 42 rather than the band's 62, and that is the same
+  /// correction [_carLabels] carries, applied the other way round. A label
+  /// renders as a plain `Text` in a fixed-width box, so a string wider than its
+  /// box **wraps and clips** — it does not overhang. On the car there was spare
+  /// field to widen the box into; here there is not, because the usage word's
+  /// panel starts at x 96 on a 289-unit canvas. So the string is set smaller
+  /// instead: at `0.72 * 42` the run needs about 2.7 box-widths of the size
+  /// core will paint it at, against the 2.56 the car renders correctly at.
+  ///
+  /// The measured band would set it at 67. It is not set there because a
+  /// clipped `الي` is a worse likeness of the plate than a small `اليمن`.
   static const List<PlateLabel> _motoLabels = <PlateLabel>[
-    PlateLabel(text: 'اليمن', box: PlateBox(14, 14, 110, 44), glyphHeight: 44),
+    PlateLabel(text: 'اليمن', box: PlateBox(14, 16, 82, 42), glyphHeight: 42),
   ];
 
+  /// The usage word. Larger than `اليمن`, as on the car — see the note on
+  /// [_carPanel] for why `captionScale` is a size to fit down from.
   static const PlatePanel _motoPanel = PlatePanel(
-    box: PlateBox(134, 14, 140, 44), // CALIBRATE
+    box: PlateBox(96, 6, 179, 62),
     flagScale: 0,
-    captionScale: 1.6, // CALIBRATE
+    captionScale: 3.0,
     padding: EdgeInsets.zero,
   );
 
   static const List<PlateRule> _motoRule5 = <PlateRule>[
-    PlateRule(box: PlateBox(35, 158, 219, 8)), // CALIBRATE
+    PlateRule(box: PlateBox(14, 168, 261, 7)),
   ];
 
   static const List<PlateSlot> _motoGov2Serial5 = <PlateSlot>[
     PlateSlot(
       alphabet: YemenAlphabets.governorateTens,
-      box: PlateBox(113, 82, 29, 66), // CALIBRATE
+      box: PlateBox(106, 80, 39, 78),
     ),
-    PlateSlot(
-      alphabet: YemenAlphabets.digits,
-      box: PlateBox(146, 82, 29, 66), // CALIBRATE
-    ),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(39, 172, 39, 88)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(82, 172, 39, 88)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(125, 172, 39, 88)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(168, 172, 39, 88)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(211, 172, 39, 88)),
+    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(144, 80, 39, 78)),
+    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(18, 176, 49, 99)),
+    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(69, 176, 49, 99)),
+    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(119, 176, 49, 99)),
+    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(170, 176, 49, 99)),
+    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(220, 176, 49, 99)),
   ];
 
   // --- Text groups. ---------------------------------------------------------

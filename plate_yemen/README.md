@@ -133,11 +133,31 @@ panel caption and every slot glyph render in the platform default no matter what
 the app theme says, and the example bundles no substitute face because bundling
 one would have changed nothing.
 
-The consequence is visible: System A's plates are set in FE-Schrift and System
-B's Arabic in a square Kufic, both far narrower than a default weight-700 face,
-so the digits sit looser in their cells here than in a photograph. Fixing it
-needs a `fontFamily` on `PlateTheme.glyphStyle` (or a `TextStyle` hook on
-`PlateSpec`) in `core_plate`.
+The consequence is visible and it is measurable. Core sets a glyph at
+`0.72 * cellHeight`, so in Roboto - cap 0.711 em, digit advance 0.562 em - a
+cell yields `0.512 * cellHeight` of cap height but needs `0.41 * cellHeight` of
+width per digit. System A's plates are set in FE-Schrift and System B's Arabic
+in a square Kufic, both far narrower than that.
+
+On the unified car this is what caps the digits at about 0.46 of the plate
+against a measured 0.557: matching the photograph would need a cell 318 units
+tall on a 292-unit canvas, where the glyphs would fit but their underlines would
+fall off the plate. The number zone is widened to claw back what it can. The
+northern plate is not width-bound - its registers are short enough that Roboto
+fits at the measured cap.
+
+The same cause has a second, harsher effect on the Arabic labels. Core renders a
+`PlateLabel` as a plain `Text` inside a fixed-width box, so a string set wider
+than its box does not overhang — it wraps, and the wrap clips. `اليمن` measured
+off a photograph is a run of square Kufic; asked for at that width in the
+platform's much wider fallback face it overruns and comes out as `الي`. So the
+northern labels are not set at their measured size: the car's box is widened
+past the measured run and centred on it, and the motorcycle's — which has no
+spare field to widen into — has its glyph height cut instead.
+
+Fixing both properly needs a `fontFamily` on `PlateTheme.glyphStyle` (or a
+`TextStyle` hook on `PlateSpec`) in `core_plate`. With the plate's own faces
+installed, these boxes would go back to their measured sizes.
 
 ## Contains
 
@@ -159,11 +179,25 @@ needs a `fontFamily` on `PlateTheme.glyphStyle` (or a `TextStyle` hook on
 
 ## What it does not ship
 
-**No measured geometry.** Every dimension in this package is marked
-`// CALIBRATE`. They are proportioned from photographs and published
-descriptions, not measured from a standard - no published Yemeni plate standard
-with millimetre dimensions was available. The same goes for every colour: they
-are sampled by eye, not specified.
+**No dimensions from a standard.** No published Yemeni plate standard with
+millimetre dimensions was available, so nothing here is a manufacturing
+dimension and this package should not be used as one.
+
+The **car** geometry of both systems is nonetheless measured, off photographs of
+issued plates, as fractions of the plate's width and height. The class docs of
+`YemenUnifiedPlates` and `YemenNorthernPlates` give the fractions beside the
+units they produce, so a reading can be checked. The unified car canvas is
+1024 x 292 (aspect 3.51) and the northern car canvas 540 x 288 (aspect 1.875);
+both were wrong before those photographs were measured.
+
+What is still `// CALIBRATE` is what no photograph covered: both motorcycle
+layouts, the stipple's dot pitch on the unified plate, and every colour - the
+colours are sampled by eye, not specified.
+
+One consequence of the measurement is visible and is not a bug. The digits are
+shorter, relative to the plate, than a photograph shows - about 0.46 of the
+plate against a measured 0.557 on the unified car. That gap is the font, not the
+geometry; see `## Fonts` below.
 
 **No emblem.** The 2026 unified plate carries an eagle emblem. No artwork was
 sourced at a resolution worth shipping, and drawing an approximation of a state
@@ -173,10 +207,17 @@ block.
 
 **No motorcycle plate you should trust.** No official motorcycle design has been
 published for either system, despite active registration campaigns in Sanaa and
-Taiz. `YemenUnifiedPlates`' motorcycle specs are the car layout reflowed into a
-square canvas, and `YemenNorthernPlates`' are marked `@Deprecated('unverified
-geometry - calibrate against photographs')` so that nothing trusts them
-silently. (Marib classifies motorcycles as yellow. That is Marib's rule and this
+Taiz, and no photograph of one was available to measure. `YemenUnifiedPlates`'
+motorcycle specs are the car layout reflowed into a square canvas, and
+`YemenNorthernPlates`' are marked `@Deprecated('unverified geometry - calibrate
+against photographs')` so that nothing trusts them silently.
+
+The northern motorcycle layout is at least *derived* rather than guessed: both
+canvases are 288 units tall, so it keeps the car's measured vertical bands, and
+renormalises the car's measured width ratios onto the narrower canvas. A
+photograph could still move its horizontal numbers; it would leave the vertical
+ones alone. The one band that does not keep its measured height is `اليمن` in
+the top band, set smaller than measured so it fits its box — see `## Fonts`. (Marib classifies motorcycles as yellow. That is Marib's rule and this
 package does not generalise it to other governorates.)
 
 **No meaning for the System A side code.** The two digits stacked in the blue
