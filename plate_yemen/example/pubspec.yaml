@@ -1,0 +1,37 @@
+name: plate_yemen_example
+description: Minimal example — Yemen's two current plate systems, side by side, driven by the on-screen keypad.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  core_plate: ^0.1.0
+  plate_keypad: ^0.1.0
+  plate_yemen: ^0.1.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+# No `flutter: fonts:` block, and it is not for want of trying. This example
+# originally bundled a substitute face for the plate lettering, and then it
+# turned out that nothing a host declares can reach plate text: `PlateCanvas`
+# wraps its whole face in `Theme(data: ThemeData.light().copyWith(...))`
+# (core_plate plate_canvas.dart:227 and :355) to pin the cursor and selection
+# colours, and the `Material` under it installs that theme's `bodyMedium` as
+# the default text style. `PlateTheme.glyphStyle` sets no `fontFamily` either,
+# so labels, the panel caption and every slot glyph render in the platform
+# default whatever the app theme says. Bundling a font here would have shipped
+# an asset that changed nothing. See "Fonts" in the package README.
+
+# Local development only — resolves the plate_yemen package from the sibling
+# checkout until it is published on pub.dev. A fresh consumer copying this
+# example deletes this block and relies on the versioned dependencies above.
+dependency_overrides:
+  plate_yemen:
+    path: ../

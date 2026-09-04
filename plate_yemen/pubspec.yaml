@@ -1,0 +1,29 @@
+name: plate_yemen
+description: "Yemen's licence plates for the core_plate library — the 2026 unified specs, the 1993 northern specs, the alphabets, the usage themes and the advisory validators."
+version: 0.1.0
+homepage: https://github.com/ArAd1Beyranvand/plate-yemen
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core_plate: ^0.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+# No `flutter:` assets block, and that is deliberate. A Yemeni plate carries no
+# flag, so there is no flag image to ship; the eagle emblem on the 2026 unified
+# plate was not sourced at a resolution worth shipping, and drawing an
+# approximation of a state emblem and shipping it as the real thing is not
+# something this package will do. See "What it does not ship" in the README.
+#
+# No font either. Both systems are set in faces this package does not have the
+# rights to redistribute — see the README's "Fonts". The example bundles a
+# clearly labelled substitute; the package itself names no font family, so a
+# host's own theme reaches the plate.
