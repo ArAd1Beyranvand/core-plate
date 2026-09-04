@@ -100,7 +100,7 @@ abstract final class YemenNorthernPlates {
   //
   // The tens cell is drawn over `YemenAlphabets.governorateTens` — three
   // characters, because a code that never exceeds 22 can only start 0, 1 or 2.
-  // That restriction is a keypad affordance, not validation: entering 23 is
+  // That restriction is an input affordance, not validation: entering 23 is
   // still possible through other paths and `YemenNorthernValidator` is what
   // rejects it.
   static const PlateSlot _carGovTens = PlateSlot(

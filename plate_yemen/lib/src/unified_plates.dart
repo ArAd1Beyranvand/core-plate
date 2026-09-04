@@ -32,12 +32,11 @@ import 'yemen_usage.dart';
 /// > one. So a host picks the number length *before* entry begins, not during
 /// > it.
 ///
-/// `palestine_plate` reasoned its way to the opposite conclusion from the same
-/// premise, and the difference is worth naming: a Palestinian plate's two
-/// endings have the same slot *count*, so one spec could cover both and
-/// switching mid-entry would have wiped good input for nothing. Here the count
-/// itself differs, so one spec cannot cover them, and the reset is unavoidable
-/// rather than a cost to be designed around.
+/// The opposite conclusion is the right one where a plate's variants have the
+/// same slot *count* — there one spec covers them all, and splitting them would
+/// wipe good input for nothing. Here the count itself differs, so one spec
+/// cannot cover them, and the reset is unavoidable rather than a cost to be
+/// designed around.
 ///
 /// ### Geometry
 ///
@@ -72,7 +71,7 @@ abstract final class YemenUnifiedPlates {
   /// three edges it touches rather than sitting flush at the border thickness:
   /// core clips panel paint back to the rounded face, so extending it under the
   /// frame kills the hairline seam a flush edge leaves once the whole canvas is
-  /// scaled. The same trick `iran_plate` uses on its blue block.
+  /// scaled.
   ///
   /// The padding is what puts the usage caption in the *lower* two thirds of
   /// the panel, clear of the side-code cells above it: `CountryPanel` lays a

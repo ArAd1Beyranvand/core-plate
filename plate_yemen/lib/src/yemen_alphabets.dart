@@ -32,8 +32,8 @@ abstract final class YemenAlphabets {
   /// alphabet says what may be *entered*, and core silently drops a character
   /// the alphabet does not accept rather than reporting it — so `23` is still
   /// reachable and still invalid, and `YemenNorthernValidator` is what says so.
-  /// The restriction exists so a `plate_keypad` host greys out the seven keys
-  /// that can never be right here.
+  /// The restriction exists so a host driving an on-screen pad greys out the
+  /// seven keys that can never be right here.
   static const PlateAlphabet governorateTens = PlateAlphabet(
     id: 'ye.govTens',
     characters: <String>['0', '1', '2'],
