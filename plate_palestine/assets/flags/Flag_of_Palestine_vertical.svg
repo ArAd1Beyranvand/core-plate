@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The flag of Palestine turned a quarter turn clockwise, so the triangle points
+  down: ratio 1:2, for the tall strip on the right of a Gaza style2012 plate.
+
+  This is a second, pre-rotated asset rather than a transform applied when the
+  plate is painted, because core_plate has no rotation hook — PlateFlag draws a
+  PlateAsset into the box CountryPanel gives it and nothing else. Every
+  coordinate is the horizontal flag's, mapped through (x, y) -> (600 - y, x):
+  black ends up on the right, green on the left, and the triangle's apex lands
+  at (300, 400) pointing downwards.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1200" width="600" height="1200">
+  <rect x="0" y="0" width="200" height="1200" fill="#007A3D"/>
+  <rect x="200" y="0" width="200" height="1200" fill="#FFFFFF"/>
+  <rect x="400" y="0" width="200" height="1200" fill="#000000"/>
+  <polygon points="0,0 600,0 300,400" fill="#CE1126"/>
+</svg>

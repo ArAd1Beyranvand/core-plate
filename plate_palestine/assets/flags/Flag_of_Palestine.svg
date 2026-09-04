@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The flag of Palestine, drawn to the published geometry rather than traced
+  from a photograph: ratio 2:1, three equal horizontal bands (black, white,
+  green, top to bottom), and a red isosceles triangle on the hoist whose apex
+  reaches one third of the width. Every coordinate below is that construction,
+  so nothing here is an eyeballed approximation.
+
+  The four colours are the pan-Arab values the flag is normally reproduced in.
+  They are not a measured sample off a Palestinian plate, so treat them the
+  same way as everything marked // CALIBRATE in lib/src/palestine_colors.dart.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <rect x="0" y="0" width="1200" height="200" fill="#000000"/>
+  <rect x="0" y="200" width="1200" height="200" fill="#FFFFFF"/>
+  <rect x="0" y="400" width="1200" height="200" fill="#007A3D"/>
+  <polygon points="0,0 400,300 0,600" fill="#CE1126"/>
+</svg>

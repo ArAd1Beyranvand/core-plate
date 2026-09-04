@@ -1,0 +1,27 @@
+name: plate_palestine_example
+description: Every plate_palestine spec, driven by plate_keypad, with the theme derived from usage.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  core_plate: ^0.1.0
+  plate_keypad: ^0.1.0
+  plate_palestine: ^0.1.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+# Local development only — resolves the plate_palestine package from the
+# sibling checkout until it is published on pub.dev. A fresh consumer copying
+# this example deletes this block and relies on the versioned dependencies
+# above.
+dependency_overrides:
+  plate_palestine:
+    path: ../

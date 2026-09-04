@@ -1,0 +1,43 @@
+name: plate_palestine
+description: "Palestine's licence plates for the core_plate library — the West Bank and Gaza specs, the alphabets, the usage themes and the advisory validators."
+version: 0.1.0
+homepage: https://github.com/ArAd1Beyranvand/plate-palestine
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # The country-neutral engine. The only dependency, and deliberately so: not
+  # plate_keypad (the example depends on that, this package does not), not any
+  # other country's package.
+  core_plate: ^0.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # Test-only. The golden tests render through `ShowPlate`, which reads its
+  # values from an ancestor `PlateCardBloc`, so they need a `BlocProvider` to
+  # put one there. Nothing in `lib/` imports this.
+  flutter_bloc: ^9.1.1
+
+flutter:
+  # This package OWNS every asset it names. The `package:` argument on each
+  # SvgPlateAsset / AssetImage in `lib/src/` is `'plate_palestine'`, and an
+  # asset reference resolves against the bundle of the package that DECLARES
+  # the path — so those literals and this block move together, or the flag
+  # keeps working locally off a stale bundle and breaks for a fresh consumer.
+  assets:
+    - assets/flags/Flag_of_Palestine.svg
+    - assets/flags/Flag_of_Palestine_vertical.svg
+    - assets/marks/palestine_watermark.png
+
+  # No `fonts:` block. The plate prints ف, اختبار and במבחן, and none of those
+  # are on a stock Android or a CI runner — but `PlateTheme.glyphStyle` names no
+  # font family and core_plate offers no hook to give one to a label, so a font
+  # bundled here could not be applied to the glyphs that need it. Supplying a
+  # face to the subtree is the host's, via its own `Theme`/`DefaultTextStyle`.
+  # See "What it does not ship" in README.md.
