@@ -1,3 +1,20 @@
+## 0.2.0
+
+- **`PlateMirror`** — a read-only echo of a slot's value, painted elsewhere on
+  the plate. A plate that prints its number twice (national numerals big, Latin
+  digits small beneath) is one value with two presentations, not two slots; a
+  mirror carries no focus node, no controller and no position in `slots`, so it
+  never reaches `textGroups`, `isCompleted`, focus traversal or validation. Its
+  optional `alphabet` is the whole transform, since `PlateAlphabet.glyphs`
+  already maps storage form to display form.
+- `debugValidateSpec` now bounds-checks mirror boxes and their `source` indices,
+  and keys its alphabet-consistency check on `characters` **and** `glyphs`.
+  Keying on `characters` alone rejected an alphabet that accepts ASCII digits
+  and renders national numerals, which shares `latin.digits`' character list and
+  genuinely differs in meaning.
+
+Purely additive: every existing spec compiles unchanged.
+
 ## 0.1.0
 
 First pub.dev release. The four packages (`core_plate`, `iran_plate`,

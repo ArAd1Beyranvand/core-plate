@@ -14,6 +14,40 @@ class PlateSlot {
   final PlateBox box;
 }
 
+/// A read-only echo of a slot's value, painted somewhere else on the plate.
+///
+/// A plate that prints the same number twice — big national numerals on top,
+/// the same number again smaller in Latin digits beneath — is one value with
+/// two presentations, not two slots. A mirror is stateful (it shows a value
+/// that changes) but not editable: it owns no [FocusNode], no controller and no
+/// position in [PlateSpec.slots], so it never appears in text groups, focus
+/// traversal, completion or validation.
+///
+/// [alphabet] IS the transform: [PlateAlphabet.glyphs] is the storage -> display
+/// map, so echoing a slot in another numeral system means pointing [alphabet] at
+/// an alphabet with different glyphs. Null renders through the source slot's own
+/// alphabet.
+@immutable
+class PlateMirror {
+  const PlateMirror({
+    required this.source,
+    required this.box,
+    required this.glyphHeight,
+    this.alphabet,
+  });
+
+  /// Index into [PlateSpec.slots] of the slot whose value is echoed.
+  final int source;
+
+  final PlateBox box;
+
+  /// Passed to the glyph style as the slot height.
+  final double glyphHeight;
+
+  /// Renders the echoed value. Null means the source slot's own alphabet.
+  final PlateAlphabet? alphabet;
+}
+
 /// A painted rule (e.g. a vertical divider between character groups).
 @immutable
 class PlateRule {
@@ -110,6 +144,7 @@ class PlateSpec {
     this.rules = const <PlateRule>[],
     this.labels = const <PlateLabel>[],
     this.decals = const <PlateDecal>[],
+    this.mirrors = const <PlateMirror>[],
     this.textDirection = TextDirection.ltr,
     this.borderWidthRatioOverride,
     this.textGroups = const <PlateTextGroup>[],
@@ -127,6 +162,10 @@ class PlateSpec {
   final List<PlateRule> rules;
   final List<PlateLabel> labels;
   final List<PlateDecal> decals;
+
+  /// Read-only echoes of slot values. Purely presentational: they do not add
+  /// to [slotCount] and carry no input state.
+  final List<PlateMirror> mirrors;
 
   final TextDirection textDirection;
 
@@ -215,7 +254,9 @@ class PlateSpec {
 }
 
 /// Debug-only sanity check for a [PlateSpec]'s internal consistency: every
-/// slot rect fits within the canvas. Always returns true — call it inside an
+/// slot and mirror rect fits within the canvas, every mirror echoes a real
+/// slot, and alphabet ids key content one-to-one. Always returns true — call
+/// it inside an
 /// `assert(...)` so it's stripped from release builds.
 bool debugValidateSpec(PlateSpec spec) {
   for (var i = 0; i < spec.slots.length; i++) {
@@ -230,37 +271,61 @@ bool debugValidateSpec(PlateSpec spec) {
     );
   }
 
-  // Alphabet ids must be a stable key for character content: within one spec,
-  // no id may appear with two different `characters` lists, and no two distinct
-  // ids may share one list.
-  final byId = <String, List<String>>{};
-  final byChars = <String, String>{};
-  for (final slot in spec.slots) {
-    final a = slot.alphabet;
-    final charsKey = a.characters.join(' ');
-    final seenChars = byId[a.id];
+  for (var i = 0; i < spec.mirrors.length; i++) {
+    final m = spec.mirrors[i];
+    final b = m.box;
     assert(
-      seenChars == null || _sameChars(seenChars, a.characters),
-      'Alphabet id "${a.id}" in spec "${spec.id}" appears with two different '
-      'character lists.',
+      b.left >= 0 &&
+          b.top >= 0 &&
+          b.right <= spec.canvasWidth &&
+          b.bottom <= spec.canvasHeight,
+      'PlateMirror $i in spec "${spec.id}" has a rect outside the '
+      'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
     );
-    byId[a.id] = a.characters;
-    final seenId = byChars[charsKey];
+    assert(
+      m.source >= 0 && m.source < spec.slots.length,
+      'PlateMirror $i in spec "${spec.id}" echoes slot ${m.source}, which is '
+      'not a slot index (0..${spec.slots.length - 1}).',
+    );
+  }
+
+  // Alphabet ids must be a stable key for *rendered* character content: within
+  // one spec, no id may appear with two different characters/glyphs pairs, and
+  // no two distinct ids may share one pair.
+  //
+  // The key is characters AND glyphs, not characters alone. `characters` is the
+  // accepted (storage) set, so an alphabet that accepts ASCII digits but prints
+  // them as national numerals carries the same list as `latin.digits` and a
+  // genuinely different meaning - keying on the list alone would call that a
+  // collision. Mirrors' alphabets are walked too: they render on the same face.
+  final byId = <String, String>{};
+  final byContent = <String, String>{};
+  for (final a in <PlateAlphabet>[
+    for (final slot in spec.slots) slot.alphabet,
+    for (final m in spec.mirrors)
+      if (m.alphabet != null) m.alphabet!,
+  ]) {
+    final contentKey = _contentKey(a);
+    final seenContent = byId[a.id];
+    assert(
+      seenContent == null || seenContent == contentKey,
+      'Alphabet id "${a.id}" in spec "${spec.id}" appears with two different '
+      'character/glyph sets.',
+    );
+    byId[a.id] = contentKey;
+    final seenId = byContent[contentKey];
     assert(
       seenId == null || seenId == a.id,
       'Spec "${spec.id}" has two distinct alphabet ids ("$seenId", "${a.id}") '
-      'sharing the same characters list.',
+      'sharing the same characters and glyphs.',
     );
-    byChars[charsKey] = a.id;
+    byContent[contentKey] = a.id;
   }
 
   return true;
 }
 
-bool _sameChars(List<String> a, List<String> b) {
-  if (a.length != b.length) return false;
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) return false;
-  }
-  return true;
-}
+/// The identity of an alphabet's content: what it accepts, and how each
+/// accepted character is rendered.
+String _contentKey(PlateAlphabet a) =>
+    a.characters.map((c) => '$c=${a.render(c)}').join(' ');

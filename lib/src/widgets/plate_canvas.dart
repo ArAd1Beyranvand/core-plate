@@ -239,7 +239,10 @@ class _PlateCanvasState extends State<PlateCanvas> {
     // country panel, every rule, label and decal, and all eight slots — to
     // change one character. The frame and each slot now subscribe to just the
     // part they render (see [_FrameBinding] and [_SlotBinding]), so a keystroke
-    // rebuilds one slot, and the plate's static furniture is built once.
+    // rebuilds one slot + its mirrors, and the plate's static furniture is
+    // built once. A [PlateMirror] echoes one slot's value, so [_MirrorBinding]
+    // subscribes to that one value the same way — a keystroke stays local to
+    // the slot it lands in and the mirrors pointed at it.
     //
     // [_ValidationBinding] is the one exception, and only under autoValidate:
     // it watches the value through a verdict, so it rebuilds on a flip between
@@ -299,6 +302,16 @@ class _PlateCanvasState extends State<PlateCanvas> {
                         _Placed(
                           box: d.box,
                           child: Image(image: d.image, fit: BoxFit.contain),
+                        ),
+                      for (final m in spec.mirrors)
+                        _Placed(
+                          box: m.box,
+                          child: _MirrorBinding(
+                            mirror: m,
+                            alphabet:
+                                m.alphabet ?? spec.slots[m.source].alphabet,
+                            theme: theme,
+                          ),
                         ),
                       for (var i = 0; i < spec.slots.length; i++)
                         _Placed(
@@ -521,6 +534,41 @@ class _SlotBinding extends StatelessWidget {
       onChanged: (v) => bloc.add(ValueIsChanged(index: index, value: v)),
       onCompleted: onCompleted,
       onPressed: onPressed,
+    );
+  }
+}
+
+/// One mirror: a read-only echo of a slot's character, subscribed to that ONE
+/// character exactly as [_SlotBinding] is.
+///
+/// It owns no focus node and no controller — a mirror is a presentation of a
+/// value, not a place to type — so it never touches the input machine.
+class _MirrorBinding extends StatelessWidget {
+  const _MirrorBinding({
+    required this.mirror,
+    required this.alphabet,
+    required this.theme,
+  });
+
+  final PlateMirror mirror;
+
+  /// Resolved by the canvas: the mirror's own alphabet, or the source slot's.
+  final PlateAlphabet alphabet;
+  final PlateTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = context.select<PlateCardBloc, String?>((b) {
+      final values = b.state.plateNumber.values;
+      return mirror.source < values.length ? values[mirror.source] : null;
+    });
+
+    return Center(
+      child: Text(
+        alphabet.render(value ?? ''),
+        textAlign: TextAlign.center,
+        style: theme.glyphStyle(mirror.glyphHeight, theme.ink),
+      ),
     );
   }
 }
