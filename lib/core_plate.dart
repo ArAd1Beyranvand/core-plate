@@ -88,6 +88,17 @@ export 'src/widgets/plate_flag.dart';
 /// deliberately absent: a consumer never constructs one.
 export 'src/input/plate_input_controller.dart';
 
+/// The value-owning handle: the primary API for a host that wants to read or
+/// write the plate's characters, not just drive focus. It extends
+/// [PlateInputController], so a canvas takes either — and
+/// [PlateInputController] remains exactly as it was for focus-only hosts.
+export 'src/input/plate_controller.dart';
+
+/// Rebuilds on a *derived* piece of a [PlateController] only when that piece
+/// changes. Per-slot listening needs no such thing: `PlateController.slot(i)`
+/// with a `ValueListenableBuilder` is already as narrow as it gets.
+export 'src/widgets/plate_selector.dart';
+
 // ---------------------------------------------------------------------------
 // State — the bloc a canvas keeps its values in.
 // ---------------------------------------------------------------------------
