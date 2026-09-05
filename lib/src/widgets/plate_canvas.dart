@@ -17,6 +17,7 @@ import '../theme/plate_theme.dart';
 import '../validators/plate_validator.dart';
 import 'country_panel.dart';
 import 'plate_frame.dart';
+import 'plate_selector.dart';
 import 'plate_slot_item.dart';
 
 /// The editable plate for a [PlateSpec].
@@ -333,18 +334,22 @@ class _PlateCanvasState extends State<PlateCanvas> {
     // NOTE: this build deliberately does NOT watch the plate value.
     //
     // It used to `context.select` the whole [PlateNumber], which meant every
-    // bloc emission rebuilt this entire subtree — the frame, the clip, the
-    // country panel, every rule, label and decal, and all eight slots — to
-    // change one character. The frame and each slot now subscribe to just the
-    // part they render (see [_FrameBinding] and [_SlotBinding]), so a keystroke
-    // rebuilds one slot + its mirrors, and the plate's static furniture is
-    // built once. A [PlateMirror] echoes one slot's value, so [_MirrorBinding]
-    // subscribes to that one value the same way — a keystroke stays local to
-    // the slot it lands in and the mirrors pointed at it.
+    // change rebuilt this entire subtree — the frame, the clip, the country
+    // panel, every rule, label and decal, and all eight slots — to change one
+    // character. The frame and each slot now subscribe to just the part they
+    // render: [_FrameBinding] is a [ValueListenableBuilder] on
+    // `controller.completed`, and [_SlotBinding] a [ValueListenableBuilder] on
+    // `controller.slot(index)` — one `ValueListenable<String?>` per position.
+    // So a keystroke rebuilds one slot + its mirrors, and the plate's static
+    // furniture is built once. A [PlateMirror] echoes one slot's value, so
+    // [_MirrorBinding] listens to `controller.slot(mirror.source)` the same
+    // way — a keystroke stays local to the slot it lands in and the mirrors
+    // pointed at it.
     //
     // [_ValidationBinding] is the one exception, and only under autoValidate:
-    // it watches the value through a verdict, so it rebuilds on a flip between
-    // valid and invalid rather than on a keystroke.
+    // it watches the value through a verdict (a [PlateSelector] that compares
+    // by reason), so it rebuilds on a flip between valid and invalid rather
+    // than on a keystroke.
 
     // The rounded white face, so content (e.g. the blue country panel) is
     // clipped to the same corner radius the frame paints instead of poking
@@ -365,7 +370,9 @@ class _PlateCanvasState extends State<PlateCanvas> {
           textDirection: spec.textDirection,
           child: Stack(
             children: [
-              Positioned.fill(child: _FrameBinding(theme: theme)),
+              Positioned.fill(
+                child: _FrameBinding(theme: theme, controller: _controller),
+              ),
               Positioned.fill(
                 child: ClipRRect(
                   clipper: _PlateFaceClipper(
@@ -409,6 +416,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
                             alphabet:
                                 m.alphabet ?? spec.slots[m.source].alphabet,
                             theme: theme,
+                            controller: _controller,
                           ),
                         ),
                       for (var i = 0; i < spec.slots.length; i++)
@@ -421,6 +429,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
                               behavior: behaviors[i],
                               theme: theme,
                               machine: _machine,
+                              controller: _controller,
                               onCompleted: widget.mode == PlateMode.input
                                   ? () => _machine.advanceFrom(i)
                                   : null,
@@ -448,6 +457,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     final validator = widget.validator;
     final Widget face = widget.autoValidate && validator != null
         ? _ValidationBinding(
+            controller: _controller,
             validate: (values) => validator.validate(_entryFor(values)),
             onVerdict: _publishVerdict,
             builder: (verdict) => buildFace(
@@ -573,32 +583,36 @@ class _BlocBridge {
 /// The plate's face, subscribed to the verdict on the typed value rather than
 /// to the value itself.
 ///
-/// `select` returns a [PlateValidation], which compares by reason, so the
-/// subtree rebuilds when the plate crosses between valid and invalid and not
-/// once per keystroke — the property the showcase used to maintain by hand.
+/// The [PlateSelector] folds the controller's value down to a [PlateValidation],
+/// which compares by reason, so the subtree rebuilds when the plate crosses
+/// between valid and invalid and not once per keystroke — the property the
+/// showcase used to maintain by hand.
 class _ValidationBinding extends StatelessWidget {
   const _ValidationBinding({
+    required this.controller,
     required this.validate,
     required this.onVerdict,
     required this.builder,
   });
 
+  final PlateController controller;
   final PlateValidation Function(List<String?> values) validate;
   final ValueChanged<PlateValidation> onVerdict;
   final Widget Function(PlateValidation verdict) builder;
 
   @override
   Widget build(BuildContext context) {
-    // A `BlocSelector` folds the bloc state down to the verdict; because
-    // `PlateValidation` compares by reason, the builder runs only when the
-    // plate crosses between valid and invalid, not once per keystroke.
+    // A `PlateSelector` folds the controller's value down to the verdict;
+    // because `PlateValidation` compares by reason, the builder runs only when
+    // the plate crosses between valid and invalid, not once per keystroke.
     //
     // The verdict is handed to `_VerdictListener`, which publishes it from its
     // own lifecycle callbacks (`initState` / `didUpdateWidget`) rather than
     // from `build`. `build` here no longer notifies anyone, and a rebuild that
     // leaves the verdict unchanged publishes nothing.
-    return BlocSelector<PlateCardBloc, PlateCardState, PlateValidation>(
-      selector: (state) => validate(state.plateNumber.values),
+    return PlateSelector<PlateValidation>(
+      controller: controller,
+      selector: (c) => validate(c.values),
       builder: (context, verdict) => _VerdictListener(
         verdict: verdict,
         onVerdict: onVerdict,
@@ -669,24 +683,27 @@ class _Placed extends StatelessWidget {
 /// the last slot fills — so watching a bool means a keystroke that does not
 /// complete the plate leaves the frame entirely alone.
 class _FrameBinding extends StatelessWidget {
-  const _FrameBinding({required this.theme});
+  const _FrameBinding({required this.theme, required this.controller});
 
   final PlateTheme theme;
+  final PlateController controller;
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = context.select<PlateCardBloc, bool>(
-      (b) => b.state.plateNumber.isCompleted,
+    return ValueListenableBuilder<bool>(
+      valueListenable: controller.completed,
+      builder: (context, isCompleted, _) =>
+          PlateFrame(isCompleted: isCompleted, theme: theme),
     );
-    return PlateFrame(isCompleted: isCompleted, theme: theme);
   }
 }
 
 /// One slot, subscribed to its OWN character rather than to the whole plate.
 ///
-/// This is what keeps a keystroke local: `select` returns a `String?`, so only
-/// the slot whose character actually changed rebuilds. The other seven, the
-/// country panel, the rules, the labels and the decals are untouched.
+/// This is what keeps a keystroke local: the [ValueListenableBuilder] watches
+/// `controller.slot(index)`, a `ValueListenable<String?>`, so only the slot
+/// whose character actually changed rebuilds. The other seven, the country
+/// panel, the rules, the labels and the decals are untouched.
 class _SlotBinding extends StatelessWidget {
   const _SlotBinding({
     required this.index,
@@ -694,6 +711,7 @@ class _SlotBinding extends StatelessWidget {
     required this.behavior,
     required this.theme,
     required this.machine,
+    required this.controller,
     required this.onCompleted,
     required this.onPressed,
   });
@@ -706,32 +724,36 @@ class _SlotBinding extends StatelessWidget {
   /// Owns this slot's focus node and text controller. Read here rather than
   /// passed in, so a new machine (after a spec change) reaches every slot.
   final PlateInputMachine machine;
+
+  /// The canvas's writer of record. This slot subscribes to its own position
+  /// through [PlateController.slot], and commits through [PlateController.setAt].
+  final PlateController controller;
   final VoidCallback? onCompleted;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final value = context.select<PlateCardBloc, String?>((b) {
-      final values = b.state.plateNumber.values;
-      return index < values.length ? values[index] : null;
-    });
+    return ValueListenableBuilder<String?>(
+      valueListenable: controller.slot(index),
+      builder: (context, value, _) {
+        // Keep the field's text in step with the controller, as the canvas used
+        // to do for every slot at once. This runs before this slot's own
+        // TextField builds in the same frame, so notifying its controller here
+        // is safe.
+        machine.syncController(index, value);
 
-    // Keep the field's text in step with the bloc, as the canvas used to do for
-    // every slot at once. This runs before this slot's own TextField builds in
-    // the same frame, so notifying its controller here is safe.
-    machine.syncController(index, value);
-
-    final bloc = context.read<PlateCardBloc>();
-    return PlateSlotItem(
-      slot: slot,
-      behavior: behavior,
-      theme: theme,
-      value: value,
-      controller: machine.controllerAt(index),
-      focusNode: machine.focusNodeAt(index),
-      onChanged: (v) => bloc.add(ValueIsChanged(index: index, value: v)),
-      onCompleted: onCompleted,
-      onPressed: onPressed,
+        return PlateSlotItem(
+          slot: slot,
+          behavior: behavior,
+          theme: theme,
+          value: value,
+          controller: machine.controllerAt(index),
+          focusNode: machine.focusNodeAt(index),
+          onChanged: (v) => controller.setAt(index, v),
+          onCompleted: onCompleted,
+          onPressed: onPressed,
+        );
+      },
     );
   }
 }
@@ -740,12 +762,14 @@ class _SlotBinding extends StatelessWidget {
 /// character exactly as [_SlotBinding] is.
 ///
 /// It owns no focus node and no controller — a mirror is a presentation of a
-/// value, not a place to type — so it never touches the input machine.
+/// value, not a place to type — so it never touches the input machine and has
+/// no `syncController` call.
 class _MirrorBinding extends StatelessWidget {
   const _MirrorBinding({
     required this.mirror,
     required this.alphabet,
     required this.theme,
+    required this.controller,
   });
 
   final PlateMirror mirror;
@@ -754,18 +778,20 @@ class _MirrorBinding extends StatelessWidget {
   final PlateAlphabet alphabet;
   final PlateTheme theme;
 
+  /// The canvas's writer of record; the mirror watches its source position
+  /// through [PlateController.slot].
+  final PlateController controller;
+
   @override
   Widget build(BuildContext context) {
-    final value = context.select<PlateCardBloc, String?>((b) {
-      final values = b.state.plateNumber.values;
-      return mirror.source < values.length ? values[mirror.source] : null;
-    });
-
-    return Center(
-      child: Text(
-        alphabet.render(value ?? ''),
-        textAlign: TextAlign.center,
-        style: theme.glyphStyle(mirror.glyphHeight, theme.ink),
+    return ValueListenableBuilder<String?>(
+      valueListenable: controller.slot(mirror.source),
+      builder: (context, value, _) => Center(
+        child: Text(
+          alphabet.render(value ?? ''),
+          textAlign: TextAlign.center,
+          style: theme.glyphStyle(mirror.glyphHeight, theme.ink),
+        ),
       ),
     );
   }
