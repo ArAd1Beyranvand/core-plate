@@ -8,6 +8,19 @@
   horizontal flag and still do.
 - **New: `PSGazaPlates.moto`.** A one-line Gaza motorcycle plate, carrying the
   horizontal flag and watermark that `car2021` used to.
+- **`PSWestBankPlates.modernMoto` rebuilt from a reference image.** It was
+  `modernCar` rescaled onto a 200 x 100 canvas, guessed throughout. It is now
+  measured off
+  `pics/License_Plate_-_Palestine_-_Motorcycle_-_2018_-_1-Line_Design.png`, on
+  that image's own 250 x 123 canvas, and the layout is materially different:
+  the serial runs the full width of the plate, and `P` and `ف` sit side by side
+  in a centred header band above it — `P` on the **left** — separated by a
+  short vertical divider, where the old spec stacked `ف` over `P` in a strip on
+  the right. This is a visual breaking change for anyone rendering it.
+- **New: `PSCountries.westBankGreenInkBlank`.** A West Bank country that draws
+  no caption and no flag, so `modernMoto` can print `P`, `ف` and the divider as
+  measured plate-space geometry instead of going through `CountryPanel`'s
+  vertical-only caption column.
 
 ## 0.1.0
 

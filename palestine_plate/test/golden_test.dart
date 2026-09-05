@@ -113,12 +113,16 @@ void main() {
       );
     });
 
+    // The value is the reference image's own — `2·0345·L`, from
+    // pics/License_Plate_-_Palestine_-_Motorcycle_-_2018_-_1-Line_Design.png —
+    // so this golden is directly comparable to the photograph the spec was
+    // measured off.
     testWidgets('modern motorcycle (green on white)', (tester) async {
       await renderGolden(
         tester,
         spec: PSWestBankPlates.modernMoto,
         theme: PSThemes.forUsage(PSUsage.private),
-        values: const ['1', '0', '2', '3', '4', 'H'],
+        values: const ['2', '0', '3', '4', '5', 'L'],
         name: 'wb_modern_moto_green',
       );
     });

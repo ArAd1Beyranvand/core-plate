@@ -35,6 +35,11 @@ import 'palestine_usage.dart';
 /// - The seven-glyph layouts (legacy, Gaza) reuse the reference's cell-to-gap
 ///   ratio at a smaller pitch, because seven cells do not fit at six cells'
 ///   pitch.
+/// - [modernMoto] is the **second measured plate** in this file: it has a
+///   reference of its own,
+///   `pics/License_Plate_-_Palestine_-_Motorcycle_-_2018_-_1-Line_Design.png`,
+///   and its canvas is that image's pixels 1:1. It is not this template
+///   rescaled — see its own doc.
 /// - Every other form factor is provisional throughout.
 ///
 /// ## The raised dots
@@ -60,7 +65,10 @@ import 'palestine_usage.dart';
 ///
 /// Motorcycles use the identical serial grammar and are legally private
 /// vehicles. [modernMoto] and [modernMotoTwoLine] are form factors, not a
-/// usage — do not add a `PSUsage.motorcycle`.
+/// usage — do not add a `PSUsage.motorcycle`. Both put `P` and `ف` side by
+/// side rather than stacked, because neither is tall enough for the car
+/// plate's vertical strip; [modernMoto] additionally keeps the divider between
+/// them, since its reference image fixes the divider's x.
 abstract final class PSWestBankPlates {
   // -------------------------------------------------------------------------
   // Shared 520 x 110 furniture. Const lists, so the colour-scheme variants
@@ -76,7 +84,7 @@ abstract final class PSWestBankPlates {
     // flag and a caption and nothing else, so this cannot live on the country
     // — it is a rule on the spec, drawn over the block. Its y is where the two
     // caption lines meet: 48% down the block, measured off the reference.
-    PlateRule(box: PlateBox(452, 53, 46, 3)),
+    PlateRule(box: PlateBox(452, 51, 46, 5)),
   ];
 
   /// The `ف / P` block. Not a coloured panel slab — it is ink on the plate
@@ -91,7 +99,7 @@ abstract final class PSWestBankPlates {
     box: PlateBox(452, 8, 46, 94), // CALIBRATE — x measured, y proportional.
     flagScale: 0,
     captionScale: 1.9,
-    padding: EdgeInsets.zero,
+    padding: EdgeInsets.symmetric(vertical: 5),
   );
 
   // -------------------------------------------------------------------------
@@ -259,7 +267,7 @@ abstract final class PSWestBankPlates {
   // CALIBRATE — the whole two-line layout is provisional. No reference image.
   static const List<PlateRule> _twoLineRules = [
     PlateRule(box: PlateBox(232, 10, 5, 130)),
-    PlateRule(box: PlateBox(243, 72, 50, 4)),
+    PlateRule(box: PlateBox(243, 71, 50, 5)),
   ];
 
   static const PlatePanel _twoLinePanel = PlatePanel(
@@ -267,7 +275,7 @@ abstract final class PSWestBankPlates {
     flagScale: 0,
     // 24 * 2.6 = 62.4 per line, so two lines fill the 130-tall block.
     captionScale: 2.6,
-    padding: EdgeInsets.zero,
+    padding: EdgeInsets.symmetric(vertical: 5),
   );
 
   static const List<PlateLabel> _twoLineLabels = [
@@ -331,38 +339,87 @@ abstract final class PSWestBankPlates {
   // factor, not a usage.
   // -------------------------------------------------------------------------
 
-  /// [modernCar] rescaled onto a 200 x 100 motorcycle plate.
-  // CALIBRATE — provisional throughout; no reference image.
+  /// The one-line motorcycle plate — **the one plate in this file besides
+  /// [modernCar] whose geometry is measured rather than derived.**
+  ///
+  /// The reference is
+  /// `pics/License_Plate_-_Palestine_-_Motorcycle_-_2018_-_1-Line_Design.png`,
+  /// a 250 x 123 render of `2·0345·L`, and the canvas is that image's own
+  /// pixels 1:1 — so every number below is the reference's, unit for unit,
+  /// with no `// CALIBRATE` on any of them.
+  ///
+  /// ## It is not [modernCar] rescaled
+  ///
+  /// It was, before the reference turned up, and the reference says otherwise.
+  /// A motorcycle plate is nearly square-ish (2:1 rather than the car's 4.7:1),
+  /// so the identity block cannot sit in a tall strip on the right — there is
+  /// no width for it beside six glyphs. Instead:
+  ///
+  /// - the serial runs the **full width** of the plate, x 12.5 to 235, and
+  /// - `P` and `ف` sit **side by side in a header band above it**, centred on
+  ///   the plate (their combined ink spans x 99–153 on a 250-wide plate), with
+  ///   a short **vertical** divider between them.
+  ///
+  /// Note the order: **`P` on the left, `ف` on the right** — the mirror of the
+  /// stacked `ف`-over-`P` block on the car plate, and measured off the
+  /// photograph rather than assumed.
+  ///
+  /// ## Why the block is labels rather than the country panel
+  ///
+  /// [CountryPanel] stacks [PlateCountry.captionLines] vertically and offers no
+  /// horizontal arrangement, and the one-string workaround
+  /// ([PSCountries.westBankGreenInkInline]) puts the divider at an x that
+  /// depends on font metrics this package does not ship. Here the divider's x
+  /// is *known* — 121, measured — so the two glyphs are [PlateLabel]s at their
+  /// measured positions, the divider is a [PlateRule] at its own, and the panel
+  /// draws nothing: hence [PSCountries.westBankGreenInkBlank] and the zero-size
+  /// panel box.
+  ///
+  /// Two labels rather than one string also keeps `P` left of `ف`. Each label
+  /// is an isolated bidi run — the same property [modernTrade] relies on, and
+  /// for the same reason.
   static const PlateSpec modernMoto = PlateSpec(
     id: 'ps.wb.modern.moto',
-    country: PSCountries.westBankGreenInk,
-    canvasWidth: 200,
-    canvasHeight: 100,
+    country: PSCountries.westBankGreenInkBlank,
+    canvasWidth: 250,
+    canvasHeight: 123,
+    // The panel draws nothing; the identity block is the labels and rule below.
     panel: PlatePanel(
-      box: PlateBox(148, 7, 44, 86),
+      box: PlateBox(0, 0, 0, 0),
       flagScale: 0,
-      captionScale: 1.75,
+      captionScale: 0,
       padding: EdgeInsets.zero,
     ),
-    borderWidthRatioOverride: 0.027,
+    // 4 units of border on a 123-tall plate, measured off the reference.
+    borderWidthRatioOverride: 0.0325,
+    // Cells 30 x 62 at y=47, each centred on its glyph's measured centre:
+    // 27.5, 75.5, 107, 139, 171, 220. The serial group's pitch is a steady
+    // ~31.8; the gaps either side of it are 48 and 49.
     slots: [
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(6, 9, 17, 82)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(33, 9, 17, 82)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(52, 9, 17, 82)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(71, 9, 17, 82)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(90, 9, 17, 82)),
+      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(12.5, 47, 30, 62)),
+      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(60.5, 47, 30, 62)),
+      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(92, 47, 30, 62)),
+      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(124, 47, 30, 62)),
+      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(156, 47, 30, 62)),
       PlateSlot(
         alphabet: PSAlphabets.governorateLetters,
-        box: PlateBox(117, 9, 17, 82),
+        box: PlateBox(205, 47, 30, 62),
       ),
     ],
     rules: [
-      PlateRule(box: PlateBox(140, 7, 3, 86)),
-      PlateRule(box: PlateBox(148, 48, 44, 3)),
+      // The divider between `P` and `ف`: 3 wide at x=121, spanning the header
+      // band. Vertical here, where the car plate's equivalent is horizontal.
+      PlateRule(box: PlateBox(121, 11, 3, 28)),
     ],
     labels: [
-      PlateLabel(text: '·', box: PlateBox(13.65, 33.6, 28.7, 32.8), glyphHeight: 45.1),
-      PlateLabel(text: '·', box: PlateBox(97.65, 33.6, 28.7, 32.8), glyphHeight: 45.1),
+      // The header band, y 10..38. `P` first so it lays out on the left.
+      PlateLabel(text: 'P', box: PlateBox(95.5, 10, 24, 28), glyphHeight: 28),
+      PlateLabel(text: 'ف', box: PlateBox(127.5, 10, 28, 28), glyphHeight: 28),
+      // Dots on this file's usual proportions, which the reference confirms:
+      // box top 30% into the 62-tall band, box 0.35 x 0.40 of it, glyph 0.55.
+      // Puts them at centre y=78, exactly where the reference's ink sits.
+      PlateLabel(text: '·', box: PlateBox(40.15, 65.6, 21.7, 24.8), glyphHeight: 34.1),
+      PlateLabel(text: '·', box: PlateBox(184.65, 65.6, 21.7, 24.8), glyphHeight: 34.1),
     ],
     textGroups: _modernGroups,
   );

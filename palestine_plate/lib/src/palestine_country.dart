@@ -87,11 +87,38 @@ abstract final class PSCountries {
   /// on one line it would be a vertical rule at an x that depends on the text
   /// metrics of a font this package does not ship, and a rule in the wrong
   /// place is worse than none.
-  // TODO(plate_palestine): confirm against a photograph that the two-line moto
+  // TODO(palestine_plate): confirm against a photograph that the two-line moto
   // plate really does set ف and P side by side, and whether a divider survives.
   static const PlateCountry westBankGreenInkInline = PlateCountry(
     code: 'ps',
     captionLines: ['ف  P'],
+    panelColor: Color(0x00000000),
+    panelTextColor: PSColors.green,
+    flag: null,
+  );
+
+  /// [westBankGreenInk] with **no caption and no flag**, for the one-line
+  /// motorcycle plate.
+  ///
+  /// That plate sets `P` and `ف` side by side with a vertical divider between
+  /// them, at positions measured off
+  /// `pics/License_Plate_-_Palestine_-_Motorcycle_-_2018_-_1-Line_Design.png`.
+  /// [CountryPanel] cannot draw that: it lays [PlateCountry.captionLines] out
+  /// as a `Column`, and putting both glyphs in one string (the
+  /// [westBankGreenInkInline] trick) leaves the divider at an x that depends on
+  /// font metrics this package does not ship.
+  ///
+  /// So `PSWestBankPlates.modernMoto` prints the two glyphs as [PlateLabel]s at
+  /// their measured x, and the divider as a [PlateRule] at its measured x, and
+  /// the country panel draws nothing at all. Two labels rather than one is also
+  /// what keeps `P` on the left of `ف`: each label is an isolated bidi run, the
+  /// same reason the trade plate's `اختبار` and `במבחן` must stay two labels.
+  ///
+  /// Everything else — the code, the ink — matches [westBankGreenInk], so this
+  /// still compares equal to every other West Bank const.
+  static const PlateCountry westBankGreenInkBlank = PlateCountry(
+    code: 'ps',
+    captionLines: [],
     panelColor: Color(0x00000000),
     panelTextColor: PSColors.green,
     flag: null,
@@ -117,7 +144,7 @@ abstract final class PSCountries {
     flagAspectRatio: 1 / 2,
     flag: SvgPlateAsset(
       'assets/flags/Flag_of_Palestine_vertical.svg',
-      package: 'plate_palestine',
+      package: 'palestine_plate',
     ),
   );
 
@@ -130,7 +157,7 @@ abstract final class PSCountries {
     flagAspectRatio: 2 / 1,
     flag: SvgPlateAsset(
       'assets/flags/Flag_of_Palestine.svg',
-      package: 'plate_palestine',
+      package: 'palestine_plate',
     ),
   );
 }

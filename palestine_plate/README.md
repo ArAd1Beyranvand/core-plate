@@ -134,8 +134,9 @@ directly. That is what the serial generator and the tests call.
 ## Contains
 
 - `PSCountries` - `westBankGreenInk` / `.westBankWhiteInk` / `.westBankRedInk` /
-  `.westBankGreenInkInline`, and `.gaza2012` / `.gaza2021`. One const per **ink**
-  colour, all with `code: 'ps'` so they compare equal.
+  `.westBankGreenInkInline` / `.westBankGreenInkBlank`, and `.gaza2012` /
+  `.gaza2021`. One const per **ink** colour, all with `code: 'ps'` so they
+  compare equal.
 - `PSAlphabets.digits` / `.districtDigits` / `.governorateLetters` / `.gazaPrefix`.
 - `PSGovernorate` - the thirteen letters with Arabic and English names.
 - `PSUsage`, `PSLegacyUsage` and `PSGazaUsage` - the two unrelated usage-code maps.
@@ -159,15 +160,24 @@ job, through its own `Theme` or `DefaultTextStyle`. (`assets/fonts/` holds the
 licence notices and the faces the watermark artwork was rasterised from - provenance,
 not a shipped resource; nothing in `lib/` references them.)
 
-**No verified geometry outside the West Bank car template.** Exactly two numbers in
-this package come from a photograph: `borderWidthRatio: 0.027` and
-`plateRadiusRatio: 0.10`, measured off `palestine_plate/pics/reference_plate.png`, as
-does `PSColors.green` (`0xFF3C875D`, sampled - 29 397 pixels of that image are exactly
-that value). **Everything else is provisional and marked `// CALIBRATE` on the line.**
-That includes every red, blue and grey; the entire two-line, motorcycle, trade and
-Gaza layouts; and the 520 x 110 canvas Gaza inherits from the West Bank for visual
-consistency rather than because it is attested. The golden tests exist so that
-retuning any of it shows up as a visible diff.
+**No verified geometry outside the two measured plates.** Two reference images back
+this package, and only what is measured off them is not a guess:
+
+- `pics/reference_plate.png` gives the West Bank car template - `borderWidthRatio:
+  0.027`, `plateRadiusRatio: 0.10`, `modernCar`'s horizontal positions, and
+  `PSColors.green` (`0xFF3C875D`, sampled - 29 397 pixels of that image are exactly
+  that value).
+- `pics/License_Plate_-_Palestine_-_Motorcycle_-_2018_-_1-Line_Design.png` gives
+  `PSWestBankPlates.modernMoto` outright: its 250 x 123 canvas is that image's own
+  pixels, and every slot, label and rule on it is measured. It is *not* the car
+  template rescaled - the serial runs full width and the `P | ف` block is a centred
+  header band above it, `P` on the left.
+
+**Everything else is provisional and marked `// CALIBRATE` on the line.** That
+includes every red, blue and grey; the two-line, trade and Gaza layouts; and the
+520 x 110 canvas Gaza inherits from the West Bank for visual consistency rather than
+because it is attested. The golden tests exist so that retuning any of it shows up as
+a visible diff.
 
 **No scanned artwork.** The flag SVGs are authored to the official geometry - three
 equal bands black/white/green, a red isosceles triangle on the hoist reaching a third
@@ -188,13 +198,18 @@ Reported rather than patched around, and none of them were fixed by editing
 - **There is no rotation hook.** Gaza's 2012 plate carries the flag turned a quarter
   turn, so this package ships a *second, pre-rotated* SVG rather than rotating at
   render time.
-- **`CountryPanel` lays `captionLines` out as a `Column`, always.** The two-line
-  motorcycle plate wants `ف` and `P` side by side, so `westBankGreenInkInline` puts
-  both glyphs in one string - the only way to get them beside each other today.
+- **`CountryPanel` lays `captionLines` out as a `Column`, always.** Both motorcycle
+  plates want `P` and `ف` side by side, and there are two answers depending on whether
+  the divider's position is known. The two-line plate puts both glyphs in one string
+  (`westBankGreenInkInline`) and drops the divider, because its x would depend on font
+  metrics. The one-line plate has a reference image, so its divider's x is measured:
+  it uses `westBankGreenInkBlank` - a country that draws nothing - and prints both
+  glyphs and the rule as plate-space geometry instead.
 - **`PlateLabel` has no `TextDirection`.** That one is a feature here: it makes each
-  label an isolated run, which is exactly why the trade plate's `اختبار` and `במבחן`
-  are two labels and must stay two. Concatenated into one string, the bidi algorithm
-  reorders them against each other and the left label lands on the right.
+  label an isolated run, which is why the trade plate's `اختبار` and `במבחן` are two
+  labels and must stay two, and why the one-line motorcycle plate's `P` and `ف` are.
+  Concatenated into one string, the bidi algorithm reorders them against each other
+  and the left label lands on the right.
 
 Draw order was checked rather than assumed: `spec.decals` is painted into the `Stack`
 before `spec.slots`, so the watermark is genuinely beneath the digits.
