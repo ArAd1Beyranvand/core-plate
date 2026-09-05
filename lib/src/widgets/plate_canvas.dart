@@ -27,9 +27,9 @@ import 'plate_slot_item.dart';
 /// change onto that bloc — in both directions, so a host that writes straight
 /// to the bloc keeps working — but it has no fallback for the bloc's absence:
 /// wrap it in a `BlocProvider<PlateCardBloc>` (created with the same spec) or
-/// it throws on first build. If you change [spec] on a live canvas, it
-/// dispatches `SpecIsChanged` so the bloc's value list stays the right length
-/// for the new spec.
+/// it throws on first build. If you change [spec] on a live canvas, the
+/// characters already entered are carried across to the new spec as
+/// [onSpecChange] directs, and the mirrored bloc follows.
 ///
 /// `PlateCanvas` provides its own [Material], so it renders correctly without a
 /// [Scaffold] ancestor.
@@ -45,6 +45,7 @@ class PlateCanvas extends StatefulWidget {
     this.controller,
     this.validator,
     this.autoValidate = false,
+    this.onSpecChange = PlateValuePreservation.none,
   });
 
   final PlateSpec spec;
@@ -69,6 +70,14 @@ class PlateCanvas extends StatefulWidget {
   /// consulted only when the host asks — read
   /// [PlateInputController.validation] and decide your own timing.
   final bool autoValidate;
+
+  /// What becomes of the characters already entered when [spec] is swapped on a
+  /// live canvas. Defaults to [PlateValuePreservation.none] — the plate is
+  /// cleared, today's behaviour — so adding this stage breaks nobody. The
+  /// default changes to [PlateValuePreservation.byGroupKey] in 0.4.0; pass it
+  /// explicitly now to opt in, so a change of scheme or serial length keeps the
+  /// registers that still fit and truncates only what no longer does.
+  final PlateValuePreservation onSpecChange;
 
   @override
   State<PlateCanvas> createState() => _PlateCanvasState();
@@ -126,28 +135,24 @@ class _PlateCanvasState extends State<PlateCanvas> {
     // an ordinary thing for a host to do — and the machine then holds the
     // previous plate's nodes: wrong slot, or off the end of the list outright.
     if (widget.spec.id != oldWidget.spec.id) {
-      // Both stores hold the previous plate's values — a different slot count —
-      // and every `values[index]` read below (slots, validation, commit) would
-      // be against the wrong-length list, off the end for a shorter spec. Reset
-      // both to the new spec's empty state before rebuilding the machine.
-      //
-      // The bridge comes down first and goes back up after: while the two sides
-      // are mid-swap they hold plates of different lengths, and there is
-      // nothing meaningful to carry between them. It is re-founded without a
-      // seed, so the bloc's own `SpecIsChanged` emission — which lands a
-      // microtask later, empty and the right length — is what the controller
-      // finally agrees with.
+      // Both stores hold the previous plate's values — a different slot count.
+      // The controller migrates itself to the new spec (carrying the characters
+      // across as [PlateCanvas.onSpecChange] directs), and the bridge mirrors
+      // the migrated value out to the bloc, so a bloc-holding host sees the
+      // same plate. The bridge comes down first and goes back up after: while
+      // the two sides are mid-swap they hold plates of different lengths.
       _bridge?.dispose();
       _bridge = null;
-      context.read<PlateCardBloc>().add(SpecIsChanged(widget.spec));
-      // A spec swap still clears the plate, exactly as `SpecIsChanged` does to
-      // the bloc. Carrying the value across is stage 4's job, not this one's.
-      _controller.adoptSpec(widget.spec, preserve: PlateValuePreservation.none);
+      _controller.adoptSpec(widget.spec, preserve: widget.onSpecChange);
       oldWidget.controller?.detach(_machine);
       widget.controller?.detach(_machine);
       _machine.dispose();
       _installMachine();
       _syncBridge();
+      // The bloc still holds the old spec's list; the controller has already
+      // migrated. Push the controller's value out — not the other way round, or
+      // the stale bloc state would clobber the migration.
+      _bridge?.adoptControllerValue();
     } else if (widget.controller != oldWidget.controller) {
       oldWidget.controller?.installValidation(null);
       oldWidget.controller?.detach(_machine);
@@ -198,8 +203,9 @@ class _PlateCanvasState extends State<PlateCanvas> {
 
   /// Points the bridge at the current bloc and controller, re-founding it when
   /// either has been replaced. [seed] brings the two sides into agreement on a
-  /// freshly founded pair; a re-found after a spec swap deliberately does not,
-  /// since the bloc has not caught up with the new spec yet.
+  /// freshly founded pair; a re-found after a spec swap passes `seed: false` and
+  /// the caller then pushes the migrated value out with
+  /// [_BlocBridge.adoptControllerValue], since the bloc is the stale side there.
   void _syncBridge({bool seed = false}) {
     final bloc = context.read<PlateCardBloc>();
     final bridge = _bridge;
@@ -535,6 +541,11 @@ class _BlocBridge {
     }
     _onBlocState(bloc.state);
   }
+
+  /// Pushes the controller's value onto the bloc. Used after a spec swap, where
+  /// the controller has migrated to the new spec and the bloc has not caught up:
+  /// the controller is the side to trust.
+  void adoptControllerValue() => _onControllerChanged();
 
   void _onControllerChanged() {
     if (_syncing) return;

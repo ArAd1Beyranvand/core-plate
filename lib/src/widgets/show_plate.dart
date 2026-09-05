@@ -76,7 +76,9 @@ class PlateText extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 for (final g in spec.effectiveTextGroups)
-                  if (g.indices.any((i) => (values[i] ?? '').isNotEmpty))
+                  if (g.indices.any(
+                    (i) => i < values.length && (values[i] ?? '').isNotEmpty,
+                  ))
                     Text(spec.renderGroup(g, values)),
               ],
             ),
