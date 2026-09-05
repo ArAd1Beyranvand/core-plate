@@ -175,48 +175,17 @@ class _DemoState extends State<_Demo> {
     };
   }
 
-  // -------------------------------------------------------------------------
-  // Switching spec.
-  //
-  // `PlateCanvas` reacts to a changed `spec.id` by dispatching
-  // `SpecIsChanged`, which EMPTIES THE PLATE. It has to: the bloc still holds
-  // the previous plate's values, of a different length, and every
-  // `values[index]` downstream would be against the wrong list.
-  //
-  // So changing scheme or form factor mid-entry wipes what the user typed.
-  // That is core_plate's behaviour and this app does not pretend otherwise —
-  // it re-seeds the new spec from the old values instead, positionally, which
-  // works because every scheme here is (region | district | prefix) + a
-  // four-digit serial + a tail. A character the new alphabet does not accept —
-  // a digit landing in the governorate slot, say — is dropped rather than
-  // forced.
-  // -------------------------------------------------------------------------
-
+  // Switching scheme, region, usage or form factor. `PlateCanvas` is passed
+  // `onSpecChange: PlateValuePreservation.byGroupKey`, so a swapped `spec.id`
+  // carries the value across register by register — the serial stays the
+  // serial even when it moves position, and a character the new alphabet
+  // refuses is dropped rather than forced.
   void _switchTo({_Kind? region, _Scheme? scheme, PSUsage? usage, bool? motorcycle}) {
-    final bloc = context.read<PlateCardBloc>();
-    final before = List<String?>.of(bloc.state.plateNumber.values);
-    final oldSpec = _specFor(_scheme, _usage);
-
     setState(() {
       if (region != null) _region = region;
       if (motorcycle != null) _motorcycle = motorcycle;
       if (scheme != null) _scheme = scheme;
       if (usage != null) _usage = usage;
-    });
-
-    final newSpec = _specFor(_scheme, _usage);
-    if (newSpec.id == oldSpec.id) return; // No reset; nothing to re-seed.
-
-    // After the frame in which PlateCanvas.didUpdateWidget dispatches
-    // SpecIsChanged, so the re-seeded values are not immediately emptied.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      for (var i = 0; i < newSpec.slots.length && i < before.length; i++) {
-        final value = before[i];
-        if (value == null || value.isEmpty) continue;
-        if (!newSpec.slots[i].alphabet.accepts(value)) continue;
-        bloc.add(ValueIsChanged(index: i, value: value));
-      }
     });
   }
 
@@ -263,6 +232,7 @@ class _DemoState extends State<_Demo> {
               inputSource: PlateInputSource.system,
               validator: _validatorFor(_scheme.kind),
               autoValidate: true,
+              onSpecChange: PlateValuePreservation.byGroupKey,
               onChooseCharacter: (alphabet) =>
                   PlateCharacterPicker.show(context, alphabet),
             ),

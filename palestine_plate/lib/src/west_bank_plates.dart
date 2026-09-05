@@ -214,8 +214,8 @@ abstract final class PSWestBankPlates {
   ///
   /// A whole second spec for one colour because [PlateCountry] carries its own
   /// text colour and [PlateSpec] carries a country: there is no way to recolour
-  /// the block from the theme. **Swapping to it mid-entry resets the bloc** —
-  /// see the note on [legacyCarForUsage].
+  /// the block from the theme. Swapping to it mid-entry carries the value
+  /// across — see the note on [legacyCarForUsage].
   static const PlateSpec legacyCarPublicTransport = PlateSpec(
     id: 'ps.wb.legacy.car.publicTransport',
     country: PSCountries.westBankWhiteInk,
@@ -246,12 +246,12 @@ abstract final class PSWestBankPlates {
 
   /// The one-line legacy spec whose `ف / P` block matches [usage]'s ink.
   ///
-  /// **This is a display-time choice, not an input-time one.** Every spec it
-  /// returns has the same seven slots and the same geometry, but a different
-  /// [PlateSpec.id] — and swapping `spec:` on a live [PlateCanvas] dispatches
-  /// `SpecIsChanged`, which empties the bloc. Resolve the usage before building
-  /// the canvas, or re-seed the values yourself afterwards. The example does
-  /// the latter.
+  /// Every spec it returns has the same seven slots and the same geometry, but
+  /// a different [PlateSpec.id]. Swapping `spec:` on a live [PlateCanvas]
+  /// carries the value across as `PlateCanvas.onSpecChange` directs — with
+  /// `byGroupKey` the registers already entered are kept, and only characters
+  /// the new alphabet refuses are dropped. The example passes `byGroupKey` and
+  /// lets the usage change mid-entry.
   static PlateSpec legacyCarForUsage(PSUsage usage) => switch (usage) {
     PSUsage.publicTransport => legacyCarPublicTransport,
     PSUsage.government || PSUsage.exempt => legacyCarGovernment,

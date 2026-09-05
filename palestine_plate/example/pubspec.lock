@@ -44,11 +44,10 @@ packages:
   core_plate:
     dependency: "direct main"
     description:
-      name: core_plate
-      sha256: a10053a020786ae5c052527af9b263bc41c0862ca11bfe66a324ef742b9ce74a
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0"
+      path: "../../core_plate"
+      relative: true
+    source: path
+    version: "0.2.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -114,10 +113,10 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: c82594181e3312f3d0695fc95aaaf7758d75b8d4ae2bbecf223b9fd5109a059d
+      sha256: "307249ce4ff29d58a18e97f6345f539382eb9c9c29ecda628900f31de0443dd9"
       url: "https://pub.dev"
     source: hosted
-    version: "1.18.3"
+    version: "1.19.0"
   nested:
     dependency: transitive
     description:
@@ -126,6 +125,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  palestine_plate:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "0.1.0"
   path:
     dependency: transitive
     description:
@@ -157,13 +163,6 @@ packages:
       sha256: d963840e5f12c22cd12b3cb1f14807087ee0238af567103116b69fc53bbe182b
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0"
-  plate_palestine:
-    dependency: "direct main"
-    description:
-      path: ".."
-      relative: true
-    source: path
     version: "0.1.0"
   provider:
     dependency: transitive
@@ -238,10 +237,10 @@ packages:
     dependency: transitive
     description:
       name: vector_math
-      sha256: "1d774bbdf6b72a0b12122fc1560c9c2d2a67db5a4a4cc2bd8a5c990ab20e3188"
+      sha256: f36f9f3be64c6198714492bb455c11056e33e2f85d9a0b676a48301e44fdcf47
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "2.4.2"
   web:
     dependency: transitive
     description:
