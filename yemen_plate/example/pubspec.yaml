@@ -1,5 +1,5 @@
-name: plate_yemen_example
-description: Minimal example — Yemen's two current plate systems, side by side, driven by the on-screen keypad.
+name: yemen_plate_example
+description: Minimal example — Yemen's two current plate systems, side by side, driven by the platform keyboard.
 publish_to: none
 version: 1.0.0
 
@@ -11,9 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
-  core_plate: ^0.1.0
-  plate_keypad: ^0.1.0
-  plate_yemen: ^0.1.0
+  core_plate: ^0.2.0
+  yemen_plate: ^0.1.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -29,9 +28,11 @@ dev_dependencies:
 # default whatever the app theme says. Bundling a font here would have shipped
 # an asset that changed nothing. See "Fonts" in the package README.
 
-# Local development only — resolves the plate_yemen package from the sibling
+# Local development only — resolves the yemen_plate package from the sibling
 # checkout until it is published on pub.dev. A fresh consumer copying this
 # example deletes this block and relies on the versioned dependencies above.
 dependency_overrides:
-  plate_yemen:
+  yemen_plate:
     path: ../
+  core_plate:
+    path: ../../core_plate

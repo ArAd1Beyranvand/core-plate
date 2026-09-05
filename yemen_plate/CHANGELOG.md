@@ -1,3 +1,19 @@
+## 0.2.0
+
+- The northern plate now prints its number twice, as the reference photograph
+  shows: big eastern-Arabic numerals over a small Latin echo row. The big row is
+  the slot itself, drawn over the new `YemenAlphabets.easternDigits` /
+  `easternGovernorateTens`; the small row is a `PlateMirror` per slot, which is
+  a read-only presentation of a value rather than a second value. Slot counts,
+  text groups, focus order and the validators are unchanged.
+- Storage stays ASCII throughout. The eastern alphabets accept `'0'..'9'` and
+  differ from their Latin twins only in `glyphs`.
+- Known limitation: the eastern numerals appear in `PlateMode.display`. In
+  `PlateMode.input` the big row still shows ASCII under the caret — core's
+  typed field paints the controller's text without rendering it through the
+  alphabet (core's `TODO(national-numerals)`).
+- Requires `core_plate: ^0.2.0` for `PlateMirror`.
+
 ## 0.1.0
 
 First release.

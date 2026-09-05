@@ -1,0 +1,8 @@
+# Local development only, and not published with the package.
+#
+# The northern specs use `PlateMirror`, added in core_plate 0.2.0, which is not
+# on pub.dev yet. This points the resolver at the sibling checkout so the
+# package analyses and runs from this repo; remove it once 0.2.0 is published.
+dependency_overrides:
+  core_plate:
+    path: ../core_plate
