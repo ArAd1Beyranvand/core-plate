@@ -1105,9 +1105,10 @@ abstract final class YemenNorthernPlates {
   /// car, one for a motorcycle. A combination that is missing is missing on
   /// purpose; see the class-level TODO.
   ///
-  /// **Pick the two lengths before entry begins.** Swapping `spec:` on a live
-  /// `PlateCanvas` resets the bloc, because the slot count changes with either
-  /// length.
+  /// Swapping `spec:` on a live `PlateCanvas` between two of these keys carries
+  /// the value across per `PlateCanvas.onSpecChange`. With `byGroupKey` a
+  /// change of serial length keeps the serial and the governorate, truncating
+  /// only the digits that no longer fit.
   static Map<(int, int), PlateSpec> byDigits(
     YemenUsage usage, {
     bool motorcycle = false,
