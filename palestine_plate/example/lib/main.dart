@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:core_plate/core_plate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:plate_keypad/plate_keypad.dart';
-import 'package:plate_palestine/plate_palestine.dart';
+import 'package:palestine_plate/palestine_plate.dart';
+import 'package:plate_keypad/plate_keypad.dart' show PlateCharacterPicker;
 
 void main() => runApp(const ExampleApp());
 
@@ -25,29 +25,39 @@ void main() => runApp(const ExampleApp());
 enum _Kind { westBankModern, westBankLegacy, gaza }
 
 class _Scheme {
-  const _Scheme(this.label, this.base, this.kind);
+  const _Scheme(this.label, this.base, this.kind, {this.isTwoLine = false, this.isMotorcycle = false});
 
   final String label;
-
-  /// The spec before usage is taken into account. For the legacy West Bank
-  /// plate the ink colour changes which const is correct — see [_specFor].
   final PlateSpec base;
-
   final _Kind kind;
+  final bool isTwoLine;
+  final bool isMotorcycle;
 }
 
-const List<_Scheme> _schemes = [
-  _Scheme('West Bank — modern', PSWestBankPlates.modernCar, _Kind.westBankModern),
-  _Scheme('West Bank — legacy', PSWestBankPlates.legacyCar, _Kind.westBankLegacy),
-  _Scheme('West Bank — trade / test', PSWestBankPlates.modernTrade, _Kind.westBankModern),
-  _Scheme('West Bank — modern, two-line', PSWestBankPlates.modernCarTwoLine, _Kind.westBankModern),
-  _Scheme('West Bank — legacy, two-line', PSWestBankPlates.legacyCarTwoLine, _Kind.westBankLegacy),
-  _Scheme('West Bank — motorcycle', PSWestBankPlates.modernMoto, _Kind.westBankModern),
-  _Scheme('West Bank — motorcycle, two-line', PSWestBankPlates.modernMotoTwoLine, _Kind.westBankModern),
-  _Scheme('Gaza — 2012', PSGazaPlates.car2012, _Kind.gaza),
-  _Scheme('Gaza — 2021', PSGazaPlates.car2021, _Kind.gaza),
-  _Scheme('Gaza — 2012, two-line', PSGazaPlates.car2012TwoLine, _Kind.gaza),
-  _Scheme('Gaza — 2021, two-line', PSGazaPlates.car2021TwoLine, _Kind.gaza),
+const List<_Scheme> _westBankModernSchemes = [
+  _Scheme('Standard', PSWestBankPlates.modernCar, _Kind.westBankModern),
+  _Scheme('Trade / test', PSWestBankPlates.modernTrade, _Kind.westBankModern),
+  _Scheme('Two-line', PSWestBankPlates.modernCarTwoLine, _Kind.westBankModern, isTwoLine: true),
+];
+
+const List<_Scheme> _westBankLegacySchemes = [
+  _Scheme('Standard', PSWestBankPlates.legacyCar, _Kind.westBankLegacy),
+  _Scheme('Two-line', PSWestBankPlates.legacyCarTwoLine, _Kind.westBankLegacy, isTwoLine: true),
+];
+
+const List<_Scheme> _gazaSchemes = [
+  _Scheme('2012', PSGazaPlates.car2012, _Kind.gaza),
+  _Scheme('2012, two-line', PSGazaPlates.car2012TwoLine, _Kind.gaza, isTwoLine: true),
+  _Scheme('2021, two-line', PSGazaPlates.car2021TwoLine, _Kind.gaza, isTwoLine: true),
+];
+
+const List<_Scheme> _westBankModernMotorcycleSchemes = [
+  _Scheme('Standard', PSWestBankPlates.modernMoto, _Kind.westBankModern, isMotorcycle: true),
+  _Scheme('Two-line', PSWestBankPlates.modernMotoTwoLine, _Kind.westBankModern, isTwoLine: true, isMotorcycle: true),
+];
+
+const List<_Scheme> _gazaMotorcycleSchemes = [
+  _Scheme('Standard', PSGazaPlates.moto, _Kind.gaza, isMotorcycle: true),
 ];
 
 /// The spec to draw for [scheme] at [usage].
@@ -123,13 +133,13 @@ class ExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'plate_palestine',
+    title: 'palestine_plate',
     theme: ThemeData(useMaterial3: true),
     home: Scaffold(
-      appBar: AppBar(title: const Text('plate_palestine')),
+      appBar: AppBar(title: const Text('palestine_plate')),
       body: SafeArea(
         child: BlocProvider(
-          create: (_) => PlateCardBloc(_schemes.first.base),
+          create: (_) => PlateCardBloc(_westBankModernSchemes.first.base),
           child: const _Demo(),
         ),
       ),
@@ -145,19 +155,24 @@ class _Demo extends StatefulWidget {
 }
 
 class _DemoState extends State<_Demo> {
-  final PlateInputController _input = PlateInputController();
-
-  _Scheme _scheme = _schemes.first;
+  _Kind _region = _Kind.westBankModern;
+  _Scheme _scheme = _westBankModernSchemes.first;
   PSUsage _usage = PSUsage.private;
+  bool _motorcycle = false;
 
-  /// The slot the keypad is typing into, or null when nothing is focused.
-  /// Mirrored into state because the keypad greys its keys off it.
-  int? _activeIndex;
-
-  @override
-  void dispose() {
-    _input.dispose();
-    super.dispose();
+  List<_Scheme> get _currentSchemes {
+    if (_motorcycle) {
+      return switch (_region) {
+        _Kind.westBankModern => _westBankModernMotorcycleSchemes,
+        _Kind.gaza => _gazaMotorcycleSchemes,
+        _Kind.westBankLegacy => [],
+      };
+    }
+    return switch (_region) {
+      _Kind.westBankModern => _westBankModernSchemes,
+      _Kind.westBankLegacy => _westBankLegacySchemes,
+      _Kind.gaza => _gazaSchemes,
+    };
   }
 
   // -------------------------------------------------------------------------
@@ -177,12 +192,14 @@ class _DemoState extends State<_Demo> {
   // forced.
   // -------------------------------------------------------------------------
 
-  void _switchTo({_Scheme? scheme, PSUsage? usage}) {
+  void _switchTo({_Kind? region, _Scheme? scheme, PSUsage? usage, bool? motorcycle}) {
     final bloc = context.read<PlateCardBloc>();
     final before = List<String?>.of(bloc.state.plateNumber.values);
     final oldSpec = _specFor(_scheme, _usage);
 
     setState(() {
+      if (region != null) _region = region;
+      if (motorcycle != null) _motorcycle = motorcycle;
       if (scheme != null) _scheme = scheme;
       if (usage != null) _usage = usage;
     });
@@ -203,14 +220,6 @@ class _DemoState extends State<_Demo> {
     });
   }
 
-  void _onKey(String key) {
-    if (key == kPlateBackspaceKey) {
-      _input.backspace();
-    } else {
-      _input.submit(key);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
@@ -219,20 +228,29 @@ class _DemoState extends State<_Demo> {
         final values = state.plateNumber.values;
         final theme = _themeFor(_scheme, _usage, spec, values);
         final verdict = _verdictFor(_scheme, spec, values);
-        final active = _activeIndex;
 
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _SchemePicker(
+            _RegionPicker(
+              region: _region,
+              onChanged: (r) => _switchTo(region: r),
+            ),
+            const SizedBox(height: 8),
+            _FormPicker(
+              motorcycle: _motorcycle,
+              motorcycleAvailable: _region == _Kind.westBankModern || _region == _Kind.gaza,
+              onChanged: (m) => _switchTo(motorcycle: m),
+            ),
+            const SizedBox(height: 8),
+            _VariantPicker(
               scheme: _scheme,
+              schemeOptions: _currentSchemes,
               onChanged: (s) => _switchTo(scheme: s),
             ),
             const SizedBox(height: 8),
             _UsagePicker(
               usage: _usage,
-              // Gaza reads its usage off the plate's own last two digits, so
-              // there is nothing here for a host to choose.
               enabled: _scheme.kind != _Kind.gaza,
               onChanged: (u) => _switchTo(usage: u),
             ),
@@ -240,19 +258,11 @@ class _DemoState extends State<_Demo> {
 
             PlateCanvas(
               spec: spec,
-              // Colour is derived and passed in. PlateSpec has no theme field.
               theme: theme,
-              // The keypad below is the only way characters get in.
-              inputSource: PlateInputSource.packageKeypad,
-              controller: _input,
+              // Real text fields: each slot opens the platform keyboard.
+              inputSource: PlateInputSource.system,
               validator: _validatorFor(_scheme.kind),
-              // Paints the underlines red on an invalid plate; never blocks a
-              // keystroke, never throws.
               autoValidate: true,
-              onActiveIndexChanged: (i) => setState(() => _activeIndex = i),
-              // The governorate slot is a `chosen` alphabet, so core asks for a
-              // character instead of accepting typing. plate_keypad's modal
-              // wheel offers exactly the thirteen legal letters — no I, no O.
               onChooseCharacter: (alphabet) =>
                   PlateCharacterPicker.show(context, alphabet),
             ),
@@ -273,28 +283,14 @@ class _DemoState extends State<_Demo> {
               ),
             ],
 
-            const SizedBox(height: 16),
-            PlateKeypad(
-              highlightedKey: null,
-              onKey: _onKey,
-              digitAlphabet: PSAlphabets.digits,
-              // Never reached from the pad: the only letters on a Palestinian
-              // plate are governorate letters, and that slot opens the picker
-              // instead. Supplied because the keypad requires it.
-              letterAlphabet: PSAlphabets.governorateLetters,
-              // Greys out keys the focused slot will not take — the legacy
-              // district slot refuses 0 and 2, the Gaza prefix takes only 3.
-              activeAlphabet: active == null ? null : spec.slots[active].alphabet,
-            ),
-
             const SizedBox(height: 24),
             const Divider(),
             const Text(
-              'Generated, read-only',
+              'Generated',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            const _GeneratedRow(),
+            const _CategoryShowcase(),
             const SizedBox(height: 24),
           ],
         );
@@ -314,25 +310,81 @@ class _DemoState extends State<_Demo> {
 // Pickers.
 // ---------------------------------------------------------------------------
 
-class _SchemePicker extends StatelessWidget {
-  const _SchemePicker({required this.scheme, required this.onChanged});
+class _RegionPicker extends StatelessWidget {
+  const _RegionPicker({required this.region, required this.onChanged});
+
+  final _Kind region;
+  final ValueChanged<_Kind> onChanged;
+
+  @override
+  Widget build(BuildContext context) => _PickerRow(
+    label: 'Region',
+    children: [
+      for (final r in _Kind.values)
+        ChoiceChip(
+          label: Text(switch (r) {
+            _Kind.westBankModern => 'West Bank - modern',
+            _Kind.westBankLegacy => 'West Bank - legacy',
+            _Kind.gaza => 'Gaza',
+          }),
+          selected: region == r,
+          onSelected: (_) => onChanged(r),
+        ),
+    ],
+  );
+}
+
+class _FormPicker extends StatelessWidget {
+  const _FormPicker({
+    required this.motorcycle,
+    required this.motorcycleAvailable,
+    required this.onChanged,
+  });
+
+  final bool motorcycle;
+  final bool motorcycleAvailable;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) => _PickerRow(
+    label: 'Form',
+    children: [
+      ChoiceChip(
+        label: const Text('car'),
+        selected: !motorcycle,
+        onSelected: (_) => onChanged(false),
+      ),
+      ChoiceChip(
+        label: const Text('motorcycle'),
+        selected: motorcycle,
+        onSelected: motorcycleAvailable ? (_) => onChanged(true) : null,
+      ),
+    ],
+  );
+}
+
+class _VariantPicker extends StatelessWidget {
+  const _VariantPicker({
+    required this.scheme,
+    required this.schemeOptions,
+    required this.onChanged,
+  });
 
   final _Scheme scheme;
+  final List<_Scheme> schemeOptions;
   final ValueChanged<_Scheme> onChanged;
 
   @override
-  Widget build(BuildContext context) => DropdownButtonFormField<_Scheme>(
-    initialValue: scheme,
-    decoration: const InputDecoration(
-      labelText: 'Scheme',
-      helperText: 'Switching resets the plate; entered values are re-seeded.',
-      border: OutlineInputBorder(),
-    ),
-    items: [
-      for (final s in _schemes)
-        DropdownMenuItem(value: s, child: Text(s.label)),
+  Widget build(BuildContext context) => _PickerRow(
+    label: 'Variant',
+    children: [
+      for (final s in schemeOptions)
+        ChoiceChip(
+          label: Text(s.label),
+          selected: scheme == s,
+          onSelected: (_) => onChanged(s),
+        ),
     ],
-    onChanged: (s) => s == null ? null : onChanged(s),
   );
 }
 
@@ -348,34 +400,50 @@ class _UsagePicker extends StatelessWidget {
   final ValueChanged<PSUsage> onChanged;
 
   @override
-  Widget build(BuildContext context) => DropdownButtonFormField<PSUsage>(
-    initialValue: usage,
-    decoration: InputDecoration(
-      labelText: 'Usage',
-      helperText: enabled
-          ? 'Drives the theme — colour is derived, never passed by hand.'
-          : 'Gaza reads usage off the plate’s own last two digits.',
-      border: const OutlineInputBorder(),
-    ),
-    items: [
+  Widget build(BuildContext context) => _PickerRow(
+    label: 'Usage',
+    children: [
       for (final u in PSUsage.values)
-        DropdownMenuItem(value: u, child: Text(u.name)),
+        ChoiceChip(
+          label: Text(u.name),
+          selected: usage == u,
+          onSelected: enabled ? (_) => onChanged(u) : null,
+        ),
     ],
-    onChanged: enabled ? (u) => u == null ? null : onChanged(u) : null,
+  );
+}
+
+class _PickerRow extends StatelessWidget {
+  const _PickerRow({required this.label, required this.children});
+
+  final String label;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 78,
+          child: Text(label, style: Theme.of(context).textTheme.labelMedium),
+        ),
+        Expanded(child: Wrap(spacing: 8, runSpacing: 4, children: children)),
+      ],
+    ),
   );
 }
 
 // ---------------------------------------------------------------------------
-// A row of generated plates, rendered read-only through ShowPlate.
+// Category showcase: one plate from each region, always cars.
 // ---------------------------------------------------------------------------
 
-class _GeneratedRow extends StatelessWidget {
-  const _GeneratedRow();
+class _CategoryShowcase extends StatelessWidget {
+  const _CategoryShowcase();
 
   @override
   Widget build(BuildContext context) {
-    // Seeded, so this row is the same on every run — the whole point of
-    // PSSerialGenerator taking a Random rather than making its own.
     final rng = Random(20180701);
     return SizedBox(
       height: 90,
@@ -383,17 +451,20 @@ class _GeneratedRow extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: [
           _GeneratedPlate(
+            label: 'West Bank - modern',
             spec: PSWestBankPlates.modernCar,
             values: PSSerialGenerator.modernWestBank(rng),
             theme: PSThemes.forUsage(PSUsage.private),
           ),
           _GeneratedPlate(
-            spec: PSWestBankPlates.legacyCarPublicTransport,
+            label: 'West Bank - legacy',
+            spec: PSWestBankPlates.legacyCar,
             values: PSSerialGenerator.legacyWestBank(rng),
-            theme: PSThemes.forUsage(PSUsage.publicTransport),
+            theme: PSThemes.forUsage(PSUsage.private),
           ),
           _GeneratedPlate(
-            spec: PSGazaPlates.car2021,
+            label: 'Gaza',
+            spec: PSGazaPlates.car2012,
             values: PSSerialGenerator.gaza(rng),
             theme: PSThemes.gazaBlack,
           ),
@@ -403,19 +474,16 @@ class _GeneratedRow extends StatelessWidget {
   }
 }
 
-/// One read-only plate.
-///
-/// `ShowPlate` renders whatever its nearest `PlateCardBloc` holds, so each
-/// plate gets a bloc of its own seeded with the generated values. It passes no
-/// `theme:` to the canvas it builds, so the theme has to arrive through a
-/// `PlateThemeScope`.
+/// One read-only plate with category label.
 class _GeneratedPlate extends StatelessWidget {
   const _GeneratedPlate({
+    required this.label,
     required this.spec,
     required this.values,
     required this.theme,
   });
 
+  final String label;
   final PlateSpec spec;
   final List<String?> values;
   final PlateTheme theme;
@@ -423,21 +491,33 @@ class _GeneratedPlate extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(right: 12),
-    child: SizedBox(
-      width: 240,
-      child: PlateThemeScope(
-        theme: theme,
-        child: BlocProvider(
-          create: (_) {
-            final bloc = PlateCardBloc(spec);
-            for (var i = 0; i < values.length; i++) {
-              bloc.add(ValueIsChanged(index: i, value: values[i]));
-            }
-            return bloc;
-          },
-          child: const ShowPlate(),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 70,
+          width: 70 * spec.canvasWidth / spec.canvasHeight,
+          child: PlateThemeScope(
+            theme: theme,
+            child: BlocProvider(
+              create: (_) {
+                final bloc = PlateCardBloc(spec);
+                for (var i = 0; i < values.length; i++) {
+                  bloc.add(ValueIsChanged(index: i, value: values[i]));
+                }
+                return bloc;
+              },
+              child: const ShowPlate(),
+            ),
+          ),
         ),
-      ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall,
+          textAlign: TextAlign.center,
+        ),
+      ],
     ),
   );
 }

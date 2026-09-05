@@ -22,15 +22,21 @@ import 'palestine_country.dart';
 /// — and **the field is always white**. Unlike the West Bank's public-transport
 /// plate, a Gaza plate never inverts.
 ///
-/// Two graphic treatments share the grammar, [PSGazaStyle]:
+/// One graphic treatment for the car plate:
 ///
 /// - [car2012] (2012–2021): the flag rotated a quarter turn, filling a tall
-///   strip on the right, full plate height. Plain field, no watermark.
-/// - [car2021] (2021 onward): the flag the right way up, plus a watermark decal
-///   behind the digits.
+///   strip on the right, full plate height. Plain field, no watermark. **This
+///   is the only one-line car design this package offers** — the 2021 revision
+///   (flag the right way up, plus a watermark decal) is not, so a car plate
+///   never carries a horizontal flag.
 ///
-/// **No motorcycle plates.** Motorcycles in Gaza are rarely fitted with a plate
-/// at all, so a moto const here would be dead code — do not add one.
+/// The two-line car layout ([car2012TwoLine], [car2021TwoLine]) is the
+/// exception: a landscape band across the top cannot hold a vertical strip, so
+/// both wrap to the horizontal flag regardless of era — see that section's doc.
+///
+/// [moto] is a horizontal-flag design of its own, not a rescaled car plate: it
+/// is the one-line motorcycle format, watermark included, sized for a
+/// motorcycle's smaller plate.
 ///
 /// Every dimension in this file is provisional (`// CALIBRATE`): no reference
 /// photograph of a Gaza plate is in this repo, unlike the West Bank template,
@@ -68,11 +74,8 @@ abstract final class PSGazaPlates {
     PlateLabel(text: '·', box: PlateBox(292.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
   ];
 
-  /// The vertical divider before the flag strip. No second, horizontal rule —
-  /// that one belongs to the West Bank's `ف / P` block, which Gaza has none of.
-  static const List<PlateRule> _car2012Rules = [
-    PlateRule(box: PlateBox(441, 8, 5, 94)),
-  ];
+  /// No vertical divider — the flag is positioned directly on the right.
+  static const List<PlateRule> _car2012Rules = [];
 
   /// 2012–2021: the flag rotated so its triangle points down, filling a
   /// full-height strip on the right.
@@ -99,32 +102,6 @@ abstract final class PSGazaPlates {
     textGroups: _groups,
   );
 
-  // -------------------------------------------------------------------------
-  // car2021 — horizontal flag, plus a watermark behind the digits.
-  // -------------------------------------------------------------------------
-
-  /// Tighter pitch than [_sevenCellSlots]: the horizontal flag panel is wide
-  /// rather than tall, so the digit field has less width to work with. Cell 48
-  /// wide, pitch 52, inter-group gap 12.
-  static const List<PlateSlot> _car2021Slots = [
-    PlateSlot(alphabet: PSAlphabets.gazaPrefix, box: PlateBox(14, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(74, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(126, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(178, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(230, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(290, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(342, 9, 48, 92)),
-  ];
-
-  static const List<PlateLabel> _car2021Labels = [
-    PlateLabel(text: '·', box: PlateBox(56, 36.6, 18, 36.8), glyphHeight: 50.6),
-    PlateLabel(text: '·', box: PlateBox(272, 36.6, 18, 36.8), glyphHeight: 50.6),
-  ];
-
-  static const List<PlateRule> _car2021Rules = [
-    PlateRule(box: PlateBox(394, 8, 3, 94)),
-  ];
-
   /// The watermark behind the digits: "فلسطين" over "Palestine", pre-faded to
   /// ~12% grey in the shipped PNG.
   ///
@@ -147,19 +124,48 @@ abstract final class PSGazaPlates {
   static const PlateDecal _watermark = PlateDecal(
     image: AssetImage(
       'assets/marks/palestine_watermark.png',
-      package: 'plate_palestine',
+      package: 'palestine_plate',
     ),
     box: PlateBox(10, 9, 380, 92),
   );
 
-  /// 2021 onward: the flag the right way up, and the watermark decal.
+  // -------------------------------------------------------------------------
+  // Motorcycle — one-line, horizontal flag, plus a watermark behind the
+  // digits. The only Gaza design that carries a horizontal flag on a one-line
+  // plate: see the class doc for why cars do not.
+  // -------------------------------------------------------------------------
+
+  /// Tighter pitch than [_sevenCellSlots]: the horizontal flag panel is wide
+  /// rather than tall, so the digit field has less width to work with. Cell 48
+  /// wide, pitch 52, inter-group gap 12.
+  // CALIBRATE — sized off the same proportions as the car layout; no
+  // reference photograph of a Gaza motorcycle plate exists.
+  static const List<PlateSlot> _motoSlots = [
+    PlateSlot(alphabet: PSAlphabets.gazaPrefix, box: PlateBox(14, 9, 48, 92)),
+    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(74, 9, 48, 92)),
+    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(126, 9, 48, 92)),
+    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(178, 9, 48, 92)),
+    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(230, 9, 48, 92)),
+    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(290, 9, 48, 92)),
+    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(342, 9, 48, 92)),
+  ];
+
+  static const List<PlateLabel> _motoLabels = [
+    PlateLabel(text: '·', box: PlateBox(56, 36.6, 18, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '·', box: PlateBox(272, 36.6, 18, 36.8), glyphHeight: 50.6),
+  ];
+
+  static const List<PlateRule> _motoRules = [];
+
+  /// The one-line motorcycle plate: [gaza2021]'s flag the right way up, plus
+  /// the watermark decal, on the same 520 x 110 canvas the car plate uses.
   ///
-  /// The panel box (110 x 55, aspect 2/1) is sized the same way as
-  /// [car2012]'s: it equals [PSCountries.gaza2021]'s `flagAspectRatio` exactly,
-  /// so `flagScale: 1` with zero padding fills it precisely, vertically
-  /// centred on the plate (`top: (110 - 55) / 2`).
-  static const PlateSpec car2021 = PlateSpec(
-    id: 'ps.gz.2021.car',
+  /// The panel box (110 x 55, aspect 2/1) is sized the same way [car2021] used
+  /// to be: it equals [PSCountries.gaza2021]'s `flagAspectRatio` exactly, so
+  /// `flagScale: 1` with zero padding fills it precisely, vertically centred
+  /// on the plate (`top: (110 - 55) / 2`).
+  static const PlateSpec moto = PlateSpec(
+    id: 'ps.gz.moto',
     country: PSCountries.gaza2021,
     canvasWidth: 520,
     canvasHeight: 110,
@@ -169,9 +175,9 @@ abstract final class PSGazaPlates {
       padding: EdgeInsets.zero,
     ),
     borderWidthRatioOverride: 0.027,
-    slots: _car2021Slots,
-    rules: _car2021Rules,
-    labels: _car2021Labels,
+    slots: _motoSlots,
+    rules: _motoRules,
+    labels: _motoLabels,
     decals: [_watermark],
     textGroups: _groups,
   );
@@ -189,9 +195,7 @@ abstract final class PSGazaPlates {
     padding: EdgeInsets.zero,
   );
 
-  static const List<PlateRule> _twoLineRules = [
-    PlateRule(box: PlateBox(4, 46, 292, 3)),
-  ];
+  static const List<PlateRule> _twoLineRules = [];
 
   /// Line 1 (prefix + 4-digit serial) and line 2 (2-digit usage), at the same
   /// x positions `PSWestBankPlates.legacyCarTwoLine` uses for its own two
@@ -229,7 +233,10 @@ abstract final class PSGazaPlates {
     textGroups: _groups,
   );
 
-  /// [car2021]'s grammar, wrapped the same way, plus the watermark.
+  /// [car2012]'s grammar, wrapped the same way as [car2012TwoLine], plus the
+  /// watermark — the two-line era split, kept even though the one-line
+  /// [moto] design is now the only other place the watermark and horizontal
+  /// flag appear together.
   static const PlateSpec car2021TwoLine = PlateSpec(
     id: 'ps.gz.2021.car2l',
     country: PSCountries.gaza2021,
@@ -244,7 +251,7 @@ abstract final class PSGazaPlates {
       PlateDecal(
         image: AssetImage(
           'assets/marks/palestine_watermark.png',
-          package: 'plate_palestine',
+          package: 'palestine_plate',
         ),
         box: PlateBox(10, 50, 282, 96),
       ),
@@ -255,8 +262,8 @@ abstract final class PSGazaPlates {
   /// Every spec this class declares, in declaration order.
   static const List<PlateSpec> all = [
     car2012,
-    car2021,
     car2012TwoLine,
     car2021TwoLine,
+    moto,
   ];
 }

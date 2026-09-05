@@ -1,3 +1,14 @@
+## Unreleased
+
+- **Gaza car plates: vertical flag only.** Removed `PSGazaPlates.car2021`, the
+  one-line design with the flag the right way up and a watermark — a Gaza car
+  plate now only ever renders as `car2012`, with the flag turned a quarter
+  turn. The two-line wraps (`car2012TwoLine`, `car2021TwoLine`) are unaffected:
+  a landscape band cannot hold a vertical strip, so both already carried the
+  horizontal flag and still do.
+- **New: `PSGazaPlates.moto`.** A one-line Gaza motorcycle plate, carrying the
+  horizontal flag and watermark that `car2021` used to.
+
 ## 0.1.0
 
 First release.

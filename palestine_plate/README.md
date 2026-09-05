@@ -14,7 +14,7 @@ country that, as the licence header insists, actually exists.
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
 
-# plate_palestine
+# palestine_plate
 
 It's data, not code: two country blocks, four alphabets, thirteen `PlateSpec` consts,
 eight `PlateTheme`s and three validators. There is no widget in this package, no
@@ -30,7 +30,7 @@ spec describes. **Adding a plate here means adding a `const`.**
 
 ```dart
 import 'package:core_plate/core_plate.dart';
-import 'package:plate_palestine/plate_palestine.dart';
+import 'package:palestine_plate/palestine_plate.dart';
 
 PlateCanvas(
   spec: PSWestBankPlates.modernCar,
@@ -43,6 +43,11 @@ PlateCanvas(
   onChooseCharacter: (a) => PlateCharacterPicker.show(context, a),
 );
 ```
+
+`example/` holds two apps: `lib/main.dart`, one plate with pickers and a keypad,
+and `lib/gallery.dart`, all thirteen specs on one page, each empty and editable
+(`flutter run -t lib/gallery.dart`). The gallery is the fastest way to see what
+this package draws.
 
 ## Two designs, not one plate with a flag
 
@@ -138,16 +143,13 @@ directly. That is what the serial generator and the tests call.
 - `PSWestBankPlates` - `modernCar`, `legacyCar`, `legacyCarPublicTransport`,
   `legacyCarGovernment`, `modernCarTwoLine`, `legacyCarTwoLine`, `modernMoto`,
   `modernMotoTwoLine`, `modernTrade`, and `all`.
-- `PSGazaPlates` - `car2012`, `car2021`, `car2012TwoLine`, `car2021TwoLine`, `all`.
+- `PSGazaPlates` - `car2012`, `car2012TwoLine`, `car2021TwoLine`, `moto`, `all`.
 - `PSWestBankModernValidator`, `PSWestBankLegacyValidator`, `PSGazaValidator`.
 - `PSSerialGenerator` - reproducible synthetic serials, one per scheme.
 - `assets/flags/Flag_of_Palestine.svg`, its pre-rotated vertical twin, and
   `assets/marks/palestine_watermark.png`.
 
 ## What it does not ship
-
-**No Gaza motorcycle plate.** Motorcycles in Gaza are rarely fitted with a plate at
-all, so a moto const would be dead code. Please do not add one.
 
 **No fonts.** The plate prints `ف`, `اختبار` and `במבחן`, and none of those are on a
 stock Android or a bare CI runner. `PlateTheme.glyphStyle` names no font family and
@@ -197,12 +199,11 @@ Reported rather than patched around, and none of them were fixed by editing
 Draw order was checked rather than assumed: `spec.decals` is painted into the `Stack`
 before `spec.slots`, so the watermark is genuinely beneath the digits.
 
-## Supersedes `palestine_plate`
+## History
 
-This package replaces [`palestine_plate`](https://pub.dev/packages/palestine_plate),
-which covered a subset of the same ground: one green-on-white car spec, the `ف / P`
-block and the two trailing endings. Its measured geometry, its sampled green and its
-validator reasoning are carried over here; what it modelled as one spec with an
-either/or slot is modelled here as the two separate schemes it turned out to be.
-`palestine_plate` is left in the repo untouched - retiring it is a decision for its
-users, not this package.
+An earlier package covered a subset of this ground: one green-on-white car spec, the
+`ف / P` block and the two trailing endings. Its measured geometry, its sampled green
+and its validator reasoning are carried over here, along with its reference image at
+`pics/reference_plate.png`; what it modelled as one spec with an either/or slot is
+modelled here as the two separate schemes it turned out to be. It has been removed
+from the repo and this package took its name.

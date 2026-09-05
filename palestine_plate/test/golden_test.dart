@@ -2,7 +2,7 @@ import 'package:core_plate/core_plate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:plate_palestine/plate_palestine.dart';
+import 'package:palestine_plate/palestine_plate.dart';
 
 /// One golden per (spec x usage theme), so a calibration change — a colour, a
 /// ratio, a box moved a unit — shows up as a visible diff instead of an
@@ -155,13 +155,13 @@ void main() {
       );
     });
 
-    testWidgets('style2021, public transport (blue) + watermark', (tester) async {
+    testWidgets('motorcycle, public transport (blue) + watermark', (tester) async {
       await renderGolden(
         tester,
-        spec: PSGazaPlates.car2021,
+        spec: PSGazaPlates.moto,
         theme: PSThemes.forGazaUsageCode('25')!,
         values: const ['3', '0', '2', '3', '4', '2', '5'],
-        name: 'gz_2021_car_blue',
+        name: 'gz_moto_blue',
       );
     });
 
