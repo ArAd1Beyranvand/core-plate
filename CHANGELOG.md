@@ -1,3 +1,105 @@
+## 0.4.0
+
+**Breaking. The bloc has left this package, and a plate now owns its own
+characters.** `core_plate` no longer depends on `flutter_bloc` or `bloc` — a
+`grep` for either in `pubspec.yaml` returns nothing — and no longer decides how
+you manage state.
+
+### The plate owns its value: `PlateController`
+
+`PlateCanvas` holds the plate's characters in a `PlateController` — a
+`ChangeNotifier`, no dependency beyond Flutter — and needs **nothing above it**.
+`PlateCanvas(spec: …, onChooseCharacter: …)` on its own is a complete, working,
+editable plate. Pass `controller:` when you want to read or write the value:
+
+```dart
+final controller = PlateController(spec: spec);
+// controller.values, .valueAt(i), .plateNumber, .isEmpty, .isCompleted
+// controller.setAt(i, 'A'), .setValues([…]), .setGroup('serial', '1234'), .clear()
+// controller.slot(i)  → ValueListenable<String?> for one position
+// controller.completed → ValueListenable<bool>
+```
+
+`PlateController` extends `PlateInputController`, so a host that passed a
+focus-only controller keeps compiling unchanged. `PlateSelector` rebuilds on a
+*derived* piece of a controller only when that piece changes.
+
+Under the hood a keystroke now rebuilds one slot instead of the whole plate:
+each slot, each `PlateMirror` and the frame subscribe to just the listenable
+they render.
+
+### The bloc moved to `core_plate_bloc`
+
+**Removed from this package** — they are now in the new sibling package
+`core_plate_bloc`, unchanged in behaviour:
+
+`PlateCardBloc`, `PlateCardEvent`, `ValueIsChanged`, `RemovePlateCard`,
+`SpecIsChanged`, `PlateCardState`, `PlateCardBinding`, `ShowPlate`, `PlateText`.
+
+**Migration for a bloc host, in one line:** add `core_plate_bloc` to your
+pubspec, import `package:core_plate_bloc/core_plate_bloc.dart` alongside
+`package:core_plate/core_plate.dart`, and put a `PlateCardBinding(controller: …)`
+where your `BlocProvider<PlateCardBloc>` was:
+
+```dart
+final controller = PlateController(spec: spec);
+
+PlateCardBinding(                       // was: BlocProvider(create: (_) => PlateCardBloc(spec))
+  controller: controller,
+  child: PlateCanvas(spec: spec, controller: controller, onChooseCharacter: …),
+);
+```
+
+Everything below it — every `BlocBuilder<PlateCardBloc, PlateCardState>`, every
+`context.read<PlateCardBloc>()`, every hand-dispatched `ValueIsChanged`, every
+`ShowPlate` — is **unchanged**. The binding keeps the bloc and the controller
+holding the same characters in both directions, so a write on either side
+reaches the other. Pass `bloc:` to mirror onto a bloc you already hold.
+
+Two differences inside the moved code: `PlateCardBloc.spec` (the field) is gone
+— it was dead after construction, only `PlateCardState.spec` was ever read, and
+`PlateCardBloc(spec)` still takes the same argument — and `RemovePlateCard` is
+deprecated, since nothing dispatched it and `PlateController.clear()` is the
+replacement.
+
+**A `PlateCardBloc` above the canvas is no longer adopted.** In 0.2.0 the canvas
+*required* one and read its value straight off it; that lookup is gone. A canvas
+with a bloc above it and no `PlateCardBinding` simply ignores it, and the plate
+will appear not to update the bloc. Wrap it in a `PlateCardBinding`.
+
+### The read-only pair
+
+| Was (bloc-reading) | Now (controller-reading) |
+| --- | --- |
+| `ShowPlate(emptyPlate: …)` | `PlateView(controller: …, theme: …, emptyPlate: …)` |
+| `PlateText(emptyPlate: …, textStyle: …)` | `PlateTextView(controller: …, emptyPlate: …, textStyle: …)` |
+
+Both are in `core_plate` and need no provider above them. `PlateView` also takes
+a `PlateTheme`, which `ShowPlate` never did — that is why hosts drawing plates
+in several liveries had their own reimplementations of it. One behaviour
+difference: `PlateView`'s `emptyPlate` defaults to drawing the blank plate (a
+controller always knows its spec), where `ShowPlate` rendered nothing; pass
+`emptyPlate: const SizedBox.shrink()` for the old behaviour. `ShowPlate` and
+`PlateText` still exist, in `core_plate_bloc`, for hosts that keep a bloc.
+
+### Breaking: swapping `spec:` now keeps the value
+
+`PlateCanvas.onSpecChange` is new in this release and defaults to
+`PlateValuePreservation.byGroupKey`. Swapping `spec:` on a live canvas carries
+the characters across to the new spec, matching registers by
+`PlateTextGroup.key` and truncating only what no longer fits, instead of
+emptying the plate, which is what 0.2.0 did (it dispatched `SpecIsChanged`).
+`byIndex` copies position by position; `PlateValuePreservation.none` restores
+the old wipe:
+
+```dart
+PlateCanvas(spec: spec, onSpecChange: PlateValuePreservation.none, …)
+```
+
+This is also the fix for a spec swap landing on a canvas that Flutter kept in
+place: the canvas rebuilds its input machine for the new spec rather than
+holding the previous plate's focus nodes.
+
 ## 0.2.0
 
 - **`PlateMirror`** — a read-only echo of a slot's value, painted elsewhere on

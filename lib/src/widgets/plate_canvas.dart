@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../bloc/plate_card_bloc.dart';
 import '../input/plate_controller.dart';
 import '../input/plate_input_controller.dart';
 import '../input/plate_input_machine.dart';
@@ -14,7 +12,6 @@ import '../model/slot_behavior.dart';
 import '../theme/plate_theme.dart';
 import '../validators/plate_validator.dart';
 import 'country_panel.dart';
-import 'plate_card_binding.dart';
 import 'plate_frame.dart';
 import 'plate_selector.dart';
 import 'plate_slot_item.dart';
@@ -27,11 +24,11 @@ import 'plate_slot_item.dart';
 /// working plate. If you change [spec] on a live canvas, the characters already
 /// entered are carried across to the new spec as [onSpecChange] directs.
 ///
-/// A [PlateCardBloc] found above the canvas is still adopted and mirrored in
-/// both directions, so bloc-based hosts keep working — but that path is
-/// deprecated and warns once per canvas. Hand the canvas a [PlateController]
-/// instead, and if the surrounding code needs a bloc, wrap it in a
-/// `PlateCardBinding`, which provides one mirrored onto that controller.
+/// **Needs no state management.** The canvas reads and writes one thing, its
+/// controller. It does not look for a provider above it. A host with
+/// bloc-shaped code around the plate wraps the subtree in `PlateCardBinding`
+/// from the `core_plate_bloc` package, which provides a `PlateCardBloc`
+/// mirrored onto that same controller.
 ///
 /// `PlateCanvas` provides its own [Material], so it renders correctly without a
 /// [Scaffold] ancestor.
@@ -47,7 +44,7 @@ class PlateCanvas extends StatefulWidget {
     this.controller,
     this.validator,
     this.autoValidate = false,
-    this.onSpecChange = PlateValuePreservation.none,
+    this.onSpecChange = PlateValuePreservation.byGroupKey,
   });
 
   final PlateSpec spec;
@@ -74,11 +71,11 @@ class PlateCanvas extends StatefulWidget {
   final bool autoValidate;
 
   /// What becomes of the characters already entered when [spec] is swapped on a
-  /// live canvas. Defaults to [PlateValuePreservation.none] — the plate is
-  /// cleared, today's behaviour — so adding this stage breaks nobody. The
-  /// default changes to [PlateValuePreservation.byGroupKey] in 0.4.0; pass it
-  /// explicitly now to opt in, so a change of scheme or serial length keeps the
-  /// registers that still fit and truncates only what no longer does.
+  /// live canvas. Defaults to [PlateValuePreservation.byGroupKey] as of 0.4.0
+  /// (it was [PlateValuePreservation.none] before): a change of scheme or
+  /// serial length keeps the registers that still fit, matched by group key,
+  /// and truncates only what no longer does. Pass
+  /// [PlateValuePreservation.none] for the old behaviour of clearing the plate.
   final PlateValuePreservation onSpecChange;
 
   @override
@@ -91,9 +88,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
   late PlateInputMachine _machine;
 
   /// The plate's characters, and the canvas's writer of record: every commit
-  /// the machine makes, and every character the picker returns, lands here
-  /// first, and reaches a deprecated ancestor bloc — when there is one —
-  /// through [PlateBlocBridge].
+  /// the machine makes, and every character the picker returns, lands here.
   ///
   /// This is what takes [BuildContext] out of the long-lived closures the
   /// machine holds. They used to read the bloc off `context` on every commit —
@@ -105,33 +100,11 @@ class _PlateCanvasState extends State<PlateCanvas> {
   /// [PlateController] as [PlateCanvas.controller]: that one outlives us.
   bool _ownsController = false;
 
-  /// Keeps [_controller] and a deprecated ancestor bloc holding the same
-  /// characters. Null — the ordinary case — when there is no bloc above us.
-  /// Founded once the bloc is reachable (see [didChangeDependencies]) and
-  /// re-founded whenever either side is replaced.
-  PlateBlocBridge? _bridge;
-
-  /// Whether the deprecation notice for an adopted ancestor bloc has been
-  /// emitted. Once per canvas, not once per build.
-  bool _warnedAboutBloc = false;
-
   @override
   void initState() {
     super.initState();
     _adoptController();
     _installMachine();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // First run here is before the first build, which is the earliest an
-    // ancestor bloc is reachable — and where a canvas mounted over a
-    // pre-populated bloc picks that value up. With no bloc above us this is a
-    // failed lookup and nothing more. Later runs are other inherited widgets
-    // changing (the plate theme, say) and find the bridge already pointed at
-    // the right pair, so they cost two identity comparisons and seed nothing.
-    _syncBridge(seed: true);
   }
 
   @override
@@ -143,41 +116,25 @@ class _PlateCanvasState extends State<PlateCanvas> {
     // an ordinary thing for a host to do — and the machine then holds the
     // previous plate's nodes: wrong slot, or off the end of the list outright.
     if (widget.spec.id != oldWidget.spec.id) {
-      // Both stores hold the previous plate's values — a different slot count.
-      // The controller migrates itself to the new spec (carrying the characters
-      // across as [PlateCanvas.onSpecChange] directs), and the bridge mirrors
-      // the migrated value out to the bloc, so a bloc-holding host sees the
-      // same plate. The bridge comes down first and goes back up after: while
-      // the two sides are mid-swap they hold plates of different lengths.
-      _bridge?.dispose();
-      _bridge = null;
+      // The controller holds the previous plate's values — a different slot
+      // count — and migrates itself to the new spec, carrying the characters
+      // across as [PlateCanvas.onSpecChange] directs.
       _controller.adoptSpec(widget.spec, preserve: widget.onSpecChange);
       oldWidget.controller?.detach(_machine);
       widget.controller?.detach(_machine);
       _machine.dispose();
       _installMachine();
-      _syncBridge();
-      // The bloc still holds the old spec's list; the controller has already
-      // migrated. Push the controller's value out — not the other way round, or
-      // the stale bloc state would clobber the migration.
-      _bridge?.adoptControllerValue();
     } else if (widget.controller != oldWidget.controller) {
       oldWidget.controller?.installValidation(null);
       oldWidget.controller?.detach(_machine);
       widget.controller?.attach(_machine);
       widget.controller?.installValidation(_probeValidation);
-      // Down before the swap, up after: the bridge holds a listener on the
-      // controller being stood down, and that one may be disposed here.
-      _bridge?.dispose();
-      _bridge = null;
       _adoptController(replacing: true);
-      _syncBridge(seed: true);
     }
   }
 
   @override
   void dispose() {
-    _bridge?.dispose();
     widget.controller?.installValidation(null);
     widget.controller?.detach(_machine);
     _machine.dispose();
@@ -207,63 +164,6 @@ class _PlateCanvasState extends State<PlateCanvas> {
     _controller = host;
     _ownsController = false;
     stoodDown?.dispose();
-  }
-
-  /// Points the bridge at the deprecated ancestor bloc and the controller,
-  /// re-founding it when either has been replaced. [seed] brings the two sides
-  /// into agreement on a freshly founded pair; a re-found after a spec swap
-  /// passes `seed: false` and the caller then pushes the migrated value out with
-  /// [PlateBlocBridge.adoptControllerValue], since the bloc is the stale side
-  /// there.
-  ///
-  /// No bloc above us is not an error — it is the supported case — so the
-  /// lookup is defensive and its failure simply leaves the canvas
-  /// controller-only.
-  void _syncBridge({bool seed = false}) {
-    final bloc = _ancestorBloc();
-    if (bloc == null) {
-      _bridge?.dispose();
-      _bridge = null;
-      return;
-    }
-    _warnAboutBloc();
-    final bridge = _bridge;
-    if (bridge != null &&
-        identical(bridge.bloc, bloc) &&
-        identical(bridge.controller, _controller)) {
-      return;
-    }
-    bridge?.dispose();
-    final next = PlateBlocBridge(controller: _controller, bloc: bloc);
-    _bridge = next;
-    if (seed) next.seed();
-  }
-
-  /// The [PlateCardBloc] above this canvas, or null when there is none. A
-  /// missing provider is the ordinary case now, so the lookup's failure is
-  /// caught rather than allowed to throw.
-  PlateCardBloc? _ancestorBloc() {
-    try {
-      return context.read<PlateCardBloc>();
-    } on ProviderNotFoundException {
-      return null;
-    }
-  }
-
-  /// Says once, per canvas, that the adopted ancestor bloc is on its way out.
-  void _warnAboutBloc() {
-    if (_warnedAboutBloc) return;
-    _warnedAboutBloc = true;
-    assert(() {
-      debugPrint(
-        'PlateCanvas: adopting the PlateCardBloc above it. That is '
-        'deprecated and will be removed. Hand the canvas a PlateController '
-        '(controller:) instead; if the surrounding code needs a bloc, wrap it '
-        'in a PlateCardBinding, which provides one mirrored onto that same '
-        'controller.',
-      );
-      return true;
-    }());
   }
 
   /// Builds the machine for the current spec, hands the host's controller to

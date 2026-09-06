@@ -1,6 +1,6 @@
 name: core_plate
 description: "The backbone of license plate packages for countries that actually exist (we checked)."
-version: 0.2.0
+version: 0.4.0
 homepage: https://github.com/ArAd1Beyranvand/core-plate
 
 environment:
@@ -10,8 +10,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_bloc: ^9.1.1
-  bloc: ^9.2.1
   flutter_svg: ^2.0.0
 
 dev_dependencies:

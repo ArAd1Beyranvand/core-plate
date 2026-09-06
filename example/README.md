@@ -14,7 +14,6 @@ Run it with `flutter run` from this directory.
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:core_plate/core_plate.dart';
 import 'package:iran_plate/iran_plate.dart';
 
@@ -25,20 +24,18 @@ class ExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // PlateCanvas reads its state from a PlateCardBloc provided above it.
-    // Build the bloc with the same spec you pass to the canvas.
+    // A bare PlateCanvas is a complete plate: it holds its own characters in
+    // a PlateController and needs nothing above it. Pass `controller:` when
+    // you want to read or write them.
     const spec = IranPlates.car;
     return MaterialApp(
       home: Scaffold(
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: BlocProvider(
-              create: (_) => PlateCardBloc(spec),
-              child: PlateCanvas(
-                spec: spec,
-                onChooseCharacter: (alphabet) async => null,
-              ),
+            child: PlateCanvas(
+              spec: spec,
+              onChooseCharacter: (alphabet) async => null,
             ),
           ),
         ),
@@ -50,6 +47,9 @@ class ExampleApp extends StatelessWidget {
 
 `onChooseCharacter` returns `null` here, which means "no picker, nothing chosen". Wire
 it to `PlateCharacterPicker.show` from `plate_keypad` if you want the real wheel.
+
+If the code around your plate is bloc-shaped, the `core_plate_bloc` package provides a
+`PlateCardBloc` mirrored onto the canvas's controller — see its example.
 
 The example's `pubspec.yaml` carries a `dependency_overrides` block pointing at the
 sibling checkouts. Copying this example into your own app? Delete that block.

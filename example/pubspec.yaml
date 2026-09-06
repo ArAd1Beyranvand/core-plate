@@ -1,5 +1,5 @@
 name: core_plate_example
-description: Minimal example — a PlateCanvas driven by a PlateCardBloc.
+description: Minimal example — a bare PlateCanvas, which needs nothing above it.
 publish_to: none
 version: 1.0.0
 

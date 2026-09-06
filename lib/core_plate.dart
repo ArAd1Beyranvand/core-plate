@@ -16,6 +16,11 @@
 ///   valid?" and never bars a keystroke.
 /// - **It does not own your keyboard.** [PlateInputSource] lets the host
 ///   supply characters from its own UI through a [PlateInputController].
+/// - **It does not choose your state management.** A plate holds its own
+///   characters in a [PlateController] — a [ChangeNotifier], and no dependency
+///   beyond Flutter. If your code around the plate is bloc-shaped, the
+///   `core_plate_bloc` package provides a bloc mirrored onto that controller;
+///   this package neither knows nor asks.
 ///
 /// Everything reachable from this file is API this package supports. Anything
 /// under `src/` that this file does not export is an implementation detail:
@@ -71,14 +76,6 @@ export 'src/theme/plate_theme.dart';
 export 'src/widgets/plate_canvas.dart';
 export 'src/widgets/plate_view.dart';
 
-/// The bloc-reading read-only pair. Superseded by `PlateView`/`PlateTextView`,
-/// which render a controller and need no provider above them.
-export 'src/widgets/show_plate.dart';
-
-/// Provides a [PlateCardBloc] mirrored onto a [PlateController], for hosts with
-/// bloc-shaped code around the plate. The canvas itself no longer needs one.
-export 'src/widgets/plate_card_binding.dart' show PlateCardBinding;
-
 /// Pieces of plate chrome a host may also place on its own.
 export 'src/widgets/country_panel.dart';
 export 'src/widgets/plate_flag.dart';
@@ -108,11 +105,11 @@ export 'src/input/plate_controller.dart';
 /// with a `ValueListenableBuilder` is already as narrow as it gets.
 export 'src/widgets/plate_selector.dart';
 
-// ---------------------------------------------------------------------------
-// State — the bloc a canvas keeps its values in.
-// ---------------------------------------------------------------------------
-
-export 'src/bloc/plate_card_bloc.dart';
+// State — a canvas keeps its values in a [PlateController], exported above with
+// the rest of the input surface. The bloc that used to live here — along with
+// `PlateCardBinding`, `ShowPlate` and `PlateText` — left for the
+// `core_plate_bloc` package in 0.4.0, and with it this package's `flutter_bloc`
+// and `bloc` dependencies; see CHANGELOG.md for the one-line migration.
 
 // ---------------------------------------------------------------------------
 // Validation — advisory verdicts on a filled plate.
