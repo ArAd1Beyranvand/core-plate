@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.4.0
+  core_plate: ^0.5.0
   core_plate_bloc: ^0.1.0
   flutter_bloc: ^9.1.1
 

@@ -12,7 +12,7 @@
 /// - **One `PlateCardBloc` per plate.** The bloc holds the values, so a shared
 ///   one would make every plate on the page the same plate. Each [_PlateCard]
 ///   provides its own, scoped to itself.
-/// - **No `PlateInputController` and no `inputSource`.** The single-plate
+/// - **No `PlateController` and no `inputSource`.** The single-plate
 ///   example routes input through `plate_keypad`, which means one keypad and
 ///   one controller for one focused plate. A catalogue has no single focus, so
 ///   these plates take the platform keyboard instead — `PlateCanvas` falls back
