@@ -1,6 +1,5 @@
 import 'package:core_plate/core_plate.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:palestine_plate/palestine_plate.dart';
 
@@ -19,10 +18,7 @@ void main() {
     required List<String?> values,
     required String name,
   }) async {
-    final bloc = PlateCardBloc(spec);
-    for (var i = 0; i < values.length; i++) {
-      bloc.add(ValueIsChanged(index: i, value: values[i]));
-    }
+    final controller = PlateController.fromValues(spec, values);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -31,12 +27,9 @@ void main() {
             child: SizedBox(
               width: 520,
               height: 520 * spec.canvasHeight / spec.canvasWidth,
-              child: BlocProvider.value(
-                value: bloc,
-                child: PlateThemeScope(
-                  theme: theme,
-                  child: const ShowPlate(),
-                ),
+              child: PlateThemeScope(
+                theme: theme,
+                child: PlateView(controller: controller, theme: theme),
               ),
             ),
           ),
@@ -46,10 +39,10 @@ void main() {
     await tester.pumpAndSettle();
 
     await expectLater(
-      find.byType(ShowPlate),
+      find.byType(PlateView),
       matchesGoldenFile('goldens/$name.png'),
     );
-    await bloc.close();
+    controller.dispose();
   }
 
   group('West Bank goldens', () {

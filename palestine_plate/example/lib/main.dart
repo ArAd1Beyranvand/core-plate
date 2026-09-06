@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:core_plate/core_plate.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:palestine_plate/palestine_plate.dart';
 import 'package:plate_keypad/plate_keypad.dart' show PlateCharacterPicker;
 
@@ -137,12 +136,7 @@ class ExampleApp extends StatelessWidget {
     theme: ThemeData(useMaterial3: true),
     home: Scaffold(
       appBar: AppBar(title: const Text('palestine_plate')),
-      body: SafeArea(
-        child: BlocProvider(
-          create: (_) => PlateCardBloc(_westBankModernSchemes.first.base),
-          child: const _Demo(),
-        ),
-      ),
+      body: const SafeArea(child: _Demo()),
     ),
   );
 }
@@ -159,6 +153,20 @@ class _DemoState extends State<_Demo> {
   _Scheme _scheme = _westBankModernSchemes.first;
   PSUsage _usage = PSUsage.private;
   bool _motorcycle = false;
+
+  /// The plate's characters. Held here rather than provided above the tree,
+  /// because this screen reads the value on every build — the theme, the
+  /// verdict and the Submit button all derive from it — and writes none of it.
+  /// The canvas is the only writer.
+  late final PlateController _plate = PlateController(
+    spec: _westBankModernSchemes.first.base,
+  );
+
+  @override
+  void dispose() {
+    _plate.dispose();
+    super.dispose();
+  }
 
   List<_Scheme> get _currentSchemes {
     if (_motorcycle) {
@@ -191,10 +199,11 @@ class _DemoState extends State<_Demo> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlateCardBloc, PlateCardState>(
-      builder: (context, state) {
+    return ListenableBuilder(
+      listenable: _plate,
+      builder: (context, _) {
         final spec = _specFor(_scheme, _usage);
-        final values = state.plateNumber.values;
+        final values = _plate.values;
         final theme = _themeFor(_scheme, _usage, spec, values);
         final verdict = _verdictFor(_scheme, spec, values);
 
@@ -233,6 +242,7 @@ class _DemoState extends State<_Demo> {
               validator: _validatorFor(_scheme.kind),
               autoValidate: true,
               onSpecChange: PlateValuePreservation.byGroupKey,
+              controller: _plate,
               onChooseCharacter: (alphabet) =>
                   PlateCharacterPicker.show(context, alphabet),
             ),
@@ -445,7 +455,7 @@ class _CategoryShowcase extends StatelessWidget {
 }
 
 /// One read-only plate with category label.
-class _GeneratedPlate extends StatelessWidget {
+class _GeneratedPlate extends StatefulWidget {
   const _GeneratedPlate({
     required this.label,
     required this.spec,
@@ -459,6 +469,23 @@ class _GeneratedPlate extends StatelessWidget {
   final PlateTheme theme;
 
   @override
+  State<_GeneratedPlate> createState() => _GeneratedPlateState();
+}
+
+class _GeneratedPlateState extends State<_GeneratedPlate> {
+  /// Seeded once with the generated value; nothing types into it.
+  late final PlateController _plate = PlateController.fromValues(
+    widget.spec,
+    widget.values,
+  );
+
+  @override
+  void dispose() {
+    _plate.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(right: 12),
     child: Column(
@@ -466,24 +493,15 @@ class _GeneratedPlate extends StatelessWidget {
       children: [
         SizedBox(
           height: 70,
-          width: 70 * spec.canvasWidth / spec.canvasHeight,
+          width: 70 * widget.spec.canvasWidth / widget.spec.canvasHeight,
           child: PlateThemeScope(
-            theme: theme,
-            child: BlocProvider(
-              create: (_) {
-                final bloc = PlateCardBloc(spec);
-                for (var i = 0; i < values.length; i++) {
-                  bloc.add(ValueIsChanged(index: i, value: values[i]));
-                }
-                return bloc;
-              },
-              child: const ShowPlate(),
-            ),
+            theme: widget.theme,
+            child: PlateView(controller: _plate, theme: widget.theme),
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          label,
+          widget.label,
           style: Theme.of(context).textTheme.labelSmall,
           textAlign: TextAlign.center,
         ),

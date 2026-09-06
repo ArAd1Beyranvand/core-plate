@@ -1,4 +1,4 @@
-name: plate_palestine
+name: palestine_plate
 description: "Palestine's licence plates for the core_plate library — the West Bank and Gaza specs, the alphabets, the usage themes and the advisory validators."
 version: 0.1.0
 homepage: https://github.com/ArAd1Beyranvand/plate-palestine
@@ -19,14 +19,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  # Test-only. The golden tests render through `ShowPlate`, which reads its
-  # values from an ancestor `PlateCardBloc`, so they need a `BlocProvider` to
-  # put one there. Nothing in `lib/` imports this.
-  flutter_bloc: ^9.1.1
 
 flutter:
   # This package OWNS every asset it names. The `package:` argument on each
-  # SvgPlateAsset / AssetImage in `lib/src/` is `'plate_palestine'`, and an
+  # SvgPlateAsset / AssetImage in `lib/src/` is `'palestine_plate'`, and an
   # asset reference resolves against the bundle of the package that DECLARES
   # the path — so those literals and this block move together, or the flag
   # keeps working locally off a stale bundle and breaks for a fresh consumer.
@@ -41,3 +37,9 @@ flutter:
   # bundled here could not be applied to the glyphs that need it. Supplying a
   # face to the subtree is the host's, via its own `Theme`/`DefaultTextStyle`.
   # See "What it does not ship" in README.md.
+
+dependency_overrides:
+  # Local development only: this stage's PlateController/PlateView API is not
+  # published yet, so core_plate resolves to the sibling checkout.
+  core_plate:
+    path: ../core_plate

@@ -2,15 +2,13 @@ import 'dart:math';
 
 import 'package:core_plate/core_plate.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:plate_keypad/plate_keypad.dart';
-import 'package:plate_yemen/plate_yemen.dart';
+import 'package:yemen_plate/yemen_plate.dart';
 
 void main() => runApp(const ExampleApp());
 
 /// Which of Yemen's two current systems the screen is showing.
 ///
-/// This lives in the example, not in `plate_yemen`. The package deliberately
+/// This lives in the example, not in `yemen_plate`. The package deliberately
 /// ships no `YemenSystem` enum: a host normally knows which system it is
 /// registering vehicles under and reaches for one namespace, and only a demo
 /// that wants to show both needs a switch. Note it is a *display* choice here
@@ -23,22 +21,15 @@ class ExampleApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'plate_yemen',
+    title: 'yemen_plate',
     home: Scaffold(
-      body: SafeArea(
-        child: BlocProvider<PlateCardBloc>(
-          // Seeded with the spec `_PlateEntryState` starts on. Every later
-          // spec change is handled by `PlateCanvas` itself: swapping `spec:`
-          // on a live canvas dispatches `SpecIsChanged`, which empties the
-          // bloc. That is correct — a five-cell value cannot be reinterpreted
-          // in a six-cell plate — but it does mean **every control on this
-          // screen clears the plate**, and a real host should present its
-          // system, usage and length pickers before entry begins rather than
-          // beside it.
-          create: (_) => PlateCardBloc(YemenUnifiedPlates.car5Private),
-          child: const _PlateEntry(),
-        ),
-      ),
+      // Nothing above the plate: the canvas owns the value itself. Note that
+      // every control on this screen changes the spec, and this canvas leaves
+      // `onSpecChange` at its default — so **every control clears the plate**.
+      // A real host either passes `PlateValuePreservation.byGroupKey` or
+      // presents its system, usage and length pickers before entry begins
+      // rather than beside it.
+      body: const SafeArea(child: _PlateEntry()),
     ),
   );
 }
@@ -51,8 +42,6 @@ class _PlateEntry extends StatefulWidget {
 }
 
 class _PlateEntryState extends State<_PlateEntry> {
-  final PlateInputController _input = PlateInputController();
-
   ExampleSystem _system = ExampleSystem.unified;
   YemenUsage _usage = YemenUsage.private;
   YemenMilitaryStyle _militaryStyle = YemenMilitaryStyle.classic;
@@ -64,19 +53,9 @@ class _PlateEntryState extends State<_PlateEntry> {
   /// System B: how many digits the governorate code and the serial have.
   (int, int) _northernDigits = (2, 5);
 
-  /// The slot the keypad is typing into, or null when nothing is focused. The
-  /// keypad reads it to grey out keys the focused slot will not accept.
-  int? _activeIndex;
-
   /// Seeded, so the generated row is the same on every run — a demo that
   /// reshuffles itself on hot reload is hard to look at.
   final Random _random = Random(1970);
-
-  @override
-  void dispose() {
-    _input.dispose();
-    super.dispose();
-  }
 
   // --- What the pickers currently resolve to. -------------------------------
 
@@ -135,24 +114,20 @@ class _PlateEntryState extends State<_PlateEntry> {
   Widget build(BuildContext context) {
     final PlateSpec spec = _spec;
     final PlateTheme theme = _theme;
-    final int? active = _activeIndex;
-
     return ListView(
       padding: const EdgeInsets.all(16),
       children: <Widget>[
         PlateCanvas(
           spec: spec,
           theme: theme,
-          // The keypad below is the only way characters get in.
-          inputSource: PlateInputSource.packageKeypad,
-          controller: _input,
+          // Real text fields: each slot opens the platform keyboard.
+          inputSource: PlateInputSource.system,
           validator: _validator,
           // Paints the plate's underlines red on an invalid value; never
           // blocks a keystroke. Both Yemeni validators stay quiet until the
           // last register has something in it, so this does not flash red at
           // the first digit.
           autoValidate: true,
-          onActiveIndexChanged: (int? i) => setState(() => _activeIndex = i),
           // Every alphabet on both systems is `typed`, so no slot ever opens a
           // picker.
           onChooseCharacter: (PlateAlphabet alphabet) async => null,
@@ -191,24 +166,6 @@ class _PlateEntryState extends State<_PlateEntry> {
             ),
           ),
         ),
-        const Divider(height: 32),
-        PlateKeypad(
-          highlightedKey: null,
-          onKey: (String key) => key == kPlateBackspaceKey
-              ? _input.backspace()
-              : _input.submit(key),
-          digitAlphabet: YemenAlphabets.digits,
-          // Neither Yemeni system prints a letter, so there is no letter
-          // alphabet to give. `PlateKeypad` requires one anyway, so the digits
-          // stand in and `showLetters` stays false — the letters grid is never
-          // shown.
-          letterAlphabet: YemenAlphabets.digits,
-          // Greys out keys the focused slot will not take. On a northern plate
-          // this is what hides 3..9 while the governorate code's tens cell is
-          // focused, because `YemenAlphabets.governorateTens` holds only three
-          // characters.
-          activeAlphabet: active == null ? null : spec.slots[active].alphabet,
-        ),
       ],
     );
   }
@@ -216,14 +173,11 @@ class _PlateEntryState extends State<_PlateEntry> {
 
 /// One read-only plate showing a generated value.
 ///
-/// Not `ShowPlate`, and that is a `core_plate` limitation rather than a
-/// preference: `ShowPlate` takes no `PlateTheme` and builds its canvas without
-/// one, so it always paints the standard black-on-white plate. That is fine
+/// [PlateView] rather than `ShowPlate` because it takes a [PlateTheme]:
+/// `ShowPlate` always paints the standard black-on-white plate, which is fine
 /// for Iran and wrong for Yemen — a northern plate's colour *is* its usage
-/// class, so a green government plate rendered white is a different plate. A
-/// display-mode [PlateCanvas], which does take a theme, is the way to render a
-/// non-default colour scheme read-only.
-class _GeneratedPlate extends StatelessWidget {
+/// class, so a green government plate rendered white is a different plate.
+class _GeneratedPlate extends StatefulWidget {
   const _GeneratedPlate({
     required this.spec,
     required this.theme,
@@ -235,31 +189,33 @@ class _GeneratedPlate extends StatelessWidget {
   final List<String?> values;
 
   @override
-  Widget build(BuildContext context) => BlocProvider<PlateCardBloc>(
-    // A bloc of its own, scoped to this one plate, so the generated row does
-    // not touch the value being typed above it.
-    create: (_) {
-      final PlateCardBloc bloc = PlateCardBloc(spec);
-      for (int i = 0; i < values.length; i++) {
-        bloc.add(ValueIsChanged(index: i, value: values[i]));
-      }
-      return bloc;
-    },
-    child: SizedBox(
-      height: 90,
-      width: 90 * spec.canvasWidth / spec.canvasHeight,
-      child: PlateCanvas(
-        spec: spec,
-        theme: theme,
-        mode: PlateMode.display,
-        onChooseCharacter: (PlateAlphabet alphabet) async => null,
-      ),
-    ),
+  State<_GeneratedPlate> createState() => _GeneratedPlateState();
+}
+
+class _GeneratedPlateState extends State<_GeneratedPlate> {
+  /// A controller of its own, scoped to this one plate, so the generated row
+  /// does not touch the value being typed above it.
+  late final PlateController _controller = PlateController.fromValues(
+    widget.spec,
+    widget.values,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 90,
+    width: 90 * widget.spec.canvasWidth / widget.spec.canvasHeight,
+    child: PlateView(controller: _controller, theme: widget.theme),
   );
 }
 
 /// The pickers. Every one of them changes the spec, and changing the spec
-/// clears the plate — see the note on the `BlocProvider` in [ExampleApp].
+/// clears the plate — see the note in [ExampleApp].
 class _Controls extends StatelessWidget {
   const _Controls({
     required this.system,

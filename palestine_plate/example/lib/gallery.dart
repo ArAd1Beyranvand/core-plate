@@ -30,7 +30,6 @@ library;
 
 import 'package:core_plate/core_plate.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:palestine_plate/palestine_plate.dart';
 import 'package:plate_keypad/plate_keypad.dart';
 
@@ -276,10 +275,19 @@ class _PlateGrid extends StatelessWidget {
 }
 
 /// One editable plate, with its own bloc.
-class _PlateCard extends StatelessWidget {
+class _PlateCard extends StatefulWidget {
   const _PlateCard({required this.entry});
 
   final _Entry entry;
+
+  @override
+  State<_PlateCard> createState() => _PlateCardState();
+}
+
+class _PlateCardState extends State<_PlateCard> {
+  /// Scoped to this card. One controller shared across the page would make
+  /// every plate on it show the same value.
+  late final PlateController _plate = PlateController(spec: widget.entry.spec);
 
   /// Every card is drawn to the same height and takes its width from the
   /// spec's own aspect ratio, so a one-line and a two-line plate sit on one row
@@ -287,7 +295,14 @@ class _PlateCard extends StatelessWidget {
   static const double _height = 96;
 
   @override
+  void dispose() {
+    _plate.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final _Entry entry = widget.entry;
     final PlateSpec spec = entry.spec;
     final double width = _height * spec.canvasWidth / spec.canvasHeight;
     return Column(
@@ -297,33 +312,30 @@ class _PlateCard extends StatelessWidget {
         SizedBox(
           height: _height,
           width: width,
-          // Scoped to this card. A bloc shared across the page would make every
-          // plate on it show the same value.
-          child: BlocProvider<PlateCardBloc>(
-            create: (_) => PlateCardBloc(spec),
-            // Gaza's colour is a function of its own values, so the canvas is
-            // rebuilt on them. The West Bank cards do not need this, but they
-            // are cheap and it keeps one card widget instead of two.
-            child: BlocBuilder<PlateCardBloc, PlateCardState>(
-              builder: (BuildContext context, PlateCardState state) => PlateCanvas(
-                spec: spec,
-                // Colour is derived and passed in. PlateSpec has no theme field.
-                theme: _themeFor(entry, state.plateNumber.values),
-                // No `inputSource` and no controller: each plate takes the
-                // platform default, so tapping a slot on any card types into
-                // that card. See the library comment.
-                validator: _validatorFor(entry.kind),
-                // Paints the underlines red on an invalid plate; never blocks a
-                // keystroke, never throws. Each validator stays quiet until the
-                // user reaches its last group, so an empty plate does not read
-                // as wrong.
-                autoValidate: true,
-                // The governorate slot is a `chosen` alphabet, so core asks for
-                // a character instead of accepting typing. plate_keypad's modal
-                // wheel offers exactly the thirteen legal letters — no I, no O.
-                onChooseCharacter: (PlateAlphabet alphabet) =>
-                    PlateCharacterPicker.show(context, alphabet),
-              ),
+          // Gaza's colour is a function of its own values, so the canvas is
+          // rebuilt on them. The West Bank cards do not need this, but they
+          // are cheap and it keeps one card widget instead of two.
+          child: ListenableBuilder(
+            listenable: _plate,
+            builder: (BuildContext context, Widget? _) => PlateCanvas(
+              spec: spec,
+              // Colour is derived and passed in. PlateSpec has no theme field.
+              theme: _themeFor(entry, _plate.values),
+              // No `inputSource`: each plate takes the platform default, so
+              // tapping a slot on any card types into that card. See the
+              // library comment.
+              controller: _plate,
+              validator: _validatorFor(entry.kind),
+              // Paints the underlines red on an invalid plate; never blocks a
+              // keystroke, never throws. Each validator stays quiet until the
+              // user reaches its last group, so an empty plate does not read
+              // as wrong.
+              autoValidate: true,
+              // The governorate slot is a `chosen` alphabet, so core asks for
+              // a character instead of accepting typing. plate_keypad's modal
+              // wheel offers exactly the thirteen legal letters — no I, no O.
+              onChooseCharacter: (PlateAlphabet alphabet) =>
+                  PlateCharacterPicker.show(context, alphabet),
             ),
           ),
         ),
