@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../input/plate_controller.dart';
-import '../input/plate_input_controller.dart';
 import '../input/plate_input_machine.dart';
 import '../model/plate_alphabet.dart';
 import '../model/plate_box.dart';
@@ -58,7 +57,11 @@ class PlateCanvas extends StatefulWidget {
   /// usual value, but any modal that resolves to a `String?` works.
   final Future<String?> Function(PlateAlphabet alphabet) onChooseCharacter;
   final ValueChanged<int?>? onActiveIndexChanged;
-  final PlateInputController? controller;
+
+  /// The handle that owns this plate's characters and drives its focus. Pass
+  /// one to read or write the value, track the active slot, or feed characters
+  /// from your own keypad. Omit it and the canvas makes a private one.
+  final PlateController? controller;
 
   /// The rule this plate is judged against. Never prevents input; see
   /// [autoValidate] for when it is consulted.
@@ -66,8 +69,8 @@ class PlateCanvas extends StatefulWidget {
 
   /// When true, the canvas validates after every committed value and paints
   /// the invalid state itself. When false (the default), [validator] is
-  /// consulted only when the host asks — read
-  /// [PlateInputController.validation] and decide your own timing.
+  /// consulted only when the host asks — read [PlateController.validation] and
+  /// decide your own timing.
   final bool autoValidate;
 
   /// What becomes of the characters already entered when [spec] is swapped on a
@@ -96,8 +99,8 @@ class _PlateCanvasState extends State<PlateCanvas> {
   /// for the machine's whole life.
   late PlateController _controller;
 
-  /// Whether [_controller] is ours to dispose. False when the host passed a
-  /// [PlateController] as [PlateCanvas.controller]: that one outlives us.
+  /// Whether [_controller] is ours to dispose. False when the host passed one
+  /// as [PlateCanvas.controller]: that one outlives us.
   bool _ownsController = false;
 
   @override
@@ -142,18 +145,16 @@ class _PlateCanvasState extends State<PlateCanvas> {
     super.dispose();
   }
 
-  /// Points [_controller] at the host's controller when it is one that carries
-  /// a value, and at a private one otherwise.
+  /// Points [_controller] at the host's controller when it passed one, and at a
+  /// private one otherwise.
   ///
   /// [replacing] means a live canvas has just been handed a different
-  /// [PlateCanvas.controller]. A private controller we already own survives
-  /// that: it holds the plate's characters, and being handed a focus-only
-  /// controller is no reason to drop them. A private one we stand down for a
-  /// host-supplied [PlateController] is disposed; the host's own never is —
-  /// it outlives us, and is routinely handed straight back on the next build.
+  /// [PlateCanvas.controller]. A private one we stand down for a host-supplied
+  /// controller is disposed; the host's own never is — it outlives us, and is
+  /// routinely handed straight back on the next build.
   void _adoptController({bool replacing = false}) {
     final host = widget.controller;
-    if (host is! PlateController) {
+    if (host == null) {
       if (replacing && _ownsController) return;
       _controller = PlateController(spec: widget.spec);
       _ownsController = true;
@@ -211,7 +212,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     activeIndex: _machine.activeIndex,
   );
 
-  /// Backs [PlateInputController.validation]. Null when there is no validator,
+  /// Backs [PlateController.validation]. Null when there is no validator,
   /// which is what makes that getter null for a host that set none.
   PlateValidation? _probeValidation() {
     final validator = widget.validator;
@@ -405,7 +406,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     // paints the completed-field underline in the theme's alert colour — that,
     // and nothing else: no dialog, no exception, and above all no rejected
     // keystroke. With it off the validator is never called from here; a host
-    // that wants its own timing reads PlateInputController.validation.
+    // that wants its own timing reads PlateController.validation.
     final validator = widget.validator;
     final Widget face = widget.autoValidate && validator != null
         ? _ValidationBinding(

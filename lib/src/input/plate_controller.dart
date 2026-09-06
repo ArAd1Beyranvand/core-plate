@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
+import '../validators/plate_validator.dart';
 import 'plate_input_controller.dart';
 
 /// What happens to the characters already on a plate when its [PlateSpec] is
@@ -19,20 +20,19 @@ enum PlateValuePreservation {
   byGroupKey,
 }
 
-/// A host-facing handle that *owns* one plate's characters, on top of the
-/// focus and navigation [PlateInputController] already drives.
+/// A host-facing handle that *owns* one plate's characters and drives its
+/// focus and navigation.
 ///
-/// It subclasses [PlateInputController] deliberately: every host that passes a
-/// controller to a canvas keeps compiling, while a host that wants the value
-/// as well passes one of these instead. [PlateInputController] stays as it is,
-/// for hosts that only ever wanted focus.
+/// Pass one to a [PlateCanvas] as `controller:` to read or write the value, to
+/// see which slot is active, or to enter characters from your own on-screen
+/// keypad. A canvas with no controller makes a private one.
 ///
 /// Listening is available at two grains, and the finer one is the point:
 /// [slot] hands back a listenable for a single position, so a keystroke
 /// rebuilds the one slot it landed in; [completed] flips only when the plate
 /// crosses between full and not; and the controller itself notifies on every
 /// committed change for whoever genuinely wants all of them.
-class PlateController extends PlateInputController {
+class PlateController extends ChangeNotifier {
   PlateController({required PlateSpec spec, List<String?>? values})
     : _spec = spec {
     _values = List<String?>.filled(spec.slotCount, null);
@@ -183,6 +183,111 @@ class PlateController extends PlateInputController {
     _completed.value = _computeCompleted();
     notifyListeners();
   }
+
+  // --- Focus and navigation -------------------------------------------------
+  //
+  // A host renders its own on-screen keypad, reads [activeIndex] (or
+  // [activeSlot]) to decide which keys to show, and calls [submit]/[backspace]
+  // to enter or remove characters. Every operation is proxied to the attached
+  // canvas, which owns the focus.
+
+  PlateInputTarget? _target;
+
+  PlateValidation? Function()? _probe;
+  PlateValidation? _lastVerdict;
+
+  /// The verdict on the plate as it stands, or null when the canvas has no
+  /// validator (or none is attached). A host reads this to decide its own
+  /// timing — paint something, enable a submit button — instead of validating
+  /// by hand.
+  ///
+  /// Computed on demand, so it is meaningful whether or not the canvas runs
+  /// `autoValidate`: a host that validates on submit only pays for exactly the
+  /// validations it asks for.
+  PlateValidation? get validation => _probe?.call();
+
+  /// Called by PlateCanvas. Do not call from app code.
+  ///
+  /// Installs the callback behind [validation]; pass null when detaching.
+  void installValidation(PlateValidation? Function()? probe) {
+    _probe = probe;
+    _lastVerdict = null;
+  }
+
+  /// Called by PlateCanvas while it is auto-validating. Do not call from app
+  /// code.
+  ///
+  /// Notifies on a change of *verdict* (over [PlateValidation]'s equality,
+  /// i.e. its reason), not on every committed value — so a listener rebuilds
+  /// on a flip, not on a keystroke. Putting the narrowing here keeps that
+  /// property true for every consumer rather than for whichever one
+  /// remembered to implement it.
+  void reportValidation(PlateValidation? value) {
+    if (_lastVerdict == value) return;
+    _lastVerdict = value;
+    notifyListeners();
+  }
+
+  /// Called by PlateCanvas. Do not call from app code.
+  void attach(PlateInputTarget target) {
+    _target = target;
+    notifyListeners();
+  }
+
+  /// Called by PlateCanvas. Do not call from app code.
+  ///
+  /// Guarded so that when a PlateCanvas is rebuilt into a new element — the new
+  /// state attaches before the old one disposes — the old state's detach does
+  /// not null out the live target. Still load-bearing after a spec swap, which
+  /// retires one machine and attaches its replacement.
+  void detach(PlateInputTarget target) {
+    if (identical(_target, target)) {
+      _target = null;
+      notifyListeners();
+    }
+  }
+
+  /// Called by PlateCanvas when its active slot changes.
+  void notifyActiveSlotChanged() => notifyListeners();
+
+  /// The position of the slot currently accepting input, or null when the
+  /// plate is unfocused (or no canvas is attached). Hosts read it to decide
+  /// which keypad to show.
+  int? get activeIndex => _target?.activeIndex;
+
+  /// The slot currently accepting input, resolved against [spec] — the
+  /// convenience for hosts that need the slot's alphabet rather than just its
+  /// position. Null when the plate is unfocused.
+  PlateSlot? get activeSlot => _spec.slotAt(activeIndex ?? -1);
+
+  /// The active slot resolved against [spec].
+  @Deprecated(
+    'The controller knows its own spec; use activeSlot. '
+    'Will be removed in 0.6.0.',
+  )
+  PlateSlot? activeSlotIn(PlateSpec spec) => spec.slotAt(activeIndex ?? -1);
+
+  /// Whether a canvas is currently attached.
+  bool get isAttached => _target != null;
+
+  /// Commit [character] to the active slot and advance focus, exactly as typing
+  /// into that slot would. No-op when there is no active slot, or when the
+  /// active slot's alphabet does not accept [character].
+  void submit(String character) => _target?.submitCharacter(character);
+
+  /// Clear the active slot; if it is already empty, step focus backwards to the
+  /// preceding slot and clear that instead. No-op at the start of the plate.
+  void backspace() => _target?.backspaceCharacter();
+
+  /// Focus the first slot with a null/empty value, or the first slot if the
+  /// plate is empty. Used to (re)enter the plate programmatically.
+  void focusFirstEmpty() => _target?.focusFirstEmptySlot();
+
+  /// Focus the slot at [index] directly, without regard to its value. Used by
+  /// hosts that drive character entry programmatically (e.g. a scripted
+  /// demo) and need the visible focus/cursor to track the slot being written
+  /// to, the way it would if the user had tapped there.
+  void focusSlot(int index) => _target?.focusSlot(index);
 
   @override
   void dispose() {

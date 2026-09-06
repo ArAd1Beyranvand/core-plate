@@ -15,7 +15,7 @@
 /// - **It does not police input.** A [PlateValidator] answers "is this plate
 ///   valid?" and never bars a keystroke.
 /// - **It does not own your keyboard.** [PlateInputSource] lets the host
-///   supply characters from its own UI through a [PlateInputController].
+///   supply characters from its own UI through a [PlateController].
 /// - **It does not choose your state management.** A plate holds its own
 ///   characters in a [PlateController] — a [ChangeNotifier], and no dependency
 ///   beyond Flutter. If your code around the plate is bloc-shaped, the
@@ -89,16 +89,17 @@ export 'src/widgets/plate_flag.dart';
 // Input — driving character entry from outside the plate.
 // ---------------------------------------------------------------------------
 
-/// The host-facing handle, and the interface it drives. `PlateInputMachine`
-/// — the implementation a [PlateCanvas] attaches on the host's behalf — is
-/// deliberately absent: a consumer never constructs one.
-export 'src/input/plate_input_controller.dart';
-
-/// The value-owning handle: the primary API for a host that wants to read or
-/// write the plate's characters, not just drive focus. It extends
-/// [PlateInputController], so a canvas takes either — and
-/// [PlateInputController] remains exactly as it was for focus-only hosts.
+/// The plate's handle: it owns the characters and drives focus and
+/// navigation. The primary API for a host that wants to read or write the
+/// value, track the active slot, or feed characters from its own keypad.
+/// `PlateInputMachine` — the implementation a [PlateCanvas] attaches on the
+/// host's behalf — is deliberately absent: a consumer never constructs one.
 export 'src/input/plate_controller.dart';
+
+/// `PlateInputTarget`, the interface the handle drives, and the deprecated
+/// `PlateInputController` alias — one class since 0.5.0, kept compiling for
+/// external callers.
+export 'src/input/plate_input_controller.dart';
 
 /// Rebuilds on a *derived* piece of a [PlateController] only when that piece
 /// changes. Per-slot listening needs no such thing: `PlateController.slot(i)`

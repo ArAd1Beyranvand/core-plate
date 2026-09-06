@@ -12,7 +12,7 @@ enum PlateInputSource {
   /// the IME is suppressed.
   packageKeypad,
 
-  /// The host app supplies every character through [PlateInputController];
+  /// The host app supplies every character through [PlateController];
   /// the IME is suppressed.
   host,
 }

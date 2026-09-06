@@ -1,3 +1,31 @@
+## 0.5.0
+
+**One controller, not two.** Since 0.3.0 `PlateController` — the handle that
+owns a plate's characters — *extended* a focus-only `PlateInputController`, a
+compatibility shape that let every `PlateCanvas(controller: …)` call site keep
+compiling through the bloc migration. That migration is done and no consumer
+passes a bare focus-only controller any more, so the two are merged.
+
+- **`PlateInputController` is now a deprecated `typedef` for `PlateController`.**
+  Existing type annotations still compile, with a deprecation warning. It will
+  be **removed in 0.6.0** — rename to `PlateController`.
+- Everything the old class carried — `attach`/`detach`, `installValidation`,
+  `reportValidation`, `notifyActiveSlotChanged`, and the host-facing focus API
+  (`activeIndex`, `isAttached`, `validation`, `submit`, `backspace`,
+  `focusFirstEmpty`, `focusSlot`) — is on `PlateController` unchanged.
+- **`activeSlotIn(spec)` is deprecated; use `activeSlot`.** The controller knows
+  its own spec, so passing one back was redundant. `activeSlotIn` will be
+  **removed in 0.6.0**.
+- `PlateCanvas.controller` is now `PlateController?` (was `PlateInputController?`
+  — the same type after the typedef). A canvas either gets a controller or
+  makes its own private one; the `TextField`/`TextEditingController` ownership
+  is unchanged — owned when the canvas created it, never disposed when it is
+  the host's.
+- `PlateInputTarget` — the interface `PlateInputMachine` implements — is
+  unchanged.
+
+No behaviour change: this is a rename and a merge.
+
 ## 0.4.0
 
 **Breaking. The bloc has left this package, and a plate now owns its own

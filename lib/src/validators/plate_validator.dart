@@ -14,7 +14,7 @@ class PlateValidation {
   bool get isValid => reason == null;
 
   // Equality over [reason] so a consumer that listens for verdict changes
-  // (e.g. PlateInputController.validation) notifies when the verdict changes,
+  // (e.g. PlateController.validation) notifies when the verdict changes,
   // not on every committed value that leaves the verdict the same.
   @override
   bool operator ==(Object other) =>
