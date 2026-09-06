@@ -1,0 +1,9 @@
+# Local development only, and not published with the package.
+#
+# This package exists because core_plate 0.4.0 dropped its bloc dependency, and
+# 0.4.0 is not on pub.dev yet. This points the resolver at the sibling checkout
+# so the package analyses and runs from this repo; remove it once 0.4.0 is
+# published.
+dependency_overrides:
+  core_plate:
+    path: ../core_plate

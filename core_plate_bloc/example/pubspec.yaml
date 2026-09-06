@@ -1,0 +1,28 @@
+name: core_plate_bloc_example
+description: Minimal example — a PlateController and a PlateCardBinding, with a BlocBuilder reading the value back out.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core_plate: ^0.4.0
+  core_plate_bloc: ^0.1.0
+  flutter_bloc: ^9.1.1
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+# Local development only — resolves core_plate_bloc and the core_plate 0.4.0 it
+# needs from the sibling checkouts until both are published on pub.dev. A fresh
+# consumer copying this example deletes this block and relies on the versioned
+# dependencies above.
+dependency_overrides:
+  core_plate_bloc:
+    path: ../
+  core_plate:
+    path: ../../core_plate
