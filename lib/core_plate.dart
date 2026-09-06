@@ -66,9 +66,18 @@ export 'src/theme/plate_theme.dart';
 // Widgets — the plate on screen.
 // ---------------------------------------------------------------------------
 
-/// The editable plate, and the read-only pair for displaying one.
+/// The editable plate, and the read-only pair for displaying one from a
+/// [PlateController].
 export 'src/widgets/plate_canvas.dart';
+export 'src/widgets/plate_view.dart';
+
+/// The bloc-reading read-only pair. Superseded by `PlateView`/`PlateTextView`,
+/// which render a controller and need no provider above them.
 export 'src/widgets/show_plate.dart';
+
+/// Provides a [PlateCardBloc] mirrored onto a [PlateController], for hosts with
+/// bloc-shaped code around the plate. The canvas itself no longer needs one.
+export 'src/widgets/plate_card_binding.dart' show PlateCardBinding;
 
 /// Pieces of plate chrome a host may also place on its own.
 export 'src/widgets/country_panel.dart';

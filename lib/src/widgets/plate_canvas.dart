@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,20 +14,24 @@ import '../model/slot_behavior.dart';
 import '../theme/plate_theme.dart';
 import '../validators/plate_validator.dart';
 import 'country_panel.dart';
+import 'plate_card_binding.dart';
 import 'plate_frame.dart';
 import 'plate_selector.dart';
 import 'plate_slot_item.dart';
 
 /// The editable plate for a [PlateSpec].
 ///
-/// **Requires a [PlateCardBloc] above it in the tree.** The canvas holds the
-/// plate's characters in a [PlateController] of its own and mirrors every
-/// change onto that bloc — in both directions, so a host that writes straight
-/// to the bloc keeps working — but it has no fallback for the bloc's absence:
-/// wrap it in a `BlocProvider<PlateCardBloc>` (created with the same spec) or
-/// it throws on first build. If you change [spec] on a live canvas, the
-/// characters already entered are carried across to the new spec as
-/// [onSpecChange] directs, and the mirrored bloc follows.
+/// **Needs nothing above it.** The canvas holds the plate's characters in a
+/// [PlateController] — its own, or the one you pass as [controller] if you want
+/// to read or write them. A bare `PlateCanvas(spec: …)` is a complete,
+/// working plate. If you change [spec] on a live canvas, the characters already
+/// entered are carried across to the new spec as [onSpecChange] directs.
+///
+/// A [PlateCardBloc] found above the canvas is still adopted and mirrored in
+/// both directions, so bloc-based hosts keep working — but that path is
+/// deprecated and warns once per canvas. Hand the canvas a [PlateController]
+/// instead, and if the surrounding code needs a bloc, wrap it in a
+/// `PlateCardBinding`, which provides one mirrored onto that controller.
 ///
 /// `PlateCanvas` provides its own [Material], so it renders correctly without a
 /// [Scaffold] ancestor.
@@ -90,7 +92,8 @@ class _PlateCanvasState extends State<PlateCanvas> {
 
   /// The plate's characters, and the canvas's writer of record: every commit
   /// the machine makes, and every character the picker returns, lands here
-  /// first and reaches the bloc through [_BlocBridge].
+  /// first, and reaches a deprecated ancestor bloc — when there is one —
+  /// through [PlateBlocBridge].
   ///
   /// This is what takes [BuildContext] out of the long-lived closures the
   /// machine holds. They used to read the bloc off `context` on every commit —
@@ -102,10 +105,15 @@ class _PlateCanvasState extends State<PlateCanvas> {
   /// [PlateController] as [PlateCanvas.controller]: that one outlives us.
   bool _ownsController = false;
 
-  /// Keeps [_controller] and the ancestor bloc holding the same characters.
+  /// Keeps [_controller] and a deprecated ancestor bloc holding the same
+  /// characters. Null — the ordinary case — when there is no bloc above us.
   /// Founded once the bloc is reachable (see [didChangeDependencies]) and
   /// re-founded whenever either side is replaced.
-  _BlocBridge? _bridge;
+  PlateBlocBridge? _bridge;
+
+  /// Whether the deprecation notice for an adopted ancestor bloc has been
+  /// emitted. Once per canvas, not once per build.
+  bool _warnedAboutBloc = false;
 
   @override
   void initState() {
@@ -117,12 +125,12 @@ class _PlateCanvasState extends State<PlateCanvas> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // First run here is before the first build, which is the earliest the
+    // First run here is before the first build, which is the earliest an
     // ancestor bloc is reachable — and where a canvas mounted over a
-    // pre-populated bloc picks that value up. Later runs are other inherited
-    // widgets changing (the plate theme, say) and find the bridge already
-    // pointed at the right pair, so they cost two identity comparisons and
-    // seed nothing.
+    // pre-populated bloc picks that value up. With no bloc above us this is a
+    // failed lookup and nothing more. Later runs are other inherited widgets
+    // changing (the plate theme, say) and find the bridge already pointed at
+    // the right pair, so they cost two identity comparisons and seed nothing.
     _syncBridge(seed: true);
   }
 
@@ -201,13 +209,24 @@ class _PlateCanvasState extends State<PlateCanvas> {
     stoodDown?.dispose();
   }
 
-  /// Points the bridge at the current bloc and controller, re-founding it when
-  /// either has been replaced. [seed] brings the two sides into agreement on a
-  /// freshly founded pair; a re-found after a spec swap passes `seed: false` and
-  /// the caller then pushes the migrated value out with
-  /// [_BlocBridge.adoptControllerValue], since the bloc is the stale side there.
+  /// Points the bridge at the deprecated ancestor bloc and the controller,
+  /// re-founding it when either has been replaced. [seed] brings the two sides
+  /// into agreement on a freshly founded pair; a re-found after a spec swap
+  /// passes `seed: false` and the caller then pushes the migrated value out with
+  /// [PlateBlocBridge.adoptControllerValue], since the bloc is the stale side
+  /// there.
+  ///
+  /// No bloc above us is not an error — it is the supported case — so the
+  /// lookup is defensive and its failure simply leaves the canvas
+  /// controller-only.
   void _syncBridge({bool seed = false}) {
-    final bloc = context.read<PlateCardBloc>();
+    final bloc = _ancestorBloc();
+    if (bloc == null) {
+      _bridge?.dispose();
+      _bridge = null;
+      return;
+    }
+    _warnAboutBloc();
     final bridge = _bridge;
     if (bridge != null &&
         identical(bridge.bloc, bloc) &&
@@ -215,9 +234,36 @@ class _PlateCanvasState extends State<PlateCanvas> {
       return;
     }
     bridge?.dispose();
-    final next = _BlocBridge(controller: _controller, bloc: bloc);
+    final next = PlateBlocBridge(controller: _controller, bloc: bloc);
     _bridge = next;
     if (seed) next.seed();
+  }
+
+  /// The [PlateCardBloc] above this canvas, or null when there is none. A
+  /// missing provider is the ordinary case now, so the lookup's failure is
+  /// caught rather than allowed to throw.
+  PlateCardBloc? _ancestorBloc() {
+    try {
+      return context.read<PlateCardBloc>();
+    } on ProviderNotFoundException {
+      return null;
+    }
+  }
+
+  /// Says once, per canvas, that the adopted ancestor bloc is on its way out.
+  void _warnAboutBloc() {
+    if (_warnedAboutBloc) return;
+    _warnedAboutBloc = true;
+    assert(() {
+      debugPrint(
+        'PlateCanvas: adopting the PlateCardBloc above it. That is '
+        'deprecated and will be removed. Hand the canvas a PlateController '
+        '(controller:) instead; if the surrounding code needs a bloc, wrap it '
+        'in a PlateCardBinding, which provides one mirrored onto that same '
+        'controller.',
+      );
+      return true;
+    }());
   }
 
   /// Builds the machine for the current spec, hands the host's controller to
@@ -483,111 +529,6 @@ class _PlateCanvasState extends State<PlateCanvas> {
       data: selectionTheme,
       child: Material(type: MaterialType.transparency, child: face),
     );
-  }
-}
-
-/// Keeps one [PlateController] and one [PlateCardBloc] holding the same
-/// characters, in both directions.
-///
-/// Neither side can be the only writer yet. The canvas writes to the controller
-/// (that is what took [BuildContext] out of the machine's closures), the
-/// bindings still render from the bloc, and real hosts write straight to the
-/// bloc — the showcase's auto-typist dispatches `ValueIsChanged` itself, and
-/// its second plate is driven off `bloc.stream`. So every write has to reach
-/// both stores, whichever one it lands on first.
-///
-/// **The echo, and why it settles.** A write is reflected onto the other side,
-/// which notifies, which would reflect it back. Two things stop that:
-///
-/// - [_syncing] drops the *synchronous* return trip. `setValues` notifies its
-///   listeners during the call, so the controller's change fires while we are
-///   still inside the bloc handler that caused it. This is not a mere
-///   optimisation: the controller sanitises (a character its slot's alphabet
-///   refuses is stored as null) and the bloc does not, so without the flag a
-///   value the bloc holds and the controller declines would be echoed back as
-///   an instruction to clear it — the bridge overwriting the host.
-/// - The value comparisons drop the *asynchronous* return trip. `bloc.add` is
-///   queued, so the emission it causes arrives a microtask later, long after
-///   the flag is down; by then both sides already agree and there is nothing
-///   to copy.
-///
-/// One write therefore settles in a single pass, and cannot oscillate.
-class _BlocBridge {
-  _BlocBridge({required this.controller, required this.bloc}) {
-    controller.addListener(_onControllerChanged);
-    _emissions = bloc.stream.listen(_onBlocState);
-  }
-
-  final PlateController controller;
-  final PlateCardBloc bloc;
-
-  late final StreamSubscription<PlateCardState> _emissions;
-
-  /// True while this bridge is itself applying a write, so the change it is
-  /// about to cause on the far side is not read back as a fresh one.
-  bool _syncing = false;
-
-  /// Brings the two sides into agreement at install time.
-  ///
-  /// The bloc wins, because mounting a canvas over a pre-populated bloc is the
-  /// documented way to open an existing plate for editing and it must still
-  /// render. The one exception is a host-supplied controller holding a value
-  /// against an empty bloc, where deferring to the bloc would silently blank
-  /// the host's plate; there the controller wins and the bloc is caught up.
-  void seed() {
-    if (bloc.state.plateNumber.isEmpty && !controller.isEmpty) {
-      _onControllerChanged();
-      return;
-    }
-    _onBlocState(bloc.state);
-  }
-
-  /// Pushes the controller's value onto the bloc. Used after a spec swap, where
-  /// the controller has migrated to the new spec and the bloc has not caught up:
-  /// the controller is the side to trust.
-  void adoptControllerValue() => _onControllerChanged();
-
-  void _onControllerChanged() {
-    if (_syncing) return;
-    final values = controller.values;
-    final current = bloc.state.plateNumber.values;
-    _syncing = true;
-    try {
-      for (var i = 0; i < values.length && i < current.length; i++) {
-        if ((current[i] ?? '') == (values[i] ?? '')) continue;
-        bloc.add(ValueIsChanged(index: i, value: values[i]));
-      }
-    } finally {
-      _syncing = false;
-    }
-  }
-
-  void _onBlocState(PlateCardState state) {
-    if (_syncing) return;
-    final values = state.plateNumber.values;
-    if (_agree(values, controller.values)) return;
-    _syncing = true;
-    try {
-      controller.setValues(values);
-    } finally {
-      _syncing = false;
-    }
-  }
-
-  /// Whether the two value lists describe the same plate. An unset slot is
-  /// null on one side and '' on the other depending on which store cleared it,
-  /// so they compare as the same character.
-  static bool _agree(List<String?> a, List<String?> b) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if ((a[i] ?? '') != (b[i] ?? '')) return false;
-    }
-    return true;
-  }
-
-  void dispose() {
-    controller.removeListener(_onControllerChanged);
-    _emissions.cancel();
   }
 }
 
