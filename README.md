@@ -9,8 +9,11 @@ The backbone of license plate packages for countries that actually exist (we che
 ## Available plates
 
 - [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer, for hosts already bloc-shaped.
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's license plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's license plates.
+- [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's license plates.
+- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's license plates.
 - [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
 
 # core_plate
@@ -27,11 +30,11 @@ keystroke. The actual countries live in their own packages.
 
 ```yaml
 dependencies:
-  core_plate: ^0.1.0
+  core_plate: ^0.5.0
 ```
 
-Then pick a country package (`iran_plate`, `germany_plate`) and, if you want the
-on-screen keyboard, `plate_keypad`.
+Then pick a country package (`iran_plate`, `germany_plate`, `palestine_plate`,
+`yemen_plate`) and, if you want the on-screen keyboard, `plate_keypad`.
 
 ## Use
 
@@ -39,23 +42,32 @@ on-screen keyboard, `plate_keypad`.
 import 'package:core_plate/core_plate.dart';
 import 'package:iran_plate/iran_plate.dart';
 
-BlocProvider(
-  create: (_) => PlateCardBloc(IranPlates.car),
-  child: PlateCanvas(
-    spec: IranPlates.car,
-    onChooseCharacter: (alphabet) async => null,
-  ),
+PlateCanvas(
+  spec: IranPlates.car,
+  onChooseCharacter: (alphabet) async => null,
 )
 ```
 
-`PlateCanvas` needs a `PlateCardBloc` above it and it will tell you so, loudly, on
-build if you forget. It brings its own `Material`, so it survives outside a `Scaffold`.
+That is a complete, editable plate. It needs **nothing above it** — no provider, no
+bloc. A `PlateCanvas` owns its characters in a `PlateController` (a `ChangeNotifier`,
+no dependency beyond Flutter); pass `controller:` when you want to read or write the
+value, track the active slot, or feed characters from your own keypad. It brings its
+own `Material`, so it survives outside a `Scaffold`.
+
+Swapping `spec:` on a live canvas now **carries the value across** to the new spec,
+matching registers by group key — `onSpecChange` tunes that.
+
+If the code around your plate is already bloc-shaped, `core_plate_bloc` provides a
+`PlateCardBloc` mirrored onto the controller; nothing in `core_plate` depends on it.
 
 ## Things it refuses to do
 
 - Know a country. Grep `lib/` for a country name; a hit is a bug.
 - Police input. The validator can paint the frame red. It cannot stop you typing.
 - Own your keyboard. Feed it characters from wherever you like.
+- Choose your state management. A plate holds its own characters in a
+  `PlateController`. Bloc-shaped hosts add `core_plate_bloc`; core neither knows nor
+  asks.
 
 ## API
 
