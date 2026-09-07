@@ -7,24 +7,18 @@ environment:
   sdk: '>=3.10.0 <4.0.0'
   flutter: ">=1.17.0"
 
+resolution: workspace
+
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.1.0
-  # A concrete spec to render; core_plate itself ships none.
+  core_plate: ^0.5.0
+  # TODO(P10): this example imports iran_plate, which makes the engine's own
+  # example depend on a country package — exactly what core_plate.dart forbids.
+  # P10 rewrites the example's Dart to render a spec defined in the example
+  # itself; until then the iran_plate dependency stays so the example compiles.
   iran_plate: ^0.1.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
-
-# Local development only — resolves the iran_plate package from the sibling
-# checkout until it is published on pub.dev. A fresh consumer copying this
-# example deletes this block and relies on the versioned dependencies above.
-dependency_overrides:
-  # Local development only: this stage's PlateController/PlateView API is not
-  # published yet, so core_plate resolves to the sibling checkout.
-  core_plate:
-    path: ../../core_plate
-  iran_plate:
-    path: ../../iran_plate
 
