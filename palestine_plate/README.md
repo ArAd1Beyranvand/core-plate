@@ -13,18 +13,19 @@ country that, as the licence header insists, actually exists.
 - [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
+- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
 
 # palestine_plate
 
 It's data, not code: two country blocks, four alphabets, thirteen `PlateSpec` consts,
 eight `PlateTheme`s and three validators. There is no widget in this package, no
-painter, no bloc and no state - `core_plate` owns all of that and paints whatever a
-spec describes. **Adding a plate here means adding a `const`.**
+painter and no state - `core_plate` owns all of that and paints whatever a spec
+describes. **Adding a plate here means adding a `const`.**
 
 ## Depends on
 
-`core_plate` (`^0.1.0`). Nothing else - not `iran_plate`, not `germany_plate`, not
-`plate_keypad`. The keypad appears in `example/pubspec.yaml` and nowhere else.
+`core_plate` alone - not `iran_plate`, not `germany_plate`, not `plate_keypad`, not
+`core_plate_bloc`. The keypad appears in `example/pubspec.yaml` and nowhere else.
 
 ## Use
 
@@ -111,14 +112,16 @@ Legacy district codes have their own hole: `0` and `2` are not legal, which is w
 `PSAlphabets.districtDigits` leaves them out of the alphabet rather than validating
 them out afterwards.
 
-## Switching spec resets the bloc
+## Switching spec carries the value across
 
-`PlateCanvas` reacts to a changed `spec.id` by dispatching `SpecIsChanged`, which
-empties the plate - it must, because the bloc still holds the previous plate's values
-and the slot count differs. **So swapping scheme or form factor mid-entry wipes what
-the user typed.** That is `core_plate`'s behaviour, not something this package can
-paper over. Confirm before switching, or re-seed the new spec from the old values;
-`example/lib/main.dart` does the latter.
+`PlateCanvas` reacts to a changed `spec.id` under `PlateValuePreservation.byGroupKey`
+(the default since `core_plate` 0.4.0): it copies each register to the same-keyed
+register on the new spec and truncates only what no longer fits, instead of emptying
+the plate. **So swapping scheme or form factor mid-entry keeps what still makes
+sense** - a five-digit serial survives the jump from `modernCar` to `modernMoto`, the
+trailing governorate letter does not survive the jump to a scheme that has no such
+slot. `example/lib/main.dart` relies on this; it no longer re-seeds by hand. Pass
+`onSpecChange:` to choose `byIndex` or `none` instead.
 
 ## Validation is advisory
 

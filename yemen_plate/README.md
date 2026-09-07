@@ -15,6 +15,7 @@ it.
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
 - [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
+- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.
 
 # yemen_plate
 
@@ -51,8 +52,8 @@ knows that and reaches for one namespace.
 
 ## Depends on
 
-`core_plate` (`^0.1.0`). Nothing else - not `plate_keypad`, not `iran_plate`,
-not `palestine_plate`. `plate_keypad` appears only in `example/`.
+`core_plate` alone - not `plate_keypad`, not `iran_plate`, not `palestine_plate`,
+not `core_plate_bloc`. `plate_keypad` appears only in `example/`.
 
 ## Use
 
@@ -96,10 +97,12 @@ above, so it is also the fastest way to see what they contain.
 ## Pick the shape before entry begins
 
 Every layout is a separate spec, because the number of cells differs. Swapping
-`spec:` on a live `PlateCanvas` dispatches `SpecIsChanged`, which **empties the
-bloc** - correct, since a five-cell value cannot be reinterpreted in a six-cell
-plate, but it means a length picker sitting beside the plate wipes it on every
-tap. Present the system, usage and register lengths first, then the plate.
+`spec:` on a live `PlateCanvas` carries the value across by group key (the
+`core_plate` default): a shared register survives, a digit that no longer fits is
+truncated. It no longer empties the plate - but a governorate serial reinterpreted
+under a different length is still rarely what the user meant, so present the system,
+usage and register lengths first, then the plate. Pass `onSpecChange:` for `byIndex`
+or `none`.
 
 ## Colour
 

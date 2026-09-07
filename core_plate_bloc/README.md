@@ -16,7 +16,7 @@ dispatches, or a `ShowPlate` in a list, and would rather keep them than rewrite 
 
 ## Depends on
 
-`core_plate` (`^0.4.0`), `flutter_bloc` and `bloc`. Nothing in `core_plate` depends on
+`core_plate` (`^0.5.0`), `flutter_bloc` and `bloc`. Nothing in `core_plate` depends on
 this package — that is the point of the split.
 
 ## Use
