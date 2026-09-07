@@ -42,6 +42,11 @@ void main() {
       find.byType(PlateView),
       matchesGoldenFile('goldens/$name.png'),
     );
+
+    // Unmount the tree before disposing: _PlateCanvasState.dispose() calls
+    // controller.detach(), which notifies listeners, so the controller must
+    // still be live when the element tree tears down.
+    await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   }
 

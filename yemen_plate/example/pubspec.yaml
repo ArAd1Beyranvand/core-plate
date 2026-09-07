@@ -7,11 +7,13 @@ environment:
   sdk: '>=3.10.0 <4.0.0'
   flutter: ">=1.17.0"
 
+resolution: workspace
+
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.2.0
-  yemen_plate: ^0.1.0
+  core_plate: ^0.5.0
+  yemen_plate: ^0.2.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -26,12 +28,3 @@ dev_dependencies:
 # so labels, the panel caption and every slot glyph render in the platform
 # default whatever the app theme says. Bundling a font here would have shipped
 # an asset that changed nothing. See "Fonts" in the package README.
-
-# Local development only — resolves the yemen_plate package from the sibling
-# checkout until it is published on pub.dev. A fresh consumer copying this
-# example deletes this block and relies on the versioned dependencies above.
-dependency_overrides:
-  yemen_plate:
-    path: ../
-  core_plate:
-    path: ../../core_plate

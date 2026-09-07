@@ -1,9 +1,0 @@
-# Local development only — resolves core_plate from the sibling checkout while
-# the PlateController refactor lands ahead of a published release. Kept out of
-# pubspec.yaml so a fresh consumer copying the example relies on the versioned
-# dependency there.
-dependency_overrides:
-  palestine_plate:
-    path: ../
-  core_plate:
-    path: ../../core_plate

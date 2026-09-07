@@ -7,13 +7,15 @@ environment:
   sdk: '>=3.10.0 <4.0.0'
   flutter: ">=1.17.0"
 
+resolution: workspace
+
 dependencies:
   flutter:
     sdk: flutter
   # The country-neutral engine. The only dependency, and deliberately so: not
   # plate_keypad (the example depends on that, this package does not), not any
   # other country's package.
-  core_plate: ^0.1.0
+  core_plate: ^0.5.0
 
 dev_dependencies:
   flutter_test:
@@ -37,9 +39,3 @@ flutter:
   # bundled here could not be applied to the glyphs that need it. Supplying a
   # face to the subtree is the host's, via its own `Theme`/`DefaultTextStyle`.
   # See "What it does not ship" in README.md.
-
-dependency_overrides:
-  # Local development only: this stage's PlateController/PlateView API is not
-  # published yet, so core_plate resolves to the sibling checkout.
-  core_plate:
-    path: ../core_plate

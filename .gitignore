@@ -10,6 +10,12 @@ Thumbs.db
 build/
 dist/
 
+# Flutter / Dart
+**/.dart_tool/
+**/build/
+**/*.iml
+**/pubspec_overrides.yaml
+
 # Python
 __pycache__/
 *.pyc

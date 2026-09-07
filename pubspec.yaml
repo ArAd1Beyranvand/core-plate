@@ -1,0 +1,21 @@
+name: plate_workspace
+publish_to: none
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+
+workspace:
+  - core_plate
+  - core_plate/example
+  - core_plate_bloc
+  - core_plate_bloc/example
+  - plate_keypad
+  - plate_keypad/example
+  - iran_plate
+  - iran_plate/example
+  - germany_plate
+  - germany_plate/example
+  - palestine_plate
+  - palestine_plate/example
+  - yemen_plate
+  - yemen_plate/example
