@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:plate_palestine/plate_palestine.dart';
+import 'package:palestine_plate/palestine_plate.dart';
 
 void main() {
   const iterations = 10000;

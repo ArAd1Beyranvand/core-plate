@@ -1,6 +1,6 @@
 import 'package:core_plate/core_plate.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:plate_palestine/plate_palestine.dart';
+import 'package:palestine_plate/palestine_plate.dart';
 
 void main() {
   group('PSWestBankModernValidator', () {

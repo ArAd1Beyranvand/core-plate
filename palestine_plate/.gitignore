@@ -30,6 +30,9 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Golden test failure output
+test/failures/
+
 # Keep these directories tracked
 !.claude/
 !docs/

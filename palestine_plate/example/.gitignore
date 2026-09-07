@@ -44,5 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Linux build and related files
+/linux/flutter/generated_plugins.cmake
+/linux/flutter/generated_plugin_registrant.cc
+/linux/flutter/generated_plugin_registrant.h
+
 # Widget Preview related
 .widget_preview/

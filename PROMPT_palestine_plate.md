@@ -1,10 +1,10 @@
-# Prompt — build `plate_palestine`
+# Prompt — build `palestine_plate`
 
 You are working in the `plate` monorepo (`~/StudioProjects/plate`), which already
 contains `core_plate`, `plate_keypad`, `iran_plate`, `germany_plate` and a small
 first-pass `palestine_plate`.
 
-Build a new Flutter package **`plate_palestine`**: Palestine's licence plates
+Build a new Flutter package **`palestine_plate`**: Palestine's licence plates
 expressed as **data for `core_plate`**.
 
 ---
@@ -26,7 +26,7 @@ So, before writing a line:
 4. Read the existing `palestine_plate/` package. It is prior art covering a
    **subset** of this brief (one green-on-white car plate, the `ف / P` block,
    the two trailing endings). Reuse its measured geometry, its sampled green and
-   its validator reasoning where they apply. `plate_palestine` supersedes it —
+   its validator reasoning where they apply. `palestine_plate` supersedes it —
    at the end, say so in the README and leave `palestine_plate` untouched on
    disk; deleting it is the user's call, not yours.
 
@@ -62,7 +62,7 @@ So, before writing a line:
 | `PSFormFactor` enum → different geometry | one `PlateSpec` const per form factor |
 | colour derived from usage | one `PlateTheme` const per colour scheme + a `PSUsage → PlateTheme` lookup |
 | `ps_metrics.dart` of `// CALIBRATE` consts | the numbers live inline in each spec, with the `// CALIBRATE` comment on the line |
-| `ps_colors.dart` | `plate_palestine/lib/src/palestine_colors.dart` — still one file, still all `// CALIBRATE` |
+| `ps_colors.dart` | `palestine_plate/lib/src/palestine_colors.dart` — still one file, still all `// CALIBRATE` |
 | sealed validation result | `PlateValidation` + `static const` reason strings |
 | `PalestinePlateWidget` | `PlateCanvas` / `ShowPlate` from `core_plate` |
 | hand-drawn flag `Path` | an SVG asset this package ships, referenced by `SvgPlateAsset` |
@@ -72,9 +72,9 @@ So, before writing a line:
 ## 1. File layout
 
 ```
-plate_palestine/
+palestine_plate/
   lib/
-    plate_palestine.dart              # the only public surface; exports src/*
+    palestine_plate.dart              # the only public surface; exports src/*
     src/
       palestine_colors.dart           # every colour, all // CALIBRATE
       palestine_themes.dart           # PlateTheme per colour scheme + usage lookup
@@ -91,7 +91,7 @@ plate_palestine/
     marks/palestine_watermark.svg     # pre-faded; see §7
   example/
     lib/main.dart
-    pubspec.yaml                      # depends on plate_palestine + plate_keypad
+    pubspec.yaml                      # depends on palestine_plate + plate_keypad
   test/
     ...
   pubspec.yaml
@@ -106,7 +106,7 @@ Copy `analysis_options.yaml` and `LICENSE` from `iran_plate` verbatim.
 `pubspec.yaml`:
 
 ```yaml
-name: plate_palestine
+name: palestine_plate
 description: "Palestine's licence plates for the core_plate library — the West Bank and Gaza specs, the alphabets, the usage themes and the advisory validators."
 version: 0.1.0
 homepage: https://github.com/ArAd1Beyranvand/plate-palestine
@@ -132,7 +132,7 @@ flutter:
 ```
 
 > The `package:` field of every `SvgPlateAsset` you write must be
-> `'plate_palestine'`, and the path must appear in the block above. An asset
+> `'palestine_plate'`, and the path must appear in the block above. An asset
 > reference resolves against the bundle of the package that *declares* it, so
 > the literal and the pubspec entry move together or the flag works locally and
 > breaks for a fresh consumer. `iran_plate` has this comment; keep it.
@@ -321,7 +321,7 @@ static const PlateCountry gaza = PlateCountry(
   captionLines: [],                  // the flag is the whole block
   flagAspectRatio: 2 / 1,            // official Palestinian ratio
   flag: SvgPlateAsset('assets/flags/Flag_of_Palestine.svg',
-                      package: 'plate_palestine'),
+                      package: 'palestine_plate'),
   ...
 );
 ```
@@ -461,9 +461,9 @@ opacity into its box; `core_plate` has no opacity parameter. So do not try to
 fade at render time — ship a **pre-faded** asset (`palestine_watermark.svg`,
 authored at ~12% grey) and reference it with a `PlateDecal`. `PlateDecal` wants
 an `ImageProvider`, so either ship the watermark as a PNG via `AssetImage(...,
-package: 'plate_palestine')`, or — if you want the vector — note in the comment
+package: 'palestine_plate')`, or — if you want the vector — note in the comment
 that `PlateDecal` cannot take an `SvgPlateAsset` today and that closing that gap
-is a `core_plate` change, not a `plate_palestine` one. **Do not patch
+is a `core_plate` change, not a `palestine_plate` one. **Do not patch
 `core_plate` to make this work without saying so loudly in your final report.**
 
 Draw order matters: decals paint under slots in `PlateCanvas`. Verify that
@@ -533,7 +533,7 @@ Assert in tests that 10 000 generated serials all validate.
 ## 10. Example app
 
 `example/lib/main.dart`, modelled on `palestine_plate/example/lib/main.dart`.
-It depends on **`plate_palestine` and `plate_keypad`** and demonstrates:
+It depends on **`palestine_plate` and `plate_keypad`** and demonstrates:
 
 - a spec picker (modern / legacy / Gaza 2012 / Gaza 2021 / trade / the two-line
   and moto form factors);
@@ -625,8 +625,8 @@ this prompt and why.
 
 - [ ] `flutter analyze` clean under `iran_plate`'s `analysis_options.yaml`.
 - [ ] `flutter test` green, goldens committed.
-- [ ] `grep -ril "iran\|germany\|keypad" plate_palestine/lib/` returns nothing.
-- [ ] `plate_palestine/lib/` contains no `Widget`, no `CustomPainter`, no
+- [ ] `grep -ril "iran\|germany\|keypad" palestine_plate/lib/` returns nothing.
+- [ ] `palestine_plate/lib/` contains no `Widget`, no `CustomPainter`, no
       `StatefulWidget`, no bloc, no `mmToPx`.
 - [ ] `pubspec.yaml` dependencies are `flutter` and `core_plate`, full stop.
 - [ ] Every declared asset path exists on disk and appears in the pubspec.

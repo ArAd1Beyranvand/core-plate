@@ -1,11 +1,11 @@
-# Prompt — build `plate_yemen`
+# Prompt — build `yemen_plate`
 
 You are working in the `plate` monorepo (`~/StudioProjects/plate`), which already
 contains `core_plate`, `plate_keypad`, `iran_plate`, `germany_plate`,
-`palestine_plate` and (from the companion prompt) `plate_palestine`.
+`palestine_plate` and (from the companion prompt) `palestine_plate`.
 
-Build a new Flutter package **`plate_yemen`**: Yemen's licence plates expressed
-as **data for `core_plate`**, structurally parallel to `plate_palestine`.
+Build a new Flutter package **`yemen_plate`**: Yemen's licence plates expressed
+as **data for `core_plate`**, structurally parallel to `palestine_plate`.
 
 ---
 
@@ -23,7 +23,7 @@ Before writing a line:
    `theme/plate_theme.dart`, `validators/plate_validator.dart`.
 3. Read `iran_plate/` end to end — the reference implementation of a country
    package.
-4. Read `plate_palestine/` — this package mirrors its layout, naming and
+4. Read `palestine_plate/` — this package mirrors its layout, naming and
    documentation discipline exactly.
 
 ### Hard rules
@@ -40,7 +40,7 @@ Before writing a line:
 - Validation is a `PlateValidator` returning `PlateValidation`. It never throws
   and never bars a keystroke. There is no sealed result type to invent.
 - **Dependencies: `core_plate` only.** Not `plate_keypad`, not `iran_plate`, not
-  `plate_palestine`. `plate_keypad` may appear **only** in
+  `palestine_plate`. `plate_keypad` may appear **only** in
   `example/pubspec.yaml`.
 - Not one file in `lib/` may name another country.
 
@@ -54,7 +54,7 @@ Before writing a line:
 | `YemenFormFactor` → different geometry | one `PlateSpec` const per form factor |
 | colour by usage | one `PlateTheme` const per scheme + a `YemenUsage → PlateTheme` lookup |
 | `ye_metrics.dart` of consts | numbers live inline on each spec line, with the `// CALIBRATE` comment there |
-| `ye_colors.dart` | `plate_yemen/lib/src/yemen_colors.dart` — one file, all `// CALIBRATE` |
+| `ye_colors.dart` | `yemen_plate/lib/src/yemen_colors.dart` — one file, all `// CALIBRATE` |
 | sealed validation result | `PlateValidation` + `static const` reason strings |
 | `YemenPlateWidget` | `PlateCanvas` / `ShowPlate` from `core_plate` |
 
@@ -87,9 +87,9 @@ do not add a `YemenSystem` enum that selects between them at runtime.
 ## 2. File layout
 
 ```
-plate_yemen/
+yemen_plate/
   lib/
-    plate_yemen.dart                 # the only public surface; exports src/*
+    yemen_plate.dart                 # the only public surface; exports src/*
     src/
       yemen_colors.dart              # every colour, all // CALIBRATE
       yemen_themes.dart              # PlateTheme per scheme + usage lookups
@@ -105,7 +105,7 @@ plate_yemen/
     marks/yemen_emblem.svg           # optional; see §6
   example/
     lib/main.dart
-    pubspec.yaml                     # depends on plate_yemen + plate_keypad
+    pubspec.yaml                     # depends on yemen_plate + plate_keypad
   test/
   pubspec.yaml
   CHANGELOG.md
@@ -119,7 +119,7 @@ Copy `analysis_options.yaml` and `LICENSE` from `iran_plate` verbatim.
 `pubspec.yaml`:
 
 ```yaml
-name: plate_yemen
+name: yemen_plate
 description: "Yemen's licence plates for the core_plate library — the 2026 unified specs, the 1993 northern specs, the alphabets, the usage themes and the advisory validators."
 version: 0.1.0
 homepage: https://github.com/ArAd1Beyranvand/plate-yemen
@@ -318,7 +318,7 @@ Both apply to the 2018 revision onward.
 **But `PlateTheme.glyphStyle` names no font family** — it sets colour, weight
 700, size and height only, and `core_plate` deliberately leaves the family to the
 host's subtree (`palestine_plate`'s README says exactly this about its condensed
-face). So `plate_yemen` **cannot** bundle a font and have it picked up. Do this
+face). So `yemen_plate` **cannot** bundle a font and have it picked up. Do this
 instead:
 
 - Document in the README, under `## Fonts`, that the plate is set in FE-Schrift
@@ -407,7 +407,7 @@ to the rest.**
 
 `yemen_alphabets.dart` — declare under a `ye.` id prefix. Every slot on both
 templates is a Latin digit, so in principle `PlateAlphabet.latinDigits` would do;
-restate them here for the same reason `plate_palestine` does — the governorate
+restate them here for the same reason `palestine_plate` does — the governorate
 alphabet is a *restricted* digit set, and `debugValidateSpec` asserts that one id
 never stands for two character lists, and that two ids never share one list.
 
@@ -492,7 +492,7 @@ Test: 10 000 generated serials all validate, for both systems.
 
 ## 10. Example, tests, docs
 
-**Example** (`example/`, depends on `plate_yemen` **and** `plate_keypad`):
+**Example** (`example/`, depends on `yemen_plate` **and** `plate_keypad`):
 a system switch (Unified / Northern), a usage picker that swaps the theme,
 a form-factor switch (car / motorcycle), `PlateCanvas` with
 `inputSource: PlateInputSource.packageKeypad` and a `PlateKeypad` underneath
@@ -552,9 +552,9 @@ place you departed from this prompt and why.
 
 - [ ] `flutter analyze` clean under `iran_plate`'s `analysis_options.yaml`.
 - [ ] `flutter test` green, goldens committed.
-- [ ] `grep -ril "iran\|germany\|palestin\|keypad" plate_yemen/lib/` returns
+- [ ] `grep -ril "iran\|germany\|palestin\|keypad" yemen_plate/lib/` returns
       nothing.
-- [ ] `plate_yemen/lib/` contains no `Widget`, no `CustomPainter`, no
+- [ ] `yemen_plate/lib/` contains no `Widget`, no `CustomPainter`, no
       `StatefulWidget`, no bloc, no `mmToPx`.
 - [ ] `pubspec.yaml` dependencies are `flutter` and `core_plate`, full stop.
 - [ ] The two systems are two namespaces with no shared version flag between

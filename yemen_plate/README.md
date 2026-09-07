@@ -16,7 +16,7 @@ it.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
 - [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
 
-# plate_yemen
+# yemen_plate
 
 It's data, not code: 55 `const PlateSpec`s, two country families, two digit
 alphabets, seven themes, two advisory validators and two seeded generators.
@@ -58,7 +58,7 @@ not `palestine_plate`. `plate_keypad` appears only in `example/`.
 
 ```dart
 import 'package:core_plate/core_plate.dart';
-import 'package:plate_yemen/plate_yemen.dart';
+import 'package:yemen_plate/yemen_plate.dart';
 
 // System A: a private car with a five-digit number.
 PlateCanvas(
@@ -87,6 +87,11 @@ YemenNorthernPlates.byDigits(YemenUsage.government)[(2, 5)];
 Both lookups return an empty map for a usage their system does not issue -
 `police` on System B, `military` on System A. `YemenUsage.onUnified` and
 `.onNorthern` are the question to ask first if you want to grey the option out.
+
+`example/` holds two apps: `lib/main.dart`, one plate with pickers and a keypad,
+and `lib/gallery.dart`, all 55 specs on one page, each empty and editable
+(`flutter run -t lib/gallery.dart`). The gallery walks the two lookup maps
+above, so it is also the fastest way to see what they contain.
 
 ## Pick the shape before entry begins
 

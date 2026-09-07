@@ -1,6 +1,6 @@
 {
-    "name": "plate_palestine_example",
-    "short_name": "plate_palestine_example",
+    "name": "palestine_plate_example",
+    "short_name": "palestine_plate_example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

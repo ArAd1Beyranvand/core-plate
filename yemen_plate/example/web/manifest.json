@@ -1,6 +1,6 @@
 {
-    "name": "plate_yemen_example",
-    "short_name": "plate_yemen_example",
+    "name": "yemen_plate_example",
+    "short_name": "yemen_plate_example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

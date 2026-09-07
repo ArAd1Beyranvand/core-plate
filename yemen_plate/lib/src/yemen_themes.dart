@@ -38,8 +38,7 @@ abstract final class YemenThemes {
   /// frame; this is roughly 10 units on the 288-unit canvas.
   static const double _borderWidthRatio = 0.035; // CALIBRATE
 
-  /// The unified plate's frame is a **rounded** rectangle; the northern
-  /// plate's is square.
+  /// Both systems use a rounded rectangle frame.
   static const double _unifiedRadiusRatio = 0.055; // CALIBRATE
 
   /// The one System A theme: black on white, rounded frame, for all five
@@ -66,8 +65,7 @@ abstract final class YemenThemes {
     ink: YemenColors.darkInk,
     dividerColor: YemenColors.darkInk,
     borderWidthRatio: _borderWidthRatio,
-    // Square corners: the northern plate is a rectangle.
-    plateRadiusRatio: 0,
+    plateRadiusRatio: _unifiedRadiusRatio,
     activeColor: YemenColors.darkInk,
     inactiveColor: YemenColors.inactiveOnDark,
   );
@@ -79,7 +77,7 @@ abstract final class YemenThemes {
     ink: YemenColors.darkInk,
     dividerColor: YemenColors.darkInk,
     borderWidthRatio: _borderWidthRatio,
-    plateRadiusRatio: 0,
+    plateRadiusRatio: _unifiedRadiusRatio,
     activeColor: YemenColors.darkInk,
     inactiveColor: YemenColors.inactiveOnLight,
   );
@@ -91,7 +89,7 @@ abstract final class YemenThemes {
     ink: YemenColors.darkInk,
     dividerColor: YemenColors.darkInk,
     borderWidthRatio: _borderWidthRatio,
-    plateRadiusRatio: 0,
+    plateRadiusRatio: _unifiedRadiusRatio,
     activeColor: YemenColors.darkInk,
     inactiveColor: YemenColors.inactiveOnDark,
   );
@@ -103,7 +101,7 @@ abstract final class YemenThemes {
     ink: YemenColors.lightInk,
     dividerColor: YemenColors.lightInk,
     borderWidthRatio: _borderWidthRatio,
-    plateRadiusRatio: 0,
+    plateRadiusRatio: _unifiedRadiusRatio,
     activeColor: YemenColors.lightInk,
     inactiveColor: YemenColors.inactiveOnDark,
   );
@@ -115,7 +113,7 @@ abstract final class YemenThemes {
     ink: YemenColors.lightInk,
     dividerColor: YemenColors.lightInk,
     borderWidthRatio: _borderWidthRatio,
-    plateRadiusRatio: 0,
+    plateRadiusRatio: _unifiedRadiusRatio,
     activeColor: YemenColors.lightInk,
     inactiveColor: YemenColors.inactiveOnDark,
   );
@@ -127,7 +125,7 @@ abstract final class YemenThemes {
     ink: YemenColors.militaryRed,
     dividerColor: YemenColors.militaryRed,
     borderWidthRatio: _borderWidthRatio,
-    plateRadiusRatio: 0,
+    plateRadiusRatio: _unifiedRadiusRatio,
     activeColor: YemenColors.militaryRed,
     inactiveColor: YemenColors.inactiveOnLight,
   );

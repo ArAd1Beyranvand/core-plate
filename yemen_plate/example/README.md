@@ -5,16 +5,44 @@ GO VEGAN 🌱
 ==================================
 
 
-# plate_yemen example
+# yemen_plate example
 
-Both of Yemen's current plate systems on one screen: a system switch, a usage
-picker, a car/motorcycle switch, a register-length picker, the plate itself
-typed with the `plate_keypad` on-screen pad, and a row of generated plates
-underneath.
+Two apps in one directory, because they answer two different questions.
 
-Run it with `flutter run` from this directory.
+| Entry point | What it is |
+| --- | --- |
+| `lib/main.dart` | **How a host uses the package.** One plate, and pickers that choose which: a system switch, a usage picker, a car/motorcycle switch, a register-length picker, the plate typed with the `plate_keypad` on-screen pad, and a row of generated plates underneath. |
+| `lib/gallery.dart` | **What the package contains.** All 55 specs on one scrollable page, every one of them empty and editable. No pickers, no generated values, no auto-fill — tap a slot and type. |
 
-## The bit worth reading
+```sh
+flutter run                      # the single-plate app
+flutter run -t lib/gallery.dart  # the catalogue
+```
+
+## The catalogue
+
+Three things about `gallery.dart` are worth copying and one is worth not
+copying.
+
+**It walks the package's own lookup maps** — `YemenUnifiedPlates.byNumberLength`
+and `YemenNorthernPlates.byDigits` — instead of naming 55 consts. A spec added
+to the package shows up on the page without the example changing, so the
+catalogue cannot silently fall behind what it is cataloguing.
+
+**One `PlateCardBloc` per plate.** The bloc holds the values. Share one across
+the page and every plate on it becomes the same plate.
+
+**No `PlateInputController` and no `inputSource`.** The single-plate app routes
+input through `plate_keypad`, which is one keypad and one controller for one
+focused plate — the right design when there is one plate. A catalogue has no
+single focus, so its plates take the platform keyboard instead (`PlateCanvas`
+falls back to `defaultInputSource()`) and tapping any slot on any card types
+into that card.
+
+**Do not copy the layout.** 55 live `PlateCanvas`es on one scrolling page is a
+demo, not an app.
+
+## The single-plate app
 
 **Every control on the screen clears the plate.** Each one changes which
 `PlateSpec` the canvas is showing, and swapping `spec:` on a live `PlateCanvas`
@@ -23,7 +51,7 @@ five-cell value cannot be reinterpreted in a six-cell plate — but it makes thi
 layout the wrong one for a real app. Put your pickers *before* the plate, not
 beside it.
 
-**The `ExampleSystem` enum lives here, not in `plate_yemen`.** The package ships
+**The `ExampleSystem` enum lives here, not in `yemen_plate`.** The package ships
 no `YemenSystem` and no version flag, because the two systems are not two
 versions of one thing: which one a plate belongs to is a fact about where the
 vehicle was registered, and a host normally knows it and reaches for one
@@ -65,5 +93,5 @@ tens cell is focused, because a code that never exceeds 22 can only start `0`,
 **No font is bundled**, and that is not an oversight — see "Fonts" in the
 package README. Nothing a host declares can reach text inside a `PlateCanvas`.
 
-The `dependency_overrides` block in `pubspec.yaml` resolves `plate_yemen` from
+The `dependency_overrides` block in `pubspec.yaml` resolves `yemen_plate` from
 this checkout. Delete it when you copy this into an app of your own.
