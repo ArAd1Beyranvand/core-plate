@@ -143,10 +143,7 @@ abstract final class YemenNorthernPlates {
   /// neighbour's string: appending it to `اليمن` would put it on the wrong
   /// side of the word once an RTL run reorders, and appending it to the usage
   /// word would tie a fixed glyph to a word that changes with usage.
-  static const List<PlateLabel> _carLabels = <PlateLabel>[
-    PlateLabel(text: 'اليمن', box: PlateBox(13, 6, 140, 62), glyphHeight: 76),
-    PlateLabel(text: 'ـ', box: PlateBox(153, 6, 24, 62), glyphHeight: 62),
-  ];
+  static const List<PlateLabel> _carLabels = <PlateLabel>[];
 
   /// The usage word, as the country panel's caption.
   ///
@@ -157,21 +154,19 @@ abstract final class YemenNorthernPlates {
   /// [PlateSpec] where text can vary without the geometry varying too. See the
   /// `YemenCountry` class doc.
   ///
-  /// x 0.327 .. 0.703, y 0.038 .. 0.219 — the measured box of the usage word,
-  /// which is the wider of the two runs in the top band.
+  /// x 0.027 .. 0.987, y 0.038 .. 0.219 — the full width of the plate for the
+  /// caption text "الیمن - خصوصي", centered and scaled to fill the available space.
   ///
   /// [PlatePanel.captionScale] is a size to fit *down* from, not the rendered
   /// size: `CountryPanel` wraps the caption in a `FittedBox(scaleDown)`, which
   /// shrinks to the box but never grows to it. So the scale has to put the text
-  /// over the box for the fit to bind and the word to fill its measured width;
-  /// 3.0 does that for every usage word in `YemenCountry`, the longest of which
-  /// is خصوصي.
+  /// over the box for the fit to bind and fill its measured width.
   static const PlatePanel _carPanel = PlatePanel(
-    box: PlateBox(177, 6, 203, 62),
+    box: PlateBox(0, 6, 540, 62),
     // No flag on a Yemeni plate.
     flagScale: 0,
-    captionScale: 3.0,
-    padding: EdgeInsets.zero,
+    captionScale: 4.5,
+    padding: EdgeInsets.fromLTRB(50, 3, 50, 0),
   );
 
   // The full-width rule under the top band: y 0.289 .. 0.314 of the plate,
@@ -497,18 +492,14 @@ abstract final class YemenNorthernPlates {
   ///
   /// The measured band would set it at 67. It is not set there because a
   /// clipped `الي` is a worse likeness of the plate than a small `اليمن`.
-  static const List<PlateLabel> _motoLabels = <PlateLabel>[
-    PlateLabel(text: 'اليمن', box: PlateBox(14, 16, 82, 42), glyphHeight: 42),
-    PlateLabel(text: 'ـ', box: PlateBox(88, 16, 14, 42), glyphHeight: 42),
-  ];
+  static const List<PlateLabel> _motoLabels = <PlateLabel>[];
 
-  /// The usage word. Larger than `اليمن`, as on the car — see the note on
-  /// [_carPanel] for why `captionScale` is a size to fit down from.
+  /// The caption text centered and scaled to fill the available width.
   static const PlatePanel _motoPanel = PlatePanel(
-    box: PlateBox(96, 6, 179, 62),
+    box: PlateBox(0, 6, 289, 62),
     flagScale: 0,
-    captionScale: 3.0,
-    padding: EdgeInsets.zero,
+    captionScale: 4.5,
+    padding: EdgeInsets.fromLTRB(25, 3, 25, 0),
   );
 
   // Same row-and-divider structure as the car, renormalised onto the

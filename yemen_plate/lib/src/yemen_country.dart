@@ -121,7 +121,7 @@ abstract final class YemenCountry {
   // word, printed in the ink of that usage's colour scheme.
   // ---------------------------------------------------------------------------
 
-  /// خصوصي, black ink — the word printed beside اليمن on a blue private plate.
+  /// الیمن - خصوصي, black ink — printed on a northern private plate.
   ///
   /// [panelColor] is fully transparent rather than the field's blue, and that
   /// is deliberate. Painting the field colour into the panel block would work
@@ -131,7 +131,7 @@ abstract final class YemenCountry {
   /// the field colour has a home already — `PlateTheme.plateBackground`.
   static const PlateCountry northernPrivate = PlateCountry(
     code: 'ye',
-    captionLines: <String>['خصوصي'],
+    captionLines: <String>['الیمن - خصوصي'],
     panelColor: _transparent,
     panelTextColor: YemenColors.darkInk,
     flag: null,
