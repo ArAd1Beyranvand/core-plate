@@ -1,3 +1,19 @@
+## 0.6.0
+
+**The country block is a render-time choice.** `PlateCanvas` and `PlateView`
+take an optional `country:` that overrides `PlateSpec.country` for that render,
+exactly as `theme:` overrides the inherited `PlateTheme`.
+
+- A design whose panel colours or caption vary along an axis the spec does not
+  encode — a vehicle's usage class, say — now passes the block at render time
+  instead of minting a second spec identical but for `country:`.
+- `PlateSpec` is unchanged: `country` stays required and stays the default, and
+  there is no `copyWith`. Spec identity is `id` alone, and `PlateCanvas`'s
+  machine rebuild, `PlateController.adoptSpec` migration and card comparison all
+  key off it — so a swap of the panel's colours must not look like a spec swap.
+  Passing `country:` disturbs neither focus, nor the input machine, nor values.
+- Additive: every existing call site is unaffected.
+
 ## 0.5.0
 
 **One controller, not two.** Since 0.3.0 `PlateController` — the handle that

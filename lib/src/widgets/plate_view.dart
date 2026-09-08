@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../input/plate_controller.dart';
 import '../model/plate_alphabet.dart';
+import '../model/plate_country.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../theme/plate_theme.dart';
@@ -23,6 +24,7 @@ class PlateView extends StatelessWidget {
     super.key,
     required this.controller,
     this.theme,
+    this.country,
     this.emptyPlate,
   });
 
@@ -30,6 +32,10 @@ class PlateView extends StatelessWidget {
 
   /// The livery to paint, or null to inherit from an ancestor [PlateTheme].
   final PlateTheme? theme;
+
+  /// The country block to paint, forwarded to [PlateCanvas.country]. Null keeps
+  /// the spec's own country.
+  final PlateCountry? country;
 
   /// What to show while the plate has no characters at all. Null — the default
   /// — renders the plate itself, blank: a controller always knows its spec, so
@@ -54,6 +60,7 @@ class PlateView extends StatelessWidget {
           spec: spec,
           mode: PlateMode.display,
           theme: theme,
+          country: country,
           controller: controller,
           // Display mode never opens a chooser; onChooseCharacter is required
           // since the keypad split, so satisfy it with one that is never called.

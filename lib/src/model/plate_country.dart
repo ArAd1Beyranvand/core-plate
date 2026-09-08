@@ -8,7 +8,15 @@ import 'plate_asset.dart';
 /// This is the single place a country's chrome is described — a country is
 /// data (a [PlateCountry] value), not a widget. [CountryPanel] and [PlateFlag]
 /// read everything they need from here. The concrete country constants live in
-/// their own files (`countries/…`) so a package split is a directory move.
+/// each country's own package, not in this one.
+///
+/// A country value is data a *renderer* is handed, not an attribute a spec is
+/// stuck with. `PlateSpec.country` is the default route, not the only one:
+/// `PlateCanvas.country` and `PlateView.country` override it at render time,
+/// exactly as a passed `theme` overrides the inherited one. A design whose
+/// panel colours or caption vary along a runtime axis the spec does not encode
+/// — a vehicle's usage class, say — passes the block there rather than minting
+/// a second spec that differs in this one field.
 @immutable
 class PlateCountry {
   const PlateCountry({

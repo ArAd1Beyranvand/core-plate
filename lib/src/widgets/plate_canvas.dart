@@ -4,6 +4,7 @@ import '../input/plate_controller.dart';
 import '../input/plate_input_machine.dart';
 import '../model/plate_alphabet.dart';
 import '../model/plate_box.dart';
+import '../model/plate_country.dart';
 import '../model/plate_input_source.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
@@ -37,6 +38,7 @@ class PlateCanvas extends StatefulWidget {
     required this.spec,
     this.mode = PlateMode.input,
     this.theme,
+    this.country,
     this.inputSource,
     required this.onChooseCharacter,
     this.onActiveIndexChanged,
@@ -49,6 +51,17 @@ class PlateCanvas extends StatefulWidget {
   final PlateSpec spec;
   final PlateMode mode;
   final PlateTheme? theme;
+
+  /// The country block to paint, overriding [PlateSpec.country].
+  ///
+  /// A spec is geometry; which country block sits in the panel is a render-time
+  /// choice, exactly as [theme] is. A design whose panel text or ink varies with
+  /// something the spec does not encode — a vehicle's usage class, say — passes
+  /// the block here instead of minting a second spec that differs in one field.
+  ///
+  /// Null keeps [PlateSpec.country], so every existing call site is unaffected.
+  final PlateCountry? country;
+
   final PlateInputSource? inputSource;
 
   /// Presents a character chooser for a `chosen`-alphabet slot and returns the
@@ -250,6 +263,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
   @override
   Widget build(BuildContext context) {
     final spec = widget.spec;
+    final country = widget.country ?? spec.country;
     var theme = widget.theme ?? PlateTheme.of(context);
     if (spec.borderWidthRatioOverride != null) {
       theme = theme.copyWith(borderWidthRatio: spec.borderWidthRatioOverride!);
@@ -337,7 +351,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
                       _Placed(
                         box: spec.panel.box,
                         child: CountryPanel(
-                          country: spec.country,
+                          country: country,
                           theme: theme,
                           panel: spec.panel,
                         ),

@@ -72,7 +72,10 @@ export 'src/theme/plate_theme.dart';
 // ---------------------------------------------------------------------------
 
 /// The editable plate, and the read-only pair for displaying one from a
-/// [PlateController].
+/// [PlateController]. Both take an optional `country:` that overrides
+/// [PlateSpec.country] at render time, the way `theme:` overrides the
+/// inherited [PlateTheme] — so a usage-varying panel is a render argument, not
+/// a second spec.
 export 'src/widgets/plate_canvas.dart';
 export 'src/widgets/plate_view.dart';
 
