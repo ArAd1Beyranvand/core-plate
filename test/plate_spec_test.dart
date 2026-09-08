@@ -201,6 +201,29 @@ void main() {
     });
   });
 
+  group('indicesOfGroup', () {
+    test('returns the named group\'s indices', () {
+      final spec = _spec(
+        textGroups: const [
+          PlateTextGroup([0, 1], key: 'pair'),
+          PlateTextGroup([2], key: 'tail'),
+        ],
+      );
+      expect(spec.indicesOfGroup('pair'), [0, 1]);
+      expect(spec.indicesOfGroup('tail'), [2]);
+    });
+
+    test('returns empty for an absent key, and for an unkeyed spec', () {
+      final spec = _spec(
+        textGroups: const [
+          PlateTextGroup([0, 1, 2], key: 'serial'),
+        ],
+      );
+      expect(spec.indicesOfGroup('district'), isEmpty);
+      expect(_spec().indicesOfGroup('serial'), isEmpty);
+    });
+  });
+
   group('navigation', () {
     test('nextIndex returns null at the end and never wraps', () {
       final spec = _spec();

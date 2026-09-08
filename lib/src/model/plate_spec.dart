@@ -246,6 +246,24 @@ class PlateSpec {
     return '';
   }
 
+  /// The slot indices of the text group named [key], or an empty list when no
+  /// group carries that key.
+  ///
+  /// The counterpart to [valueOfGroup]: that reads a register's characters,
+  /// this names the positions they live in — what anything that *writes* a
+  /// register needs. Walks [effectiveTextGroups], so a spec that declares no
+  /// groups answers consistently with every other accessor here (its fallback
+  /// groups carry no keys, so the answer is empty).
+  ///
+  /// Returns empty rather than throwing: a caller that wants the strict
+  /// behaviour tests for it and says so in its own terms.
+  List<int> indicesOfGroup(String key) {
+    for (final g in effectiveTextGroups) {
+      if (g.key == key) return g.indices;
+    }
+    return const <int>[];
+  }
+
   @override
   bool operator ==(Object other) => other is PlateSpec && other.id == id;
 

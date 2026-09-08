@@ -1,3 +1,12 @@
+## 0.8.0
+
+**`PlateSpec.indicesOfGroup(key)`.** The write-side counterpart to
+`valueOfGroup`: it returns the slot indices a named text group covers, or an
+empty list when no group carries that key (matching `valueOfGroup`'s empty
+string). Walks `effectiveTextGroups`. Country packages that generate synthetic
+plate values were each doing this by hand — `yemen_plate` over the raw
+`textGroups` field, `palestine_plate` not at all — and now share this.
+
 ## 0.7.0
 
 **Validation primitives.** `plate_validator.dart` gains three shared pieces the
