@@ -82,7 +82,7 @@ void main() {
     });
 
     test('quiet until the governorate group is reached', () {
-      const spec = PSWestBankPlates.modernCar;
+      final spec = PSWestBankPlates.modernCar;
       final entry = PlateEntry(
         spec: spec,
         values: ['1', '0', '2', '3', '4', null],
@@ -150,7 +150,7 @@ void main() {
     });
 
     test('quiet until the usage group is reached', () {
-      const spec = PSWestBankPlates.legacyCar;
+      final spec = PSWestBankPlates.legacyCar;
       final entry = PlateEntry(
         spec: spec,
         values: ['4', '0', '2', '3', '4', null, null],
@@ -209,7 +209,7 @@ void main() {
     });
 
     test('quiet until the usage group is reached', () {
-      const spec = PSGazaPlates.car2012;
+      final spec = PSGazaPlates.car2012;
       final entry = PlateEntry(
         spec: spec,
         values: ['3', '0', '2', '3', '4', null, null],

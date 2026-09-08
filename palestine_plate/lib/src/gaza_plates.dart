@@ -59,14 +59,22 @@ abstract final class PSGazaPlates {
   /// file for how they were derived — reused here (duplicated rather than
   /// shared, since privacy in Dart is per-file: there is no `_legacyCarSlots`
   /// to import) so the two designs read at the same scale side by side.
-  static const List<PlateSlot> _sevenCellSlots = [
-    PlateSlot(alphabet: PSAlphabets.gazaPrefix, box: PlateBox(20, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(95, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(146, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(197, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(248, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(323, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(374, 9, 47, 92)),
+  static final List<PlateSlot> _sevenCellSlots = [
+    const PlateSlot(
+      alphabet: PSAlphabets.gazaPrefix,
+      box: PlateBox(20, 9, 47, 92),
+    ),
+    ...plateRegister(
+      alphabet: PSAlphabets.digits,
+      count: 4,
+      left: 95,
+      top: 9,
+      width: 47,
+      height: 92,
+      pitch: 51,
+    ),
+    const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(323, 9, 47, 92)),
+    const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(374, 9, 47, 92)),
   ];
 
   static const List<PlateLabel> _sevenCellLabels = [
@@ -85,7 +93,7 @@ abstract final class PSGazaPlates {
   /// `CountryPanel`'s own width-then-height-clamped sizing lands on exactly
   /// this box with no slack and no letterboxing. Get the two out of sync and
   /// the flag stops filling the strip.
-  static const PlateSpec car2012 = PlateSpec(
+  static final PlateSpec car2012 = PlateSpec(
     id: 'ps.gz.2012.car',
     country: PSCountries.gaza2012,
     canvasWidth: 520,
@@ -140,14 +148,22 @@ abstract final class PSGazaPlates {
   /// wide, pitch 52, inter-group gap 12.
   // CALIBRATE — sized off the same proportions as the car layout; no
   // reference photograph of a Gaza motorcycle plate exists.
-  static const List<PlateSlot> _motoSlots = [
-    PlateSlot(alphabet: PSAlphabets.gazaPrefix, box: PlateBox(14, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(74, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(126, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(178, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(230, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(290, 9, 48, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(342, 9, 48, 92)),
+  static final List<PlateSlot> _motoSlots = [
+    const PlateSlot(
+      alphabet: PSAlphabets.gazaPrefix,
+      box: PlateBox(14, 9, 48, 92),
+    ),
+    ...plateRegister(
+      alphabet: PSAlphabets.digits,
+      count: 4,
+      left: 74,
+      top: 9,
+      width: 48,
+      height: 92,
+      pitch: 52,
+    ),
+    const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(290, 9, 48, 92)),
+    const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(342, 9, 48, 92)),
   ];
 
   static const List<PlateLabel> _motoLabels = [
@@ -164,7 +180,7 @@ abstract final class PSGazaPlates {
   /// to be: it equals [PSCountries.gaza2021]'s `flagAspectRatio` exactly, so
   /// `flagScale: 1` with zero padding fills it precisely, vertically centred
   /// on the plate (`top: (110 - 55) / 2`).
-  static const PlateSpec moto = PlateSpec(
+  static final PlateSpec moto = PlateSpec(
     id: 'ps.gz.moto',
     country: PSCountries.gaza2021,
     canvasWidth: 520,
@@ -200,14 +216,29 @@ abstract final class PSGazaPlates {
   /// Line 1 (prefix + 4-digit serial) and line 2 (2-digit usage), at the same
   /// x positions `PSWestBankPlates.legacyCarTwoLine` uses for its own two
   /// rows — duplicated for the reason [_sevenCellSlots] gives.
-  static const List<PlateSlot> _twoLineSlots = [
-    PlateSlot(alphabet: PSAlphabets.gazaPrefix, box: PlateBox(16.5, 53, 34, 42)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(70.5, 53, 34, 42)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(107.5, 53, 34, 42)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(144.5, 53, 34, 42)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(181.5, 53, 34, 42)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(80.5, 101, 34, 42)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(117.5, 101, 34, 42)),
+  static final List<PlateSlot> _twoLineSlots = [
+    const PlateSlot(
+      alphabet: PSAlphabets.gazaPrefix,
+      box: PlateBox(16.5, 53, 34, 42),
+    ),
+    ...plateRegister(
+      alphabet: PSAlphabets.digits,
+      count: 4,
+      left: 70.5,
+      top: 53,
+      width: 34,
+      height: 42,
+      pitch: 37,
+    ),
+    // Line 2: the usage pair.
+    const PlateSlot(
+      alphabet: PSAlphabets.digits,
+      box: PlateBox(80.5, 101, 34, 42),
+    ),
+    const PlateSlot(
+      alphabet: PSAlphabets.digits,
+      box: PlateBox(117.5, 101, 34, 42),
+    ),
   ];
 
   /// Dot geometry follows the same proportion rule as every other label in
@@ -220,7 +251,7 @@ abstract final class PSGazaPlates {
   /// [car2012]'s grammar, wrapped onto two lines for a bumper too short for
   /// the one-line plate. See the class doc for why the flag is horizontal here
   /// despite [car2012] itself being vertical.
-  static const PlateSpec car2012TwoLine = PlateSpec(
+  static final PlateSpec car2012TwoLine = PlateSpec(
     id: 'ps.gz.2012.car2l',
     country: PSCountries.gaza2021,
     canvasWidth: 300,
@@ -237,7 +268,7 @@ abstract final class PSGazaPlates {
   /// watermark — the two-line era split, kept even though the one-line
   /// [moto] design is now the only other place the watermark and horizontal
   /// flag appear together.
-  static const PlateSpec car2021TwoLine = PlateSpec(
+  static final PlateSpec car2021TwoLine = PlateSpec(
     id: 'ps.gz.2021.car2l',
     country: PSCountries.gaza2021,
     canvasWidth: 300,
@@ -260,7 +291,7 @@ abstract final class PSGazaPlates {
   );
 
   /// Every spec this class declares, in declaration order.
-  static const List<PlateSpec> all = [
+  static final List<PlateSpec> all = [
     car2012,
     car2012TwoLine,
     car2021TwoLine,

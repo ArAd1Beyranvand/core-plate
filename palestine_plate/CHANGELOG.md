@@ -1,5 +1,27 @@
 ## Unreleased
 
+- **Fixed: `PSWestBankPlates.modernMoto`'s serial was unevenly pitched.** Its
+  four digits were hand-written at x 60.5, 92, 124, 156 — pitches of **31.5**,
+  32, 32 — and are now a uniform 32 from x 60: 60, 92, 124, 156. The first cell
+  moves half a unit on a 250-wide canvas, and the header band's `·` centres it
+  documents are correspondingly 27.5, **75**, 107, 139, 171, 220. The golden
+  `wb_modern_moto_green.png` was regenerated for this and is the only golden
+  that changed; every other one is byte-identical. Nothing but pitch was
+  touched.
+- **The serial runs are registers, not rectangles.** `_modernCarSlots`,
+  `_legacyCarSlots`, `modernMoto` and Gaza's `_sevenCellSlots`, `_motoSlots` and
+  `_twoLineSlots` build their four-cell serials with `plateRegister` (core
+  0.6.0) rather than four `PlateBox` literals apiece. The isolated region,
+  district and governorate cells and the trailing usage pairs stay literal —
+  they sit in the gaps the `·` labels occupy and are not part of any register.
+  No coordinate changed except the drift above.
+- Every `PlateSpec` in this package is now `static final` rather than
+  `static const`, as are the `all` lists: a `const` constructor cannot run a
+  loop. `PlateSpec` equality is over `id` alone and a `static final` is
+  initialised lazily once per isolate, so this changes no behaviour — but a
+  const-context use (`const spec = …`) must become `final spec = …`, as the
+  examples and validator tests now do.
+- Requires `core_plate: ^0.6.0` for `plateRegister`.
 - **Gaza car plates: vertical flag only.** Removed `PSGazaPlates.car2021`, the
   one-line design with the flag the right way up and a watermark — a Gaza car
   plate now only ever renders as `car2012`, with the flag turned a quarter

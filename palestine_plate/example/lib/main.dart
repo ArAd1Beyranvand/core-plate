@@ -48,7 +48,7 @@ class _Scheme {
   final bool isMotorcycle;
 }
 
-const List<_Scheme> _westBankModernSchemes = [
+final List<_Scheme> _westBankModernSchemes = [
   _Scheme('Standard', PSWestBankPlates.modernCar, _Kind.westBankModern),
   _Scheme('Trade / test', PSWestBankPlates.modernTrade, _Kind.westBankModern),
   _Scheme(
@@ -59,7 +59,7 @@ const List<_Scheme> _westBankModernSchemes = [
   ),
 ];
 
-const List<_Scheme> _westBankLegacySchemes = [
+final List<_Scheme> _westBankLegacySchemes = [
   _Scheme('Standard', PSWestBankPlates.legacyCar, _Kind.westBankLegacy),
   _Scheme(
     'Two-line',
@@ -69,7 +69,7 @@ const List<_Scheme> _westBankLegacySchemes = [
   ),
 ];
 
-const List<_Scheme> _gazaSchemes = [
+final List<_Scheme> _gazaSchemes = [
   _Scheme('2012', PSGazaPlates.car2012, _Kind.gaza),
   _Scheme(
     '2012, two-line',
@@ -85,7 +85,7 @@ const List<_Scheme> _gazaSchemes = [
   ),
 ];
 
-const List<_Scheme> _westBankModernMotorcycleSchemes = [
+final List<_Scheme> _westBankModernMotorcycleSchemes = [
   _Scheme(
     'Standard',
     PSWestBankPlates.modernMoto,
@@ -101,7 +101,7 @@ const List<_Scheme> _westBankModernMotorcycleSchemes = [
   ),
 ];
 
-const List<_Scheme> _gazaMotorcycleSchemes = [
+final List<_Scheme> _gazaMotorcycleSchemes = [
   _Scheme('Standard', PSGazaPlates.moto, _Kind.gaza, isMotorcycle: true),
 ];
 

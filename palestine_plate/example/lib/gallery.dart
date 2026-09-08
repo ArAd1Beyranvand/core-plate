@@ -72,7 +72,7 @@ class _Entry {
 }
 
 /// The West Bank's nine specs, each with the usage its ink was cut for.
-const List<_Entry> _westBank = <_Entry>[
+final List<_Entry> _westBank = <_Entry>[
   _Entry(
     label: 'Modern car — since July 2018',
     spec: PSWestBankPlates.modernCar,
@@ -133,7 +133,7 @@ const List<_Entry> _westBank = <_Entry>[
 ];
 
 /// Gaza's specs. No usage on any of them: the plate says what it is.
-const List<_Entry> _gaza = <_Entry>[
+final List<_Entry> _gaza = <_Entry>[
   _Entry(label: 'Gaza 2012', spec: PSGazaPlates.car2012, kind: _Kind.gaza),
   _Entry(label: 'Gaza 2012, two-line', spec: PSGazaPlates.car2012TwoLine, kind: _Kind.gaza),
   _Entry(label: 'Gaza 2021, two-line', spec: PSGazaPlates.car2021TwoLine, kind: _Kind.gaza),
@@ -213,7 +213,7 @@ class _GalleryPage extends StatelessWidget {
                 'instead, and each of its ink variants is a separate spec.',
           ),
           const SizedBox(height: 12),
-          const _PlateGrid(entries: _westBank),
+          _PlateGrid(entries: _westBank),
           const SizedBox(height: 32),
           const _SectionHeader(
             title: 'Gaza',
@@ -225,7 +225,7 @@ class _GalleryPage extends StatelessWidget {
                 'PSThemes.forGazaUsageCode for the rest.',
           ),
           const SizedBox(height: 12),
-          const _PlateGrid(entries: _gaza),
+          _PlateGrid(entries: _gaza),
           const SizedBox(height: 32),
         ],
       ),

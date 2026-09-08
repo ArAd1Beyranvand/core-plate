@@ -109,13 +109,25 @@ abstract final class PSWestBankPlates {
   /// Cells are 55 x 92 on a 59-unit pitch, with a 33-unit gap between groups.
   /// Widths and x positions are the reference's; the 92 height is its cap band
   /// as a fraction of plate height (43.5%) rather than its absolute pixels.
-  static const List<PlateSlot> _modernCarSlots = [
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(19.5, 9, 55, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(109.5, 9, 55, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(168.5, 9, 55, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(227.5, 9, 55, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(286.5, 9, 55, 92)),
-    PlateSlot(
+  ///
+  /// Three groups, and only the middle one is a register: the region digit and
+  /// the governorate letter are isolated cells with a gap either side, so they
+  /// stay literals.
+  static final List<PlateSlot> _modernCarSlots = [
+    const PlateSlot(
+      alphabet: PSAlphabets.digits,
+      box: PlateBox(19.5, 9, 55, 92),
+    ),
+    ...plateRegister(
+      alphabet: PSAlphabets.digits,
+      count: 4,
+      left: 109.5,
+      top: 9,
+      width: 55,
+      height: 92,
+      pitch: 59,
+    ),
+    const PlateSlot(
       alphabet: PSAlphabets.governorateLetters,
       box: PlateBox(375.5, 9, 55, 92),
     ),
@@ -142,7 +154,7 @@ abstract final class PSWestBankPlates {
   /// the layout still holds — [PlateSpec.borderWidthRatioOverride] carries the
   /// plate's thinner border independently of the theme — but the plate is the
   /// wrong colour.
-  static const PlateSpec modernCar = PlateSpec(
+  static final PlateSpec modernCar = PlateSpec(
     id: 'ps.wb.modern.car',
     country: PSCountries.westBankGreenInk,
     canvasWidth: 520,
@@ -166,17 +178,24 @@ abstract final class PSWestBankPlates {
   /// with 28-unit gaps — the reference's 4-unit inter-cell space and its
   /// gap-to-cell ratio, at the pitch seven glyphs leave room for.
   // CALIBRATE — derived, not measured; no seven-glyph reference image exists.
-  static const List<PlateSlot> _legacyCarSlots = [
-    PlateSlot(
+  static final List<PlateSlot> _legacyCarSlots = [
+    const PlateSlot(
       alphabet: PSAlphabets.districtDigits,
       box: PlateBox(20, 9, 47, 92),
     ),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(95, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(146, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(197, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(248, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(323, 9, 47, 92)),
-    PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(374, 9, 47, 92)),
+    ...plateRegister(
+      alphabet: PSAlphabets.digits,
+      count: 4,
+      left: 95,
+      top: 9,
+      width: 47,
+      height: 92,
+      pitch: 51,
+    ),
+    // The usage pair, past the second gap. Two cells at the serial's own
+    // pitch, but a group of their own.
+    const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(323, 9, 47, 92)),
+    const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(374, 9, 47, 92)),
   ];
 
   static const List<PlateLabel> _legacyCarLabels = [
@@ -196,7 +215,7 @@ abstract final class PSWestBankPlates {
   /// The trailing pair is a usage class, so a host that has the plate's value
   /// can derive both the usage and the colour from it:
   /// `PSLegacyUsage.forCode(spec.valueOfGroup('usage', values))`.
-  static const PlateSpec legacyCar = PlateSpec(
+  static final PlateSpec legacyCar = PlateSpec(
     id: 'ps.wb.legacy.car',
     country: PSCountries.westBankGreenInk,
     canvasWidth: 520,
@@ -216,7 +235,7 @@ abstract final class PSWestBankPlates {
   /// text colour and [PlateSpec] carries a country: there is no way to recolour
   /// the block from the theme. Swapping to it mid-entry carries the value
   /// across — see the note on [legacyCarForUsage].
-  static const PlateSpec legacyCarPublicTransport = PlateSpec(
+  static final PlateSpec legacyCarPublicTransport = PlateSpec(
     id: 'ps.wb.legacy.car.publicTransport',
     country: PSCountries.westBankWhiteInk,
     canvasWidth: 520,
@@ -231,7 +250,7 @@ abstract final class PSWestBankPlates {
 
   /// [legacyCar] with the block in red, for government (`99`) and duty-exempt
   /// (`31`) plates. Pair with `PSThemes.redOnWhite`.
-  static const PlateSpec legacyCarGovernment = PlateSpec(
+  static final PlateSpec legacyCarGovernment = PlateSpec(
     id: 'ps.wb.legacy.car.government',
     country: PSCountries.westBankRedInk,
     canvasWidth: 520,
@@ -284,7 +303,7 @@ abstract final class PSWestBankPlates {
 
   /// [modernCar] wrapped onto two lines. `D DDDD` above, the governorate letter
   /// below.
-  static const PlateSpec modernCarTwoLine = PlateSpec(
+  static final PlateSpec modernCarTwoLine = PlateSpec(
     id: 'ps.wb.modern.car2l',
     country: PSCountries.westBankGreenInk,
     canvasWidth: 300,
@@ -292,13 +311,21 @@ abstract final class PSWestBankPlates {
     panel: _twoLinePanel,
     borderWidthRatioOverride: 0.027,
     slots: [
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(16.5, 12, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(70.5, 12, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(107.5, 12, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(144.5, 12, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(181.5, 12, 34, 60)),
+      const PlateSlot(
+        alphabet: PSAlphabets.digits,
+        box: PlateBox(16.5, 12, 34, 60),
+      ),
+      ...plateRegister(
+        alphabet: PSAlphabets.digits,
+        count: 4,
+        left: 70.5,
+        top: 12,
+        width: 34,
+        height: 60,
+        pitch: 37,
+      ),
       // Line 2: the governorate letter, centred on the serial field.
-      PlateSlot(
+      const PlateSlot(
         alphabet: PSAlphabets.governorateLetters,
         box: PlateBox(99, 80, 34, 60),
       ),
@@ -310,7 +337,7 @@ abstract final class PSWestBankPlates {
 
   /// [legacyCar] wrapped onto two lines. `D DDDD` above, the two usage digits
   /// below.
-  static const PlateSpec legacyCarTwoLine = PlateSpec(
+  static final PlateSpec legacyCarTwoLine = PlateSpec(
     id: 'ps.wb.legacy.car2l',
     country: PSCountries.westBankGreenInk,
     canvasWidth: 300,
@@ -318,16 +345,28 @@ abstract final class PSWestBankPlates {
     panel: _twoLinePanel,
     borderWidthRatioOverride: 0.027,
     slots: [
-      PlateSlot(
+      const PlateSlot(
         alphabet: PSAlphabets.districtDigits,
         box: PlateBox(16.5, 12, 34, 60),
       ),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(70.5, 12, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(107.5, 12, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(144.5, 12, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(181.5, 12, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(80.5, 80, 34, 60)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(117.5, 80, 34, 60)),
+      ...plateRegister(
+        alphabet: PSAlphabets.digits,
+        count: 4,
+        left: 70.5,
+        top: 12,
+        width: 34,
+        height: 60,
+        pitch: 37,
+      ),
+      // Line 2: the usage pair.
+      const PlateSlot(
+        alphabet: PSAlphabets.digits,
+        box: PlateBox(80.5, 80, 34, 60),
+      ),
+      const PlateSlot(
+        alphabet: PSAlphabets.digits,
+        box: PlateBox(117.5, 80, 34, 60),
+      ),
     ],
     rules: _twoLineRules,
     labels: _twoLineLabels,
@@ -378,7 +417,7 @@ abstract final class PSWestBankPlates {
   /// Two labels rather than one string also keeps `P` left of `ف`. Each label
   /// is an isolated bidi run — the same property [modernTrade] relies on, and
   /// for the same reason.
-  static const PlateSpec modernMoto = PlateSpec(
+  static final PlateSpec modernMoto = PlateSpec(
     id: 'ps.wb.modern.moto',
     country: PSCountries.westBankGreenInkBlank,
     canvasWidth: 250,
@@ -393,20 +432,33 @@ abstract final class PSWestBankPlates {
     // 4 units of border on a 123-tall plate, measured off the reference.
     borderWidthRatioOverride: 0.0325,
     // Cells 30 x 62 at y=47, each centred on its glyph's measured centre:
-    // 27.5, 75.5, 107, 139, 171, 220. The serial group's pitch is a steady
-    // ~31.8; the gaps either side of it are 48 and 49.
+    // 27.5, 75, 107, 139, 171, 220. The serial group's pitch is a steady 32;
+    // the gaps either side of it are 48.5 and 49.
+    //
+    // The first serial centre was written as 75.5, which made the run's pitches
+    // 31.5, 32, 32 — a half-unit of measurement noise frozen into the geometry.
+    // It is 75 as of this register, so the four cells are one pitch throughout;
+    // see the CHANGELOG.
     slots: [
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(12.5, 47, 30, 62)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(60.5, 47, 30, 62)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(92, 47, 30, 62)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(124, 47, 30, 62)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(156, 47, 30, 62)),
-      PlateSlot(
+      const PlateSlot(
+        alphabet: PSAlphabets.digits,
+        box: PlateBox(12.5, 47, 30, 62),
+      ),
+      ...plateRegister(
+        alphabet: PSAlphabets.digits,
+        count: 4,
+        left: 60,
+        top: 47,
+        width: 30,
+        height: 62,
+        pitch: 32,
+      ),
+      const PlateSlot(
         alphabet: PSAlphabets.governorateLetters,
         box: PlateBox(205, 47, 30, 62),
       ),
     ],
-    rules: [
+    rules: const [
       // The divider between `P` and `ف`: 3 wide at x=121, spanning the header
       // band. Vertical here, where the car plate's equivalent is horizontal.
       PlateRule(box: PlateBox(121, 11, 3, 28)),
@@ -434,7 +486,7 @@ abstract final class PSWestBankPlates {
   /// `ف / P` divider is omitted on this form factor.
   // CALIBRATE — provisional throughout; no reference image, and the band
   // arrangement itself is unverified.
-  static const PlateSpec modernMotoTwoLine = PlateSpec(
+  static final PlateSpec modernMotoTwoLine = PlateSpec(
     id: 'ps.wb.modern.moto2l',
     country: PSCountries.westBankGreenInkInline,
     canvasWidth: 165,
@@ -447,17 +499,25 @@ abstract final class PSWestBankPlates {
     ),
     borderWidthRatioOverride: 0.027,
     slots: [
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(12.5, 14, 24, 46)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(50.5, 14, 24, 46)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(76.5, 14, 24, 46)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(102.5, 14, 24, 46)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(128.5, 14, 24, 46)),
-      PlateSlot(
+      const PlateSlot(
+        alphabet: PSAlphabets.digits,
+        box: PlateBox(12.5, 14, 24, 46),
+      ),
+      ...plateRegister(
+        alphabet: PSAlphabets.digits,
+        count: 4,
+        left: 50.5,
+        top: 14,
+        width: 24,
+        height: 46,
+        pitch: 26,
+      ),
+      const PlateSlot(
         alphabet: PSAlphabets.governorateLetters,
         box: PlateBox(70.5, 64, 24, 46),
       ),
     ],
-    rules: [
+    rules: const [
       // The analogue of the one-line plate's vertical rule: on a stacked
       // layout the serial and the identity band are separated horizontally.
       PlateRule(box: PlateBox(12, 113, 141, 3)),
@@ -491,7 +551,7 @@ abstract final class PSWestBankPlates {
   /// A `const`, not a named constructor. There are no constructors in this
   /// package — a plate is a const, and adding one is adding a const.
   // CALIBRATE — provisional throughout; no reference image for the trade plate.
-  static const PlateSpec modernTrade = PlateSpec(
+  static final PlateSpec modernTrade = PlateSpec(
     id: 'ps.wb.modern.trade',
     country: PSCountries.westBankWhiteInk,
     canvasWidth: 520,
@@ -499,18 +559,23 @@ abstract final class PSWestBankPlates {
     panel: _carPanel,
     borderWidthRatioOverride: 0.027,
     slots: [
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(43, 38, 48, 64)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(120, 38, 48, 64)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(171, 38, 48, 64)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(222, 38, 48, 64)),
-      PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(273, 38, 48, 64)),
-      PlateSlot(
+      const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(43, 38, 48, 64)),
+      ...plateRegister(
+        alphabet: PSAlphabets.digits,
+        count: 4,
+        left: 120,
+        top: 38,
+        width: 48,
+        height: 64,
+        pitch: 51,
+      ),
+      const PlateSlot(
         alphabet: PSAlphabets.governorateLetters,
         box: PlateBox(350, 38, 48, 64),
       ),
     ],
     rules: _carRules,
-    labels: [
+    labels: const [
       // Left half of the header row: "test" in Arabic.
       PlateLabel(text: 'اختبار', box: PlateBox(20, 8, 200, 26), glyphHeight: 26),
       // Right half: "under test" in Hebrew. A separate label — see the doc.
@@ -524,7 +589,7 @@ abstract final class PSWestBankPlates {
   /// Every spec this class declares, in declaration order. Handy for a spec
   /// picker, and for the golden tests, which iterate it rather than listing the
   /// plates a second time.
-  static const List<PlateSpec> all = [
+  static final List<PlateSpec> all = [
     modernCar,
     legacyCar,
     legacyCarPublicTransport,

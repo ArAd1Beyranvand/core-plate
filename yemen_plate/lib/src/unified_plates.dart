@@ -144,44 +144,29 @@ abstract final class YemenUnifiedPlates {
 
   /// Zone C1 — the narrow stippled strip immediately left of the blue panel.
   ///
-  /// **This is the honest option of the two available, and it is verbose.**
   /// `core_plate` has [PlateRule], which paints one solid box, and no stippled
   /// or dashed primitive; the alternatives were a single solid rule with a
-  /// `TODO` saying the stipple is unimplemented, or this — a column of sixteen
-  /// short rules, one per dot. This one wins because it is *data*: the dots are
-  /// where they are said to be, a recalibration of the pitch is an edit to this
-  /// list, and nothing was added to `core_plate` to make it work.
+  /// `TODO` saying the stipple is unimplemented, or this — a column of short
+  /// rules, one per dot. This one wins because it is *data*: the dots are where
+  /// they are said to be, a recalibration of the pitch is an edit to one number,
+  /// and nothing was added to `core_plate` to make it work.
+  ///
+  /// It used to be twenty-four literals in twenty-six lines — a for-loop
+  /// unrolled by hand. [plateStipple] is that loop, so the pitch is now stated
+  /// once instead of being implied by twenty-four `top` values.
   ///
   /// The strip's x is measured (0.818 .. 0.827, so 838 wide 9). The pitch is
   /// not: at the photograph's resolution the dashes blur into a near-solid
   /// hairline, and 24 dots on a 12-unit pitch is what reproduces that reading
   /// rather than a count of anything. Hence `// CALIBRATE` on the pitch alone.
-  static const List<PlateRule> _carStipple = <PlateRule>[
-    PlateRule(box: PlateBox(838, 1, 9, 7)), // CALIBRATE dot pitch
-    PlateRule(box: PlateBox(838, 13, 9, 7)),
-    PlateRule(box: PlateBox(838, 25, 9, 7)),
-    PlateRule(box: PlateBox(838, 37, 9, 7)),
-    PlateRule(box: PlateBox(838, 49, 9, 7)),
-    PlateRule(box: PlateBox(838, 61, 9, 7)),
-    PlateRule(box: PlateBox(838, 73, 9, 7)),
-    PlateRule(box: PlateBox(838, 85, 9, 7)),
-    PlateRule(box: PlateBox(838, 97, 9, 7)),
-    PlateRule(box: PlateBox(838, 109, 9, 7)),
-    PlateRule(box: PlateBox(838, 121, 9, 7)),
-    PlateRule(box: PlateBox(838, 133, 9, 7)),
-    PlateRule(box: PlateBox(838, 145, 9, 7)),
-    PlateRule(box: PlateBox(838, 157, 9, 7)),
-    PlateRule(box: PlateBox(838, 169, 9, 7)),
-    PlateRule(box: PlateBox(838, 181, 9, 7)),
-    PlateRule(box: PlateBox(838, 193, 9, 7)),
-    PlateRule(box: PlateBox(838, 205, 9, 7)),
-    PlateRule(box: PlateBox(838, 217, 9, 7)),
-    PlateRule(box: PlateBox(838, 229, 9, 7)),
-    PlateRule(box: PlateBox(838, 241, 9, 7)),
-    PlateRule(box: PlateBox(838, 253, 9, 7)),
-    PlateRule(box: PlateBox(838, 265, 9, 7)),
-    PlateRule(box: PlateBox(838, 277, 9, 7)),
-  ];
+  static final List<PlateRule> _carStipple = plateStipple(
+    count: 24,
+    left: 838,
+    top: 1,
+    width: 9,
+    height: 7,
+    stepY: 12, // CALIBRATE dot pitch
+  );
 
   // The two side-code cells, in the blue panel's upper third.
   //
@@ -210,35 +195,48 @@ abstract final class YemenUnifiedPlates {
   ///
   /// Cell tops centre each cell's cap on the photograph's cap band, which runs
   /// y 0.197 .. 0.754, clamped off the frame.
-  static const List<PlateSlot> _car4Slots = <PlateSlot>[
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(292, 14, 135, 264)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(427, 14, 135, 264)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(562, 14, 135, 264)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(697, 14, 135, 264)),
+  /// The number register is stated by the span it fills — x 292 .. 832 — rather
+  /// than by cell width, so four, five and six cells all end flush at the same
+  /// right edge and the width is arithmetic rather than a typed number: 135,
+  /// 108, 90. Only the cell's top and height differ per length.
+  static final List<PlateSlot> _car4Slots = <PlateSlot>[
+    ...plateRegisterAcross(
+      alphabet: YemenAlphabets.digits,
+      count: 4,
+      left: 292,
+      right: 832,
+      top: 14,
+      height: 264,
+    ),
     _carSideCodeHigh,
     _carSideCodeLow,
   ];
 
   /// Five number cells plus the two side-code cells — the length of the
   /// photographed plate, `24378`.
-  static const List<PlateSlot> _car5Slots = <PlateSlot>[
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(292, 15, 108, 258)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(400, 15, 108, 258)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(508, 15, 108, 258)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(616, 15, 108, 258)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(724, 15, 108, 258)),
+  static final List<PlateSlot> _car5Slots = <PlateSlot>[
+    ...plateRegisterAcross(
+      alphabet: YemenAlphabets.digits,
+      count: 5,
+      left: 292,
+      right: 832,
+      top: 15,
+      height: 258,
+    ),
     _carSideCodeHigh,
     _carSideCodeLow,
   ];
 
   /// Six number cells plus the two side-code cells.
-  static const List<PlateSlot> _car6Slots = <PlateSlot>[
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(292, 31, 90, 215)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(382, 31, 90, 215)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(472, 31, 90, 215)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(562, 31, 90, 215)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(652, 31, 90, 215)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(742, 31, 90, 215)),
+  static final List<PlateSlot> _car6Slots = <PlateSlot>[
+    ...plateRegisterAcross(
+      alphabet: YemenAlphabets.digits,
+      count: 6,
+      left: 292,
+      right: 832,
+      top: 31,
+      height: 215,
+    ),
     _carSideCodeHigh,
     _carSideCodeLow,
   ];
@@ -273,30 +271,14 @@ abstract final class YemenUnifiedPlates {
   /// Twenty-two dots on the car's 12-unit pitch, so the two plates read as the
   /// same printing. The pitch is the car's `// CALIBRATE` value, inherited: the
   /// car's strip position is measured but its dot spacing is not.
-  static const List<PlateRule> _motoStipple = <PlateRule>[
-    PlateRule(box: PlateBox(15, 197, 5, 5)), // CALIBRATE dot pitch
-    PlateRule(box: PlateBox(27, 197, 5, 5)),
-    PlateRule(box: PlateBox(39, 197, 5, 5)),
-    PlateRule(box: PlateBox(51, 197, 5, 5)),
-    PlateRule(box: PlateBox(63, 197, 5, 5)),
-    PlateRule(box: PlateBox(75, 197, 5, 5)),
-    PlateRule(box: PlateBox(87, 197, 5, 5)),
-    PlateRule(box: PlateBox(99, 197, 5, 5)),
-    PlateRule(box: PlateBox(111, 197, 5, 5)),
-    PlateRule(box: PlateBox(123, 197, 5, 5)),
-    PlateRule(box: PlateBox(135, 197, 5, 5)),
-    PlateRule(box: PlateBox(147, 197, 5, 5)),
-    PlateRule(box: PlateBox(159, 197, 5, 5)),
-    PlateRule(box: PlateBox(171, 197, 5, 5)),
-    PlateRule(box: PlateBox(183, 197, 5, 5)),
-    PlateRule(box: PlateBox(195, 197, 5, 5)),
-    PlateRule(box: PlateBox(207, 197, 5, 5)),
-    PlateRule(box: PlateBox(219, 197, 5, 5)),
-    PlateRule(box: PlateBox(231, 197, 5, 5)),
-    PlateRule(box: PlateBox(243, 197, 5, 5)),
-    PlateRule(box: PlateBox(255, 197, 5, 5)),
-    PlateRule(box: PlateBox(267, 197, 5, 5)),
-  ];
+  static final List<PlateRule> _motoStipple = plateStipple(
+    count: 22,
+    left: 15,
+    top: 197,
+    width: 5,
+    height: 5,
+    stepX: 12, // CALIBRATE dot pitch
+  );
 
   static const PlateSlot _motoSideCodeHigh = PlateSlot(
     alphabet: YemenAlphabets.digits,
@@ -307,32 +289,46 @@ abstract final class YemenUnifiedPlates {
     box: PlateBox(48, 214, 27, 60), // CALIBRATE
   );
 
-  static const List<PlateSlot> _moto4Slots = <PlateSlot>[
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(21, 63, 57, 130)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(84, 63, 57, 130)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(147, 63, 57, 130)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(210, 63, 57, 130)),
+  /// Unlike the car's, the motorcycle registers are gapped rather than flush —
+  /// the cells are narrower than their stride — so each states its pitch.
+  static final List<PlateSlot> _moto4Slots = <PlateSlot>[
+    ...plateRegister(
+      alphabet: YemenAlphabets.digits,
+      count: 4,
+      left: 21,
+      top: 63,
+      width: 57,
+      height: 130,
+      pitch: 63,
+    ),
     _motoSideCodeHigh,
     _motoSideCodeLow,
   ];
 
-  static const List<PlateSlot> _moto5Slots = <PlateSlot>[
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(16, 73, 48, 110)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(68, 73, 48, 110)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(120, 73, 48, 110)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(172, 73, 48, 110)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(224, 73, 48, 110)),
+  static final List<PlateSlot> _moto5Slots = <PlateSlot>[
+    ...plateRegister(
+      alphabet: YemenAlphabets.digits,
+      count: 5,
+      left: 16,
+      top: 73,
+      width: 48,
+      height: 110,
+      pitch: 52,
+    ),
     _motoSideCodeHigh,
     _motoSideCodeLow,
   ];
 
-  static const List<PlateSlot> _moto6Slots = <PlateSlot>[
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(17, 82, 40, 92)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(60, 82, 40, 92)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(103, 82, 40, 92)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(146, 82, 40, 92)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(189, 82, 40, 92)),
-    PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(232, 82, 40, 92)),
+  static final List<PlateSlot> _moto6Slots = <PlateSlot>[
+    ...plateRegister(
+      alphabet: YemenAlphabets.digits,
+      count: 6,
+      left: 17,
+      top: 82,
+      width: 40,
+      height: 92,
+      pitch: 43,
+    ),
     _motoSideCodeHigh,
     _motoSideCodeLow,
   ];
@@ -359,7 +355,7 @@ abstract final class YemenUnifiedPlates {
   ];
 
   // ---------------------------------------------------------------------------
-  // The plates. Six geometries x five usages. Each is a const, because adding a
+  // The plates. Six geometries x five usages.
   // plate here means adding a const and never anything else.
   //
   // The only fields that vary with usage are `id` and `country` — System A
@@ -370,7 +366,7 @@ abstract final class YemenUnifiedPlates {
 
   /// A five-digit private car plate: the length of the official mock-up sample
   /// `24378`, and the plate to reach for first.
-  static const PlateSpec car5Private = PlateSpec(
+  static final PlateSpec car5Private = PlateSpec(
     id: 'ye.unified.car5.private',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _carWidth,
@@ -384,7 +380,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit private car plate.
-  static const PlateSpec car4Private = PlateSpec(
+  static final PlateSpec car4Private = PlateSpec(
     id: 'ye.unified.car4.private',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _carWidth,
@@ -398,7 +394,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit private car plate.
-  static const PlateSpec car6Private = PlateSpec(
+  static final PlateSpec car6Private = PlateSpec(
     id: 'ye.unified.car6.private',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _carWidth,
@@ -412,7 +408,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit taxi/bus car plate.
-  static const PlateSpec car4ForHire = PlateSpec(
+  static final PlateSpec car4ForHire = PlateSpec(
     id: 'ye.unified.car4.forHire',
     country: YemenCountry.unifiedForHire,
     canvasWidth: _carWidth,
@@ -426,7 +422,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit taxi/bus car plate.
-  static const PlateSpec car5ForHire = PlateSpec(
+  static final PlateSpec car5ForHire = PlateSpec(
     id: 'ye.unified.car5.forHire',
     country: YemenCountry.unifiedForHire,
     canvasWidth: _carWidth,
@@ -440,7 +436,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit taxi/bus car plate.
-  static const PlateSpec car6ForHire = PlateSpec(
+  static final PlateSpec car6ForHire = PlateSpec(
     id: 'ye.unified.car6.forHire',
     country: YemenCountry.unifiedForHire,
     canvasWidth: _carWidth,
@@ -454,7 +450,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit goods-vehicle car plate.
-  static const PlateSpec car4Transport = PlateSpec(
+  static final PlateSpec car4Transport = PlateSpec(
     id: 'ye.unified.car4.transport',
     country: YemenCountry.unifiedTransport,
     canvasWidth: _carWidth,
@@ -468,7 +464,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit goods-vehicle car plate.
-  static const PlateSpec car5Transport = PlateSpec(
+  static final PlateSpec car5Transport = PlateSpec(
     id: 'ye.unified.car5.transport',
     country: YemenCountry.unifiedTransport,
     canvasWidth: _carWidth,
@@ -482,7 +478,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit goods-vehicle car plate.
-  static const PlateSpec car6Transport = PlateSpec(
+  static final PlateSpec car6Transport = PlateSpec(
     id: 'ye.unified.car6.transport',
     country: YemenCountry.unifiedTransport,
     canvasWidth: _carWidth,
@@ -496,7 +492,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit government car plate.
-  static const PlateSpec car4Government = PlateSpec(
+  static final PlateSpec car4Government = PlateSpec(
     id: 'ye.unified.car4.government',
     country: YemenCountry.unifiedGovernment,
     canvasWidth: _carWidth,
@@ -510,7 +506,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit government car plate.
-  static const PlateSpec car5Government = PlateSpec(
+  static final PlateSpec car5Government = PlateSpec(
     id: 'ye.unified.car5.government',
     country: YemenCountry.unifiedGovernment,
     canvasWidth: _carWidth,
@@ -524,7 +520,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit government car plate.
-  static const PlateSpec car6Government = PlateSpec(
+  static final PlateSpec car6Government = PlateSpec(
     id: 'ye.unified.car6.government',
     country: YemenCountry.unifiedGovernment,
     canvasWidth: _carWidth,
@@ -538,7 +534,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit police car plate.
-  static const PlateSpec car4Police = PlateSpec(
+  static final PlateSpec car4Police = PlateSpec(
     id: 'ye.unified.car4.police',
     country: YemenCountry.unifiedPolice,
     canvasWidth: _carWidth,
@@ -552,7 +548,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit police car plate.
-  static const PlateSpec car5Police = PlateSpec(
+  static final PlateSpec car5Police = PlateSpec(
     id: 'ye.unified.car5.police',
     country: YemenCountry.unifiedPolice,
     canvasWidth: _carWidth,
@@ -566,7 +562,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit police car plate.
-  static const PlateSpec car6Police = PlateSpec(
+  static final PlateSpec car6Police = PlateSpec(
     id: 'ye.unified.car6.police',
     country: YemenCountry.unifiedPolice,
     canvasWidth: _carWidth,
@@ -580,7 +576,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit private motorcycle plate.
-  static const PlateSpec moto5Private = PlateSpec(
+  static final PlateSpec moto5Private = PlateSpec(
     id: 'ye.unified.moto5.private',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _motoWidth,
@@ -594,7 +590,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit private motorcycle plate.
-  static const PlateSpec moto4Private = PlateSpec(
+  static final PlateSpec moto4Private = PlateSpec(
     id: 'ye.unified.moto4.private',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _motoWidth,
@@ -608,7 +604,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit private motorcycle plate.
-  static const PlateSpec moto6Private = PlateSpec(
+  static final PlateSpec moto6Private = PlateSpec(
     id: 'ye.unified.moto6.private',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _motoWidth,
@@ -622,7 +618,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit taxi/bus motorcycle plate.
-  static const PlateSpec moto4ForHire = PlateSpec(
+  static final PlateSpec moto4ForHire = PlateSpec(
     id: 'ye.unified.moto4.forHire',
     country: YemenCountry.unifiedForHire,
     canvasWidth: _motoWidth,
@@ -636,7 +632,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit taxi/bus motorcycle plate.
-  static const PlateSpec moto5ForHire = PlateSpec(
+  static final PlateSpec moto5ForHire = PlateSpec(
     id: 'ye.unified.moto5.forHire',
     country: YemenCountry.unifiedForHire,
     canvasWidth: _motoWidth,
@@ -650,7 +646,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit taxi/bus motorcycle plate.
-  static const PlateSpec moto6ForHire = PlateSpec(
+  static final PlateSpec moto6ForHire = PlateSpec(
     id: 'ye.unified.moto6.forHire',
     country: YemenCountry.unifiedForHire,
     canvasWidth: _motoWidth,
@@ -664,7 +660,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit goods-vehicle motorcycle plate.
-  static const PlateSpec moto4Transport = PlateSpec(
+  static final PlateSpec moto4Transport = PlateSpec(
     id: 'ye.unified.moto4.transport',
     country: YemenCountry.unifiedTransport,
     canvasWidth: _motoWidth,
@@ -678,7 +674,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit goods-vehicle motorcycle plate.
-  static const PlateSpec moto5Transport = PlateSpec(
+  static final PlateSpec moto5Transport = PlateSpec(
     id: 'ye.unified.moto5.transport',
     country: YemenCountry.unifiedTransport,
     canvasWidth: _motoWidth,
@@ -692,7 +688,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit goods-vehicle motorcycle plate.
-  static const PlateSpec moto6Transport = PlateSpec(
+  static final PlateSpec moto6Transport = PlateSpec(
     id: 'ye.unified.moto6.transport',
     country: YemenCountry.unifiedTransport,
     canvasWidth: _motoWidth,
@@ -706,7 +702,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit government motorcycle plate.
-  static const PlateSpec moto4Government = PlateSpec(
+  static final PlateSpec moto4Government = PlateSpec(
     id: 'ye.unified.moto4.government',
     country: YemenCountry.unifiedGovernment,
     canvasWidth: _motoWidth,
@@ -720,7 +716,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit government motorcycle plate.
-  static const PlateSpec moto5Government = PlateSpec(
+  static final PlateSpec moto5Government = PlateSpec(
     id: 'ye.unified.moto5.government',
     country: YemenCountry.unifiedGovernment,
     canvasWidth: _motoWidth,
@@ -734,7 +730,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit government motorcycle plate.
-  static const PlateSpec moto6Government = PlateSpec(
+  static final PlateSpec moto6Government = PlateSpec(
     id: 'ye.unified.moto6.government',
     country: YemenCountry.unifiedGovernment,
     canvasWidth: _motoWidth,
@@ -748,7 +744,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A four-digit police motorcycle plate.
-  static const PlateSpec moto4Police = PlateSpec(
+  static final PlateSpec moto4Police = PlateSpec(
     id: 'ye.unified.moto4.police',
     country: YemenCountry.unifiedPolice,
     canvasWidth: _motoWidth,
@@ -762,7 +758,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A five-digit police motorcycle plate.
-  static const PlateSpec moto5Police = PlateSpec(
+  static final PlateSpec moto5Police = PlateSpec(
     id: 'ye.unified.moto5.police',
     country: YemenCountry.unifiedPolice,
     canvasWidth: _motoWidth,
@@ -776,7 +772,7 @@ abstract final class YemenUnifiedPlates {
   );
 
   /// A six-digit police motorcycle plate.
-  static const PlateSpec moto6Police = PlateSpec(
+  static final PlateSpec moto6Police = PlateSpec(
     id: 'ye.unified.moto6.police',
     country: YemenCountry.unifiedPolice,
     canvasWidth: _motoWidth,
@@ -794,7 +790,7 @@ abstract final class YemenUnifiedPlates {
   // ---------------------------------------------------------------------------
 
   /// Every car plate, by usage and then by number length.
-  static const Map<YemenUsage, Map<int, PlateSpec>> car =
+  static final Map<YemenUsage, Map<int, PlateSpec>> car =
       <YemenUsage, Map<int, PlateSpec>>{
         YemenUsage.private: <int, PlateSpec>{
           4: car4Private,
@@ -824,7 +820,7 @@ abstract final class YemenUnifiedPlates {
       };
 
   /// Every motorcycle plate, by usage and then by number length.
-  static const Map<YemenUsage, Map<int, PlateSpec>> moto =
+  static final Map<YemenUsage, Map<int, PlateSpec>> moto =
       <YemenUsage, Map<int, PlateSpec>>{
         YemenUsage.private: <int, PlateSpec>{
           4: moto4Private,

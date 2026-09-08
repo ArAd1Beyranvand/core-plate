@@ -234,46 +234,49 @@ abstract final class YemenNorthernPlates {
   // divided its own width; a host supplying the plate's own condensed face
   // will show tighter digits, not overflow.
 
-  static const List<PlateSlot> _carGov2Serial4 = <PlateSlot>[
+  /// The span every serial length fills: x 140 .. 530.
+  ///
+  /// Stated once, as a span, because that is what the photograph measures. The
+  /// cell width is then whatever `count` divides it into — 97.5, 78 or 65 — and
+  /// no length can round to a different right edge than its siblings, which is
+  /// exactly what the four-cell layout used to do.
+  static const double _serialLeft = 140;
+  static const double _serialRight = 530;
+
+  /// The serial digits alone, without the governorate cells that precede them.
+  static List<PlateSlot> _carSerial(int count) => plateRegisterAcross(
+    alphabet: YemenAlphabets.easternDigits,
+    count: count,
+    left: _serialLeft,
+    right: _serialRight,
+    top: 95,
+    height: 89,
+  );
+
+  static final List<PlateSlot> _carGov2Serial4 = <PlateSlot>[
     _carGovTens,
     _carGovUnits,
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(140, 95, 98, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(238, 95, 98, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(335, 95, 98, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(433, 95, 98, 89)),
+    ..._carSerial(4),
   ];
 
-  static const List<PlateSlot> _carGov2Serial5 = <PlateSlot>[
+  static final List<PlateSlot> _carGov2Serial5 = <PlateSlot>[
     _carGovTens,
     _carGovUnits,
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(140, 95, 78, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(218, 95, 78, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(296, 95, 78, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(374, 95, 78, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(452, 95, 78, 89)),
+    ..._carSerial(5),
   ];
 
-  static const List<PlateSlot> _carGov2Serial6 = <PlateSlot>[
+  static final List<PlateSlot> _carGov2Serial6 = <PlateSlot>[
     _carGovTens,
     _carGovUnits,
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(140, 95, 65, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(205, 95, 65, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(270, 95, 65, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(335, 95, 65, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(400, 95, 65, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(465, 95, 65, 89)),
+    ..._carSerial(6),
   ];
 
   /// One governorate digit, a five-digit serial — the layout the photograph
   /// is measured from: a single big digit in the left cell, five in the
   /// right, both in the one row under the rule.
-  static const List<PlateSlot> _carGov1Serial5 = <PlateSlot>[
+  static final List<PlateSlot> _carGov1Serial5 = <PlateSlot>[
     _carGovSingle,
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(140, 95, 78, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(218, 95, 78, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(296, 95, 78, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(374, 95, 78, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(452, 95, 78, 89)),
+    ..._carSerial(5),
   ];
 
   // --- The small Latin echo row. --------------------------------------------
@@ -317,143 +320,42 @@ abstract final class YemenNorthernPlates {
     alphabet: YemenAlphabets.digits,
   );
 
-  static const List<PlateMirror> _carMirrorsGov2Serial4 = <PlateMirror>[
+  /// The echo band under a serial register of [count] digits, the first of them
+  /// echoing slot [firstSource].
+  ///
+  /// The same span and the same division as [_carSerial], so an echo cannot sit
+  /// anywhere but under the digit it echoes: the two used to be two hand-written
+  /// copies of one arithmetic, and a copy is a place for them to disagree.
+  static List<PlateMirror> _carEcho(int count, int firstSource) => plateEcho(
+    sources: List<int>.generate(count, (i) => firstSource + i),
+    left: _serialLeft,
+    top: _echoTop,
+    width: (_serialRight - _serialLeft) / count,
+    height: _echoHeight,
+    alphabet: YemenAlphabets.digits,
+  );
+
+  static final List<PlateMirror> _carMirrorsGov2Serial4 = <PlateMirror>[
     _carEchoGovTens,
     _carEchoGovUnits,
-    PlateMirror(
-      source: 2,
-      box: PlateBox(140, _echoTop, 98, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 3,
-      box: PlateBox(238, _echoTop, 98, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 4,
-      box: PlateBox(335, _echoTop, 98, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 5,
-      box: PlateBox(433, _echoTop, 98, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
+    ..._carEcho(4, 2),
   ];
 
-  static const List<PlateMirror> _carMirrorsGov2Serial5 = <PlateMirror>[
+  static final List<PlateMirror> _carMirrorsGov2Serial5 = <PlateMirror>[
     _carEchoGovTens,
     _carEchoGovUnits,
-    PlateMirror(
-      source: 2,
-      box: PlateBox(140, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 3,
-      box: PlateBox(218, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 4,
-      box: PlateBox(296, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 5,
-      box: PlateBox(374, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 6,
-      box: PlateBox(452, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
+    ..._carEcho(5, 2),
   ];
 
-  static const List<PlateMirror> _carMirrorsGov2Serial6 = <PlateMirror>[
+  static final List<PlateMirror> _carMirrorsGov2Serial6 = <PlateMirror>[
     _carEchoGovTens,
     _carEchoGovUnits,
-    PlateMirror(
-      source: 2,
-      box: PlateBox(140, _echoTop, 65, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 3,
-      box: PlateBox(205, _echoTop, 65, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 4,
-      box: PlateBox(270, _echoTop, 65, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 5,
-      box: PlateBox(335, _echoTop, 65, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 6,
-      box: PlateBox(400, _echoTop, 65, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 7,
-      box: PlateBox(465, _echoTop, 65, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
+    ..._carEcho(6, 2),
   ];
 
-  static const List<PlateMirror> _carMirrorsGov1Serial5 = <PlateMirror>[
+  static final List<PlateMirror> _carMirrorsGov1Serial5 = <PlateMirror>[
     _carEchoGovSingle,
-    PlateMirror(
-      source: 1,
-      box: PlateBox(140, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 2,
-      box: PlateBox(218, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 3,
-      box: PlateBox(296, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 4,
-      box: PlateBox(374, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 5,
-      box: PlateBox(452, _echoTop, 78, _echoHeight),
-      glyphHeight: _echoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
+    ..._carEcho(5, 1),
   ];
 
   // --- Motorcycle. ----------------------------------------------------------
@@ -517,17 +419,30 @@ abstract final class YemenNorthernPlates {
     ..._motoDivider,
   ];
 
-  static const List<PlateSlot> _motoGov2Serial5 = <PlateSlot>[
-    PlateSlot(
+  /// The motorcycle serial's own span and pitch: five cells from x 75, stepping
+  /// by 41.8. The cells are 42 wide, a fifth of a unit more than the stride, so
+  /// this states its pitch rather than running flush.
+  static const double _motoSerialLeft = 75;
+  static const double _motoSerialPitch = 41.8;
+
+  static final List<PlateSlot> _motoGov2Serial5 = <PlateSlot>[
+    const PlateSlot(
       alphabet: YemenAlphabets.easternGovernorateTens,
       box: PlateBox(13, 95, 24, 89),
     ),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(37, 95, 24, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(75, 95, 42, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(117, 95, 42, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(159, 95, 42, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(200, 95, 42, 89)),
-    PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(242, 95, 42, 89)),
+    const PlateSlot(
+      alphabet: YemenAlphabets.easternDigits,
+      box: PlateBox(37, 95, 24, 89),
+    ),
+    ...plateRegister(
+      alphabet: YemenAlphabets.easternDigits,
+      count: 5,
+      left: _motoSerialLeft,
+      top: 95,
+      width: 42,
+      height: 89,
+      pitch: _motoSerialPitch,
+    ),
   ];
 
   /// The small Latin echo row on the motorcycle plate.
@@ -547,46 +462,28 @@ abstract final class YemenNorthernPlates {
   /// available.
   static const double _motoEchoHeight = 56;
 
-  static const List<PlateMirror> _motoMirrorsGov2Serial5 = <PlateMirror>[
-    PlateMirror(
+  static final List<PlateMirror> _motoMirrorsGov2Serial5 = <PlateMirror>[
+    const PlateMirror(
       source: 0,
       box: PlateBox(13, _echoTop, 24, _echoHeight),
       glyphHeight: _motoEchoHeight,
       alphabet: YemenAlphabets.digits,
     ),
-    PlateMirror(
+    const PlateMirror(
       source: 1,
       box: PlateBox(37, _echoTop, 24, _echoHeight),
       glyphHeight: _motoEchoHeight,
       alphabet: YemenAlphabets.digits,
     ),
-    PlateMirror(
-      source: 2,
-      box: PlateBox(75, _echoTop, 42, _echoHeight),
-      glyphHeight: _motoEchoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 3,
-      box: PlateBox(117, _echoTop, 42, _echoHeight),
-      glyphHeight: _motoEchoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 4,
-      box: PlateBox(159, _echoTop, 42, _echoHeight),
-      glyphHeight: _motoEchoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 5,
-      box: PlateBox(200, _echoTop, 42, _echoHeight),
-      glyphHeight: _motoEchoHeight,
-      alphabet: YemenAlphabets.digits,
-    ),
-    PlateMirror(
-      source: 6,
-      box: PlateBox(242, _echoTop, 42, _echoHeight),
+    // The same span and pitch as the serial above, so an echo cannot sit
+    // anywhere but under the digit it echoes.
+    ...plateEcho(
+      sources: const <int>[2, 3, 4, 5, 6],
+      left: _motoSerialLeft,
+      top: _echoTop,
+      width: 42,
+      height: _echoHeight,
+      pitch: _motoSerialPitch,
       glyphHeight: _motoEchoHeight,
       alphabet: YemenAlphabets.digits,
     ),
@@ -618,7 +515,7 @@ abstract final class YemenNorthernPlates {
   // ---------------------------------------------------------------------------
 
   /// Two governorate digits, a five-digit serial, private (blue).
-  static const PlateSpec carGov2Serial5Private = PlateSpec(
+  static final PlateSpec carGov2Serial5Private = PlateSpec(
     id: 'ye.northern.car.g2s5.private',
     country: YemenCountry.northernPrivate,
     canvasWidth: _carWidth,
@@ -633,7 +530,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// One governorate digit, a five-digit serial, private (blue).
-  static const PlateSpec carGov1Serial5Private = PlateSpec(
+  static final PlateSpec carGov1Serial5Private = PlateSpec(
     id: 'ye.northern.car.g1s5.private',
     country: YemenCountry.northernPrivate,
     canvasWidth: _carWidth,
@@ -648,7 +545,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a four-digit serial, private (blue).
-  static const PlateSpec carGov2Serial4Private = PlateSpec(
+  static final PlateSpec carGov2Serial4Private = PlateSpec(
     id: 'ye.northern.car.g2s4.private',
     country: YemenCountry.northernPrivate,
     canvasWidth: _carWidth,
@@ -663,7 +560,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a six-digit serial, private (blue).
-  static const PlateSpec carGov2Serial6Private = PlateSpec(
+  static final PlateSpec carGov2Serial6Private = PlateSpec(
     id: 'ye.northern.car.g2s6.private',
     country: YemenCountry.northernPrivate,
     canvasWidth: _carWidth,
@@ -678,7 +575,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a five-digit serial, for hire (yellow).
-  static const PlateSpec carGov2Serial5ForHire = PlateSpec(
+  static final PlateSpec carGov2Serial5ForHire = PlateSpec(
     id: 'ye.northern.car.g2s5.forHire',
     country: YemenCountry.northernForHire,
     canvasWidth: _carWidth,
@@ -693,7 +590,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// One governorate digit, a five-digit serial, for hire (yellow).
-  static const PlateSpec carGov1Serial5ForHire = PlateSpec(
+  static final PlateSpec carGov1Serial5ForHire = PlateSpec(
     id: 'ye.northern.car.g1s5.forHire',
     country: YemenCountry.northernForHire,
     canvasWidth: _carWidth,
@@ -708,7 +605,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a four-digit serial, for hire (yellow).
-  static const PlateSpec carGov2Serial4ForHire = PlateSpec(
+  static final PlateSpec carGov2Serial4ForHire = PlateSpec(
     id: 'ye.northern.car.g2s4.forHire',
     country: YemenCountry.northernForHire,
     canvasWidth: _carWidth,
@@ -723,7 +620,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a six-digit serial, for hire (yellow).
-  static const PlateSpec carGov2Serial6ForHire = PlateSpec(
+  static final PlateSpec carGov2Serial6ForHire = PlateSpec(
     id: 'ye.northern.car.g2s6.forHire',
     country: YemenCountry.northernForHire,
     canvasWidth: _carWidth,
@@ -738,7 +635,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a five-digit serial, transport (red).
-  static const PlateSpec carGov2Serial5Transport = PlateSpec(
+  static final PlateSpec carGov2Serial5Transport = PlateSpec(
     id: 'ye.northern.car.g2s5.transport',
     country: YemenCountry.northernTransport,
     canvasWidth: _carWidth,
@@ -753,7 +650,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// One governorate digit, a five-digit serial, transport (red).
-  static const PlateSpec carGov1Serial5Transport = PlateSpec(
+  static final PlateSpec carGov1Serial5Transport = PlateSpec(
     id: 'ye.northern.car.g1s5.transport',
     country: YemenCountry.northernTransport,
     canvasWidth: _carWidth,
@@ -768,7 +665,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a four-digit serial, transport (red).
-  static const PlateSpec carGov2Serial4Transport = PlateSpec(
+  static final PlateSpec carGov2Serial4Transport = PlateSpec(
     id: 'ye.northern.car.g2s4.transport',
     country: YemenCountry.northernTransport,
     canvasWidth: _carWidth,
@@ -783,7 +680,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a six-digit serial, transport (red).
-  static const PlateSpec carGov2Serial6Transport = PlateSpec(
+  static final PlateSpec carGov2Serial6Transport = PlateSpec(
     id: 'ye.northern.car.g2s6.transport',
     country: YemenCountry.northernTransport,
     canvasWidth: _carWidth,
@@ -798,7 +695,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a five-digit serial, government (green).
-  static const PlateSpec carGov2Serial5Government = PlateSpec(
+  static final PlateSpec carGov2Serial5Government = PlateSpec(
     id: 'ye.northern.car.g2s5.government',
     country: YemenCountry.northernGovernment,
     canvasWidth: _carWidth,
@@ -813,7 +710,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// One governorate digit, a five-digit serial, government (green).
-  static const PlateSpec carGov1Serial5Government = PlateSpec(
+  static final PlateSpec carGov1Serial5Government = PlateSpec(
     id: 'ye.northern.car.g1s5.government',
     country: YemenCountry.northernGovernment,
     canvasWidth: _carWidth,
@@ -828,7 +725,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a four-digit serial, government (green).
-  static const PlateSpec carGov2Serial4Government = PlateSpec(
+  static final PlateSpec carGov2Serial4Government = PlateSpec(
     id: 'ye.northern.car.g2s4.government',
     country: YemenCountry.northernGovernment,
     canvasWidth: _carWidth,
@@ -843,7 +740,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a six-digit serial, government (green).
-  static const PlateSpec carGov2Serial6Government = PlateSpec(
+  static final PlateSpec carGov2Serial6Government = PlateSpec(
     id: 'ye.northern.car.g2s6.government',
     country: YemenCountry.northernGovernment,
     canvasWidth: _carWidth,
@@ -864,7 +761,7 @@ abstract final class YemenNorthernPlates {
   /// paints it white on black, `.northernMilitaryModern` red on white. The
   /// style is a theme choice, which is why there is one military spec per
   /// layout rather than two.
-  static const PlateSpec carGov2Serial5Military = PlateSpec(
+  static final PlateSpec carGov2Serial5Military = PlateSpec(
     id: 'ye.northern.car.g2s5.military',
     country: YemenCountry.northernMilitaryClassic,
     canvasWidth: _carWidth,
@@ -879,7 +776,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// One governorate digit, a five-digit serial, military.
-  static const PlateSpec carGov1Serial5Military = PlateSpec(
+  static final PlateSpec carGov1Serial5Military = PlateSpec(
     id: 'ye.northern.car.g1s5.military',
     country: YemenCountry.northernMilitaryClassic,
     canvasWidth: _carWidth,
@@ -894,7 +791,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a four-digit serial, military.
-  static const PlateSpec carGov2Serial4Military = PlateSpec(
+  static final PlateSpec carGov2Serial4Military = PlateSpec(
     id: 'ye.northern.car.g2s4.military',
     country: YemenCountry.northernMilitaryClassic,
     canvasWidth: _carWidth,
@@ -909,7 +806,7 @@ abstract final class YemenNorthernPlates {
   );
 
   /// Two governorate digits, a six-digit serial, military.
-  static const PlateSpec carGov2Serial6Military = PlateSpec(
+  static final PlateSpec carGov2Serial6Military = PlateSpec(
     id: 'ye.northern.car.g2s6.military',
     country: YemenCountry.northernMilitaryClassic,
     canvasWidth: _carWidth,
@@ -941,7 +838,7 @@ abstract final class YemenNorthernPlates {
 
   /// Two governorate digits, a five-digit serial, private (blue).
   @Deprecated('unverified geometry — calibrate against photographs')
-  static const PlateSpec motoGov2Serial5Private = PlateSpec(
+  static final PlateSpec motoGov2Serial5Private = PlateSpec(
     id: 'ye.northern.moto.g2s5.private',
     country: YemenCountry.northernPrivate,
     canvasWidth: _motoWidth,
@@ -957,7 +854,7 @@ abstract final class YemenNorthernPlates {
 
   /// Two governorate digits, a five-digit serial, for hire (yellow).
   @Deprecated('unverified geometry — calibrate against photographs')
-  static const PlateSpec motoGov2Serial5ForHire = PlateSpec(
+  static final PlateSpec motoGov2Serial5ForHire = PlateSpec(
     id: 'ye.northern.moto.g2s5.forHire',
     country: YemenCountry.northernForHire,
     canvasWidth: _motoWidth,
@@ -973,7 +870,7 @@ abstract final class YemenNorthernPlates {
 
   /// Two governorate digits, a five-digit serial, transport (red).
   @Deprecated('unverified geometry — calibrate against photographs')
-  static const PlateSpec motoGov2Serial5Transport = PlateSpec(
+  static final PlateSpec motoGov2Serial5Transport = PlateSpec(
     id: 'ye.northern.moto.g2s5.transport',
     country: YemenCountry.northernTransport,
     canvasWidth: _motoWidth,
@@ -989,7 +886,7 @@ abstract final class YemenNorthernPlates {
 
   /// Two governorate digits, a five-digit serial, government (green).
   @Deprecated('unverified geometry — calibrate against photographs')
-  static const PlateSpec motoGov2Serial5Government = PlateSpec(
+  static final PlateSpec motoGov2Serial5Government = PlateSpec(
     id: 'ye.northern.moto.g2s5.government',
     country: YemenCountry.northernGovernment,
     canvasWidth: _motoWidth,
@@ -1005,7 +902,7 @@ abstract final class YemenNorthernPlates {
 
   /// Two governorate digits, a five-digit serial, military.
   @Deprecated('unverified geometry — calibrate against photographs')
-  static const PlateSpec motoGov2Serial5Military = PlateSpec(
+  static final PlateSpec motoGov2Serial5Military = PlateSpec(
     id: 'ye.northern.moto.g2s5.military',
     country: YemenCountry.northernMilitaryClassic,
     canvasWidth: _motoWidth,
@@ -1025,7 +922,7 @@ abstract final class YemenNorthernPlates {
 
   /// Every car plate, by usage and then by `(governorate digits, serial
   /// digits)`.
-  static const Map<YemenUsage, Map<(int, int), PlateSpec>> car =
+  static final Map<YemenUsage, Map<(int, int), PlateSpec>> car =
       <YemenUsage, Map<(int, int), PlateSpec>>{
         YemenUsage.private: <(int, int), PlateSpec>{
           (2, 5): carGov2Serial5Private,
@@ -1063,7 +960,7 @@ abstract final class YemenNorthernPlates {
   /// digits)`. One layout each, and all of it unverified — see the section
   /// comment above the moto consts.
   // ignore: deprecated_member_use_from_same_package
-  static const Map<YemenUsage, Map<(int, int), PlateSpec>> moto =
+  static final Map<YemenUsage, Map<(int, int), PlateSpec>> moto =
       <YemenUsage, Map<(int, int), PlateSpec>>{
         // ignore: deprecated_member_use_from_same_package
         YemenUsage.private: <(int, int), PlateSpec>{

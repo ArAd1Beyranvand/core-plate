@@ -1,3 +1,48 @@
+## Unreleased
+
+### Fixed
+
+- **`YemenNorthernPlates.carGov2Serial4` and its mirrors ended one unit past
+  every sibling layout.** The four serial cells were hand-written at x 140, 238,
+  **335**, 433 — pitches of 98, **97**, 98 — so the register ran to 531 where
+  the five- and six-digit layouts both end at 530. They are now 140, **237.5**,
+  335, **432.5**, width **97.5**, right edge 530. The third and fourth cells
+  move by half a unit on a 540-wide canvas. The four `PlateMirror`s of the echo
+  band moved with them; they are built from the same span, so they cannot
+  disagree with the slots again.
+- **`YemenNorthernPlates.motoGov2Serial5` was unevenly pitched.** The five
+  serial cells sat at x 75, 117, 159, **200**, 242 — pitches of 42, 42, **41**,
+  42 — and are now a uniform **41.8**: 75, 116.8, 158.6, 200.4, 242.2. The
+  fourth cell moves by 0.4 unit. Its mirrors moved with it.
+- Neither drift was catchable before: `debugValidateSpec` did not check register
+  pitch, and this package had no tests at all.
+
+### Changed
+
+- **The hand-unrolled runs are gone.** `_carStipple` (24 `PlateRule`s) and
+  `_motoStipple` (22) are two `plateStipple` calls; the unified car's three
+  serial lengths are `plateRegisterAcross` over x [292, 832) and the
+  motorcycle's three are `plateRegister` with an explicit pitch; the northern
+  car's four serial lengths are `plateRegisterAcross` over x [140, 530) and its
+  four echo bands are `plateEcho` over that same span. Every one of those was a
+  for-loop written out by hand.
+- The governorate cells, `_carGovSingle` (which straddles the pair's two cells),
+  the labels, panels and dividers stay literal. They are not registers.
+- Every `PlateSpec` in this package is now `static final` rather than
+  `static const`, as are the `car` / `moto` lookup maps: a `const` constructor
+  cannot run a loop. `PlateSpec` equality is over `id` alone and a
+  `static final` is initialised lazily once per isolate, so this changes no
+  behaviour.
+- Requires `core_plate: ^0.6.0` for `plateRegister` / `plateRegisterAcross` /
+  `plateEcho` / `plateStipple`.
+
+### Added
+
+- `test/spec_validation_test.dart` — the package's first tests. Every one of the
+  55 specs is run through `debugValidateSpec`, spec ids are checked unique, and
+  the northern serial registers are asserted to end flush at the same right
+  edge, which is the drift above stated as a test.
+
 ## 0.2.0
 
 - The northern plate now prints its number twice, as the reference photograph
