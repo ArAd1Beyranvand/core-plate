@@ -1,5 +1,10 @@
 ## 0.2.0
 
+**Breaking: removed the deprecated `RemovePlateCard` event.** Nothing dispatched
+it. Clear the plate through `PlateController.clear()` on the controller the
+`PlateCardBinding` mirrors.
+
+
 **`ShowPlate` gains `theme:` and `country:`.** `PlateView` has taken a `theme:`
 since 0.4.0 and a `country:` since core 0.5.0; `ShowPlate` took neither, so a
 bloc-shaped host could only ever render `PlateTheme.standard()`'s black on

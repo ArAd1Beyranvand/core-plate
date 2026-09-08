@@ -10,7 +10,7 @@ import 'yemen_governorates.dart';
 /// anything. A generated value is a well-formed value, not a registered one.
 ///
 /// Pure Dart: no Flutter import, no widget, no plate. It reads the shape of a
-/// [PlateSpec] and returns the `List<String?>` a `PlateInputController` or
+/// [PlateSpec] and returns the `List<String?>` a `PlateController` or
 /// `ShowPlate` takes, so the output drops straight into either.
 ///
 /// Pass a seeded [Random] for a repeatable sequence:

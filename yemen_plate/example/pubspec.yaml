@@ -21,9 +21,9 @@ dev_dependencies:
 # No `flutter: fonts:` block, and it is not for want of trying. This example
 # originally bundled a substitute face for the plate lettering, and then it
 # turned out that nothing a host declares can reach plate text: `PlateCanvas`
-# wraps its whole face in `Theme(data: ThemeData.light().copyWith(...))`
-# (core_plate plate_canvas.dart:227 and :355) to pin the cursor and selection
-# colours, and the `Material` under it installs that theme's `bodyMedium` as
+# wraps its whole face in a `Theme` (see `PlateCanvas`'s `Theme` wrapper) to
+# pin the cursor and selection colours, and the `Material` under it installs
+# that theme's `bodyMedium` as
 # the default text style. `PlateTheme.glyphStyle` sets no `fontFamily` either,
 # so labels, the panel caption and every slot glyph render in the platform
 # default whatever the app theme says. Bundling a font here would have shipped

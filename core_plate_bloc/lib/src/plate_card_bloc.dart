@@ -16,10 +16,6 @@ class PlateCardBloc extends Bloc<PlateCardEvent, PlateCardState> {
         ..[event.index] = event.value;
       emit(state.copyWith(plateNumber: PlateNumber(values: values)));
     });
-    // ignore: deprecated_member_use_from_same_package
-    on<RemovePlateCard>((RemovePlateCard event, Emitter<PlateCardState> emit) {
-      emit(PlateCardState.empty(state.spec));
-    });
     on<SpecIsChanged>((SpecIsChanged event, Emitter<PlateCardState> emit) {
       emit(PlateCardState.empty(event.spec));
     });
