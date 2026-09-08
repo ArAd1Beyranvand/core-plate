@@ -22,13 +22,23 @@
 /// for one namespace and never sees the other.
 ///
 /// Data, not code: two [PlateCountry] families, two [PlateAlphabet]s, seven
-/// [PlateTheme]s, fifty-five `const` [PlateSpec]s and two advisory
-/// [PlateValidator]s. There is not a widget in this package — `PlateCanvas` and
-/// `ShowPlate` from `core_plate` draw all of it.
+/// [PlateTheme]s, eleven [PlateSpec]s and two advisory [PlateValidator]s. There
+/// is not a widget in this package — `PlateCanvas` and `ShowPlate` from
+/// `core_plate` draw all of it.
+///
+/// **A usage selects a country block and a theme, not a spec.** Eleven specs is
+/// one per geometry: four northern car layouts, one northern motorcycle layout,
+/// and three number lengths each for the unified car and motorcycle. The usage
+/// class rides on the two things that actually vary with it — the country block
+/// carrying the usage word (System B) or the panel's caption lines (System A),
+/// and the theme carrying the field colour (System B) — and `PlateCanvas` takes
+/// both at render time. Each spec's own `country` is the private block, the
+/// default for a caller who passes no override.
 ///
 /// ```dart
 /// PlateCanvas(
-///   spec: YemenNorthernPlates.carGov2Serial5Private,
+///   spec: YemenNorthernPlates.carGov2Serial5,
+///   country: YemenCountry.northernFor(YemenUsage.private),
 ///   theme: YemenThemes.forNorthernUsage(YemenUsage.private),
 ///   validator: const YemenNorthernValidator(),
 ///   ...
@@ -65,11 +75,10 @@ export 'src/yemen_country.dart';
 /// between them by usage.
 export 'src/yemen_themes.dart';
 
-/// System A: 30 const specs — car and motorcycle, four to six number digits,
-/// five usages.
+/// System A: six specs — car and motorcycle, four to six number digits.
 export 'src/unified_plates.dart';
 
-/// System B: 20 car specs, plus five motorcycle specs whose geometry is
+/// System B: four car specs, plus one motorcycle spec whose geometry is
 /// unverified and marked `@Deprecated` because of it.
 export 'src/northern_plates.dart';
 

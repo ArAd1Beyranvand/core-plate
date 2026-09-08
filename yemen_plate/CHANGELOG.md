@@ -1,4 +1,84 @@
-## Unreleased
+## 0.3.0
+
+**Breaking. A usage class no longer selects a spec.** It selects a country block
+and a theme, and `core_plate` 0.6.0 takes both at render time. So the 55 specs
+this package shipped — four northern car layouts and one motorcycle layout
+crossed with five usages, six unified geometries crossed with five — are now
+**11**, one per geometry, and 44 of them were clones that differed only in `id`
+and `country`.
+
+```dart
+// Before
+PlateCanvas(
+  spec: YemenNorthernPlates.carGov2Serial5ForHire,
+  theme: YemenThemes.forNorthernUsage(YemenUsage.forHire),
+);
+
+// After
+PlateCanvas(
+  spec: YemenNorthernPlates.carGov2Serial5,
+  country: YemenCountry.northernFor(YemenUsage.forHire),   // the usage word
+  theme: YemenThemes.forNorthernUsage(YemenUsage.forHire), // the field colour
+);
+```
+
+Nothing about the drawn plate changes, provided the `country:` is passed. Drop
+it and every plate reads خصوصي / PRIV., because each surviving spec keeps the
+private block as its own default — a spec's `country` is a fallback, not a claim
+about the vehicle.
+
+### Removed
+
+The 44 usage clones. Each line's shape survives under the name in the first
+column; the removed names differ from it only in `id` and `country`.
+
+| Kept | Removed |
+| --- | --- |
+| `YemenNorthernPlates.carGov2Serial5` | `carGov2Serial5Private`, `carGov2Serial5ForHire`, `carGov2Serial5Transport`, `carGov2Serial5Government`, `carGov2Serial5Military` |
+| `YemenNorthernPlates.carGov1Serial5` | `carGov1Serial5Private`, `carGov1Serial5ForHire`, `carGov1Serial5Transport`, `carGov1Serial5Government`, `carGov1Serial5Military` |
+| `YemenNorthernPlates.carGov2Serial4` | `carGov2Serial4Private`, `carGov2Serial4ForHire`, `carGov2Serial4Transport`, `carGov2Serial4Government`, `carGov2Serial4Military` |
+| `YemenNorthernPlates.carGov2Serial6` | `carGov2Serial6Private`, `carGov2Serial6ForHire`, `carGov2Serial6Transport`, `carGov2Serial6Government`, `carGov2Serial6Military` |
+| `YemenNorthernPlates.motoGov2Serial5` (still `@Deprecated`) | `motoGov2Serial5Private`, `motoGov2Serial5ForHire`, `motoGov2Serial5Transport`, `motoGov2Serial5Government`, `motoGov2Serial5Military` |
+| `YemenUnifiedPlates.car4` | `car4Private`, `car4ForHire`, `car4Transport`, `car4Government`, `car4Police` |
+| `YemenUnifiedPlates.car5` | `car5Private`, `car5ForHire`, `car5Transport`, `car5Government`, `car5Police` |
+| `YemenUnifiedPlates.car6` | `car6Private`, `car6ForHire`, `car6Transport`, `car6Government`, `car6Police` |
+| `YemenUnifiedPlates.moto4` | `moto4Private`, `moto4ForHire`, `moto4Transport`, `moto4Government`, `moto4Police` |
+| `YemenUnifiedPlates.moto5` | `moto5Private`, `moto5ForHire`, `moto5Transport`, `moto5Government`, `moto5Police` |
+| `YemenUnifiedPlates.moto6` | `moto6Private`, `moto6ForHire`, `moto6Transport`, `moto6Government`, `moto6Police` |
+
+Also removed: the nested `YemenNorthernPlates.car` / `.moto` and
+`YemenUnifiedPlates.car` / `.moto` maps keyed by usage. Those two names now
+belong to the geometry lookups below, so a call site that indexed them by usage
+fails to compile rather than silently changing meaning.
+
+### Added
+
+- `YemenNorthernPlates.car({governorateDigits, serialDigits})` and
+  `.moto(...)`, returning a `PlateSpec?` — null for a shape this package does
+  not build. Backed by `carGeometries` / `motoGeometries`, flat maps keyed by
+  `(governorate digits, serial digits)`.
+- `YemenUnifiedPlates.car({numberDigits})` and `.moto({numberDigits})`, backed
+  by `carGeometries` / `motoGeometries` keyed by number length.
+- Ids lost their usage segment: `ye.northern.car.g2s5.private` is now
+  `ye.northern.car.g2s5`, `ye.unified.car5.police` is now `ye.unified.car5`.
+  A spec id is a geometry's name.
+- `test/yemen_specs_test.dart`, replacing `test/spec_validation_test.dart` and
+  keeping its sweep: `debugValidateSpec` over all 11 specs, ids unique and free
+  of any usage word, the group keys each validator reads, slot counts against
+  the shape each map key claims, the northern registers' flush right edge, and
+  1,000 seeded generator draws per spec round-tripped through the matching
+  validator — which is what proves no group key or slot order moved when the
+  clones went.
+
+### Deprecated
+
+- `YemenNorthernPlates.byDigits(usage, {motorcycle})` and
+  `YemenUnifiedPlates.byNumberLength(usage, {motorcycle})`. They still return a
+  map keyed by shape, and still return an empty one for a usage their system
+  does not issue (`police` on System B, `military` on System A) — but every
+  usage that *is* issued now yields the same geometries, because the usage never
+  varied the geometry. Removed in 0.4.0; use `car()` / `moto()` and pass the
+  usage to the canvas as `country:`.
 
 ### Fixed
 
@@ -29,19 +109,16 @@
 - The governorate cells, `_carGovSingle` (which straddles the pair's two cells),
   the labels, panels and dividers stay literal. They are not registers.
 - Every `PlateSpec` in this package is now `static final` rather than
-  `static const`, as are the `car` / `moto` lookup maps: a `const` constructor
-  cannot run a loop. `PlateSpec` equality is over `id` alone and a
-  `static final` is initialised lazily once per isolate, so this changes no
-  behaviour.
-- Requires `core_plate: ^0.6.0` for `plateRegister` / `plateRegisterAcross` /
-  `plateEcho` / `plateStipple`.
-
-### Added
-
-- `test/spec_validation_test.dart` — the package's first tests. Every one of the
-  55 specs is run through `debugValidateSpec`, spec ids are checked unique, and
-  the northern serial registers are asserted to end flush at the same right
-  edge, which is the drift above stated as a test.
+  `static const`, as are the `carGeometries` / `motoGeometries` lookup maps: a
+  `const` constructor cannot run a loop. `PlateSpec` equality is over `id` alone
+  and a `static final` is initialised lazily once per isolate, so this changes
+  no behaviour.
+- Requires `core_plate` 0.6.0 for `plateRegister` / `plateRegisterAcross` /
+  `plateEcho` / `plateStipple`, and for `PlateCanvas.country` /
+  `PlateView.country`.
+- The package's first tests, now `test/yemen_specs_test.dart` — see **Added**
+  above. The northern serial registers are asserted to end flush at the same
+  right edge, which is the drift above stated as a test.
 
 ## 0.2.0
 

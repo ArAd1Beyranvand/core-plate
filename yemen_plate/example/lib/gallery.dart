@@ -38,10 +38,11 @@ class GalleryApp extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // The catalogue.
 //
-// Built by walking the package's own lookup maps rather than by naming 55
-// consts. A spec added to `YemenUnifiedPlates.car` or `YemenNorthernPlates
-// .moto` shows up here without this file changing, and — more to the point —
-// this page cannot silently fall behind the package.
+// Built by walking the package's own geometry maps and crossing them with the
+// usages each system issues, rather than by naming consts. A geometry added to
+// `YemenUnifiedPlates.carGeometries` or `YemenNorthernPlates.motoGeometries`
+// shows up here without this file changing, and — more to the point — this page
+// cannot silently fall behind the package.
 // ---------------------------------------------------------------------------
 
 /// One plate in the catalogue: the spec, the colours it is printed in, and the
@@ -54,12 +55,17 @@ class _Entry {
   const _Entry({
     required this.label,
     required this.spec,
+    required this.country,
     required this.theme,
     required this.validator,
   });
 
   final String label;
   final PlateSpec spec;
+
+  /// The usage, as the country block that carries it. Not on the spec: a spec
+  /// is geometry, and the usage word is a render-time input.
+  final PlateCountry country;
   final PlateTheme theme;
   final PlateValidator validator;
 }
@@ -80,10 +86,14 @@ List<_Entry> _unified({required bool motorcycle}) => <_Entry>[
   for (final YemenUsage usage in YemenUsage.values)
     if (usage.onUnified)
       for (final MapEntry<int, PlateSpec> byLength
-          in YemenUnifiedPlates.byNumberLength(usage, motorcycle: motorcycle).entries)
+          in (motorcycle
+                  ? YemenUnifiedPlates.motoGeometries
+                  : YemenUnifiedPlates.carGeometries)
+              .entries)
         _Entry(
           label: '${usage.name} · ${byLength.key} digits',
           spec: byLength.value,
+          country: YemenCountry.unifiedFor(usage),
           theme: YemenThemes.forUnifiedUsage(usage),
           validator: const YemenUnifiedValidator(),
         ),
@@ -96,12 +106,16 @@ List<_Entry> _northern({required bool motorcycle}) => <_Entry>[
   for (final YemenUsage usage in YemenUsage.values)
     if (usage.onNorthern)
       for (final MapEntry<(int, int), PlateSpec> byDigits
-          in YemenNorthernPlates.byDigits(usage, motorcycle: motorcycle).entries)
+          in (motorcycle
+                  ? YemenNorthernPlates.motoGeometries
+                  : YemenNorthernPlates.carGeometries)
+              .entries)
         _Entry(
           // `(gov digits, serial digits)` — the key the package itself is
           // indexed by, printed as the caption so the two agree.
           label: '${usage.name} · ${byDigits.key.$1}+${byDigits.key.$2}',
           spec: byDigits.value,
+          country: YemenCountry.northernFor(usage),
           theme: YemenThemes.forNorthernUsage(usage),
           validator: const YemenNorthernValidator(),
         ),
@@ -252,6 +266,9 @@ class _PlateCard extends StatelessWidget {
           // card and nothing else. See the library comment.
           child: PlateCanvas(
             spec: spec,
+            // The usage: the block the panel paints, overriding the spec's own
+            // private default.
+            country: entry.country,
             theme: entry.theme,
             validator: entry.validator,
             // Paints the underlines red on an invalid value; never blocks a

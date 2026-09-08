@@ -10,7 +10,8 @@ import 'yemen_usage.dart';
 ///
 /// ```dart
 /// PlateCanvas(
-///   spec: YemenNorthernPlates.carGov2Serial5Private,
+///   spec: YemenNorthernPlates.carGov2Serial5,
+///   country: YemenCountry.northernFor(YemenUsage.private),
 ///   theme: YemenThemes.forNorthernUsage(YemenUsage.private),
 ///   ...
 /// )

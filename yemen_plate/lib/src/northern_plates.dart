@@ -39,10 +39,14 @@ import 'yemen_usage.dart';
 /// ### Which combinations exist
 ///
 /// One or two governorate digits crossed with one to six serial digits is
-/// twelve layouts per usage, and enumerating all of them would be a wall of
-/// speculative consts. Four car layouts are declared — the attested and useful
-/// subset — plus one motorcycle layout. See [byDigits] for the map and the
+/// twelve layouts, and enumerating all of them would be a wall of speculative
+/// consts. Four car layouts are declared — the attested and useful subset —
+/// plus one motorcycle layout. See [carGeometries] for the map and the
 /// class-level TODO for what is missing.
+///
+/// There is one spec per *layout*, not per layout and usage: usage picks the
+/// country block and the theme, which the host passes to the canvas. See the
+/// comment over [carGov2Serial5].
 // TODO(northern-lengths): the serial is documented as one to six digits, and
 // only four, five and six are built here (with one and two governorate digits
 // crossed only at five). Serials of one, two and three digits are legal and
@@ -509,14 +513,30 @@ abstract final class YemenNorthernPlates {
   ];
 
   // ---------------------------------------------------------------------------
-  // Car plates. Four layouts x five usages, and the only fields that vary with
-  // usage are `id` and `country` — the country carrying the usage word, and the
-  // field colour coming from the theme.
+  // Car plates. One spec per geometry — four of them, where there used to be
+  // four layouts crossed with five usages.
+  //
+  // **Usage is not a field of a spec.** It selects the country block (which
+  // carries the usage word) and the theme (which carries the field colour), and
+  // both are render-time inputs on `PlateCanvas`:
+  //
+  // ```dart
+  // PlateCanvas(
+  //   spec: YemenNorthernPlates.car(governorateDigits: 2, serialDigits: 5)!,
+  //   country: YemenCountry.northernFor(usage),
+  //   theme: YemenThemes.forNorthernUsage(usage),
+  // )
+  // ```
+  //
+  // Each spec names `YemenCountry.northernPrivate` as its own `country`, so a
+  // caller that passes no override gets the ordinary case rather than a blank
+  // top band. `PlateSpec.country` is a default, not a claim about the vehicle.
   // ---------------------------------------------------------------------------
 
-  /// Two governorate digits, a five-digit serial, private (blue).
-  static final PlateSpec carGov2Serial5Private = PlateSpec(
-    id: 'ye.northern.car.g2s5.private',
+  /// Two governorate digits, a five-digit serial — the layout the car
+  /// photograph is measured from.
+  static final PlateSpec carGov2Serial5 = PlateSpec(
+    id: 'ye.northern.car.g2s5',
     country: YemenCountry.northernPrivate,
     canvasWidth: _carWidth,
     canvasHeight: _height,
@@ -529,9 +549,9 @@ abstract final class YemenNorthernPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// One governorate digit, a five-digit serial, private (blue).
-  static final PlateSpec carGov1Serial5Private = PlateSpec(
-    id: 'ye.northern.car.g1s5.private',
+  /// One governorate digit, a five-digit serial.
+  static final PlateSpec carGov1Serial5 = PlateSpec(
+    id: 'ye.northern.car.g1s5',
     country: YemenCountry.northernPrivate,
     canvasWidth: _carWidth,
     canvasHeight: _height,
@@ -544,9 +564,9 @@ abstract final class YemenNorthernPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// Two governorate digits, a four-digit serial, private (blue).
-  static final PlateSpec carGov2Serial4Private = PlateSpec(
-    id: 'ye.northern.car.g2s4.private',
+  /// Two governorate digits, a four-digit serial.
+  static final PlateSpec carGov2Serial4 = PlateSpec(
+    id: 'ye.northern.car.g2s4',
     country: YemenCountry.northernPrivate,
     canvasWidth: _carWidth,
     canvasHeight: _height,
@@ -559,256 +579,10 @@ abstract final class YemenNorthernPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// Two governorate digits, a six-digit serial, private (blue).
-  static final PlateSpec carGov2Serial6Private = PlateSpec(
-    id: 'ye.northern.car.g2s6.private',
+  /// Two governorate digits, a six-digit serial.
+  static final PlateSpec carGov2Serial6 = PlateSpec(
+    id: 'ye.northern.car.g2s6',
     country: YemenCountry.northernPrivate,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial6,
-    mirrors: _carMirrorsGov2Serial6,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a five-digit serial, for hire (yellow).
-  static final PlateSpec carGov2Serial5ForHire = PlateSpec(
-    id: 'ye.northern.car.g2s5.forHire',
-    country: YemenCountry.northernForHire,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial5,
-    mirrors: _carMirrorsGov2Serial5,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// One governorate digit, a five-digit serial, for hire (yellow).
-  static final PlateSpec carGov1Serial5ForHire = PlateSpec(
-    id: 'ye.northern.car.g1s5.forHire',
-    country: YemenCountry.northernForHire,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov1Serial5,
-    mirrors: _carMirrorsGov1Serial5,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov1Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a four-digit serial, for hire (yellow).
-  static final PlateSpec carGov2Serial4ForHire = PlateSpec(
-    id: 'ye.northern.car.g2s4.forHire',
-    country: YemenCountry.northernForHire,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial4,
-    mirrors: _carMirrorsGov2Serial4,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a six-digit serial, for hire (yellow).
-  static final PlateSpec carGov2Serial6ForHire = PlateSpec(
-    id: 'ye.northern.car.g2s6.forHire',
-    country: YemenCountry.northernForHire,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial6,
-    mirrors: _carMirrorsGov2Serial6,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a five-digit serial, transport (red).
-  static final PlateSpec carGov2Serial5Transport = PlateSpec(
-    id: 'ye.northern.car.g2s5.transport',
-    country: YemenCountry.northernTransport,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial5,
-    mirrors: _carMirrorsGov2Serial5,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// One governorate digit, a five-digit serial, transport (red).
-  static final PlateSpec carGov1Serial5Transport = PlateSpec(
-    id: 'ye.northern.car.g1s5.transport',
-    country: YemenCountry.northernTransport,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov1Serial5,
-    mirrors: _carMirrorsGov1Serial5,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov1Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a four-digit serial, transport (red).
-  static final PlateSpec carGov2Serial4Transport = PlateSpec(
-    id: 'ye.northern.car.g2s4.transport',
-    country: YemenCountry.northernTransport,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial4,
-    mirrors: _carMirrorsGov2Serial4,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a six-digit serial, transport (red).
-  static final PlateSpec carGov2Serial6Transport = PlateSpec(
-    id: 'ye.northern.car.g2s6.transport',
-    country: YemenCountry.northernTransport,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial6,
-    mirrors: _carMirrorsGov2Serial6,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a five-digit serial, government (green).
-  static final PlateSpec carGov2Serial5Government = PlateSpec(
-    id: 'ye.northern.car.g2s5.government',
-    country: YemenCountry.northernGovernment,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial5,
-    mirrors: _carMirrorsGov2Serial5,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// One governorate digit, a five-digit serial, government (green).
-  static final PlateSpec carGov1Serial5Government = PlateSpec(
-    id: 'ye.northern.car.g1s5.government',
-    country: YemenCountry.northernGovernment,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov1Serial5,
-    mirrors: _carMirrorsGov1Serial5,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov1Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a four-digit serial, government (green).
-  static final PlateSpec carGov2Serial4Government = PlateSpec(
-    id: 'ye.northern.car.g2s4.government',
-    country: YemenCountry.northernGovernment,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial4,
-    mirrors: _carMirrorsGov2Serial4,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a six-digit serial, government (green).
-  static final PlateSpec carGov2Serial6Government = PlateSpec(
-    id: 'ye.northern.car.g2s6.government',
-    country: YemenCountry.northernGovernment,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial6,
-    mirrors: _carMirrorsGov2Serial6,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a five-digit serial, military.
-  ///
-  /// The military country block carries no usage word, so this spec is the
-  /// same plate under either printing: `YemenThemes.northernMilitaryClassic`
-  /// paints it white on black, `.northernMilitaryModern` red on white. The
-  /// style is a theme choice, which is why there is one military spec per
-  /// layout rather than two.
-  static final PlateSpec carGov2Serial5Military = PlateSpec(
-    id: 'ye.northern.car.g2s5.military',
-    country: YemenCountry.northernMilitaryClassic,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial5,
-    mirrors: _carMirrorsGov2Serial5,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// One governorate digit, a five-digit serial, military.
-  static final PlateSpec carGov1Serial5Military = PlateSpec(
-    id: 'ye.northern.car.g1s5.military',
-    country: YemenCountry.northernMilitaryClassic,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov1Serial5,
-    mirrors: _carMirrorsGov1Serial5,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov1Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a four-digit serial, military.
-  static final PlateSpec carGov2Serial4Military = PlateSpec(
-    id: 'ye.northern.car.g2s4.military',
-    country: YemenCountry.northernMilitaryClassic,
-    canvasWidth: _carWidth,
-    canvasHeight: _height,
-    panel: _carPanel,
-    slots: _carGov2Serial4,
-    mirrors: _carMirrorsGov2Serial4,
-    rules: _carRules,
-    labels: _carLabels,
-    textGroups: _groupsGov2Serial4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a six-digit serial, military.
-  static final PlateSpec carGov2Serial6Military = PlateSpec(
-    id: 'ye.northern.car.g2s6.military',
-    country: YemenCountry.northernMilitaryClassic,
     canvasWidth: _carWidth,
     canvasHeight: _height,
     panel: _carPanel,
@@ -821,25 +595,25 @@ abstract final class YemenNorthernPlates {
   );
 
   // ---------------------------------------------------------------------------
-  // Motorcycle plates — every one of them unverified.
+  // Motorcycle plates — unverified.
   //
   // No official motorcycle design has been published for the northern system,
   // despite active registration campaigns run by the Sanaa traffic police under
   // Cabinet Decision No. 33 of 1446 AH and an equivalent process in Taiz. What
-  // follows is Template B rendered into the motorcycle form factor: the same
-  // content, the same stacking, half the width. It is a reasonable guess and it
-  // is a guess, so it is deprecated — not because it is going away, but so that
-  // nothing silently trusts it and so it shows up in a grep.
+  // follows is the car's content rendered into the motorcycle form factor: the
+  // same content, the same stacking, half the width. It is a reasonable guess
+  // and it is a guess, so it is deprecated — not because it is going away, but
+  // so that nothing silently trusts it and so it shows up in a grep.
   //
   // One colour note that does not generalise: Marib classifies motorcycles as
   // yellow. Other southern governorates publish no motorcycle colour, and
   // extrapolating Marib's rule to them would be inventing policy.
   // ---------------------------------------------------------------------------
 
-  /// Two governorate digits, a five-digit serial, private (blue).
+  /// Two governorate digits, a five-digit serial, on the motorcycle canvas.
   @Deprecated('unverified geometry — calibrate against photographs')
-  static final PlateSpec motoGov2Serial5Private = PlateSpec(
-    id: 'ye.northern.moto.g2s5.private',
+  static final PlateSpec motoGov2Serial5 = PlateSpec(
+    id: 'ye.northern.moto.g2s5',
     country: YemenCountry.northernPrivate,
     canvasWidth: _motoWidth,
     canvasHeight: _height,
@@ -852,154 +626,66 @@ abstract final class YemenNorthernPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// Two governorate digits, a five-digit serial, for hire (yellow).
-  @Deprecated('unverified geometry — calibrate against photographs')
-  static final PlateSpec motoGov2Serial5ForHire = PlateSpec(
-    id: 'ye.northern.moto.g2s5.forHire',
-    country: YemenCountry.northernForHire,
-    canvasWidth: _motoWidth,
-    canvasHeight: _height,
-    panel: _motoPanel,
-    slots: _motoGov2Serial5,
-    mirrors: _motoMirrorsGov2Serial5,
-    rules: _motoRules,
-    labels: _motoLabels,
-    textGroups: _groupsGov2Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a five-digit serial, transport (red).
-  @Deprecated('unverified geometry — calibrate against photographs')
-  static final PlateSpec motoGov2Serial5Transport = PlateSpec(
-    id: 'ye.northern.moto.g2s5.transport',
-    country: YemenCountry.northernTransport,
-    canvasWidth: _motoWidth,
-    canvasHeight: _height,
-    panel: _motoPanel,
-    slots: _motoGov2Serial5,
-    mirrors: _motoMirrorsGov2Serial5,
-    rules: _motoRules,
-    labels: _motoLabels,
-    textGroups: _groupsGov2Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a five-digit serial, government (green).
-  @Deprecated('unverified geometry — calibrate against photographs')
-  static final PlateSpec motoGov2Serial5Government = PlateSpec(
-    id: 'ye.northern.moto.g2s5.government',
-    country: YemenCountry.northernGovernment,
-    canvasWidth: _motoWidth,
-    canvasHeight: _height,
-    panel: _motoPanel,
-    slots: _motoGov2Serial5,
-    mirrors: _motoMirrorsGov2Serial5,
-    rules: _motoRules,
-    labels: _motoLabels,
-    textGroups: _groupsGov2Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// Two governorate digits, a five-digit serial, military.
-  @Deprecated('unverified geometry — calibrate against photographs')
-  static final PlateSpec motoGov2Serial5Military = PlateSpec(
-    id: 'ye.northern.moto.g2s5.military',
-    country: YemenCountry.northernMilitaryClassic,
-    canvasWidth: _motoWidth,
-    canvasHeight: _height,
-    panel: _motoPanel,
-    slots: _motoGov2Serial5,
-    mirrors: _motoMirrorsGov2Serial5,
-    rules: _motoRules,
-    labels: _motoLabels,
-    textGroups: _groupsGov2Serial5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
   // ---------------------------------------------------------------------------
-  // Lookups.
+  // Lookups. Keyed by geometry alone — there is no usage axis left to key on.
   // ---------------------------------------------------------------------------
 
-  /// Every car plate, by usage and then by `(governorate digits, serial
-  /// digits)`.
-  static final Map<YemenUsage, Map<(int, int), PlateSpec>> car =
-      <YemenUsage, Map<(int, int), PlateSpec>>{
-        YemenUsage.private: <(int, int), PlateSpec>{
-          (2, 5): carGov2Serial5Private,
-          (1, 5): carGov1Serial5Private,
-          (2, 4): carGov2Serial4Private,
-          (2, 6): carGov2Serial6Private,
-        },
-        YemenUsage.forHire: <(int, int), PlateSpec>{
-          (2, 5): carGov2Serial5ForHire,
-          (1, 5): carGov1Serial5ForHire,
-          (2, 4): carGov2Serial4ForHire,
-          (2, 6): carGov2Serial6ForHire,
-        },
-        YemenUsage.transport: <(int, int), PlateSpec>{
-          (2, 5): carGov2Serial5Transport,
-          (1, 5): carGov1Serial5Transport,
-          (2, 4): carGov2Serial4Transport,
-          (2, 6): carGov2Serial6Transport,
-        },
-        YemenUsage.government: <(int, int), PlateSpec>{
-          (2, 5): carGov2Serial5Government,
-          (1, 5): carGov1Serial5Government,
-          (2, 4): carGov2Serial4Government,
-          (2, 6): carGov2Serial6Government,
-        },
-        YemenUsage.military: <(int, int), PlateSpec>{
-          (2, 5): carGov2Serial5Military,
-          (1, 5): carGov1Serial5Military,
-          (2, 4): carGov2Serial4Military,
-          (2, 6): carGov2Serial6Military,
-        },
+  /// The car geometries this package builds, keyed by
+  /// `(governorate digits, serial digits)`. A combination that is missing is
+  /// missing on purpose; see the class-level TODO.
+  static final Map<(int, int), PlateSpec> carGeometries =
+      <(int, int), PlateSpec>{
+        (2, 5): carGov2Serial5,
+        (1, 5): carGov1Serial5,
+        (2, 4): carGov2Serial4,
+        (2, 6): carGov2Serial6,
       };
 
-  /// Every motorcycle plate, by usage and then by `(governorate digits, serial
-  /// digits)`. One layout each, and all of it unverified — see the section
-  /// comment above the moto consts.
-  // ignore: deprecated_member_use_from_same_package
-  static final Map<YemenUsage, Map<(int, int), PlateSpec>> moto =
-      <YemenUsage, Map<(int, int), PlateSpec>>{
+  /// The motorcycle geometries this package builds — one, and unverified.
+  static final Map<(int, int), PlateSpec> motoGeometries =
+      <(int, int), PlateSpec>{
         // ignore: deprecated_member_use_from_same_package
-        YemenUsage.private: <(int, int), PlateSpec>{
-          (2, 5): motoGov2Serial5Private,
-        },
-        // ignore: deprecated_member_use_from_same_package
-        YemenUsage.forHire: <(int, int), PlateSpec>{
-          (2, 5): motoGov2Serial5ForHire,
-        },
-        // ignore: deprecated_member_use_from_same_package
-        YemenUsage.transport: <(int, int), PlateSpec>{
-          (2, 5): motoGov2Serial5Transport,
-        },
-        // ignore: deprecated_member_use_from_same_package
-        YemenUsage.government: <(int, int), PlateSpec>{
-          (2, 5): motoGov2Serial5Government,
-        },
-        // ignore: deprecated_member_use_from_same_package
-        YemenUsage.military: <(int, int), PlateSpec>{
-          (2, 5): motoGov2Serial5Military,
-        },
+        (2, 5): motoGov2Serial5,
       };
+
+  /// The northern car plate with this register shape, or null when the
+  /// combination is not one this package builds.
+  ///
+  /// Usage is not a parameter. It selects the country block and the field
+  /// colour, both of which the host passes to the canvas:
+  /// `country: YemenCountry.northernFor(usage)`,
+  /// `theme: YemenThemes.forNorthernUsage(usage)`.
+  ///
+  /// Swapping `spec:` on a live `PlateCanvas` between two of these carries the
+  /// value across per `PlateCanvas.onSpecChange`. With `byGroupKey` a change of
+  /// serial length keeps the serial and the governorate, truncating only the
+  /// digits that no longer fit.
+  static PlateSpec? car({
+    required int governorateDigits,
+    required int serialDigits,
+  }) => carGeometries[(governorateDigits, serialDigits)];
+
+  /// The northern motorcycle plate with this register shape, or null. Its
+  /// geometry is unverified — see the section comment above [motoGov2Serial5].
+  static PlateSpec? moto({
+    required int governorateDigits,
+    required int serialDigits,
+  }) => motoGeometries[(governorateDigits, serialDigits)];
 
   /// The plates for [usage], keyed by `(governorate digits, serial digits)`.
   ///
-  /// Empty for [YemenUsage.police], which System B does not issue; ask
-  /// `YemenUsage.onNorthern` first if you want to grey the option out.
-  ///
-  /// The keys are the combinations this package actually builds — four for a
-  /// car, one for a motorcycle. A combination that is missing is missing on
-  /// purpose; see the class-level TODO.
-  ///
-  /// Swapping `spec:` on a live `PlateCanvas` between two of these keys carries
-  /// the value across per `PlateCanvas.onSpecChange`. With `byGroupKey` a
-  /// change of serial length keeps the serial and the governorate, truncating
-  /// only the digits that no longer fit.
+  /// Still empty for [YemenUsage.police], which System B does not issue — but
+  /// every usage System B *does* issue now returns the same geometries, because
+  /// the usage never varied the geometry in the first place.
+  @Deprecated(
+    'Usage no longer selects a spec — it selects a country block and a theme. '
+    'Use car()/moto() and pass YemenCountry.northernFor(usage) to the canvas. '
+    'Will be removed in 0.4.0.',
+  )
   static Map<(int, int), PlateSpec> byDigits(
     YemenUsage usage, {
     bool motorcycle = false,
-  }) =>
-      (motorcycle ? moto : car)[usage] ?? const <(int, int), PlateSpec>{};
+  }) => usage.onNorthern
+      ? (motorcycle ? motoGeometries : carGeometries)
+      : const <(int, int), PlateSpec>{};
 }

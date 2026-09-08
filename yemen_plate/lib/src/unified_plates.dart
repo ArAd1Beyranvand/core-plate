@@ -13,7 +13,9 @@ import 'yemen_usage.dart';
 /// code, and the type of use. It is white for every usage: System A does not
 /// colour-code by use, and `YemenThemes.unified` is the only theme this
 /// namespace needs. What varies with usage is the two caption lines in the blue
-/// side panel, which is why each geometry appears once per usage below.
+/// side panel — a country block, which the host hands to `PlateCanvas` at
+/// render time. So each geometry appears **once**, and the usage axis is
+/// `YemenCountry.unifiedFor(usage)` passed alongside the spec.
 ///
 /// This is **not** the "current" system and `YemenNorthernPlates` the legacy
 /// one. Both are current, in different geographies, on different vehicles. The
@@ -24,7 +26,7 @@ import 'yemen_usage.dart';
 ///
 /// The vehicle number is four to six digits. [PlateSpec] has a fixed slot list,
 /// so that cannot be one spec — a slot either exists or it does not. Hence
-/// [byNumberLength], and hence the caveat that goes with it:
+/// [car] and [moto] taking a length, and hence the caveat that goes with them:
 ///
 /// > **Swapping `spec:` on a live `PlateCanvas` carries the value across** as
 /// > `PlateCanvas.onSpecChange` directs. With `byGroupKey` a change of number
@@ -354,20 +356,34 @@ abstract final class YemenUnifiedPlates {
     PlateTextGroup(<int>[6, 7], key: 'sideCode'),
   ];
 
+
   // ---------------------------------------------------------------------------
-  // The plates. Six geometries x five usages.
-  // plate here means adding a const and never anything else.
+  // The plates. One spec per geometry — six of them, where there used to be six
+  // geometries crossed with five usages.
   //
-  // The only fields that vary with usage are `id` and `country` — System A
-  // prints the same white plate for a private car and a police car, and puts
-  // the difference in the two caption lines of the blue panel. If you are
-  // tempted to give a usage its own colour, read `YemenThemes`.
+  // **Usage is not a field of a spec.** System A prints the same white plate
+  // for a private car and a police car and puts the difference in the two
+  // caption lines of the blue panel, so usage selects the country block, which
+  // the host passes at render time:
+  //
+  // ```dart
+  // PlateCanvas(
+  //   spec: YemenUnifiedPlates.car(numberDigits: 5)!,
+  //   country: YemenCountry.unifiedFor(usage),
+  //   theme: YemenThemes.forUnifiedUsage(usage),
+  // )
+  // ```
+  //
+  // Each spec names `YemenCountry.unifiedPrivate` as its own `country`, so a
+  // caller that passes no override gets the ordinary case rather than an
+  // uncaptioned panel. If you are tempted to give a usage its own colour, read
+  // `YemenThemes`.
   // ---------------------------------------------------------------------------
 
-  /// A five-digit private car plate: the length of the official mock-up sample
+  /// A five-digit car plate: the length of the official mock-up sample
   /// `24378`, and the plate to reach for first.
-  static final PlateSpec car5Private = PlateSpec(
-    id: 'ye.unified.car5.private',
+  static final PlateSpec car5 = PlateSpec(
+    id: 'ye.unified.car5',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _carWidth,
     canvasHeight: _carHeight,
@@ -379,9 +395,9 @@ abstract final class YemenUnifiedPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// A four-digit private car plate.
-  static final PlateSpec car4Private = PlateSpec(
-    id: 'ye.unified.car4.private',
+  /// A four-digit car plate.
+  static final PlateSpec car4 = PlateSpec(
+    id: 'ye.unified.car4',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _carWidth,
     canvasHeight: _carHeight,
@@ -393,9 +409,9 @@ abstract final class YemenUnifiedPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// A six-digit private car plate.
-  static final PlateSpec car6Private = PlateSpec(
-    id: 'ye.unified.car6.private',
+  /// A six-digit car plate.
+  static final PlateSpec car6 = PlateSpec(
+    id: 'ye.unified.car6',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _carWidth,
     canvasHeight: _carHeight,
@@ -407,177 +423,9 @@ abstract final class YemenUnifiedPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// A four-digit taxi/bus car plate.
-  static final PlateSpec car4ForHire = PlateSpec(
-    id: 'ye.unified.car4.forHire',
-    country: YemenCountry.unifiedForHire,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car4Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit taxi/bus car plate.
-  static final PlateSpec car5ForHire = PlateSpec(
-    id: 'ye.unified.car5.forHire',
-    country: YemenCountry.unifiedForHire,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car5Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A six-digit taxi/bus car plate.
-  static final PlateSpec car6ForHire = PlateSpec(
-    id: 'ye.unified.car6.forHire',
-    country: YemenCountry.unifiedForHire,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car6Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A four-digit goods-vehicle car plate.
-  static final PlateSpec car4Transport = PlateSpec(
-    id: 'ye.unified.car4.transport',
-    country: YemenCountry.unifiedTransport,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car4Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit goods-vehicle car plate.
-  static final PlateSpec car5Transport = PlateSpec(
-    id: 'ye.unified.car5.transport',
-    country: YemenCountry.unifiedTransport,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car5Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A six-digit goods-vehicle car plate.
-  static final PlateSpec car6Transport = PlateSpec(
-    id: 'ye.unified.car6.transport',
-    country: YemenCountry.unifiedTransport,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car6Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A four-digit government car plate.
-  static final PlateSpec car4Government = PlateSpec(
-    id: 'ye.unified.car4.government',
-    country: YemenCountry.unifiedGovernment,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car4Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit government car plate.
-  static final PlateSpec car5Government = PlateSpec(
-    id: 'ye.unified.car5.government',
-    country: YemenCountry.unifiedGovernment,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car5Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A six-digit government car plate.
-  static final PlateSpec car6Government = PlateSpec(
-    id: 'ye.unified.car6.government',
-    country: YemenCountry.unifiedGovernment,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car6Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A four-digit police car plate.
-  static final PlateSpec car4Police = PlateSpec(
-    id: 'ye.unified.car4.police',
-    country: YemenCountry.unifiedPolice,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car4Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit police car plate.
-  static final PlateSpec car5Police = PlateSpec(
-    id: 'ye.unified.car5.police',
-    country: YemenCountry.unifiedPolice,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car5Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A six-digit police car plate.
-  static final PlateSpec car6Police = PlateSpec(
-    id: 'ye.unified.car6.police',
-    country: YemenCountry.unifiedPolice,
-    canvasWidth: _carWidth,
-    canvasHeight: _carHeight,
-    panel: _carPanel,
-    slots: _car6Slots,
-    rules: _carStipple,
-    labels: _carLabels,
-    textGroups: _groups6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit private motorcycle plate.
-  static final PlateSpec moto5Private = PlateSpec(
-    id: 'ye.unified.moto5.private',
+  /// A five-digit motorcycle plate.
+  static final PlateSpec moto5 = PlateSpec(
+    id: 'ye.unified.moto5',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _motoWidth,
     canvasHeight: _motoHeight,
@@ -589,9 +437,9 @@ abstract final class YemenUnifiedPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// A four-digit private motorcycle plate.
-  static final PlateSpec moto4Private = PlateSpec(
-    id: 'ye.unified.moto4.private',
+  /// A four-digit motorcycle plate.
+  static final PlateSpec moto4 = PlateSpec(
+    id: 'ye.unified.moto4',
     country: YemenCountry.unifiedPrivate,
     canvasWidth: _motoWidth,
     canvasHeight: _motoHeight,
@@ -603,178 +451,10 @@ abstract final class YemenUnifiedPlates {
     borderWidthRatioOverride: _borderRatio,
   );
 
-  /// A six-digit private motorcycle plate.
-  static final PlateSpec moto6Private = PlateSpec(
-    id: 'ye.unified.moto6.private',
+  /// A six-digit motorcycle plate.
+  static final PlateSpec moto6 = PlateSpec(
+    id: 'ye.unified.moto6',
     country: YemenCountry.unifiedPrivate,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto6Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A four-digit taxi/bus motorcycle plate.
-  static final PlateSpec moto4ForHire = PlateSpec(
-    id: 'ye.unified.moto4.forHire',
-    country: YemenCountry.unifiedForHire,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto4Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit taxi/bus motorcycle plate.
-  static final PlateSpec moto5ForHire = PlateSpec(
-    id: 'ye.unified.moto5.forHire',
-    country: YemenCountry.unifiedForHire,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto5Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A six-digit taxi/bus motorcycle plate.
-  static final PlateSpec moto6ForHire = PlateSpec(
-    id: 'ye.unified.moto6.forHire',
-    country: YemenCountry.unifiedForHire,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto6Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A four-digit goods-vehicle motorcycle plate.
-  static final PlateSpec moto4Transport = PlateSpec(
-    id: 'ye.unified.moto4.transport',
-    country: YemenCountry.unifiedTransport,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto4Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit goods-vehicle motorcycle plate.
-  static final PlateSpec moto5Transport = PlateSpec(
-    id: 'ye.unified.moto5.transport',
-    country: YemenCountry.unifiedTransport,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto5Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A six-digit goods-vehicle motorcycle plate.
-  static final PlateSpec moto6Transport = PlateSpec(
-    id: 'ye.unified.moto6.transport',
-    country: YemenCountry.unifiedTransport,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto6Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A four-digit government motorcycle plate.
-  static final PlateSpec moto4Government = PlateSpec(
-    id: 'ye.unified.moto4.government',
-    country: YemenCountry.unifiedGovernment,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto4Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit government motorcycle plate.
-  static final PlateSpec moto5Government = PlateSpec(
-    id: 'ye.unified.moto5.government',
-    country: YemenCountry.unifiedGovernment,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto5Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A six-digit government motorcycle plate.
-  static final PlateSpec moto6Government = PlateSpec(
-    id: 'ye.unified.moto6.government',
-    country: YemenCountry.unifiedGovernment,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto6Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups6,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A four-digit police motorcycle plate.
-  static final PlateSpec moto4Police = PlateSpec(
-    id: 'ye.unified.moto4.police',
-    country: YemenCountry.unifiedPolice,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto4Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups4,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A five-digit police motorcycle plate.
-  static final PlateSpec moto5Police = PlateSpec(
-    id: 'ye.unified.moto5.police',
-    country: YemenCountry.unifiedPolice,
-    canvasWidth: _motoWidth,
-    canvasHeight: _motoHeight,
-    panel: _motoPanel,
-    slots: _moto5Slots,
-    rules: _motoStipple,
-    labels: _motoLabels,
-    textGroups: _groups5,
-    borderWidthRatioOverride: _borderRatio,
-  );
-
-  /// A six-digit police motorcycle plate.
-  static final PlateSpec moto6Police = PlateSpec(
-    id: 'ye.unified.moto6.police',
-    country: YemenCountry.unifiedPolice,
     canvasWidth: _motoWidth,
     canvasHeight: _motoHeight,
     panel: _motoPanel,
@@ -786,82 +466,61 @@ abstract final class YemenUnifiedPlates {
   );
 
   // ---------------------------------------------------------------------------
-  // Lookups. Const maps over the consts above, so nothing here builds a spec.
+  // Lookups. Keyed by number length alone — there is no usage axis left to key
+  // on.
   // ---------------------------------------------------------------------------
 
-  /// Every car plate, by usage and then by number length.
-  static final Map<YemenUsage, Map<int, PlateSpec>> car =
-      <YemenUsage, Map<int, PlateSpec>>{
-        YemenUsage.private: <int, PlateSpec>{
-          4: car4Private,
-          5: car5Private,
-          6: car6Private,
-        },
-        YemenUsage.forHire: <int, PlateSpec>{
-          4: car4ForHire,
-          5: car5ForHire,
-          6: car6ForHire,
-        },
-        YemenUsage.transport: <int, PlateSpec>{
-          4: car4Transport,
-          5: car5Transport,
-          6: car6Transport,
-        },
-        YemenUsage.government: <int, PlateSpec>{
-          4: car4Government,
-          5: car5Government,
-          6: car6Government,
-        },
-        YemenUsage.police: <int, PlateSpec>{
-          4: car4Police,
-          5: car5Police,
-          6: car6Police,
-        },
-      };
+  /// The car geometries this package builds, keyed by how many digits the
+  /// vehicle number has.
+  static final Map<int, PlateSpec> carGeometries = <int, PlateSpec>{
+    4: car4,
+    5: car5,
+    6: car6,
+  };
 
-  /// Every motorcycle plate, by usage and then by number length.
-  static final Map<YemenUsage, Map<int, PlateSpec>> moto =
-      <YemenUsage, Map<int, PlateSpec>>{
-        YemenUsage.private: <int, PlateSpec>{
-          4: moto4Private,
-          5: moto5Private,
-          6: moto6Private,
-        },
-        YemenUsage.forHire: <int, PlateSpec>{
-          4: moto4ForHire,
-          5: moto5ForHire,
-          6: moto6ForHire,
-        },
-        YemenUsage.transport: <int, PlateSpec>{
-          4: moto4Transport,
-          5: moto5Transport,
-          6: moto6Transport,
-        },
-        YemenUsage.government: <int, PlateSpec>{
-          4: moto4Government,
-          5: moto5Government,
-          6: moto6Government,
-        },
-        YemenUsage.police: <int, PlateSpec>{
-          4: moto4Police,
-          5: moto5Police,
-          6: moto6Police,
-        },
-      };
+  /// The motorcycle geometries, keyed by how many digits the vehicle number
+  /// has. Unverified — no photograph of a unified motorcycle plate was
+  /// available.
+  static final Map<int, PlateSpec> motoGeometries = <int, PlateSpec>{
+    4: moto4,
+    5: moto5,
+    6: moto6,
+  };
 
-  /// The plates for [usage], keyed by how many digits the vehicle number has.
+  /// The unified car plate whose vehicle number has [numberDigits] digits, or
+  /// null when that is not a length this package builds.
   ///
-  /// Empty for a usage System A does not issue — [YemenUsage.military]. Ask
-  /// `YemenUsage.onUnified` first if you want to grey the option out rather
-  /// than discover it here.
+  /// Usage is not a parameter. It selects the two caption lines in the blue
+  /// side panel, which the host passes to the canvas:
+  /// `country: YemenCountry.unifiedFor(usage)`.
   ///
   /// Handing a live `PlateCanvas` a spec with a different id carries the value
   /// across per `PlateCanvas.onSpecChange`; with `byGroupKey` a change of
   /// length keeps the digits that still fit. See the class doc.
+  static PlateSpec? car({required int numberDigits}) =>
+      carGeometries[numberDigits];
+
+  /// The unified motorcycle plate whose vehicle number has [numberDigits]
+  /// digits, or null.
+  static PlateSpec? moto({required int numberDigits}) =>
+      motoGeometries[numberDigits];
+
+  /// The plates for [usage], keyed by how many digits the vehicle number has.
+  ///
+  /// Still empty for [YemenUsage.military], which System A does not issue — but
+  /// every usage System A *does* issue now returns the same geometries, because
+  /// the usage never varied the geometry in the first place.
+  @Deprecated(
+    'Usage no longer selects a spec — it selects a country block. '
+    'Use car()/moto() and pass YemenCountry.unifiedFor(usage) to the canvas. '
+    'Will be removed in 0.4.0.',
+  )
   static Map<int, PlateSpec> byNumberLength(
     YemenUsage usage, {
     bool motorcycle = false,
-  }) => (motorcycle ? moto : car)[usage] ?? const <int, PlateSpec>{};
+  }) => usage.onUnified
+      ? (motorcycle ? motoGeometries : carGeometries)
+      : const <int, PlateSpec>{};
 
   /// The number lengths a unified plate can have, shortest first.
   static const List<int> numberLengths = <int>[4, 5, 6];

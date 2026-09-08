@@ -18,7 +18,7 @@ import 'yemen_governorates.dart';
 /// ```dart
 /// final rnd = Random(7);
 /// final values = YemenUnifiedSerialGenerator.generate(
-///   YemenUnifiedPlates.car5Private,
+///   YemenUnifiedPlates.car5,
 ///   random: rnd,
 /// );
 /// ```

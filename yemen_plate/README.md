@@ -19,9 +19,13 @@ it.
 
 # yemen_plate
 
-It's data, not code: 55 `const PlateSpec`s, two country families, two digit
-alphabets, seven themes, two advisory validators and two seeded generators.
-`core_plate` paints all of it. There is not a widget in this package.
+It's data, not code: 11 `PlateSpec`s - one per geometry - two country families,
+two digit alphabets, seven themes, two advisory validators and two seeded
+generators. `core_plate` paints all of it. There is not a widget in this package.
+
+A usage class is **not** a spec. It is a `PlateCountry` (the usage word, or the
+two caption lines of System A's blue panel) and a `PlateTheme` (System B's field
+colour), and both are handed to the canvas at render time beside the spec.
 
 ## Two systems, both current
 
@@ -63,7 +67,8 @@ import 'package:yemen_plate/yemen_plate.dart';
 
 // System A: a private car with a five-digit number.
 PlateCanvas(
-  spec: YemenUnifiedPlates.car5Private,
+  spec: YemenUnifiedPlates.car5,
+  country: YemenCountry.unifiedFor(YemenUsage.private),   // خصوصي / PRIV. in the panel
   theme: YemenThemes.forUnifiedUsage(YemenUsage.private),
   validator: const YemenUnifiedValidator(),
   onChooseCharacter: (a) async => null,      // every slot here is typed
@@ -71,32 +76,38 @@ PlateCanvas(
 
 // System B: two governorate digits, a five-digit serial, for hire.
 PlateCanvas(
-  spec: YemenNorthernPlates.carGov2Serial5ForHire,
+  spec: YemenNorthernPlates.carGov2Serial5,
+  country: YemenCountry.northernFor(YemenUsage.forHire),     // اجرة in the top band
   theme: YemenThemes.forNorthernUsage(YemenUsage.forHire),   // the yellow IS the class
   validator: const YemenNorthernValidator(),
   onChooseCharacter: (a) async => null,
 );
 ```
 
-Or look one up:
+Or look a geometry up by its shape - the length is what varies the slot list,
+and it is the only thing that does:
 
 ```dart
-YemenUnifiedPlates.byNumberLength(YemenUsage.forHire)[6];
-YemenNorthernPlates.byDigits(YemenUsage.government)[(2, 5)];
+YemenUnifiedPlates.car(numberDigits: 6);                             // or null
+YemenNorthernPlates.car(governorateDigits: 2, serialDigits: 5);      // or null
 ```
 
-Both lookups return an empty map for a usage their system does not issue -
-`police` on System B, `military` on System A. `YemenUsage.onUnified` and
-`.onNorthern` are the question to ask first if you want to grey the option out.
+Both return null for a shape this package does not build; `carGeometries` and
+`motoGeometries` are the maps behind them. Neither takes a usage, because a
+usage never changed a cell. `YemenUsage.onUnified` and `.onNorthern` say which
+system issues which, if you want to grey an option out - `police` is System A
+only and `military` System B only.
 
 `example/` holds two apps: `lib/main.dart`, one plate with pickers and a keypad,
-and `lib/gallery.dart`, all 55 specs on one page, each empty and editable
-(`flutter run -t lib/gallery.dart`). The gallery walks the two lookup maps
-above, so it is also the fastest way to see what they contain.
+and `lib/gallery.dart`, every geometry crossed with every usage its system
+issues on one page, each empty and editable (`flutter run -t lib/gallery.dart`).
+The gallery walks the geometry maps above and passes the usage as a `country:`,
+which is exactly what a host does.
 
 ## Pick the shape before entry begins
 
-Every layout is a separate spec, because the number of cells differs. Swapping
+Every *layout* is a separate spec, because the number of cells differs - and
+nothing else is, because nothing else changes a cell. Swapping
 `spec:` on a live `PlateCanvas` carries the value across by group key (the
 `core_plate` default): a shared register survives, a digit that no longer fits is
 truncated. It no longer empties the plate - but a governorate serial reinterpreted
@@ -112,8 +123,9 @@ private one. `YemenThemes.forNorthernUsage(usage)` is the way to get the right
 one without naming a colour anywhere in your code.
 
 The specs themselves carry no colour at all - a spec is geometry, a theme is
-colour, and `core_plate` keeps them apart. The one place that rule bends is the
-northern usage word, which rides on `PlateCountry.captionLines` over a fully
+colour, and `core_plate` keeps them apart. A spec does name a `country`, but
+only as the default for a caller that passes none: every spec here defaults to
+private. The northern usage word rides on `PlateCountry.captionLines` over a fully
 **transparent** panel: transparent rather than the field colour, so that pairing
 a spec with the wrong theme cannot paint a wrong-coloured block on the plate.
 
@@ -176,9 +188,8 @@ installed, these boxes would go back to their measured sizes.
 - `YemenAlphabets.digits` / `.governorateTens`.
 - `YemenCountry` - six unified side panels, six northern usage words.
 - `YemenThemes` - one for System A, six for System B, and the two lookups.
-- `YemenUnifiedPlates` - 30 specs: car and motorcycle x 4/5/6 number digits x
-  five usages.
-- `YemenNorthernPlates` - 20 car specs, plus 5 motorcycle specs marked
+- `YemenUnifiedPlates` - 6 specs: car and motorcycle x 4/5/6 number digits.
+- `YemenNorthernPlates` - 4 car specs, plus 1 motorcycle spec marked
   `@Deprecated`.
 - `YemenUnifiedValidator` / `YemenNorthernValidator` - advisory, never bar a
   keystroke.

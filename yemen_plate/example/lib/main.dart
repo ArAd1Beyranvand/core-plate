@@ -101,22 +101,38 @@ class _PlateEntryState extends State<_PlateEntry> {
       .where(_isUnified ? YemenUsage.unified.contains : YemenUsage.northern.contains)
       .toList(growable: false);
 
+  /// The geometry the pickers resolve to. Usage is not part of it — see
+  /// [_country].
   PlateSpec get _spec {
     if (_isUnified) {
-      final Map<int, PlateSpec> byLength = YemenUnifiedPlates.byNumberLength(
-        _usage,
-        motorcycle: _motorcycle,
-      );
-      return byLength[_numberLength] ?? byLength.values.first;
+      return (_motorcycle
+              ? YemenUnifiedPlates.moto(numberDigits: _numberLength)
+              : YemenUnifiedPlates.car(numberDigits: _numberLength)) ??
+          YemenUnifiedPlates.car5;
     }
-    final Map<(int, int), PlateSpec> byDigits = YemenNorthernPlates.byDigits(
-      _usage,
-      motorcycle: _motorcycle,
-    );
+    final (int gov, int serial) = _northernDigits;
     // The motorcycle map holds one layout, so a (2, 4) selection carried over
     // from the car form falls back rather than blanking the screen.
-    return byDigits[_northernDigits] ?? byDigits.values.first;
+    return (_motorcycle
+            ? YemenNorthernPlates.moto(
+                governorateDigits: gov,
+                serialDigits: serial,
+              )
+            : YemenNorthernPlates.car(
+                governorateDigits: gov,
+                serialDigits: serial,
+              )) ??
+        (_motorcycle
+            ? YemenNorthernPlates.motoGeometries.values.first
+            : YemenNorthernPlates.carGeometries.values.first);
   }
+
+  /// The usage, as the country block that carries it: the caption lines of
+  /// System A's blue panel, or the usage word in System B's top band. Handed to
+  /// the canvas rather than baked into the spec.
+  PlateCountry get _country => _isUnified
+      ? YemenCountry.unifiedFor(_usage)
+      : YemenCountry.northernFor(_usage);
 
   PlateTheme get _theme => _isUnified
       ? YemenThemes.forUnifiedUsage(_usage)
@@ -153,6 +169,10 @@ class _PlateEntryState extends State<_PlateEntry> {
           spec: spec,
           child: PlateCanvas(
             spec: spec,
+            // The usage axis. On System B it is the word in the top band and
+            // the colour is the theme's; on System A it is the two caption
+            // lines in the blue panel. Neither is on the spec.
+            country: _country,
             theme: theme,
             // Real text fields: each slot opens the platform keyboard.
             inputSource: PlateInputSource.system,
@@ -279,22 +299,29 @@ class _PlateEntryState extends State<_PlateEntry> {
 // ---------------------------------------------------------------------------
 // Tab 2: the catalogue — one generated plate per distinct plate type.
 //
-// Walked out of the package's own lookup maps rather than named by hand, so a
-// spec added to `YemenUnifiedPlates.car` or `YemenNorthernPlates.moto` shows up
-// here without this file changing. Each card is a *different* spec: this page
-// shows the range of plates the package draws, not repeated samples of one.
+// Walked out of the package's own geometry maps crossed with the usages each
+// system issues, rather than named by hand, so a geometry added to
+// `YemenUnifiedPlates.carGeometries` or `YemenNorthernPlates.motoGeometries`
+// shows up here without this file changing. A card is a geometry and a usage:
+// the usage is the country block, so two cards can share a spec and still be
+// two different plates.
 // ---------------------------------------------------------------------------
 
 class _Sample {
   const _Sample({
     required this.label,
     required this.spec,
+    required this.country,
     required this.theme,
     required this.values,
   });
 
   final String label;
   final PlateSpec spec;
+
+  /// The usage, as a country block — passed to the view, not baked into the
+  /// spec.
+  final PlateCountry country;
   final PlateTheme theme;
   final List<String?> values;
 }
@@ -314,16 +341,23 @@ Map<String, List<_Sample>> _buildCatalogue() {
     // real layout difference, so all three earn a card.
     final List<_Sample> unified = <_Sample>[
       for (final YemenUsage usage in YemenUsage.values)
-        for (final MapEntry<int, PlateSpec> e
-            in YemenUnifiedPlates.byNumberLength(usage, motorcycle: moto)
-                .entries)
-          _Sample(
-            label:
-                '${usage.unifiedArabic ?? usage.name} · ${e.key} digits',
-            spec: e.value,
-            theme: YemenThemes.forUnifiedUsage(usage),
-            values: YemenUnifiedSerialGenerator.generate(e.value, random: rng),
-          ),
+        if (usage.onUnified)
+          for (final MapEntry<int, PlateSpec> e
+              in (moto
+                      ? YemenUnifiedPlates.motoGeometries
+                      : YemenUnifiedPlates.carGeometries)
+                  .entries)
+            _Sample(
+              label:
+                  '${usage.unifiedArabic ?? usage.name} · ${e.key} digits',
+              spec: e.value,
+              country: YemenCountry.unifiedFor(usage),
+              theme: YemenThemes.forUnifiedUsage(usage),
+              values: YemenUnifiedSerialGenerator.generate(
+                e.value,
+                random: rng,
+              ),
+            ),
     ];
     if (unified.isNotEmpty) out['2026 unified · $form'] = unified;
 
@@ -332,24 +366,29 @@ Map<String, List<_Sample>> _buildCatalogue() {
     // spec in different ink, and on System B the ink *is* the class.
     final List<_Sample> northern = <_Sample>[
       for (final YemenUsage usage in YemenUsage.values)
-        for (final MapEntry<(int, int), PlateSpec> e
-            in YemenNorthernPlates.byDigits(usage, motorcycle: moto).entries)
-          for (final YemenMilitaryStyle style in usage == YemenUsage.military
-              ? YemenMilitaryStyle.values
-              : const <YemenMilitaryStyle>[YemenMilitaryStyle.classic])
-            _Sample(
-              label: <String>[
-                usage.northernArabic ?? usage.name,
-                '${e.key.$1} + ${e.key.$2}',
-                if (usage == YemenUsage.military) style.name,
-              ].join(' · '),
-              spec: e.value,
-              theme: YemenThemes.forNorthernUsage(usage, style: style),
-              values: YemenNorthernSerialGenerator.generate(
-                e.value,
-                random: rng,
+        if (usage.onNorthern)
+          for (final MapEntry<(int, int), PlateSpec> e
+              in (moto
+                      ? YemenNorthernPlates.motoGeometries
+                      : YemenNorthernPlates.carGeometries)
+                  .entries)
+            for (final YemenMilitaryStyle style in usage == YemenUsage.military
+                ? YemenMilitaryStyle.values
+                : const <YemenMilitaryStyle>[YemenMilitaryStyle.classic])
+              _Sample(
+                label: <String>[
+                  usage.northernArabic ?? usage.name,
+                  '${e.key.$1} + ${e.key.$2}',
+                  if (usage == YemenUsage.military) style.name,
+                ].join(' · '),
+                spec: e.value,
+                country: YemenCountry.northernFor(usage),
+                theme: YemenThemes.forNorthernUsage(usage, style: style),
+                values: YemenNorthernSerialGenerator.generate(
+                  e.value,
+                  random: rng,
+                ),
               ),
-            ),
     ];
     if (northern.isNotEmpty) out['1993 northern · $form'] = northern;
   }
@@ -481,6 +520,7 @@ class _SampleCardState extends State<_SampleCard> {
                 width: 74 * spec.canvasWidth / spec.canvasHeight,
                 child: PlateView(
                   controller: _controller,
+                  country: widget.sample.country,
                   theme: widget.sample.theme,
                 ),
               ),

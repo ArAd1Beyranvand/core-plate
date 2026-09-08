@@ -12,7 +12,7 @@ Two apps in one directory, because they answer two different questions.
 | Entry point | What it is |
 | --- | --- |
 | `lib/main.dart` | **How a host uses the package.** One plate, and pickers that choose which: a system switch, a usage picker, a car/motorcycle switch, a register-length picker, the plate typed with the `plate_keypad` on-screen pad, and a row of generated plates underneath. |
-| `lib/gallery.dart` | **What the package contains.** All 55 specs on one scrollable page, every one of them empty and editable. No pickers, no generated values, no auto-fill — tap a slot and type. |
+| `lib/gallery.dart` | **What the package contains.** Every geometry crossed with every usage its system issues — 55 plates out of 11 specs — on one scrollable page, every one of them empty and editable. No pickers, no generated values, no auto-fill — tap a slot and type. |
 
 ```sh
 flutter run                      # the single-plate app
@@ -24,10 +24,16 @@ flutter run -t lib/gallery.dart  # the catalogue
 Three things about `gallery.dart` are worth copying and one is worth not
 copying.
 
-**It walks the package's own lookup maps** — `YemenUnifiedPlates.byNumberLength`
-and `YemenNorthernPlates.byDigits` — instead of naming 55 consts. A spec added
+**It walks the package's own geometry maps** — `YemenUnifiedPlates.carGeometries`
+and `YemenNorthernPlates.motoGeometries` and their siblings — and crosses them
+with the usages each system issues, instead of naming consts. A geometry added
 to the package shows up on the page without the example changing, so the
 catalogue cannot silently fall behind what it is cataloguing.
+
+**The usage is a `country:`, not a spec.** Two cards can share one `PlateSpec`
+and still be two different plates: `YemenCountry.northernFor(usage)` carries the
+usage word and `YemenThemes.forNorthernUsage(usage)` the field colour, and
+`PlateCanvas` takes both beside the spec.
 
 **One `PlateCardBloc` per plate.** The bloc holds the values. Share one across
 the page and every plate on it becomes the same plate.
