@@ -1,3 +1,9 @@
+> **2026-09-08:** Superseded. This describes a poster layout around a
+> `plate_number` single-package demo that no longer exists — the workspace is
+> now seven packages (`core_plate`, `core_plate_bloc`, `plate_keypad`, and one
+> per country). Kept for historical reference only; see
+> `claude/REFACTOR_ROADMAP.md` for the current architecture.
+
 # Plate Number — Poster Design Spec
 
 Extracted from `Plate Number Poster.html` (a Claude Design canvas export).

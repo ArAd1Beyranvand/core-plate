@@ -12,11 +12,3 @@ abstract class PlateInputTarget {
   void focusFirstEmptySlot();
   void focusSlot(int index);
 }
-
-/// The old name for [PlateController].
-///
-/// Until 0.5.0 the value-owning handle *extended* a focus-only
-/// `PlateInputController`, so a canvas could take either. There is one class
-/// now; this alias keeps existing annotations compiling.
-@Deprecated('Renamed to PlateController in 0.5.0; will be removed in 0.6.0.')
-typedef PlateInputController = PlateController;

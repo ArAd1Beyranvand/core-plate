@@ -65,7 +65,7 @@ class PlateRule {
 class PlateDecal {
   const PlateDecal({required this.image, required this.box});
 
-  /// The image to paint, e.g. an `AssetImage(..., package: 'plate_number')`.
+  /// The image to paint, e.g. an `AssetImage(..., package: 'germany_plate')`.
   final ImageProvider image;
 
   final PlateBox box;

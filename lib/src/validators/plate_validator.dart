@@ -69,7 +69,8 @@ bool isDigitsOfLength(String value, int length) =>
 /// A validator NEVER prevents input. It is asked a question and answers it;
 /// what a host does with the answer — paint the frame red, enable a submit
 /// button, do nothing — is the host's decision. There is deliberately no
-/// "which keys are barred" method: see docs/split/PLAN.md §1.
+/// "which keys are barred" method — a validator reports; adding one would make
+/// input policy the validator's business rather than the host's.
 abstract class PlateValidator {
   const PlateValidator();
 

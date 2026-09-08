@@ -260,13 +260,6 @@ class PlateController extends ChangeNotifier {
   /// position. Null when the plate is unfocused.
   PlateSlot? get activeSlot => _spec.slotAt(activeIndex ?? -1);
 
-  /// The active slot resolved against [spec].
-  @Deprecated(
-    'The controller knows its own spec; use activeSlot. '
-    'Will be removed in 0.6.0.',
-  )
-  PlateSlot? activeSlotIn(PlateSpec spec) => spec.slotAt(activeIndex ?? -1);
-
   /// Whether a canvas is currently attached.
   bool get isAttached => _target != null;
 

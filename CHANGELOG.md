@@ -1,5 +1,12 @@
 ## 0.9.0
 
+**Breaking: removed deprecated symbols.**
+
+- `PlateInputController` (typedef) — use `PlateController`.
+- `PlateController.activeSlotIn(spec)` — use `PlateController.activeSlot`, which
+  resolves against the controller's own spec.
+
+
 **`PlateTextRow` and `noCharacterChooser`.** The plain-text rendering of a
 plate — each effective text group rendered through its slots' alphabets, laid
 out in the plate's reading direction — is now one exported widget instead of

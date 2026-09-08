@@ -93,10 +93,9 @@ export 'src/widgets/plate_text_row.dart';
 export 'src/widgets/country_panel.dart';
 export 'src/widgets/plate_flag.dart';
 
-// The on-screen keypad and the `chosen`-slot character picker moved to the
-// `plate_keypad` package in P7. A host that wants either now depends on
-// `plate_keypad` and passes `PlateCharacterPicker.show` as
-// [PlateCanvas.onChooseCharacter].
+// The on-screen keypad and the `chosen`-slot character picker live in the
+// `plate_keypad` package. A host that wants either depends on `plate_keypad`
+// and passes `PlateCharacterPicker.show` as [PlateCanvas.onChooseCharacter].
 
 // ---------------------------------------------------------------------------
 // Input — driving character entry from outside the plate.
@@ -109,9 +108,7 @@ export 'src/widgets/plate_flag.dart';
 /// host's behalf — is deliberately absent: a consumer never constructs one.
 export 'src/input/plate_controller.dart';
 
-/// `PlateInputTarget`, the interface the handle drives, and the deprecated
-/// `PlateInputController` alias — one class since 0.5.0, kept compiling for
-/// external callers.
+/// `PlateInputTarget`, the interface the handle drives.
 export 'src/input/plate_input_controller.dart';
 
 /// Rebuilds on a *derived* piece of a [PlateController] only when that piece
@@ -120,10 +117,9 @@ export 'src/input/plate_input_controller.dart';
 export 'src/widgets/plate_selector.dart';
 
 // State — a canvas keeps its values in a [PlateController], exported above with
-// the rest of the input surface. The bloc that used to live here — along with
-// `PlateCardBinding`, `ShowPlate` and `PlateText` — left for the
-// `core_plate_bloc` package in 0.4.0, and with it this package's `flutter_bloc`
-// and `bloc` dependencies; see CHANGELOG.md for the one-line migration.
+// the rest of the input surface. The bloc, `PlateCardBinding`, `ShowPlate` and
+// `PlateText` live in the `core_plate_bloc` package; this package has no
+// `flutter_bloc` or `bloc` dependency. See CHANGELOG.md for the migration.
 
 // ---------------------------------------------------------------------------
 // Validation — advisory verdicts on a filled plate.
@@ -134,8 +130,7 @@ export 'src/widgets/plate_selector.dart';
 /// `isDigits` / `isDigitsOfLength` primitives every country rule shares.
 export 'src/validators/plate_validator.dart';
 
-// The country constants, alphabets, specs, flags and country-specific
-// validators this file used to re-export left for one package each in P8; see
-// CHANGELOG.md for the import a consumer switches to. They are deliberately
-// not named here — see the note above. A host depends on the countries it
-// actually draws, and on none of them to compile.
+// Country constants, alphabets, specs, flags and country-specific validators
+// live in one package each. They are deliberately not named here — see the
+// note above. A host depends on the countries it actually draws, and on none
+// of them to compile. See CHANGELOG.md for the import a consumer switches to.
