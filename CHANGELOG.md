@@ -1,3 +1,14 @@
+## 0.9.0
+
+**`PlateTextRow` and `noCharacterChooser`.** The plain-text rendering of a
+plate — each effective text group rendered through its slots' alphabets, laid
+out in the plate's reading direction — is now one exported widget instead of
+30 identical lines in both `PlateTextView` and `core_plate_bloc`'s `PlateText`.
+`PlateTextView` builds a `PlateTextRow` off its controller; the bloc package
+builds the same off its state. `noCharacterChooser` — the required-but-never-
+called chooser for `PlateMode.display` — is likewise promoted from a private
+copy in each file to one exported function.
+
 ## 0.8.0
 
 **`PlateSpec.indicesOfGroup(key)`.** The write-side counterpart to

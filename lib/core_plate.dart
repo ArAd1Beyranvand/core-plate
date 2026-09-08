@@ -84,6 +84,11 @@ export 'src/theme/plate_theme.dart';
 export 'src/widgets/plate_canvas.dart';
 export 'src/widgets/plate_view.dart';
 
+/// The bare text row shared by `PlateTextView` and `core_plate_bloc`'s
+/// `PlateText`, plus `noCharacterChooser` — the required-but-never-called
+/// chooser for [PlateMode.display].
+export 'src/widgets/plate_text_row.dart';
+
 /// Pieces of plate chrome a host may also place on its own.
 export 'src/widgets/country_panel.dart';
 export 'src/widgets/plate_flag.dart';

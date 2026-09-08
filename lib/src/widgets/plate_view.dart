@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../input/plate_controller.dart';
-import '../model/plate_alphabet.dart';
 import '../model/plate_country.dart';
 import '../model/plate_number.dart';
 import '../model/plate_spec.dart';
 import '../theme/plate_theme.dart';
 import 'plate_canvas.dart';
 import 'plate_selector.dart';
-
-Future<String?> _noCharacterChooser(PlateAlphabet _) async => null;
+import 'plate_text_row.dart';
 
 /// Read-only plate view, driven by a [PlateController].
 ///
@@ -62,9 +60,7 @@ class PlateView extends StatelessWidget {
           theme: theme,
           country: country,
           controller: controller,
-          // Display mode never opens a chooser; onChooseCharacter is required
-          // since the keypad split, so satisfy it with one that is never called.
-          onChooseCharacter: _noCharacterChooser,
+          onChooseCharacter: noCharacterChooser,
         );
       },
     );
@@ -90,31 +86,13 @@ class PlateTextView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: controller,
-      builder: (context, _) {
-        if (controller.isEmpty) return emptyPlate ?? const SizedBox.shrink();
-        final spec = controller.spec;
-        final values = controller.values;
-        return DefaultTextStyle(
-          style: textStyle ?? const TextStyle(color: Colors.black),
-          child: Directionality(
-            textDirection: spec.textDirection,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (final g in spec.effectiveTextGroups)
-                  // Bounds-checked: a group index past the end of the value
-                  // list is skipped rather than thrown on, so a spec swap that
-                  // shortens the plate cannot crash a frame built against the
-                  // longer one.
-                  if (g.indices.any(
-                    (i) => i < values.length && (values[i] ?? '').isNotEmpty,
-                  ))
-                    Text(spec.renderGroup(g, values)),
-              ],
+      builder: (context, _) => controller.isEmpty
+          ? (emptyPlate ?? const SizedBox.shrink())
+          : PlateTextRow(
+              spec: controller.spec,
+              values: controller.values,
+              textStyle: textStyle,
             ),
-          ),
-        );
-      },
     );
   }
 }
