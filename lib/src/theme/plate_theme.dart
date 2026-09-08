@@ -70,6 +70,36 @@ class PlateTheme {
     );
   }
 
+  /// A plate printed in one ink on one field: the shape every country theme in
+  /// this workspace actually has.
+  ///
+  /// [ink] is the border, the glyphs, the rules and the completed-field
+  /// outline — a real plate does not print its divider in a different colour
+  /// from its digits, and writing those four out separately means a
+  /// recalibration can move three of them and miss the fourth.
+  ///
+  /// [inactive] is input chrome only: the outline core paints under an empty
+  /// field. It is never printed, so it takes no default — a dark field needs a
+  /// light outline and a grey one vanishes.
+  const PlateTheme.monochrome({
+    required Color field,
+    required Color ink,
+    required Color inactive,
+    required double borderWidthRatio,
+    required double plateRadiusRatio,
+    Color alertColor = const Color(0xFFF87171),
+  }) : this(
+         plateBackground: field,
+         plateBorder: ink,
+         ink: ink,
+         dividerColor: ink,
+         borderWidthRatio: borderWidthRatio,
+         plateRadiusRatio: plateRadiusRatio,
+         activeColor: ink,
+         inactiveColor: inactive,
+         alertColor: alertColor,
+       );
+
   PlateTheme copyWith({
     Color? plateBackground,
     Color? plateBorder,
