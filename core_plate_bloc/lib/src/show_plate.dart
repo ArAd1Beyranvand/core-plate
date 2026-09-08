@@ -1,10 +1,8 @@
 import 'package:core_plate/core_plate.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'plate_card_bloc.dart';
-
-Future<String?> _noCharacterChooser(PlateAlphabet _) async => null;
 
 /// Read-only plate view. Renders the real graphical plate (pixel-identical to
 /// the input widget) driven straight off [PlateCardBloc] state, in
@@ -12,45 +10,42 @@ Future<String?> _noCharacterChooser(PlateAlphabet _) async => null;
 ///
 /// For a bare text rendering of the plate string, use [PlateText] instead.
 class ShowPlate extends StatelessWidget {
-  const ShowPlate({super.key, this.emptyPlate});
+  const ShowPlate({super.key, this.emptyPlate, this.theme, this.country});
 
   final Widget? emptyPlate;
+
+  /// The livery to paint, or null to inherit from an ancestor `PlateThemeScope`.
+  /// `PlateView` has taken one since 0.4.0; a bloc-shaped host needs it just as
+  /// much — without it every plate renders in `PlateTheme.standard()`, which is
+  /// wrong for any country whose plate is not black on white.
+  final PlateTheme? theme;
+
+  /// The country block to paint, overriding the state spec's own. See
+  /// [PlateCanvas.country].
+  final PlateCountry? country;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
       builder: (context, state) {
         if (state.plateNumber.isEmpty) {
-          return _EmptyPlate(emptyPlate);
+          return emptyPlate ?? const SizedBox.shrink();
         }
         return PlateCanvas(
           spec: state.spec,
           mode: PlateMode.display,
-          // Display mode never opens a chooser; onChooseCharacter is required
-          // since the keypad split, so satisfy it with one that is never called.
-          onChooseCharacter: _noCharacterChooser,
+          theme: theme,
+          country: country,
+          onChooseCharacter: noCharacterChooser,
         );
       },
     );
   }
 }
 
-/// The shared fallback shown by [ShowPlate] and [PlateText] when the plate has
-/// no value: the caller's [replacement] if given, else an empty widget.
-class _EmptyPlate extends StatelessWidget {
-  const _EmptyPlate(this.replacement);
-
-  final Widget? replacement;
-
-  @override
-  Widget build(BuildContext context) {
-    return replacement ?? SizedBox.shrink();
-  }
-}
-
 /// Plain-text rendering of the plate string, for callers who want just the
-/// characters rather than the graphical plate. Preserves the original
-/// [ShowPlate] behaviour.
+/// characters rather than the graphical plate. The bloc-driven counterpart of
+/// `PlateTextView`.
 class PlateText extends StatelessWidget {
   const PlateText({super.key, this.emptyPlate, this.textStyle});
 
@@ -62,25 +57,12 @@ class PlateText extends StatelessWidget {
     return BlocBuilder<PlateCardBloc, PlateCardState>(
       builder: (context, state) {
         if (state.plateNumber.isEmpty) {
-          return _EmptyPlate(emptyPlate);
+          return emptyPlate ?? const SizedBox.shrink();
         }
-        final spec = state.spec;
-        final values = state.plateNumber.values;
-        return DefaultTextStyle(
-          style: textStyle ?? const TextStyle(color: Colors.black),
-          child: Directionality(
-            textDirection: spec.textDirection,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                for (final g in spec.effectiveTextGroups)
-                  if (g.indices.any(
-                    (i) => i < values.length && (values[i] ?? '').isNotEmpty,
-                  ))
-                    Text(spec.renderGroup(g, values)),
-              ],
-            ),
-          ),
+        return PlateTextRow(
+          spec: state.spec,
+          values: state.plateNumber.values,
+          textStyle: textStyle,
         );
       },
     );

@@ -20,6 +20,8 @@ dependencies:
 
 dev_dependencies:
   flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
 
 # No `flutter:` section: this package ships no assets. It is state plumbing and
 # two thin widgets over the core's own rendering.
