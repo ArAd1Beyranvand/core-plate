@@ -41,8 +41,8 @@ abstract final class YemenUnifiedSerialGenerator {
     final Random rnd = random ?? Random();
     final List<String?> values = List<String?>.filled(spec.slots.length, null);
 
-    final List<int> number = _indicesOf(spec, 'number');
-    final List<int> sideCode = _indicesOf(spec, 'sideCode');
+    final List<int> number = _require(spec, 'number');
+    final List<int> sideCode = _require(spec, 'sideCode');
 
     for (final int i in number) {
       values[i] = rnd.nextInt(10).toString();
@@ -90,8 +90,8 @@ abstract final class YemenNorthernSerialGenerator {
     final Random rnd = random ?? Random();
     final List<String?> values = List<String?>.filled(spec.slots.length, null);
 
-    final List<int> governorate = _indicesOf(spec, 'governorate');
-    final List<int> serial = _indicesOf(spec, 'serial');
+    final List<int> governorate = _require(spec, 'governorate');
+    final List<int> serial = _require(spec, 'serial');
 
     final int maxCode = governorate.length >= 2 ? YemenGovernorate.maxCode : 9;
     final String code = (YemenGovernorate.minCode +
@@ -127,13 +127,17 @@ abstract final class YemenNorthernSerialGenerator {
 }
 
 /// The slot indices of [spec]'s text group named [key].
-List<int> _indicesOf(PlateSpec spec, String key) {
-  for (final PlateTextGroup group in spec.textGroups) {
-    if (group.key == key) return group.indices;
+///
+/// [PlateSpec.indicesOfGroup] returns empty when no group carries the key; a
+/// generator handed such a spec has nothing to write, so it throws instead.
+List<int> _require(PlateSpec spec, String key) {
+  final List<int> indices = spec.indicesOfGroup(key);
+  if (indices.isEmpty) {
+    throw ArgumentError.value(
+      spec.id,
+      'spec',
+      'has no text group named "$key"',
+    );
   }
-  throw ArgumentError.value(
-    spec.id,
-    'spec',
-    'has no text group named "$key"',
-  );
+  return indices;
 }

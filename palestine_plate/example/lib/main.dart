@@ -743,9 +743,11 @@ final Map<_Sample, List<String?>> _values = {
   for (final samples in _catalogue.values)
     for (final s in samples)
       s: switch (s.kind) {
-        _Kind.westBankModern => PSSerialGenerator.modernWestBank(_rng),
-        _Kind.westBankLegacy => PSSerialGenerator.legacyWestBank(_rng),
-        _Kind.gaza => PSSerialGenerator.gaza(_rng),
+        _Kind.westBankModern =>
+          PSSerialGenerator.modernWestBank(s.spec, random: _rng),
+        _Kind.westBankLegacy =>
+          PSSerialGenerator.legacyWestBank(s.spec, random: _rng),
+        _Kind.gaza => PSSerialGenerator.gaza(s.spec, random: _rng),
       },
 };
 

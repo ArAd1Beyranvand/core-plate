@@ -1,3 +1,17 @@
+## 0.3.0
+
+- **Breaking: `PSSerialGenerator` is spec-driven.** `modernWestBank`,
+  `legacyWestBank` and `gaza` now take a `PlateSpec` and an optional
+  `random:`, matching `yemen_plate`'s generator shape. Each register's
+  characters are written at the slot indices the spec's own `region` /
+  `serial` / `governorate` / `district` / `prefix` / `usage` text groups
+  name, via `PlateSpec.indicesOfGroup`, instead of into a fixed positional
+  list. A spec whose serial sits elsewhere (e.g. a bottom-row-first two-line
+  layout) now generates correctly; before it silently produced a wrong plate.
+  Handed a spec with no matching groups, the generator throws `ArgumentError`.
+  Seeded output is byte-identical to 0.2.0 for every existing spec: the draw
+  order (and the legal value sets) are unchanged.
+
 ## 0.2.0
 
 - **Breaking: the legacy West Bank ink is a render-time value, not three specs.**
