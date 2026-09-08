@@ -50,6 +50,20 @@ class PlateEntry {
       activeIndex == null ? null : spec.groupAt(activeIndex!);
 }
 
+/// Whether every character of [value] is an ASCII digit, and [value] is not
+/// empty.
+///
+/// The one place the `^[0-9]+$` test lives. It was declared four times across
+/// three country packages, twice in the same file. Not a method on
+/// [PlateEntry], because a validator also asks it of values that never came
+/// from a slot — a database row, a scan result.
+bool isDigits(String value) =>
+    value.isNotEmpty && value.codeUnits.every((u) => u >= 0x30 && u <= 0x39);
+
+/// [isDigits] and exactly [length] characters long.
+bool isDigitsOfLength(String value, int length) =>
+    value.length == length && isDigits(value);
+
 /// A rule about whether a plate's value is acceptable.
 ///
 /// A validator NEVER prevents input. It is asked a question and answers it;
@@ -60,4 +74,29 @@ abstract class PlateValidator {
   const PlateValidator();
 
   PlateValidation validate(PlateEntry entry);
+}
+
+/// A [PlateValidator] that stays quiet until one named register has something
+/// in it.
+///
+/// Every validator in this workspace has this shape, and for one reason: a
+/// validator never bars a keystroke, so the invalid state is the only feedback
+/// there is, and a plate that flashes red at its first character is worse than
+/// no validation. The register named by [gateGroup] is the last one the user
+/// reaches, so by the time it is non-empty there is a whole plate to judge.
+///
+/// Subclasses implement [judge] and never see the empty-plate case.
+abstract class GatedPlateValidator extends PlateValidator {
+  const GatedPlateValidator();
+
+  /// The [PlateTextGroup.key] whose emptiness keeps this validator quiet.
+  String get gateGroup;
+
+  /// The verdict on a plate whose [gateGroup] is non-empty.
+  PlateValidation judge(PlateEntry entry);
+
+  @override
+  PlateValidation validate(PlateEntry entry) => entry.group(gateGroup).isEmpty
+      ? const PlateValidation.valid()
+      : judge(entry);
 }

@@ -124,6 +124,9 @@ export 'src/widgets/plate_selector.dart';
 // Validation — advisory verdicts on a filled plate.
 // ---------------------------------------------------------------------------
 
+/// `PlateValidation`, `PlateEntry`, the `PlateValidator` base and its
+/// `GatedPlateValidator` subclass (quiet until one register fills), plus the
+/// `isDigits` / `isDigitsOfLength` primitives every country rule shares.
 export 'src/validators/plate_validator.dart';
 
 // The country constants, alphabets, specs, flags and country-specific

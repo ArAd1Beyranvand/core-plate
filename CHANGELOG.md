@@ -1,3 +1,20 @@
+## 0.7.0
+
+**Validation primitives.** `plate_validator.dart` gains three shared pieces the
+country packages were each re-deriving:
+
+- `isDigits(String)` / `isDigitsOfLength(String, int)` — the `^[0-9]+$` test,
+  allocation-free, replacing four `RegExp`s across three packages. Eastern Arabic
+  numerals are not ASCII digits and read as `false`, the case `int.tryParse` gets
+  wrong.
+- `GatedPlateValidator` — the "stay quiet until one named register fills" shape
+  every validator in the workspace had. Subclasses name a `gateGroup` and
+  implement `judge`; they never see the empty-plate case. `PlateValidator` is
+  unchanged for hosts with an ungated rule.
+
+No behaviour change: every reason string, `validateFields` signature and check
+order is untouched.
+
 ## 0.6.0
 
 **The country block is a render-time choice.** `PlateCanvas` and `PlateView`
