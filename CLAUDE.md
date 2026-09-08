@@ -4,5 +4,8 @@
 - Batch independent reads/commands in one call.
 - Finish every task with: analyzer clean + `git commit`. Don't ask first.
 - No summaries of what you read. Report only the diff and commit hash.
-- Do NOT write or generate test files. This project does not use automated tests.
-  Do not create or edit files under `test/`, and do not run `flutter test`.
+- `test/` is the engine's pinned behaviour, added in P1 of the refactor roadmap
+  (`claude/REFACTOR_ROADMAP.md`). Keep it green: run `flutter test` before every
+  commit, and update the tests in the same commit as any behaviour they pin.
+- Do not add tests outside `test/` for widget rendering — goldens live in the
+  country packages, which own the assets.
