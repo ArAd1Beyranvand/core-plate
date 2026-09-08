@@ -31,7 +31,9 @@ abstract final class YemenColors {
   /// side code and the usage lines alike.
   static const Color unifiedInk = Color(0xFF111111); // CALIBRATE
 
-  /// The thick rounded outer frame.
+  /// The thick rounded outer frame. Now unreferenced — `YemenThemes.unified`
+  /// prints the frame in [unifiedInk] via `PlateTheme.monochrome`. Kept as a
+  /// distinct calibration target; candidate for removal in P9.
   static const Color unifiedFrame = Color(0xFF111111); // CALIBRATE
 
   /// The light blue of the right-hand side panel. The one System A colour the

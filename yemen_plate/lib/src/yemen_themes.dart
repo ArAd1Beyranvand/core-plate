@@ -47,87 +47,66 @@ abstract final class YemenThemes {
   /// [PlateTheme.dividerColor] is what the stippled separator strip in
   /// `YemenUnifiedPlates` is painted in — that strip is a column of
   /// [PlateRule]s, and core paints every rule in the divider colour.
-  static const PlateTheme unified = PlateTheme(
-    plateBackground: YemenColors.unifiedField,
-    plateBorder: YemenColors.unifiedFrame,
+  static const PlateTheme unified = PlateTheme.monochrome(
+    field: YemenColors.unifiedField,
     ink: YemenColors.unifiedInk,
-    dividerColor: YemenColors.unifiedInk,
+    inactive: YemenColors.inactiveOnLight,
     borderWidthRatio: _borderWidthRatio,
     plateRadiusRatio: _unifiedRadiusRatio,
-    activeColor: YemenColors.unifiedInk,
-    inactiveColor: YemenColors.inactiveOnLight,
   );
 
   /// Private vehicles: black on blue.
-  static const PlateTheme northernPrivate = PlateTheme(
-    plateBackground: YemenColors.blue,
-    plateBorder: YemenColors.darkInk,
+  static const PlateTheme northernPrivate = PlateTheme.monochrome(
+    field: YemenColors.blue,
     ink: YemenColors.darkInk,
-    dividerColor: YemenColors.darkInk,
+    inactive: YemenColors.inactiveOnDark,
     borderWidthRatio: _borderWidthRatio,
     plateRadiusRatio: _unifiedRadiusRatio,
-    activeColor: YemenColors.darkInk,
-    inactiveColor: YemenColors.inactiveOnDark,
   );
 
   /// Taxis and buses: black on yellow.
-  static const PlateTheme northernForHire = PlateTheme(
-    plateBackground: YemenColors.yellow,
-    plateBorder: YemenColors.darkInk,
+  static const PlateTheme northernForHire = PlateTheme.monochrome(
+    field: YemenColors.yellow,
     ink: YemenColors.darkInk,
-    dividerColor: YemenColors.darkInk,
+    inactive: YemenColors.inactiveOnLight,
     borderWidthRatio: _borderWidthRatio,
     plateRadiusRatio: _unifiedRadiusRatio,
-    activeColor: YemenColors.darkInk,
-    inactiveColor: YemenColors.inactiveOnLight,
   );
 
   /// Goods vehicles: black on red.
-  static const PlateTheme northernTransport = PlateTheme(
-    plateBackground: YemenColors.red,
-    plateBorder: YemenColors.darkInk,
+  static const PlateTheme northernTransport = PlateTheme.monochrome(
+    field: YemenColors.red,
     ink: YemenColors.darkInk,
-    dividerColor: YemenColors.darkInk,
+    inactive: YemenColors.inactiveOnDark,
     borderWidthRatio: _borderWidthRatio,
     plateRadiusRatio: _unifiedRadiusRatio,
-    activeColor: YemenColors.darkInk,
-    inactiveColor: YemenColors.inactiveOnDark,
   );
 
   /// Government vehicles: white on green.
-  static const PlateTheme northernGovernment = PlateTheme(
-    plateBackground: YemenColors.green,
-    plateBorder: YemenColors.lightInk,
+  static const PlateTheme northernGovernment = PlateTheme.monochrome(
+    field: YemenColors.green,
     ink: YemenColors.lightInk,
-    dividerColor: YemenColors.lightInk,
+    inactive: YemenColors.inactiveOnDark,
     borderWidthRatio: _borderWidthRatio,
     plateRadiusRatio: _unifiedRadiusRatio,
-    activeColor: YemenColors.lightInk,
-    inactiveColor: YemenColors.inactiveOnDark,
   );
 
   /// The long-standing military printing: white on black.
-  static const PlateTheme northernMilitaryClassic = PlateTheme(
-    plateBackground: YemenColors.black,
-    plateBorder: YemenColors.lightInk,
+  static const PlateTheme northernMilitaryClassic = PlateTheme.monochrome(
+    field: YemenColors.black,
     ink: YemenColors.lightInk,
-    dividerColor: YemenColors.lightInk,
+    inactive: YemenColors.inactiveOnDark,
     borderWidthRatio: _borderWidthRatio,
     plateRadiusRatio: _unifiedRadiusRatio,
-    activeColor: YemenColors.lightInk,
-    inactiveColor: YemenColors.inactiveOnDark,
   );
 
   /// The newer military printing: red on white.
-  static const PlateTheme northernMilitaryModern = PlateTheme(
-    plateBackground: YemenColors.white,
-    plateBorder: YemenColors.militaryRed,
+  static const PlateTheme northernMilitaryModern = PlateTheme.monochrome(
+    field: YemenColors.white,
     ink: YemenColors.militaryRed,
-    dividerColor: YemenColors.militaryRed,
+    inactive: YemenColors.inactiveOnLight,
     borderWidthRatio: _borderWidthRatio,
     plateRadiusRatio: _unifiedRadiusRatio,
-    activeColor: YemenColors.militaryRed,
-    inactiveColor: YemenColors.inactiveOnLight,
   );
 
   /// The northern theme for [usage] — the lookup a host calls instead of
