@@ -14,6 +14,36 @@ exactly as `theme:` overrides the inherited `PlateTheme`.
   Passing `country:` disturbs neither focus, nor the input machine, nor values.
 - Additive: every existing call site is unaffected.
 
+**A plate is registers, not rectangles.** New `plate_layout.dart` exports four
+pure functions that build the existing geometry types, so a run of evenly
+pitched cells is written once rather than one cell at a time.
+
+- `plateRegister` — `count` equal cells from `left`, stepping by `pitch`
+  (default: flush, i.e. `width`).
+- `plateRegisterAcross` — `count` cells filling `[left, right)` exactly, for a
+  register defined by the span it must fill rather than by cell width. It cannot
+  round wrong, which is the point.
+- `plateEcho` — one `PlateMirror` per source, laid out as a register: the echo
+  band a plate that prints its number twice needs.
+- `plateStipple` — `count` identical `PlateRule`s at a constant step.
+- All four return unmodifiable, freshly built lists. Nothing is added to
+  `PlateSpec`: these build `PlateSlot`, `PlateMirror` and `PlateRule` and the
+  widget layer cannot tell the difference.
+
+**`debugValidateSpec` now rejects an unevenly pitched register.** Every keyed
+`PlateTextGroup` whose slots share a `top` and `height` must be evenly spaced.
+A hand-written run of cells is a for-loop unrolled by hand, and one rounded
+coordinate is invisible until someone measures the plate — this assertion found
+three such drifts across the country packages, none of which any test could
+have caught. Groups spanning two rows are exempt; the check is assert-only and
+costs nothing in release.
+
+Note for spec authors: a `const` constructor cannot run a loop, so a spec whose
+slot list is generated is `static final` rather than `static const`. That is not
+a downgrade — `PlateSpec` equality is over `id` alone and `static final` is
+initialised lazily once per isolate — but a const-context use of such a spec
+(`const spec = …`) must become `final spec = …`.
+
 ## 0.5.0
 
 **One controller, not two.** Since 0.3.0 `PlateController` — the handle that

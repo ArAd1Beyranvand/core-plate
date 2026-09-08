@@ -289,6 +289,34 @@ bool debugValidateSpec(PlateSpec spec) {
     );
   }
 
+  // A register drifts silently: a hand-written run of cells is a for-loop
+  // unrolled by hand, and one rounded coordinate is invisible until someone
+  // measures the plate. Checked only for keyed groups of three or more cells
+  // that share a row, so a two-line layout — which splits one register across
+  // two bands — is exempt, as is a pair, which has no pitch to be wrong about.
+  for (final g in spec.effectiveTextGroups) {
+    if (g.key == null || g.indices.length < 3) continue;
+    final boxes = <PlateBox>[
+      for (final i in g.indices)
+        if (spec.slotAt(i) != null) spec.slots[i].box,
+    ];
+    if (boxes.length != g.indices.length) continue;
+    final sameRow = boxes.every(
+      (b) => b.top == boxes.first.top && b.height == boxes.first.height,
+    );
+    if (!sameRow) continue;
+    final pitch = boxes[1].left - boxes[0].left;
+    for (var n = 1; n < boxes.length; n++) {
+      assert(
+        (boxes[n].left - boxes[0].left - n * pitch).abs() < 0.01,
+        'Register "${g.key}" in spec "${spec.id}" is unevenly pitched: cell $n '
+        'sits at ${boxes[n].left}, but a pitch of $pitch puts it at '
+        '${boxes[0].left + n * pitch}. Build it with plateRegister/'
+        'plateRegisterAcross rather than cell by cell.',
+      );
+    }
+  }
+
   // Alphabet ids must be a stable key for *rendered* character content: within
   // one spec, no id may appear with two different characters/glyphs pairs, and
   // no two distinct ids may share one pair.

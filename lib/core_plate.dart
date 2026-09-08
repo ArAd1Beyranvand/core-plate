@@ -40,6 +40,11 @@ export 'src/model/plate_box.dart';
 /// `assert`-only consistency check for spec authors.
 export 'src/model/plate_spec.dart';
 
+/// Constructors for the regular parts of a face: a register of equal cells, an
+/// echo band, a stipple. A plate is registers, not rectangles — and a register
+/// written cell by cell is a for-loop unrolled by hand, which drifts.
+export 'src/model/plate_layout.dart';
+
 /// The character set behind a slot, and how the user supplies a character
 /// from it.
 export 'src/model/plate_alphabet.dart';
