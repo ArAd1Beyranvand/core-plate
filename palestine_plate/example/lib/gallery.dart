@@ -64,10 +64,9 @@ class _Entry {
 
   /// The usage this card's colour comes from, for the West Bank schemes.
   ///
-  /// Null for Gaza, whose usage is on the plate — see [_themeFor]. It is not a
-  /// picker: each legacy ink variant is a *different spec* (the `ف / P` block
-  /// carries its own colour on the [PlateCountry], which no theme can
-  /// recolour), so the usage that goes with each one is fixed here.
+  /// Null for Gaza, whose usage is on the plate — see [_themeFor]. Drives both
+  /// the theme (`PSThemes.forUsage`) and the `ف / P` block ink
+  /// (`PSWestBankPlates.legacyCountryForUsage`, handed to `PlateCanvas.country`).
   final PSUsage? usage;
 }
 
@@ -116,17 +115,17 @@ final List<_Entry> _westBank = <_Entry>[
     usage: PSUsage.private,
   ),
   _Entry(
-    // The inverted plate: usage code 30. A whole second spec for one colour,
-    // because the `ف / P` block's ink lives on the country.
+    // The inverted plate: usage code 30. Same spec as above; the white ink
+    // comes from `country:` at render time.
     label: 'Legacy public transport — white on green',
-    spec: PSWestBankPlates.legacyCarPublicTransport,
+    spec: PSWestBankPlates.legacyCar,
     kind: _Kind.westBankLegacy,
     usage: PSUsage.publicTransport,
   ),
   _Entry(
-    // Government (99) and duty-exempt (31) share this one.
+    // Government (99) and duty-exempt (31): red ink, again via `country:`.
     label: 'Legacy government / exempt — red on white',
-    spec: PSWestBankPlates.legacyCarGovernment,
+    spec: PSWestBankPlates.legacyCar,
     kind: _Kind.westBankLegacy,
     usage: PSUsage.government,
   ),
@@ -321,6 +320,11 @@ class _PlateCardState extends State<_PlateCard> {
               spec: spec,
               // Colour is derived and passed in. PlateSpec has no theme field.
               theme: _themeFor(entry, _plate.values),
+              // The `ف / P` block ink, likewise derived from usage and passed
+              // at render time rather than pinned to the spec.
+              country: entry.kind == _Kind.westBankLegacy && entry.usage != null
+                  ? PSWestBankPlates.legacyCountryForUsage(entry.usage!)
+                  : null,
               // No `inputSource`: each plate takes the platform default, so
               // tapping a slot on any card types into that card. See the
               // library comment.

@@ -45,8 +45,21 @@ PlateCanvas(
 );
 ```
 
+For a legacy plate, whose `ف / P` block ink follows its usage, pass `country:`
+beside the theme — one spec, recoloured at render time rather than a spec per ink:
+
+```dart
+PlateCanvas(
+  spec: PSWestBankPlates.legacyCar,
+  theme: PSThemes.forUsage(PSUsage.publicTransport),
+  country: PSWestBankPlates.legacyCountryForUsage(PSUsage.publicTransport),
+  validator: const PSWestBankLegacyValidator(),
+  autoValidate: true,
+);
+```
+
 `example/` holds two apps: `lib/main.dart`, one plate with pickers and a keypad,
-and `lib/gallery.dart`, all thirteen specs on one page, each empty and editable
+and `lib/gallery.dart`, all eleven specs on one page, each empty and editable
 (`flutter run -t lib/gallery.dart`). The gallery is the fastest way to see what
 this package draws.
 
@@ -144,9 +157,10 @@ directly. That is what the serial generator and the tests call.
 - `PSGovernorate` - the thirteen letters with Arabic and English names.
 - `PSUsage`, `PSLegacyUsage` and `PSGazaUsage` - the two unrelated usage-code maps.
 - `PSColors` and `PSThemes` - eight themes plus `forUsage` / `forGazaUsageCode`.
-- `PSWestBankPlates` - `modernCar`, `legacyCar`, `legacyCarPublicTransport`,
-  `legacyCarGovernment`, `modernCarTwoLine`, `legacyCarTwoLine`, `modernMoto`,
-  `modernMotoTwoLine`, `modernTrade`, and `all`.
+- `PSWestBankPlates` - `modernCar`, `legacyCar`, `modernCarTwoLine`,
+  `legacyCarTwoLine`, `modernMoto`, `modernMotoTwoLine`, `modernTrade`, `all`,
+  and `legacyCountryForUsage` (the `ف / P` ink for a legacy usage, handed to
+  `PlateCanvas.country`).
 - `PSGazaPlates` - `car2012`, `car2012TwoLine`, `car2021TwoLine`, `moto`, `all`.
 - `PSWestBankModernValidator`, `PSWestBankLegacyValidator`, `PSGazaValidator`.
 - `PSSerialGenerator` - reproducible synthetic serials, one per scheme.

@@ -3,8 +3,6 @@ import 'package:core_plate/core_plate.dart';
 import 'palestine_governorates.dart';
 import 'palestine_usage.dart';
 
-final RegExp _digits = RegExp(r'^[0-9]+$');
-
 /// Judges a modern (post-July-2018) West Bank plate: `D · DDDD · L`.
 ///
 /// Modern and legacy are different specs with different last groups — a letter
@@ -18,8 +16,11 @@ final RegExp _digits = RegExp(r'^[0-9]+$');
 /// only feedback there is, and a plate that flashes red before the user has
 /// reached the last slot is worse than no validation at all — the rule
 /// `PalestinePlateValidator` and `GermanPlateValidator` already follow.
-class PSWestBankModernValidator extends PlateValidator {
+class PSWestBankModernValidator extends GatedPlateValidator {
   const PSWestBankModernValidator();
+
+  @override
+  String get gateGroup => 'governorate';
 
   static const String invalidRegion = 'Region code must be one digit.';
   static const String invalidSerial = 'Serial must be four digits.';
@@ -38,16 +39,11 @@ class PSWestBankModernValidator extends PlateValidator {
       'Governorate letter must be one of A-N (I and O excluded).';
 
   @override
-  PlateValidation validate(PlateEntry entry) {
-    final governorate = entry.group('governorate');
-    if (governorate.isEmpty) return const PlateValidation.valid();
-
-    return validateFields(
-      region: entry.group('region'),
-      serial: entry.group('serial'),
-      governorate: governorate,
-    );
-  }
+  PlateValidation judge(PlateEntry entry) => validateFields(
+        region: entry.group('region'),
+        serial: entry.group('serial'),
+        governorate: entry.group('governorate'),
+      );
 
   /// The country rule without a spec: pass the plate's own slot values in.
   /// Used directly by [PSSerialGenerator] and by the boundary-case tests.
@@ -56,10 +52,10 @@ class PSWestBankModernValidator extends PlateValidator {
     required String serial,
     required String governorate,
   }) {
-    if (region.length != 1 || !_digits.hasMatch(region)) {
+    if (!isDigitsOfLength(region, 1)) {
       return const PlateValidation.invalid(invalidRegion);
     }
-    if (serial.length != 4 || !_digits.hasMatch(serial)) {
+    if (!isDigitsOfLength(serial, 4)) {
       return const PlateValidation.invalid(invalidSerial);
     }
     if (PSGovernorate.confusableLetters.contains(governorate)) {
@@ -80,8 +76,11 @@ class PSWestBankModernValidator extends PlateValidator {
 ///
 /// Stays quiet until the usage group has something in it — see
 /// [PSWestBankModernValidator]'s doc for why.
-class PSWestBankLegacyValidator extends PlateValidator {
+class PSWestBankLegacyValidator extends GatedPlateValidator {
   const PSWestBankLegacyValidator();
+
+  @override
+  String get gateGroup => 'usage';
 
   /// `0` and `2` are not legal district codes — see [PSLegacyUsage.districts].
   static const String invalidDistrictCode =
@@ -93,16 +92,11 @@ class PSWestBankLegacyValidator extends PlateValidator {
       'Usage code is not a legal class (see PSLegacyUsage.codes).';
 
   @override
-  PlateValidation validate(PlateEntry entry) {
-    final usage = entry.group('usage');
-    if (usage.isEmpty) return const PlateValidation.valid();
-
-    return validateFields(
-      district: entry.group('district'),
-      serial: entry.group('serial'),
-      usage: usage,
-    );
-  }
+  PlateValidation judge(PlateEntry entry) => validateFields(
+        district: entry.group('district'),
+        serial: entry.group('serial'),
+        usage: entry.group('usage'),
+      );
 
   static PlateValidation validateFields({
     required String district,
@@ -113,7 +107,7 @@ class PSWestBankLegacyValidator extends PlateValidator {
         !PSLegacyUsage.districtCodes.contains(district)) {
       return const PlateValidation.invalid(invalidDistrictCode);
     }
-    if (serial.length != 4 || !_digits.hasMatch(serial)) {
+    if (!isDigitsOfLength(serial, 4)) {
       return const PlateValidation.invalid(invalidSerial);
     }
     if (PSLegacyUsage.forCode(usage) == null) {
@@ -127,8 +121,11 @@ class PSWestBankLegacyValidator extends PlateValidator {
 ///
 /// Stays quiet until the usage group has something in it, for the same reason
 /// as the West Bank validators.
-class PSGazaValidator extends PlateValidator {
+class PSGazaValidator extends GatedPlateValidator {
   const PSGazaValidator();
+
+  @override
+  String get gateGroup => 'usage';
 
   static const String gazaPrefixNotThree =
       'A Gaza plate always begins with 3.';
@@ -139,16 +136,11 @@ class PSGazaValidator extends PlateValidator {
       'Usage code is not a legal Gaza class (00-29 or 40-59).';
 
   @override
-  PlateValidation validate(PlateEntry entry) {
-    final usage = entry.group('usage');
-    if (usage.isEmpty) return const PlateValidation.valid();
-
-    return validateFields(
-      prefix: entry.group('prefix'),
-      serial: entry.group('serial'),
-      usage: usage,
-    );
-  }
+  PlateValidation judge(PlateEntry entry) => validateFields(
+        prefix: entry.group('prefix'),
+        serial: entry.group('serial'),
+        usage: entry.group('usage'),
+      );
 
   static PlateValidation validateFields({
     required String prefix,
@@ -158,7 +150,7 @@ class PSGazaValidator extends PlateValidator {
     if (prefix != '3') {
       return const PlateValidation.invalid(gazaPrefixNotThree);
     }
-    if (serial.length != 4 || !_digits.hasMatch(serial)) {
+    if (!isDigitsOfLength(serial, 4)) {
       return const PlateValidation.invalid(invalidSerial);
     }
     if (PSGazaUsage.forCode(usage) == null) {

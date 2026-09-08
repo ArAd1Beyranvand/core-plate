@@ -59,9 +59,10 @@ import 'palestine_usage.dart';
 /// None of these specs carries a colour. [PlateSpec] has no theme field; the
 /// host passes `PSThemes.forUsage(usage)`. Where the *ink* changes — the
 /// inverted public-transport plate, the red government plate — the `ف / P`
-/// block has to change with it, and [PlateCountry] carries its own colours, so
-/// those schemes get their own spec consts: [legacyCarPublicTransport] and
-/// [legacyCarGovernment], with [legacyCarForUsage] as the lookup.
+/// block has to change with it, and it does: the host hands
+/// `PSWestBankPlates.legacyCountryForUsage(usage)` to `PlateCanvas.country`
+/// beside the theme, and the block is recoloured at render time. One spec,
+/// [legacyCar], covers every legacy usage.
 ///
 /// Motorcycles use the identical serial grammar and are legally private
 /// vehicles. [modernMoto] and [modernMotoTwoLine] are form factors, not a
@@ -209,8 +210,9 @@ abstract final class PSWestBankPlates {
     PlateTextGroup([5, 6], key: 'usage'),
   ];
 
-  /// The pre-2018 West Bank car plate, green on white — the private, leased and
-  /// (by convention) police colouring.
+  /// The pre-2018 West Bank car plate. Green on white by default — the private,
+  /// leased and (by convention) police colouring — and recoloured for other
+  /// usages by handing [legacyCountryForUsage] to `PlateCanvas.country`.
   ///
   /// The trailing pair is a usage class, so a host that has the plate's value
   /// can derive both the usage and the colour from it:
@@ -228,54 +230,23 @@ abstract final class PSWestBankPlates {
     textGroups: _legacyGroups,
   );
 
-  /// [legacyCar] with the `ف / P` block in white, for the inverted
-  /// public-transport plate (usage `30`). Pair with `PSThemes.whiteOnGreen`.
+  /// The `ف / P` block a legacy plate of this usage is printed in — the value a
+  /// host hands to `PlateCanvas.country` beside the theme from
+  /// `PSThemes.forUsage`.
   ///
-  /// A whole second spec for one colour because [PlateCountry] carries its own
-  /// text colour and [PlateSpec] carries a country: there is no way to recolour
-  /// the block from the theme. Swapping to it mid-entry carries the value
-  /// across — see the note on [legacyCarForUsage].
-  static final PlateSpec legacyCarPublicTransport = PlateSpec(
-    id: 'ps.wb.legacy.car.publicTransport',
-    country: PSCountries.westBankWhiteInk,
-    canvasWidth: 520,
-    canvasHeight: 110,
-    panel: _carPanel,
-    borderWidthRatioOverride: 0.027,
-    slots: _legacyCarSlots,
-    rules: _carRules,
-    labels: _legacyCarLabels,
-    textGroups: _legacyGroups,
-  );
-
-  /// [legacyCar] with the block in red, for government (`99`) and duty-exempt
-  /// (`31`) plates. Pair with `PSThemes.redOnWhite`.
-  static final PlateSpec legacyCarGovernment = PlateSpec(
-    id: 'ps.wb.legacy.car.government',
-    country: PSCountries.westBankRedInk,
-    canvasWidth: 520,
-    canvasHeight: 110,
-    panel: _carPanel,
-    borderWidthRatioOverride: 0.027,
-    slots: _legacyCarSlots,
-    rules: _carRules,
-    labels: _legacyCarLabels,
-    textGroups: _legacyGroups,
-  );
-
-  /// The one-line legacy spec whose `ف / P` block matches [usage]'s ink.
-  ///
-  /// Every spec it returns has the same seven slots and the same geometry, but
-  /// a different [PlateSpec.id]. Swapping `spec:` on a live [PlateCanvas]
-  /// carries the value across as `PlateCanvas.onSpecChange` directs — with
-  /// `byGroupKey` the registers already entered are kept, and only characters
-  /// the new alphabet refuses are dropped. The example passes `byGroupKey` and
-  /// lets the usage change mid-entry.
-  static PlateSpec legacyCarForUsage(PSUsage usage) => switch (usage) {
-    PSUsage.publicTransport => legacyCarPublicTransport,
-    PSUsage.government || PSUsage.exempt => legacyCarGovernment,
-    _ => legacyCar,
+  /// Replaces `legacyCarForUsage`, which returned a whole second spec for a
+  /// colour. Geometry is identical across every legacy usage; only the ink
+  /// changes, and ink is a render-time choice.
+  static PlateCountry legacyCountryForUsage(PSUsage usage) => switch (usage) {
+    PSUsage.publicTransport || PSUsage.tradePlate => PSCountries.westBankWhiteInk,
+    PSUsage.government || PSUsage.exempt => PSCountries.westBankRedInk,
+    _ => PSCountries.westBankGreenInk,
   };
+
+  /// Deprecated: returns [legacyCar] regardless of usage. The colour is now a
+  /// render-time input — pass [legacyCountryForUsage] to `PlateCanvas.country`.
+  @Deprecated('Use legacyCountryForUsage with PlateCanvas.country instead')
+  static PlateSpec legacyCarForUsage(PSUsage usage) => legacyCar;
 
   // -------------------------------------------------------------------------
   // Two-line 300 x 150, for imported vehicles whose bumper cannot take a
@@ -592,8 +563,6 @@ abstract final class PSWestBankPlates {
   static final List<PlateSpec> all = [
     modernCar,
     legacyCar,
-    legacyCarPublicTransport,
-    legacyCarGovernment,
     modernCarTwoLine,
     legacyCarTwoLine,
     modernMoto,

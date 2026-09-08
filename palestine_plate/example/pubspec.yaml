@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   core_plate: ^0.5.0
   plate_keypad: ^0.1.0
-  palestine_plate: ^0.1.0
+  palestine_plate: ^0.2.0
 
 dev_dependencies:
   flutter_lints: ^6.0.0

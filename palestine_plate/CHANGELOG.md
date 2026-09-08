@@ -1,5 +1,17 @@
-## Unreleased
+## 0.2.0
 
+- **Breaking: the legacy West Bank ink is a render-time value, not three specs.**
+  Removed `PSWestBankPlates.legacyCarPublicTransport` and
+  `PSWestBankPlates.legacyCarGovernment` — geometry clones of `legacyCar` that
+  differed only in the `ف / P` block ink. Removed the `legacyCarForUsage`
+  lookup (kept for one release as a `@Deprecated` shim that returns `legacyCar`
+  regardless of usage). Use `legacyCar` with
+  `PSWestBankPlates.legacyCountryForUsage(usage)` handed to `PlateCanvas.country`,
+  beside `PSThemes.forUsage(usage)`. `PSWestBankPlates.all` and
+  the gallery now hold 11 specs, not 13. The three ink consts
+  (`PSCountries.westBankGreenInk` / `.westBankWhiteInk` / `.westBankRedInk`)
+  stay — they are exactly what a host now passes to `country:`. Goldens
+  unchanged.
 - **Fixed: `PSWestBankPlates.modernMoto`'s serial was unevenly pitched.** Its
   four digits were hand-written at x 60.5, 92, 124, 156 — pitches of **31.5**,
   32, 32 — and are now a uniform 32 from x 60: 60, 92, 124, 156. The first cell

@@ -105,19 +105,16 @@ final List<_Scheme> _gazaMotorcycleSchemes = [
   _Scheme('Standard', PSGazaPlates.moto, _Kind.gaza, isMotorcycle: true),
 ];
 
-/// The spec to draw for [scheme] at [usage].
-///
-/// Only the legacy West Bank plate varies: its `ف / P` block is printed in the
-/// plate's ink, so an inverted (white-on-green) or a red plate needs the const
-/// whose [PlateCountry] carries that ink. Same geometry, different country.
-PlateSpec _specFor(_Scheme scheme, PSUsage usage) {
-  if (scheme.base != PSWestBankPlates.legacyCar) return scheme.base;
-  return switch (usage) {
-    PSUsage.publicTransport => PSWestBankPlates.legacyCarPublicTransport,
-    PSUsage.government ||
-    PSUsage.exempt => PSWestBankPlates.legacyCarGovernment,
-    _ => PSWestBankPlates.legacyCar,
-  };
+/// The spec to draw for [scheme]. Geometry only — the ink comes from
+/// [_countryFor], handed to `PlateCanvas.country` at render time.
+PlateSpec _specFor(_Scheme scheme, PSUsage usage) => scheme.base;
+
+/// The `ف / P` block ink for [scheme] at [usage]. Only the legacy West Bank
+/// plate varies — an inverted (white-on-green) or red plate is the same
+/// geometry with a different [PlateCountry].
+PlateCountry? _countryFor(_Scheme scheme, PSUsage usage) {
+  if (scheme.base != PSWestBankPlates.legacyCar) return null;
+  return PSWestBankPlates.legacyCountryForUsage(usage);
 }
 
 /// The theme to paint [spec] in. **Never chosen — always derived.**
@@ -352,6 +349,7 @@ class _DemoState extends State<_Demo> {
           child: PlateCanvas(
             spec: spec,
             theme: theme,
+            country: _countryFor(_scheme, _usage),
             // Real text fields: each slot opens the platform keyboard.
             inputSource: PlateInputSource.system,
             validator: _validatorFor(_scheme.kind),
@@ -612,6 +610,7 @@ class _Sample {
     required this.spec,
     required this.theme,
     required this.kind,
+    this.country,
     this.note,
   });
 
@@ -620,6 +619,10 @@ class _Sample {
   final PlateSpec spec;
   final PlateTheme theme;
   final _Kind kind;
+
+  /// The `ف / P` block ink, for the legacy West Bank liveries. Null keeps the
+  /// spec's own country.
+  final PlateCountry? country;
 }
 
 /// The catalogue, grouped by region.
@@ -678,16 +681,17 @@ Map<String, List<_Sample>> _buildCatalogue() {
       _Sample(
         label: 'Public transport',
         // The legacy `ف / P` block is printed in the plate's own ink, so an
-        // inverted plate needs the spec that carries that ink — not just a
-        // different theme over the same spec.
-        spec: PSWestBankPlates.legacyCarPublicTransport,
+        // inverted plate recolours the block via `country:` — same spec.
+        spec: PSWestBankPlates.legacyCar,
         theme: PSThemes.forUsage(PSUsage.publicTransport),
+        country: PSWestBankPlates.legacyCountryForUsage(PSUsage.publicTransport),
         kind: _Kind.westBankLegacy,
       ),
       _Sample(
         label: 'Government',
-        spec: PSWestBankPlates.legacyCarGovernment,
+        spec: PSWestBankPlates.legacyCar,
         theme: PSThemes.forUsage(PSUsage.government),
+        country: PSWestBankPlates.legacyCountryForUsage(PSUsage.government),
         kind: _Kind.westBankLegacy,
       ),
       _Sample(
@@ -861,7 +865,11 @@ class _SampleCardState extends State<_SampleCard> {
                 width: 74 * spec.canvasWidth / spec.canvasHeight,
                 child: PlateThemeScope(
                   theme: _theme,
-                  child: PlateView(controller: _plate, theme: _theme),
+                  child: PlateView(
+                    controller: _plate,
+                    theme: _theme,
+                    country: widget.sample.country,
+                  ),
                 ),
               ),
             ),

@@ -19,9 +19,12 @@ import 'yemen_governorates.dart';
 ///
 /// The side code's two digits are checked for shape and nothing else. See
 /// [reasonSideCodeLength] and the TODO in [validateFields].
-class YemenUnifiedValidator extends PlateValidator {
+class YemenUnifiedValidator extends GatedPlateValidator {
   /// A stateless rule; hold one as a `const`.
   const YemenUnifiedValidator();
+
+  @override
+  String get gateGroup => 'sideCode';
 
   /// Reported when the vehicle number holds something other than digits.
   static const String reasonNumberNotNumeric =
@@ -37,22 +40,15 @@ class YemenUnifiedValidator extends PlateValidator {
   /// Reported when the side code is not exactly two digits.
   static const String reasonSideCodeLength = 'The side code is two digits.';
 
-  static final RegExp _digits = RegExp(r'^[0-9]+$');
-
   /// The shortest and longest vehicle number this system prints.
   static const int minNumberLength = 4;
   static const int maxNumberLength = 6;
 
   @override
-  PlateValidation validate(PlateEntry entry) {
-    final String sideCode = entry.group('sideCode');
-    if (sideCode.isEmpty) return const PlateValidation.valid();
-
-    return validateFields(
-      number: entry.group('number'),
-      sideCode: sideCode,
-    );
-  }
+  PlateValidation judge(PlateEntry entry) => validateFields(
+        number: entry.group('number'),
+        sideCode: entry.group('sideCode'),
+      );
 
   /// The rule without a spec: pass the two registers in directly.
   ///
@@ -71,14 +67,14 @@ class YemenUnifiedValidator extends PlateValidator {
     required String number,
     required String sideCode,
   }) {
-    if (number.isNotEmpty && !_digits.hasMatch(number)) {
+    if (number.isNotEmpty && !isDigits(number)) {
       return const PlateValidation.invalid(reasonNumberNotNumeric);
     }
     if (number.length < minNumberLength || number.length > maxNumberLength) {
       return const PlateValidation.invalid(reasonNumberLength);
     }
 
-    if (!_digits.hasMatch(sideCode)) {
+    if (!isDigits(sideCode)) {
       return const PlateValidation.invalid(reasonSideCodeNotNumeric);
     }
     if (sideCode.length != 2) {
@@ -99,9 +95,12 @@ class YemenUnifiedValidator extends PlateValidator {
 /// This validator checks more than its unified counterpart, because System B's
 /// grammar is documented where System A's side code is not: the governorate
 /// code is a real number in a real range, and the serial is never zero-padded.
-class YemenNorthernValidator extends PlateValidator {
+class YemenNorthernValidator extends GatedPlateValidator {
   /// A stateless rule; hold one as a `const`.
   const YemenNorthernValidator();
+
+  @override
+  String get gateGroup => 'serial';
 
   /// Reported when the governorate register holds something other than digits.
   static const String reasonGovernorateNotNumeric =
@@ -126,22 +125,15 @@ class YemenNorthernValidator extends PlateValidator {
   static const String reasonSerialLeadingZero =
       'The serial is not padded with leading zeros.';
 
-  static final RegExp _digits = RegExp(r'^[0-9]+$');
-
   /// The shortest and longest serial this system prints.
   static const int minSerialLength = 1;
   static const int maxSerialLength = 6;
 
   @override
-  PlateValidation validate(PlateEntry entry) {
-    final String serial = entry.group('serial');
-    if (serial.isEmpty) return const PlateValidation.valid();
-
-    return validateFields(
-      governorate: entry.group('governorate'),
-      serial: serial,
-    );
-  }
+  PlateValidation judge(PlateEntry entry) => validateFields(
+        governorate: entry.group('governorate'),
+        serial: entry.group('serial'),
+      );
 
   /// The rule without a spec: pass the two registers in directly.
   ///
@@ -159,7 +151,7 @@ class YemenNorthernValidator extends PlateValidator {
     if (governorate.isEmpty || governorate.length > 2) {
       return const PlateValidation.invalid(reasonGovernorateLength);
     }
-    if (!_digits.hasMatch(governorate)) {
+    if (!isDigits(governorate)) {
       return const PlateValidation.invalid(reasonGovernorateNotNumeric);
     }
     final int code = int.parse(governorate);
@@ -170,7 +162,7 @@ class YemenNorthernValidator extends PlateValidator {
     if (serial.length < minSerialLength || serial.length > maxSerialLength) {
       return const PlateValidation.invalid(reasonSerialLength);
     }
-    if (!_digits.hasMatch(serial)) {
+    if (!isDigits(serial)) {
       return const PlateValidation.invalid(reasonSerialNotNumeric);
     }
     if (serial.startsWith('0')) {

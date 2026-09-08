@@ -17,11 +17,12 @@ import 'palestine_colors.dart';
 ///
 /// ## Why there are several West Bank consts
 ///
-/// [PlateCountry] carries colours and [PlateSpec] carries a country, so a
-/// country const is pinned to one colour scheme — which collides head-on with
-/// a design whose colour is derived from usage. The resolution is one const per
-/// **ink** colour, with [PlateCountry.panelColor] left transparent so the plate
-/// face shows through whatever the host's [PlateTheme] paints it:
+/// A West Bank plate's ink is derived from its usage, so there is one const per
+/// **ink** colour. These are render-time values: a host picks one with
+/// `PSWestBankPlates.legacyCountryForUsage(usage)` and hands it to
+/// `PlateCanvas.country`, exactly as it hands the theme in beside it. The specs
+/// no longer choose between them. [PlateCountry.panelColor] is left transparent
+/// so the plate face shows through whatever the host's [PlateTheme] paints it:
 ///
 /// - [westBankGreenInk] — private, leased, police.
 /// - [westBankWhiteInk] — public transport (inverted, white on green) and the

@@ -15,6 +15,7 @@ void main() {
     WidgetTester tester, {
     required PlateSpec spec,
     required PlateTheme theme,
+    PlateCountry? country,
     required List<String?> values,
     required String name,
   }) async {
@@ -29,7 +30,11 @@ void main() {
               height: 520 * spec.canvasHeight / spec.canvasWidth,
               child: PlateThemeScope(
                 theme: theme,
-                child: PlateView(controller: controller, theme: theme),
+                child: PlateView(
+                  controller: controller,
+                  theme: theme,
+                  country: country,
+                ),
               ),
             ),
           ),
@@ -74,8 +79,9 @@ void main() {
     testWidgets('legacy car, public transport (white on green)', (tester) async {
       await renderGolden(
         tester,
-        spec: PSWestBankPlates.legacyCarPublicTransport,
+        spec: PSWestBankPlates.legacyCar,
         theme: PSThemes.forUsage(PSUsage.publicTransport),
+        country: PSWestBankPlates.legacyCountryForUsage(PSUsage.publicTransport),
         values: const ['4', '0', '2', '3', '4', '3', '0'],
         name: 'wb_legacy_car_publicTransport_whiteOnGreen',
       );
@@ -84,8 +90,9 @@ void main() {
     testWidgets('legacy car, government (red on white)', (tester) async {
       await renderGolden(
         tester,
-        spec: PSWestBankPlates.legacyCarGovernment,
+        spec: PSWestBankPlates.legacyCar,
         theme: PSThemes.forUsage(PSUsage.government),
+        country: PSWestBankPlates.legacyCountryForUsage(PSUsage.government),
         values: const ['4', '0', '2', '3', '4', '9', '9'],
         name: 'wb_legacy_car_government_red',
       );
