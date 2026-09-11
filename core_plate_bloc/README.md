@@ -62,7 +62,7 @@ binding creates one for the controller's spec and disposes it with itself.
 
 `ShowPlate` and `PlateText` are superseded by `core_plate`'s `PlateView` and
 `PlateTextView`, which render a controller, take a `PlateTheme`, and need no provider
-above them. Prefer those in new code.
+above them. Prefer those in new code — the repo's `plate_gallery/` app uses them
+throughout.
 
-`RemovePlateCard` is deprecated and will be removed in 1.0.0 — clear the plate through
-`PlateController.clear()`.
+Clear the plate through `PlateController.clear()`.

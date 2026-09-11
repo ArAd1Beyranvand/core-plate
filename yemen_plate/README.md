@@ -98,11 +98,10 @@ usage never changed a cell. `YemenUsage.onUnified` and `.onNorthern` say which
 system issues which, if you want to grey an option out - `police` is System A
 only and `military` System B only.
 
-`example/` holds two apps: `lib/main.dart`, one plate with pickers and a keypad,
-and `lib/gallery.dart`, every geometry crossed with every usage its system
-issues on one page, each empty and editable (`flutter run -t lib/gallery.dart`).
-The gallery walks the geometry maps above and passes the usage as a `country:`,
-which is exactly what a host does.
+`example/` is one plate, the shortest thing that runs. Every geometry crossed
+with every usage its system issues - alongside the other countries' - is in the
+repo's `plate_gallery/` app, which walks the geometry maps above and passes the
+usage as a `country:`, exactly as a host does.
 
 ## Pick the shape before entry begins
 

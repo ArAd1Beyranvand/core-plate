@@ -25,7 +25,7 @@ describes. **Adding a plate here means adding a `const`.**
 ## Depends on
 
 `core_plate` alone - not `iran_plate`, not `germany_plate`, not `plate_keypad`, not
-`core_plate_bloc`. The keypad appears in `example/pubspec.yaml` and nowhere else.
+`core_plate_bloc`, and not in `example/` either.
 
 ## Use
 
@@ -58,10 +58,9 @@ PlateCanvas(
 );
 ```
 
-`example/` holds two apps: `lib/main.dart`, one plate with pickers and a keypad,
-and `lib/gallery.dart`, all eleven specs on one page, each empty and editable
-(`flutter run -t lib/gallery.dart`). The gallery is the fastest way to see what
-this package draws.
+`example/` is one plate, the shortest thing that runs. All eleven specs in every
+livery they print in - alongside the other countries' - are in the repo's
+`plate_gallery/` app; that is the fastest way to see what this package draws.
 
 ## Two designs, not one plate with a flag
 
@@ -133,7 +132,7 @@ register on the new spec and truncates only what no longer fits, instead of empt
 the plate. **So swapping scheme or form factor mid-entry keeps what still makes
 sense** - a five-digit serial survives the jump from `modernCar` to `modernMoto`, the
 trailing governorate letter does not survive the jump to a scheme that has no such
-slot. `example/lib/main.dart` relies on this; it no longer re-seeds by hand. Pass
+slot. `plate_gallery`'s playground relies on this; it never re-seeds by hand. Pass
 `onSpecChange:` to choose `byIndex` or `none` instead.
 
 ## Validation is advisory
