@@ -31,41 +31,14 @@ class PlaygroundScreen extends StatefulWidget {
 class _PlaygroundScreenState extends State<PlaygroundScreen> {
   PlateInputSource _inputSource = PlateInputSource.system;
 
-  /// The plate's characters. Held here because this screen *reads* the value on
-  /// every build — livery, verdict and Submit all derive from it — and writes
-  /// none of it. The canvas is the only writer, and it adopts a new spec itself
-  /// when a picker swaps one in.
+  /// The plate's characters. Held here because three things on this screen are
+  /// derived from the value — the livery, the verdict line and Submit's enabled
+  /// state — and none of them is written here. The canvas is the only writer,
+  /// and it adopts a new spec itself when a picker swaps one in.
   late final PlateController _plate = PlateController(spec: widget.entry.spec);
 
   @override
-  void initState() {
-    super.initState();
-    // A plain listener rather than a `ListenableBuilder` around the canvas:
-    // attaching notifies synchronously from the canvas's `initState`, so a
-    // builder that both listened and built the canvas would be marked dirty in
-    // the middle of its own build.
-    _plate.addListener(_onPlateChanged);
-  }
-
-  void _onPlateChanged() {
-    if (!mounted) return;
-    // That same synchronous notification lands mid-build, where `setState` is
-    // an error. Everything it affects here is chrome around the plate, so
-    // settling it on the next frame costs nothing visible.
-    final SchedulerPhase phase = SchedulerBinding.instance.schedulerPhase;
-    if (phase == SchedulerPhase.persistentCallbacks ||
-        phase == SchedulerPhase.midFrameMicrotasks) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() {});
-      });
-      return;
-    }
-    setState(() {});
-  }
-
-  @override
   void dispose() {
-    _plate.removeListener(_onPlateChanged);
     _plate.dispose();
     super.dispose();
   }
@@ -95,8 +68,6 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
   @override
   Widget build(BuildContext context) {
     final GalleryEntry entry = this.entry;
-    final PlateValidation? verdict = _plate.validation;
-    final PlateSlot? active = _plate.activeSlot;
     return Column(
       children: <Widget>[
         Expanded(
@@ -107,43 +78,70 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
               // the pickers below only say which one is on show.
               PlateStage(
                 spec: entry.spec,
-                child: PlateCanvas(
-                  spec: entry.spec,
-                  // The three independent render-time inputs. The livery can be
-                  // a fact about the value — Gaza reads its usage off its own
-                  // last two digits — so it is asked for per build.
-                  theme: entry.themeFor(_plate.values),
-                  country: entry.country,
-                  inputSource: _inputSource,
-                  validator: entry.validator,
-                  // Paints the underlines red; never bars a keystroke.
-                  autoValidate: true,
-                  // Every picker here can change the spec, so the value carries
-                  // across register by register rather than being cleared.
-                  onSpecChange: PlateValuePreservation.byGroupKey,
+                // The livery can be a fact about the value — Gaza reads its
+                // usage off its own last two digits — so the canvas is rebuilt
+                // when, and only when, the theme that value resolves to
+                // actually changes. `PlateTheme` compares by value, so typing
+                // within one livery rebuilds nothing here: the canvas's own
+                // per-slot bindings handle the keystroke.
+                child: _PlateBinding<PlateTheme?>(
                   controller: _plate,
-                  // A `chosen` slot — Iran's letter, the West Bank's
-                  // governorate — asks the host for a character. This is what
-                  // the dependency on plate_keypad is for.
-                  onChooseCharacter: (PlateAlphabet alphabet) =>
-                      PlateCharacterPicker.show(context, alphabet),
+                  select: (PlateController c) => entry.themeFor(c.values),
+                  builder: (BuildContext context, PlateTheme? theme) =>
+                      PlateCanvas(
+                        spec: entry.spec,
+                        theme: theme,
+                        country: entry.country,
+                        inputSource: _inputSource,
+                        validator: entry.validator,
+                        // Paints the underlines red; never bars a keystroke.
+                        autoValidate: true,
+                        // Every picker here can change the spec, so the value
+                        // carries across register by register rather than
+                        // being cleared.
+                        onSpecChange: PlateValuePreservation.byGroupKey,
+                        controller: _plate,
+                        // A `chosen` slot — Iran's letter, the West Bank's
+                        // governorate — asks the host for a character. This is
+                        // what the dependency on plate_keypad is for.
+                        onChooseCharacter: (PlateAlphabet alphabet) =>
+                            PlateCharacterPicker.show(context, alphabet),
+                      ),
                 ),
               ),
               const SizedBox(height: 20),
-              _VerdictBar(verdict: verdict, plate: _plate),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  // Gated on *full* as well as valid: a validator stays quiet
-                  // until the last register, so an empty plate reads as valid
-                  // and the verdict alone would let a blank one through.
-                  onPressed: _plate.isCompleted && (verdict?.isValid ?? true)
-                      ? _onSubmit
-                      : null,
-                  icon: const Icon(Icons.check_rounded),
-                  label: const Text('Submit'),
-                ),
+              // The verdict line and Submit are the two things here that read
+              // the value directly, and they flip together: one binding on the
+              // pair `(verdict, isCompleted)` rebuilds both, and neither the
+              // canvas above nor the pickers below.
+              _PlateBinding<(PlateValidation?, bool)>(
+                controller: _plate,
+                select: (PlateController c) => (c.validation, c.isCompleted),
+                builder:
+                    (BuildContext context, (PlateValidation?, bool) state) {
+                      final (PlateValidation? verdict, bool completed) = state;
+                      return Column(
+                        children: <Widget>[
+                          _VerdictBar(verdict: verdict, completed: completed),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              // Gated on *full* as well as valid: a validator
+                              // stays quiet until the last register, so an
+                              // empty plate reads as valid and the verdict
+                              // alone would let a blank one through.
+                              onPressed:
+                                  completed && (verdict?.isValid ?? true)
+                                  ? _onSubmit
+                                  : null,
+                              icon: const Icon(Icons.check_rounded),
+                              label: const Text('Submit'),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
               ),
               const SizedBox(height: 24),
               SettingsSection(
@@ -196,17 +194,25 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
             ],
           ),
         ),
+        // The pad depends on the value only through the focused slot, which
+        // moves far less often than a character changes. Binding it to the
+        // active slot alone keeps a keystroke that stays in one slot from
+        // rebuilding 42 keys.
         if (_inputSource == PlateInputSource.packageKeypad)
-          PlateKeypad(
-            highlightedKey: null,
-            compact: true,
-            showLetters: active != null && !active.alphabet.isNumeric,
-            digitAlphabet: _alphabet(numeric: true),
-            letterAlphabet: _alphabet(numeric: false),
-            activeAlphabet: active?.alphabet,
-            onKey: (String key) => key == kPlateBackspaceKey
-                ? _plate.backspace()
-                : _plate.submit(key),
+          _PlateBinding<PlateSlot?>(
+            controller: _plate,
+            select: (PlateController c) => c.activeSlot,
+            builder: (BuildContext context, PlateSlot? active) => PlateKeypad(
+              highlightedKey: null,
+              compact: true,
+              showLetters: active != null && !active.alphabet.isNumeric,
+              digitAlphabet: _alphabet(numeric: true),
+              letterAlphabet: _alphabet(numeric: false),
+              activeAlphabet: active?.alphabet,
+              onKey: (String key) => key == kPlateBackspaceKey
+                  ? _plate.backspace()
+                  : _plate.submit(key),
+            ),
           ),
       ],
     );
@@ -220,13 +226,104 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
   );
 }
 
+/// Rebuilds [builder] when, and only when, [select]'s result changes.
+///
+/// This is core's `PlateSelector` with one addition it cannot make: the
+/// notification is allowed to arrive mid-build. `PlateCanvas` notifies this
+/// controller synchronously from `initState` (when it attaches its input
+/// machine) and from `didUpdateWidget` (when a picker swaps the spec and the
+/// controller migrates its values), and both of those run while this screen is
+/// building — where `setState` on an already-built sibling is an error. The
+/// screen used to dodge that by deferring one screen-wide `setState` to the
+/// next frame, which rebuilt the canvas, the pad and all four pickers on every
+/// keystroke. Deferring the same way per binding keeps the safety and drops
+/// everything else.
+class _PlateBinding<T> extends StatefulWidget {
+  const _PlateBinding({
+    required this.controller,
+    required this.select,
+    required this.builder,
+  });
+
+  final PlateController controller;
+
+  /// Called on every notification, so keep it cheap and free of side effects.
+  final T Function(PlateController) select;
+
+  final Widget Function(BuildContext, T) builder;
+
+  @override
+  State<_PlateBinding<T>> createState() => _PlateBindingState<T>();
+}
+
+class _PlateBindingState<T> extends State<_PlateBinding<T>> {
+  late T _value = widget.select(widget.controller);
+
+  /// True between noticing a change mid-build and settling it after the frame,
+  /// so a burst of notifications in one frame schedules one rebuild.
+  bool _settling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_handleChange);
+  }
+
+  @override
+  void didUpdateWidget(_PlateBinding<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.controller, widget.controller)) {
+      oldWidget.controller.removeListener(_handleChange);
+      widget.controller.addListener(_handleChange);
+    }
+    // Re-select on a swapped controller *or* a swapped selector: either can
+    // pick a different value out of the same keystrokes. The selector here
+    // closes over the current entry, so a picker swapping the plate lands in
+    // this branch.
+    _value = widget.select(widget.controller);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_handleChange);
+    super.dispose();
+  }
+
+  void _handleChange() {
+    // A notification can arrive in the same frame the element is retired.
+    if (!mounted || _settling) return;
+    final T next = widget.select(widget.controller);
+    if (next == _value) return;
+
+    final SchedulerPhase phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      _settling = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        _settling = false;
+        // Re-selected rather than reusing `next`: more notifications may have
+        // landed between then and now.
+        if (mounted) setState(() => _value = widget.select(widget.controller));
+      });
+      return;
+    }
+    setState(() => _value = next);
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _value);
+}
+
 /// The live verdict, as a quiet line rather than a red wall of text.
 class _VerdictBar extends StatelessWidget {
-  const _VerdictBar({required this.verdict, required this.plate});
+  const _VerdictBar({required this.verdict, required this.completed});
 
   /// Null when the entry's package ships no validator for this plate.
   final PlateValidation? verdict;
-  final PlateController plate;
+
+  /// Whether every slot is filled. Passed in rather than read off the
+  /// controller so this widget rebuilds only with the binding that selected it.
+  final bool completed;
 
   @override
   Widget build(BuildContext context) {
@@ -242,7 +339,7 @@ class _VerdictBar extends StatelessWidget {
         colors.error,
         v.reason!,
       ),
-      _ when !plate.isCompleted => (
+      _ when !completed => (
         Icons.more_horiz,
         colors.onSurfaceVariant,
         'Nothing wrong so far — the rule stays quiet until the last register.',
