@@ -25,10 +25,7 @@ void main() {
   });
 
   test('every spec id is unique', () {
-    final ids = [
-      for (final s in PSWestBankPlates.all) s.id,
-      for (final s in PSGazaPlates.all) s.id,
-    ];
+    final ids = [for (final s in PSWestBankPlates.all) s.id, for (final s in PSGazaPlates.all) s.id];
     expect(ids.toSet().length, ids.length);
   });
 
@@ -37,17 +34,9 @@ void main() {
       final keys = spec.effectiveTextGroups.map((g) => g.key).toSet();
       final isModern = spec.slots.length == 6;
       if (isModern) {
-        expect(
-          keys,
-          containsAll(<String>{'region', 'serial', 'governorate'}),
-          reason: spec.id,
-        );
+        expect(keys, containsAll(<String>{'region', 'serial', 'governorate'}), reason: spec.id);
       } else {
-        expect(
-          keys,
-          containsAll(<String>{'district', 'serial', 'usage'}),
-          reason: spec.id,
-        );
+        expect(keys, containsAll(<String>{'district', 'serial', 'usage'}), reason: spec.id);
       }
     }
   });

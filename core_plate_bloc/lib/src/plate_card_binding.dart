@@ -19,12 +19,7 @@ import 'plate_card_bloc.dart';
 /// Pass [bloc] to mirror onto a bloc the host already holds; leave it null and
 /// this widget creates one for [controller]'s spec and disposes it with itself.
 class PlateCardBinding extends StatefulWidget {
-  const PlateCardBinding({
-    super.key,
-    required this.controller,
-    this.bloc,
-    required this.child,
-  });
+  const PlateCardBinding({super.key, required this.controller, this.bloc, required this.child});
 
   /// The value-owning side. Never disposed here — the host owns it.
   final PlateController controller;
@@ -56,8 +51,7 @@ class _PlateCardBindingState extends State<PlateCardBinding> {
   @override
   void didUpdateWidget(PlateCardBinding oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (identical(widget.controller, oldWidget.controller) &&
-        identical(widget.bloc, oldWidget.bloc)) {
+    if (identical(widget.controller, oldWidget.controller) && identical(widget.bloc, oldWidget.bloc)) {
       return;
     }
     // Down before the swap, up after: the bridge holds a listener on the
@@ -95,8 +89,7 @@ class _PlateCardBindingState extends State<PlateCardBinding> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      BlocProvider<PlateCardBloc>.value(value: _bloc, child: widget.child);
+  Widget build(BuildContext context) => BlocProvider<PlateCardBloc>.value(value: _bloc, child: widget.child);
 }
 
 /// Keeps one [PlateController] and one [PlateCardBloc] holding the same

@@ -44,10 +44,7 @@ class YemenSource implements GallerySource {
       for (final YemenUsage usage in YemenUsage.values)
         if (usage.onUnified)
           for (final MapEntry<int, PlateSpec> geometry
-              in (motorcycle
-                      ? YemenUnifiedPlates.motoGeometries
-                      : YemenUnifiedPlates.carGeometries)
-                  .entries)
+              in (motorcycle ? YemenUnifiedPlates.motoGeometries : YemenUnifiedPlates.carGeometries).entries)
             GalleryEntry(
               id: 'ye.unified.$form.${usage.name}.${geometry.key}',
               label: '${_word(usage, unified: true)} · ${geometry.key} digits',
@@ -55,10 +52,7 @@ class YemenSource implements GallerySource {
               country: YemenCountry.unifiedFor(usage),
               theme: YemenThemes.forUnifiedUsage(usage),
               validator: const YemenUnifiedValidator(),
-              sampleValues: YemenUnifiedSerialGenerator.generate(
-                geometry.value,
-                random: _rng,
-              ),
+              sampleValues: YemenUnifiedSerialGenerator.generate(geometry.value, random: _rng),
             ),
     ];
   }
@@ -69,10 +63,7 @@ class YemenSource implements GallerySource {
       for (final YemenUsage usage in YemenUsage.values)
         if (usage.onNorthern)
           for (final MapEntry<(int, int), PlateSpec> geometry
-              in (motorcycle
-                      ? YemenNorthernPlates.motoGeometries
-                      : YemenNorthernPlates.carGeometries)
-                  .entries)
+              in (motorcycle ? YemenNorthernPlates.motoGeometries : YemenNorthernPlates.carGeometries).entries)
             // Military is drawn twice, once per printing: the two are the same
             // spec in different ink, and on System B the ink *is* the class.
             for (final YemenMilitaryStyle style
@@ -95,10 +86,7 @@ class YemenSource implements GallerySource {
                 country: YemenCountry.northernFor(usage),
                 theme: YemenThemes.forNorthernUsage(usage, style: style),
                 validator: const YemenNorthernValidator(),
-                sampleValues: YemenNorthernSerialGenerator.generate(
-                  geometry.value,
-                  random: _rng,
-                ),
+                sampleValues: YemenNorthernSerialGenerator.generate(geometry.value, random: _rng),
               ),
     ];
   }

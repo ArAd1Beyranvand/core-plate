@@ -34,10 +34,7 @@ class PlateCard extends StatefulWidget {
 class _PlateCardState extends State<PlateCard> {
   /// Scoped to this card. One controller shared across the page would make
   /// every plate on it show the same value.
-  late final PlateController _plate = PlateController(
-    spec: widget.entry.spec,
-    values: widget.entry.sampleValues,
-  );
+  late final PlateController _plate = PlateController(spec: widget.entry.spec, values: widget.entry.sampleValues);
 
   @override
   void dispose() {
@@ -66,15 +63,8 @@ class _PlateCardState extends State<PlateCard> {
               Center(
                 child: SizedBox(
                   height: PlateCard.plateHeight,
-                  width:
-                      PlateCard.plateHeight *
-                      spec.canvasWidth /
-                      spec.canvasHeight,
-                  child: PlateView(
-                    controller: _plate,
-                    theme: livery,
-                    country: entry.country,
-                  ),
+                  width: PlateCard.plateHeight * spec.canvasWidth / spec.canvasHeight,
+                  child: PlateView(controller: _plate, theme: livery, country: entry.country),
                 ),
               ),
               const SizedBox(height: 12),
@@ -83,9 +73,7 @@ class _PlateCardState extends State<PlateCard> {
                 entry.note ?? spec.id,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             ],
           ),
@@ -111,8 +99,7 @@ class PlateCardGrid extends StatelessWidget {
     builder: (BuildContext context, BoxConstraints constraints) {
       final int columns = (constraints.maxWidth / 280).floor().clamp(1, 4);
       const double gap = 12;
-      final double width =
-          (constraints.maxWidth - gap * (columns - 1)) / columns;
+      final double width = (constraints.maxWidth - gap * (columns - 1)) / columns;
       final ValueChanged<GalleryEntry>? onTap = this.onTap;
       return Wrap(
         spacing: gap,

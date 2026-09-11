@@ -33,12 +33,7 @@ enum YemenGovernorate {
   raymah(21, 'Raymah', 'ريمة', underHouthiControl: true),
   socotra(22, 'Socotra', 'سقطرى', underHouthiControl: false);
 
-  const YemenGovernorate(
-    this.code,
-    this.englishName,
-    this.arabicName, {
-    required this.underHouthiControl,
-  });
+  const YemenGovernorate(this.code, this.englishName, this.arabicName, {required this.underHouthiControl});
 
   /// The number printed in the plate's upper register, 1..22.
   final int code;

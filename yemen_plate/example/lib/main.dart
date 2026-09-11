@@ -27,8 +27,7 @@ class ExampleApp extends StatelessWidget {
               country: YemenCountry.unifiedFor(YemenUsage.private),
               theme: YemenThemes.unified,
               validator: const YemenUnifiedValidator(),
-              autoValidate:
-                  true, // paints red on an invalid plate; never blocks input
+              autoValidate: true, // paints red on an invalid plate; never blocks input
               onChooseCharacter: (alphabet) async => null,
             ),
           ),

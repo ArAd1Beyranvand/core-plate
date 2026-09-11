@@ -15,11 +15,7 @@ import '../widgets/section_header.dart';
 /// characters come from, including `plate_keypad`'s pad wired through
 /// [PlateController.submit] and [PlateController.backspace].
 class PlaygroundScreen extends StatefulWidget {
-  const PlaygroundScreen({
-    super.key,
-    required this.entry,
-    required this.onEntryChanged,
-  });
+  const PlaygroundScreen({super.key, required this.entry, required this.onEntryChanged});
 
   final GalleryEntry entry;
   final ValueChanged<GalleryEntry> onEntryChanged;
@@ -47,13 +43,11 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
 
   /// Derived rather than stored, so the pickers cannot drift out of step with a
   /// card tapped on the catalogue screen.
-  GallerySource get _source => gallerySources.firstWhere(
-    (GallerySource s) => s.entries.any((GalleryEntry e) => e.id == entry.id),
-  );
+  GallerySource get _source =>
+      gallerySources.firstWhere((GallerySource s) => s.entries.any((GalleryEntry e) => e.id == entry.id));
 
-  GallerySection get _section => _source.sections.firstWhere(
-    (GallerySection s) => s.entries.any((GalleryEntry e) => e.id == entry.id),
-  );
+  GallerySection get _section =>
+      _source.sections.firstWhere((GallerySection s) => s.entries.any((GalleryEntry e) => e.id == entry.id));
 
   /// The keypad's labels, taken off the plate itself — Persian digits on an
   /// Iranian plate, Latin on a German. A spec with no letter slot falls back to
@@ -87,26 +81,24 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
                 child: _PlateBinding<PlateTheme?>(
                   controller: _plate,
                   select: (PlateController c) => entry.themeFor(c.values),
-                  builder: (BuildContext context, PlateTheme? theme) =>
-                      PlateCanvas(
-                        spec: entry.spec,
-                        theme: theme,
-                        country: entry.country,
-                        inputSource: _inputSource,
-                        validator: entry.validator,
-                        // Paints the underlines red; never bars a keystroke.
-                        autoValidate: true,
-                        // Every picker here can change the spec, so the value
-                        // carries across register by register rather than
-                        // being cleared.
-                        onSpecChange: PlateValuePreservation.byGroupKey,
-                        controller: _plate,
-                        // A `chosen` slot — Iran's letter, the West Bank's
-                        // governorate — asks the host for a character. This is
-                        // what the dependency on plate_keypad is for.
-                        onChooseCharacter: (PlateAlphabet alphabet) =>
-                            PlateCharacterPicker.show(context, alphabet),
-                      ),
+                  builder: (BuildContext context, PlateTheme? theme) => PlateCanvas(
+                    spec: entry.spec,
+                    theme: theme,
+                    country: entry.country,
+                    inputSource: _inputSource,
+                    validator: entry.validator,
+                    // Paints the underlines red; never bars a keystroke.
+                    autoValidate: true,
+                    // Every picker here can change the spec, so the value
+                    // carries across register by register rather than
+                    // being cleared.
+                    onSpecChange: PlateValuePreservation.byGroupKey,
+                    controller: _plate,
+                    // A `chosen` slot — Iran's letter, the West Bank's
+                    // governorate — asks the host for a character. This is
+                    // what the dependency on plate_keypad is for.
+                    onChooseCharacter: (PlateAlphabet alphabet) => PlateCharacterPicker.show(context, alphabet),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -117,31 +109,27 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
               _PlateBinding<(PlateValidation?, bool)>(
                 controller: _plate,
                 select: (PlateController c) => (c.validation, c.isCompleted),
-                builder:
-                    (BuildContext context, (PlateValidation?, bool) state) {
-                      final (PlateValidation? verdict, bool completed) = state;
-                      return Column(
-                        children: <Widget>[
-                          _VerdictBar(verdict: verdict, completed: completed),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.icon(
-                              // Gated on *full* as well as valid: a validator
-                              // stays quiet until the last register, so an
-                              // empty plate reads as valid and the verdict
-                              // alone would let a blank one through.
-                              onPressed:
-                                  completed && (verdict?.isValid ?? true)
-                                  ? _onSubmit
-                                  : null,
-                              icon: const Icon(Icons.check_rounded),
-                              label: const Text('Submit'),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                builder: (BuildContext context, (PlateValidation?, bool) state) {
+                  final (PlateValidation? verdict, bool completed) = state;
+                  return Column(
+                    children: <Widget>[
+                      _VerdictBar(verdict: verdict, completed: completed),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          // Gated on *full* as well as valid: a validator
+                          // stays quiet until the last register, so an
+                          // empty plate reads as valid and the verdict
+                          // alone would let a blank one through.
+                          onPressed: completed && (verdict?.isValid ?? true) ? _onSubmit : null,
+                          icon: const Icon(Icons.check_rounded),
+                          label: const Text('Submit'),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 24),
               SettingsSection(
@@ -153,16 +141,14 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
                       values: gallerySources,
                       selected: _source,
                       labelOf: (GallerySource s) => s.countryName,
-                      onSelected: (GallerySource s) =>
-                          widget.onEntryChanged(s.entries.first),
+                      onSelected: (GallerySource s) => widget.onEntryChanged(s.entries.first),
                     ),
                     ChipPicker<GallerySection>(
                       label: 'Scheme',
                       values: _source.sections,
                       selected: _section,
                       labelOf: (GallerySection s) => s.title,
-                      onSelected: (GallerySection s) =>
-                          widget.onEntryChanged(s.entries.first),
+                      onSelected: (GallerySection s) => widget.onEntryChanged(s.entries.first),
                     ),
                     ChipPicker<GalleryEntry>(
                       label: 'Plate',
@@ -187,8 +173,7 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
                   values: PlateInputSource.values,
                   selected: _inputSource,
                   labelOf: (PlateInputSource s) => s.name,
-                  onSelected: (PlateInputSource s) =>
-                      setState(() => _inputSource = s),
+                  onSelected: (PlateInputSource s) => setState(() => _inputSource = s),
                 ),
               ),
             ],
@@ -209,9 +194,7 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
               digitAlphabet: _alphabet(numeric: true),
               letterAlphabet: _alphabet(numeric: false),
               activeAlphabet: active?.alphabet,
-              onKey: (String key) => key == kPlateBackspaceKey
-                  ? _plate.backspace()
-                  : _plate.submit(key),
+              onKey: (String key) => key == kPlateBackspaceKey ? _plate.backspace() : _plate.submit(key),
             ),
           ),
       ],
@@ -239,11 +222,7 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
 /// keystroke. Deferring the same way per binding keeps the safety and drops
 /// everything else.
 class _PlateBinding<T> extends StatefulWidget {
-  const _PlateBinding({
-    required this.controller,
-    required this.select,
-    required this.builder,
-  });
+  const _PlateBinding({required this.controller, required this.select, required this.builder});
 
   final PlateController controller;
 
@@ -296,8 +275,7 @@ class _PlateBindingState<T> extends State<_PlateBinding<T>> {
     if (next == _value) return;
 
     final SchedulerPhase phase = SchedulerBinding.instance.schedulerPhase;
-    if (phase == SchedulerPhase.persistentCallbacks ||
-        phase == SchedulerPhase.midFrameMicrotasks) {
+    if (phase == SchedulerPhase.persistentCallbacks || phase == SchedulerPhase.midFrameMicrotasks) {
       _settling = true;
       SchedulerBinding.instance.addPostFrameCallback((_) {
         _settling = false;
@@ -329,16 +307,8 @@ class _VerdictBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
     final (IconData icon, Color color, String message) = switch (verdict) {
-      null => (
-        Icons.remove_circle_outline,
-        colors.onSurfaceVariant,
-        'This package ships no validator for this plate.',
-      ),
-      final PlateValidation v when !v.isValid => (
-        Icons.info_outline,
-        colors.error,
-        v.reason!,
-      ),
+      null => (Icons.remove_circle_outline, colors.onSurfaceVariant, 'This package ships no validator for this plate.'),
+      final PlateValidation v when !v.isValid => (Icons.info_outline, colors.error, v.reason!),
       _ when !completed => (
         Icons.more_horiz,
         colors.onSurfaceVariant,
@@ -351,12 +321,7 @@ class _VerdictBar extends StatelessWidget {
         Icon(icon, size: 18, color: color),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            message,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: color),
-          ),
+          child: Text(message, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color)),
         ),
       ],
     );

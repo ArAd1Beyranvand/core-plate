@@ -35,34 +35,33 @@ void main() {
     ],
   );
 
-  Widget host({required PlateController controller, PlateCardBloc? bloc, required Widget child}) =>
-      MaterialApp(
-        home: PlateCardBinding(controller: controller, bloc: bloc, child: child),
-      );
+  Widget host({required PlateController controller, PlateCardBloc? bloc, required Widget child}) => MaterialApp(
+    home: PlateCardBinding(controller: controller, bloc: bloc, child: child),
+  );
 
   /// Wraps [child] in a [BlocListener] that increments [counter] on every
   /// bloc emission — the widget-tree-native way to count emissions without a
   /// second subscription on the bridge's stream.
-  Widget countingHost({
-    required PlateController controller,
-    required List<int> counter,
-    required Widget child,
-  }) => host(
+  Widget countingHost({required PlateController controller, required List<int> counter, required Widget child}) => host(
     controller: controller,
-    child: BlocListener<PlateCardBloc, PlateCardState>(
-      listener: (context, state) => counter[0]++,
-      child: child,
-    ),
+    child: BlocListener<PlateCardBloc, PlateCardState>(listener: (context, state) => counter[0]++, child: child),
   );
 
   group('controller -> bloc', () {
     testWidgets('a controller write reaches the bloc', (tester) async {
       final controller = PlateController(spec: spec());
       late BuildContext ctx;
-      await tester.pumpWidget(host(controller: controller, child: Builder(builder: (c) {
-        ctx = c;
-        return const SizedBox();
-      })));
+      await tester.pumpWidget(
+        host(
+          controller: controller,
+          child: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
 
       controller.setAt(0, 'A');
       await tester.pump();
@@ -81,10 +80,17 @@ void main() {
     testWidgets('a dispatched ValueIsChanged reaches the controller', (tester) async {
       final controller = PlateController(spec: spec());
       late BuildContext ctx;
-      await tester.pumpWidget(host(controller: controller, child: Builder(builder: (c) {
-        ctx = c;
-        return const SizedBox();
-      })));
+      await tester.pumpWidget(
+        host(
+          controller: controller,
+          child: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
 
       ctx.read<PlateCardBloc>().add(ValueIsChanged(index: 0, value: 'A'));
       await tester.pump();
@@ -101,9 +107,7 @@ void main() {
     testWidgets('one controller write produces exactly one bloc emission', (tester) async {
       final controller = PlateController(spec: spec());
       final counter = [0];
-      await tester.pumpWidget(
-        countingHost(controller: controller, counter: counter, child: const SizedBox()),
-      );
+      await tester.pumpWidget(countingHost(controller: controller, counter: counter, child: const SizedBox()));
 
       controller.setAt(0, 'A');
       await tester.pump();
@@ -120,10 +124,17 @@ void main() {
     testWidgets('one dispatched event produces exactly one controller notification', (tester) async {
       final controller = PlateController(spec: spec());
       late BuildContext ctx;
-      await tester.pumpWidget(host(controller: controller, child: Builder(builder: (c) {
-        ctx = c;
-        return const SizedBox();
-      })));
+      await tester.pumpWidget(
+        host(
+          controller: controller,
+          child: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
 
       var notifications = 0;
       void listener() => notifications++;
@@ -151,10 +162,12 @@ void main() {
         countingHost(
           controller: controller,
           counter: counter,
-          child: Builder(builder: (c) {
-            bloc = c.read<PlateCardBloc>();
-            return const SizedBox();
-          }),
+          child: Builder(
+            builder: (c) {
+              bloc = c.read<PlateCardBloc>();
+              return const SizedBox();
+            },
+          ),
         ),
       );
 
@@ -177,10 +190,17 @@ void main() {
       final controller = PlateController(spec: firstSpec);
       controller.setAt(0, 'A');
       late BuildContext ctx;
-      await tester.pumpWidget(host(controller: controller, child: Builder(builder: (c) {
-        ctx = c;
-        return const SizedBox();
-      })));
+      await tester.pumpWidget(
+        host(
+          controller: controller,
+          child: Builder(
+            builder: (c) {
+              ctx = c;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
       await tester.pump();
 
       final secondSpec = spec(id: 'test.spec.2');
@@ -202,10 +222,17 @@ void main() {
     testWidgets('closes a bloc it created', (tester) async {
       final controller = PlateController(spec: spec());
       late PlateCardBloc bloc;
-      await tester.pumpWidget(host(controller: controller, child: Builder(builder: (c) {
-        bloc = c.read<PlateCardBloc>();
-        return const SizedBox();
-      })));
+      await tester.pumpWidget(
+        host(
+          controller: controller,
+          child: Builder(
+            builder: (c) {
+              bloc = c.read<PlateCardBloc>();
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
@@ -215,38 +242,30 @@ void main() {
       controller.dispose();
     });
 
-    testWidgets(
-      'does not close a bloc the host passed in '
-      '[skip: BUG - hostBloc.close() hangs after PlateCardBinding unmounts, see body]',
-      (tester) async {
-        final controller = PlateController(spec: spec());
-        final hostBloc = PlateCardBloc(spec());
+    testWidgets('does not close a bloc the host passed in '
+        '[skip: BUG - hostBloc.close() hangs after PlateCardBinding unmounts, see body]', (tester) async {
+      final controller = PlateController(spec: spec());
+      final hostBloc = PlateCardBloc(spec());
 
-        await tester.pumpWidget(host(
-          controller: controller,
-          bloc: hostBloc,
-          child: const SizedBox(),
-        ));
-        await tester.pumpWidget(const SizedBox.shrink());
-        await tester.pump();
-        await tester.pump();
+      await tester.pumpWidget(host(controller: controller, bloc: hostBloc, child: const SizedBox()));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      await tester.pump();
 
-        expect(hostBloc.isClosed, isFalse);
+      expect(hostBloc.isClosed, isFalse);
 
-        // Not closed here: BUG — closing a host-passed bloc after
-        // PlateCardBinding has unmounted hangs the test process indefinitely
-        // ("Bad state: Cannot close sink while adding stream" surfaces only
-        // once the harness is torn down). Reproduces with a bare
-        // PlateCardBloc and no other subscriber, so this is
-        // PlateBlocBridge.dispose() leaving the bloc's stream in a state its
-        // own close() can't get out of — not a test-harness quirk. Left
-        // uninvestigated further per this phase's scope (lib/ is frozen);
-        // see plate_card_binding.dart's _emissions.cancel(), which is not
-        // awaited from a sync State.dispose().
-        controller.dispose();
-      },
-      skip: true,
-    );
+      // Not closed here: BUG — closing a host-passed bloc after
+      // PlateCardBinding has unmounted hangs the test process indefinitely
+      // ("Bad state: Cannot close sink while adding stream" surfaces only
+      // once the harness is torn down). Reproduces with a bare
+      // PlateCardBloc and no other subscriber, so this is
+      // PlateBlocBridge.dispose() leaving the bloc's stream in a state its
+      // own close() can't get out of — not a test-harness quirk. Left
+      // uninvestigated further per this phase's scope (lib/ is frozen);
+      // see plate_card_binding.dart's _emissions.cancel(), which is not
+      // awaited from a sync State.dispose().
+      controller.dispose();
+    }, skip: true);
 
     testWidgets('does not dispose a controller the host passed in', (tester) async {
       final controller = PlateController(spec: spec());

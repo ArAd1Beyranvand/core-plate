@@ -32,22 +32,12 @@ class SectionHeader extends StatelessWidget {
               ),
             ),
             if (count != null)
-              Text(
-                '$count',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
+              Text('$count', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           ],
         ),
         if (note != null) ...<Widget>[
           const SizedBox(height: 4),
-          Text(
-            note,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
+          Text(note, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         ],
       ],
     );
@@ -81,10 +71,7 @@ class SettingsSection extends StatelessWidget {
           margin: EdgeInsets.zero,
           elevation: 0,
           color: theme.colorScheme.surfaceContainerLow,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: child,
-          ),
+          child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), child: child),
         ),
       ],
     );

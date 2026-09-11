@@ -46,10 +46,7 @@ class AboutScreen extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             title: Text('${source.countryName} · ${source.packageName}'),
             subtitle: Text(source.note),
-            trailing: Text(
-              '${source.specIds.length} specs',
-              style: theme.textTheme.labelSmall,
-            ),
+            trailing: Text('${source.specIds.length} specs', style: theme.textTheme.labelSmall),
           ),
         const SizedBox(height: 20),
         Text('Built against', style: theme.textTheme.titleMedium),

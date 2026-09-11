@@ -15,15 +15,8 @@ class GalleryApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     title: 'plate_gallery',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      useMaterial3: true,
-      colorSchemeSeed: const Color(0xFF0F7A3D),
-    ),
-    darkTheme: ThemeData(
-      useMaterial3: true,
-      colorSchemeSeed: const Color(0xFF0F7A3D),
-      brightness: Brightness.dark,
-    ),
+    theme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFF0F7A3D)),
+    darkTheme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFF0F7A3D), brightness: Brightness.dark),
     home: const _GalleryShell(),
   );
 }
@@ -58,11 +51,7 @@ class _GalleryShellState extends State<_GalleryShell> {
         index: _screen,
         children: <Widget>[
           CatalogueScreen(onOpen: _open),
-          PlaygroundScreen(
-            entry: _entry,
-            onEntryChanged: (GalleryEntry entry) =>
-                setState(() => _entry = entry),
-          ),
+          PlaygroundScreen(entry: _entry, onEntryChanged: (GalleryEntry entry) => setState(() => _entry = entry)),
           const AboutScreen(),
         ],
       ),
@@ -76,16 +65,8 @@ class _GalleryShellState extends State<_GalleryShell> {
           selectedIcon: Icon(Icons.grid_view),
           label: 'Catalogue',
         ),
-        NavigationDestination(
-          icon: Icon(Icons.edit_outlined),
-          selectedIcon: Icon(Icons.edit),
-          label: 'Playground',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.info_outline),
-          selectedIcon: Icon(Icons.info),
-          label: 'About',
-        ),
+        NavigationDestination(icon: Icon(Icons.edit_outlined), selectedIcon: Icon(Icons.edit), label: 'Playground'),
+        NavigationDestination(icon: Icon(Icons.info_outline), selectedIcon: Icon(Icons.info), label: 'About'),
       ],
     ),
   );

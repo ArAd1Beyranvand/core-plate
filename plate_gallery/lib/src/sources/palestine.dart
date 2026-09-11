@@ -43,33 +43,21 @@ class PalestineSource implements GallerySource {
 
   /// The modern geometries beyond the car, each shown in one livery. `final`,
   /// not `const`: the package's specs are not compile-time constants.
-  static final List<(String, String, PlateSpec, PSUsage)>
-  _modernRest = <(String, String, PlateSpec, PSUsage)>[
+  static final List<(String, String, PlateSpec, PSUsage)> _modernRest = <(String, String, PlateSpec, PSUsage)>[
     ('car2l', 'Two-line', PSWestBankPlates.modernCarTwoLine, PSUsage.private),
     ('moto', 'Motorcycle', PSWestBankPlates.modernMoto, PSUsage.private),
-    (
-      'moto2l',
-      'Motorcycle, two-line',
-      PSWestBankPlates.modernMotoTwoLine,
-      PSUsage.private,
-    ),
+    ('moto2l', 'Motorcycle, two-line', PSWestBankPlates.modernMotoTwoLine, PSUsage.private),
     ('trade', 'Trade / test', PSWestBankPlates.modernTrade, PSUsage.tradePlate),
   ];
 
-  static final List<(String, String, PlateSpec)> _gazaPlates =
-      <(String, String, PlateSpec)>[
-        ('car2012', '2012', PSGazaPlates.car2012),
-        ('car2012.2l', '2012, two-line', PSGazaPlates.car2012TwoLine),
-        ('car2021.2l', '2021, two-line', PSGazaPlates.car2021TwoLine),
-        ('moto', 'Motorcycle', PSGazaPlates.moto),
-      ];
+  static final List<(String, String, PlateSpec)> _gazaPlates = <(String, String, PlateSpec)>[
+    ('car2012', '2012', PSGazaPlates.car2012),
+    ('car2012.2l', '2012, two-line', PSGazaPlates.car2012TwoLine),
+    ('car2021.2l', '2021, two-line', PSGazaPlates.car2021TwoLine),
+    ('moto', 'Motorcycle', PSGazaPlates.moto),
+  ];
 
-  GalleryEntry _modern(
-    String id,
-    String label,
-    PlateSpec spec,
-    PSUsage usage,
-  ) => GalleryEntry(
+  GalleryEntry _modern(String id, String label, PlateSpec spec, PSUsage usage) => GalleryEntry(
     id: 'ps.wb.modern.$id',
     label: label,
     spec: spec,
@@ -78,25 +66,18 @@ class PalestineSource implements GallerySource {
     sampleValues: PSSerialGenerator.modernWestBank(spec, random: _rng),
   );
 
-  GalleryEntry _legacy(
-    String id,
-    String label,
-    PlateSpec spec,
-    PSUsage usage, {
-    bool recolourBlock = true,
-  }) => GalleryEntry(
-    id: 'ps.wb.legacy.$id',
-    label: label,
-    spec: spec,
-    theme: PSThemes.forUsage(usage),
-    // The legacy ف / P block is printed in the plate's own ink, so an inverted
-    // or red plate recolours the block through `country:` — same spec.
-    country: recolourBlock
-        ? PSWestBankPlates.legacyCountryForUsage(usage)
-        : null,
-    validator: const PSWestBankLegacyValidator(),
-    sampleValues: PSSerialGenerator.legacyWestBank(spec, random: _rng),
-  );
+  GalleryEntry _legacy(String id, String label, PlateSpec spec, PSUsage usage, {bool recolourBlock = true}) =>
+      GalleryEntry(
+        id: 'ps.wb.legacy.$id',
+        label: label,
+        spec: spec,
+        theme: PSThemes.forUsage(usage),
+        // The legacy ف / P block is printed in the plate's own ink, so an inverted
+        // or red plate recolours the block through `country:` — same spec.
+        country: recolourBlock ? PSWestBankPlates.legacyCountryForUsage(usage) : null,
+        validator: const PSWestBankLegacyValidator(),
+        sampleValues: PSSerialGenerator.legacyWestBank(spec, random: _rng),
+      );
 
   GalleryEntry _gaza(String id, String label, PlateSpec spec) => GalleryEntry(
     id: 'ps.gaza.$id',
@@ -107,8 +88,7 @@ class PalestineSource implements GallerySource {
     // app makes knowing it is guessing.
     theme: PSThemes.gazaBlack,
     themeForValues: (List<String?> values) =>
-        PSThemes.forGazaUsageCode(spec.valueOfGroup('usage', values)) ??
-        PSThemes.gazaBlack,
+        PSThemes.forGazaUsageCode(spec.valueOfGroup('usage', values)) ?? PSThemes.gazaBlack,
     validator: const PSGazaValidator(),
     sampleValues: PSSerialGenerator.gaza(spec, random: _rng),
     note: 'colour read from the plate',
@@ -130,8 +110,7 @@ class PalestineSource implements GallerySource {
       entries: <GalleryEntry>[
         for (final (String name, PSUsage usage) in _liveries)
           _modern('car.${usage.name}', name, PSWestBankPlates.modernCar, usage),
-        for (final (String id, String label, PlateSpec spec, PSUsage usage)
-            in _modernRest)
+        for (final (String id, String label, PlateSpec spec, PSUsage usage) in _modernRest)
           _modern(id, label, spec, usage),
       ],
     ),
@@ -144,13 +123,7 @@ class PalestineSource implements GallerySource {
       entries: <GalleryEntry>[
         for (final (String name, PSUsage usage) in _liveries)
           _legacy('car.${usage.name}', name, PSWestBankPlates.legacyCar, usage),
-        _legacy(
-          'car2l',
-          'Two-line',
-          PSWestBankPlates.legacyCarTwoLine,
-          PSUsage.private,
-          recolourBlock: false,
-        ),
+        _legacy('car2l', 'Two-line', PSWestBankPlates.legacyCarTwoLine, PSUsage.private, recolourBlock: false),
       ],
     ),
     GallerySection(
@@ -160,8 +133,7 @@ class PalestineSource implements GallerySource {
           'always white and only the glyphs, the border and the rules change. '
           'Usage is the last two digits, so these recolour as you type.',
       entries: <GalleryEntry>[
-        for (final (String id, String label, PlateSpec spec) in _gazaPlates)
-          _gaza(id, label, spec),
+        for (final (String id, String label, PlateSpec spec) in _gazaPlates) _gaza(id, label, spec),
       ],
     ),
   ];

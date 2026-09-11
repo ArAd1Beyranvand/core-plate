@@ -108,16 +108,7 @@ abstract final class PSLegacyUsage {
   };
 
   /// The legal district digits, in the order the alphabet lists them.
-  static const List<String> districtCodes = [
-    '1',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-  ];
+  static const List<String> districtCodes = ['1', '3', '4', '5', '6', '7', '8', '9'];
 }
 
 /// The Gaza usage classes, keyed by the two digits that end the plate.

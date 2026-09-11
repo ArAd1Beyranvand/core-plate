@@ -27,10 +27,7 @@ class PlateStage extends StatelessWidget {
           // it would grow to fill a desktop window and dwarf everything under
           // it.
           constraints: const BoxConstraints(maxWidth: 420, maxHeight: 260),
-          child: AspectRatio(
-            aspectRatio: spec.canvasWidth / spec.canvasHeight,
-            child: child,
-          ),
+          child: AspectRatio(aspectRatio: spec.canvasWidth / spec.canvasHeight, child: child),
         ),
       ),
     );

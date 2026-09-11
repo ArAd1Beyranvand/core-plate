@@ -19,11 +19,7 @@
 /// this package records what each one prints.
 enum YemenUsage {
   /// Privately owned vehicles.
-  private(
-    unifiedArabic: 'خصوصي',
-    unifiedLatin: 'PRIV.',
-    northernArabic: 'خصوصي',
-  ),
+  private(unifiedArabic: 'خصوصي', unifiedLatin: 'PRIV.', northernArabic: 'خصوصي'),
 
   /// Taxis and buses — vehicles carrying people for a fare.
   forHire(unifiedArabic: 'أجرة', unifiedLatin: 'TAXI', northernArabic: 'اجرة'),
@@ -39,19 +35,11 @@ enum YemenUsage {
   // TODO(northern-labels): source the Arabic usage word on a green (government)
   // northern plate and fill in `northernArabic`. Do not copy حكومي across from
   // the unified table — that is a different system's printing.
-  government(
-    unifiedArabic: 'حكومي',
-    unifiedLatin: 'GOV.',
-    northernArabic: null,
-  ),
+  government(unifiedArabic: 'حكومي', unifiedLatin: 'GOV.', northernArabic: null),
 
   /// Police vehicles. **System A only** — the northern system has no police
   /// class distinct from [government] that any source attests.
-  police(
-    unifiedArabic: 'شرطة',
-    unifiedLatin: 'POLICE',
-    northernArabic: null,
-  ),
+  police(unifiedArabic: 'شرطة', unifiedLatin: 'POLICE', northernArabic: null),
 
   /// Military vehicles. **System B only** — the 2026 unified specification
   /// lists five usages and this is not one of them.
@@ -63,11 +51,7 @@ enum YemenUsage {
   // plate, if it carries one at all.
   military(unifiedArabic: null, unifiedLatin: null, northernArabic: null);
 
-  const YemenUsage({
-    required this.unifiedArabic,
-    required this.unifiedLatin,
-    required this.northernArabic,
-  });
+  const YemenUsage({required this.unifiedArabic, required this.unifiedLatin, required this.northernArabic});
 
   /// Line 2 of the blue side panel on a System A plate; null when System A
   /// does not issue this usage.
@@ -94,22 +78,10 @@ enum YemenUsage {
   bool get onNorthern => this != YemenUsage.police;
 
   /// The usages a System A plate can carry.
-  static const Set<YemenUsage> unified = <YemenUsage>{
-    private,
-    forHire,
-    transport,
-    government,
-    police,
-  };
+  static const Set<YemenUsage> unified = <YemenUsage>{private, forHire, transport, government, police};
 
   /// The usages a System B plate can carry.
-  static const Set<YemenUsage> northern = <YemenUsage>{
-    private,
-    forHire,
-    transport,
-    government,
-    military,
-  };
+  static const Set<YemenUsage> northern = <YemenUsage>{private, forHire, transport, government, military};
 }
 
 /// Which of the two military printings a northern military plate uses.

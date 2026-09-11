@@ -28,13 +28,15 @@ const _otherCountry = PlateCountry(
 );
 
 Future<PlateController> _filled(WidgetTester tester, Widget child) async {
-  final controller = PlateController(spec: _spec)
-    ..setValues(['1', '2']);
+  final controller = PlateController(spec: _spec)..setValues(['1', '2']);
   addTearDown(controller.dispose);
   await tester.pumpWidget(
     Directionality(
       textDirection: TextDirection.ltr,
-      child: PlateCardBinding(controller: controller, child: Center(child: child)),
+      child: PlateCardBinding(
+        controller: controller,
+        child: Center(child: child),
+      ),
     ),
   );
   await tester.pump();
@@ -43,9 +45,7 @@ Future<PlateController> _filled(WidgetTester tester, Widget child) async {
 
 void main() {
   testWidgets('ShowPlate forwards theme: to PlateCanvas', (tester) async {
-    final theme = PlateTheme.standard().copyWith(
-      plateBackground: const Color(0xFF112233),
-    );
+    final theme = PlateTheme.standard().copyWith(plateBackground: const Color(0xFF112233));
     await _filled(tester, ShowPlate(theme: theme));
     final canvas = tester.widget<PlateCanvas>(find.byType(PlateCanvas));
     expect(canvas.theme?.plateBackground, const Color(0xFF112233));

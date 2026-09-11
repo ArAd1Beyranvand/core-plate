@@ -14,10 +14,7 @@ import 'package:yemen_plate/yemen_plate.dart';
 /// up. That is the whole point of the adapters.
 void main() {
   test('Iran: both specs', () {
-    expect(const IranSource().specIds, <String>{
-      IranPlates.car.id,
-      IranPlates.bicycle.id,
-    });
+    expect(const IranSource().specIds, <String>{IranPlates.car.id, IranPlates.bicycle.id});
   });
 
   test('Germany: the one spec, with its validator', () {
@@ -62,11 +59,7 @@ void main() {
 
   test('sections are stable across reads — the pickers select by equality', () {
     for (final GallerySource source in gallerySources) {
-      expect(
-        source.sections,
-        same(source.sections),
-        reason: source.countryName,
-      );
+      expect(source.sections, same(source.sections), reason: source.countryName);
     }
   });
 
@@ -80,10 +73,7 @@ void main() {
     final Map<String, GalleryEntry> byUsage = <String, GalleryEntry>{
       for (final YemenUsage usage in YemenUsage.values)
         if (usage.onNorthern && usage != YemenUsage.military)
-          usage.name: northern.firstWhere(
-            (GalleryEntry e) =>
-                e.id.startsWith('ye.northern.car.${usage.name}.'),
-          ),
+          usage.name: northern.firstWhere((GalleryEntry e) => e.id.startsWith('ye.northern.car.${usage.name}.')),
     };
     expect(byUsage, hasLength(greaterThanOrEqualTo(4)));
     expect(
@@ -102,12 +92,8 @@ void main() {
     final List<GalleryEntry> legacy = PalestineSource().entries
         .where((GalleryEntry e) => e.id.startsWith('ps.wb.legacy.car.'))
         .toList();
-    final GalleryEntry private = legacy.firstWhere(
-      (GalleryEntry e) => e.id.endsWith('.private'),
-    );
-    final GalleryEntry bus = legacy.firstWhere(
-      (GalleryEntry e) => e.id.endsWith('.publicTransport'),
-    );
+    final GalleryEntry private = legacy.firstWhere((GalleryEntry e) => e.id.endsWith('.private'));
+    final GalleryEntry bus = legacy.firstWhere((GalleryEntry e) => e.id.endsWith('.publicTransport'));
     expect(private.spec.id, bus.spec.id, reason: 'one geometry, two inks');
     expect(bus.theme!.plateBackground, private.theme!.ink);
     expect(bus.theme!.ink, private.theme!.plateBackground);

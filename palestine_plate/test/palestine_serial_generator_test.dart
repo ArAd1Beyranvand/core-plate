@@ -9,10 +9,7 @@ void main() {
   test('10000 generated modern West Bank serials all validate', () {
     final rng = Random(1);
     for (var i = 0; i < iterations; i++) {
-      final values = PSSerialGenerator.modernWestBank(
-        PSWestBankPlates.modernCar,
-        random: rng,
-      );
+      final values = PSSerialGenerator.modernWestBank(PSWestBankPlates.modernCar, random: rng);
       final v = PSWestBankModernValidator.validateFields(
         region: values[0]!,
         serial: values.sublist(1, 5).join(),
@@ -25,10 +22,7 @@ void main() {
   test('10000 generated legacy West Bank serials all validate', () {
     final rng = Random(2);
     for (var i = 0; i < iterations; i++) {
-      final values = PSSerialGenerator.legacyWestBank(
-        PSWestBankPlates.legacyCar,
-        random: rng,
-      );
+      final values = PSSerialGenerator.legacyWestBank(PSWestBankPlates.legacyCar, random: rng);
       final v = PSWestBankLegacyValidator.validateFields(
         district: values[0]!,
         serial: values.sublist(1, 5).join(),
@@ -41,10 +35,7 @@ void main() {
   test('10000 generated Gaza serials all validate', () {
     final rng = Random(3);
     for (var i = 0; i < iterations; i++) {
-      final values = PSSerialGenerator.gaza(
-        PSGazaPlates.car2012,
-        random: rng,
-      );
+      final values = PSSerialGenerator.gaza(PSGazaPlates.car2012, random: rng);
       final v = PSGazaValidator.validateFields(
         prefix: values[0]!,
         serial: values.sublist(1, 5).join(),
@@ -57,8 +48,7 @@ void main() {
   test('the generator never emits I, O or a reserved Gaza letter', () {
     final rng = Random(4);
     for (var i = 0; i < iterations; i++) {
-      final letter =
-          PSSerialGenerator.modernWestBank(PSWestBankPlates.modernCar, random: rng)[5];
+      final letter = PSSerialGenerator.modernWestBank(PSWestBankPlates.modernCar, random: rng)[5];
       expect(PSGovernorate.confusableLetters, isNot(contains(letter)));
       expect(PSGovernorate.reservedGazaLetters, isNot(contains(letter)));
     }
@@ -67,10 +57,7 @@ void main() {
   test('the generator never emits a Gaza prefix other than 3', () {
     final rng = Random(5);
     for (var i = 0; i < iterations; i++) {
-      expect(
-        PSSerialGenerator.gaza(PSGazaPlates.car2012, random: rng)[0],
-        '3',
-      );
+      expect(PSSerialGenerator.gaza(PSGazaPlates.car2012, random: rng)[0], '3');
     }
   });
 
@@ -89,16 +76,14 @@ void main() {
   });
 
   test('throws a clear ArgumentError when handed the wrong spec', () {
-    expect(
-      () => PSSerialGenerator.modernWestBank(PSGazaPlates.car2012),
-      throwsArgumentError,
-    );
+    expect(() => PSSerialGenerator.modernWestBank(PSGazaPlates.car2012), throwsArgumentError);
   });
 
   test('toFilename concatenates with no separator', () {
     expect(
       PSSerialGenerator.toFilename(['1', '0', '2', '3', '4', 'H']),
-      '1' '0234H',
+      '1'
+      '0234H',
     );
   });
 }

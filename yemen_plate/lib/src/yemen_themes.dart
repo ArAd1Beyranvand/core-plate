@@ -122,20 +122,18 @@ abstract final class YemenThemes {
   /// it resolves to [northernGovernment] rather than throwing, so a usage
   /// picker shared between the two systems keeps working when the system
   /// switch flips.
-  static PlateTheme forNorthernUsage(
-    YemenUsage usage, {
-    YemenMilitaryStyle style = YemenMilitaryStyle.classic,
-  }) => switch (usage) {
-    YemenUsage.private => northernPrivate,
-    YemenUsage.forHire => northernForHire,
-    YemenUsage.transport => northernTransport,
-    YemenUsage.government => northernGovernment,
-    YemenUsage.police => northernGovernment,
-    YemenUsage.military => switch (style) {
-      YemenMilitaryStyle.classic => northernMilitaryClassic,
-      YemenMilitaryStyle.modern => northernMilitaryModern,
-    },
-  };
+  static PlateTheme forNorthernUsage(YemenUsage usage, {YemenMilitaryStyle style = YemenMilitaryStyle.classic}) =>
+      switch (usage) {
+        YemenUsage.private => northernPrivate,
+        YemenUsage.forHire => northernForHire,
+        YemenUsage.transport => northernTransport,
+        YemenUsage.government => northernGovernment,
+        YemenUsage.police => northernGovernment,
+        YemenUsage.military => switch (style) {
+          YemenMilitaryStyle.classic => northernMilitaryClassic,
+          YemenMilitaryStyle.modern => northernMilitaryModern,
+        },
+      };
 
   /// The unified theme, whatever the usage.
   ///

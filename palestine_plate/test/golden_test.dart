@@ -30,11 +30,7 @@ void main() {
               height: 520 * spec.canvasHeight / spec.canvasWidth,
               child: PlateThemeScope(
                 theme: theme,
-                child: PlateView(
-                  controller: controller,
-                  theme: theme,
-                  country: country,
-                ),
+                child: PlateView(controller: controller, theme: theme, country: country),
               ),
             ),
           ),
@@ -43,10 +39,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await expectLater(
-      find.byType(PlateView),
-      matchesGoldenFile('goldens/$name.png'),
-    );
+    await expectLater(find.byType(PlateView), matchesGoldenFile('goldens/$name.png'));
 
     // Unmount the tree before disposing: _PlateCanvasState.dispose() calls
     // controller.detach(), which notifies listeners, so the controller must

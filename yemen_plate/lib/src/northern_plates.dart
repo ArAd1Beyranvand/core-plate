@@ -176,26 +176,19 @@ abstract final class YemenNorthernPlates {
   // i.e. 83 and 7 units deep, x 0 .. 540 (the frame draws its own inset, so
   // this runs edge to edge rather than stopping short as the old registers'
   // rule did).
-  static const List<PlateRule> _carRule = <PlateRule>[
-    PlateRule(box: PlateBox(0, 83, 540, 7)),
-  ];
+  static const List<PlateRule> _carRule = <PlateRule>[PlateRule(box: PlateBox(0, 83, 540, 7))];
 
   /// The vertical divider between the governorate cell and the serial cell.
   ///
   /// x 0.246 .. 0.260 (133 .. 140), y 0.314 .. 0.979 — from the rule's bottom
   /// edge down to just inside the frame, matching the photograph, where the
   /// divider does not cross into the top band above the rule.
-  static const List<PlateRule> _carDivider = <PlateRule>[
-    PlateRule(box: PlateBox(133, 90, 7, 192)),
-  ];
+  static const List<PlateRule> _carDivider = <PlateRule>[PlateRule(box: PlateBox(133, 90, 7, 192))];
 
   /// Both car rules together: the rule and the divider are the same on every
   /// car layout regardless of digit counts, unlike the old per-length rules
   /// that sized themselves to the serial block below them.
-  static const List<PlateRule> _carRules = <PlateRule>[
-    ..._carRule,
-    ..._carDivider,
-  ];
+  static const List<PlateRule> _carRules = <PlateRule>[..._carRule, ..._carDivider];
 
   // The governorate cell: x 0.006 .. 0.246 of the plate (3 .. 133), the same
   // 89-unit cap height as the serial cell beside it — unlike the old stacked
@@ -256,31 +249,16 @@ abstract final class YemenNorthernPlates {
     height: 89,
   );
 
-  static final List<PlateSlot> _carGov2Serial4 = <PlateSlot>[
-    _carGovTens,
-    _carGovUnits,
-    ..._carSerial(4),
-  ];
+  static final List<PlateSlot> _carGov2Serial4 = <PlateSlot>[_carGovTens, _carGovUnits, ..._carSerial(4)];
 
-  static final List<PlateSlot> _carGov2Serial5 = <PlateSlot>[
-    _carGovTens,
-    _carGovUnits,
-    ..._carSerial(5),
-  ];
+  static final List<PlateSlot> _carGov2Serial5 = <PlateSlot>[_carGovTens, _carGovUnits, ..._carSerial(5)];
 
-  static final List<PlateSlot> _carGov2Serial6 = <PlateSlot>[
-    _carGovTens,
-    _carGovUnits,
-    ..._carSerial(6),
-  ];
+  static final List<PlateSlot> _carGov2Serial6 = <PlateSlot>[_carGovTens, _carGovUnits, ..._carSerial(6)];
 
   /// One governorate digit, a five-digit serial — the layout the photograph
   /// is measured from: a single big digit in the left cell, five in the
   /// right, both in the one row under the rule.
-  static final List<PlateSlot> _carGov1Serial5 = <PlateSlot>[
-    _carGovSingle,
-    ..._carSerial(5),
-  ];
+  static final List<PlateSlot> _carGov1Serial5 = <PlateSlot>[_carGovSingle, ..._carSerial(5)];
 
   // --- The small Latin echo row. --------------------------------------------
   //
@@ -356,10 +334,7 @@ abstract final class YemenNorthernPlates {
     ..._carEcho(6, 2),
   ];
 
-  static final List<PlateMirror> _carMirrorsGov1Serial5 = <PlateMirror>[
-    _carEchoGovSingle,
-    ..._carEcho(5, 1),
-  ];
+  static final List<PlateMirror> _carMirrorsGov1Serial5 = <PlateMirror>[_carEchoGovSingle, ..._carEcho(5, 1)];
 
   // --- Motorcycle. ----------------------------------------------------------
   //
@@ -411,16 +386,9 @@ abstract final class YemenNorthernPlates {
   // narrower canvas: full-width rule under the top band, then one vertical
   // divider splitting a governorate cell (left) from a five-digit serial
   // cell (right) — no second horizontal rule inside the row.
-  static const List<PlateRule> _motoRule = <PlateRule>[
-    PlateRule(box: PlateBox(0, 83, 289, 7)),
-  ];
-  static const List<PlateRule> _motoDivider = <PlateRule>[
-    PlateRule(box: PlateBox(71, 90, 4, 192)),
-  ];
-  static const List<PlateRule> _motoRules = <PlateRule>[
-    ..._motoRule,
-    ..._motoDivider,
-  ];
+  static const List<PlateRule> _motoRule = <PlateRule>[PlateRule(box: PlateBox(0, 83, 289, 7))];
+  static const List<PlateRule> _motoDivider = <PlateRule>[PlateRule(box: PlateBox(71, 90, 4, 192))];
+  static const List<PlateRule> _motoRules = <PlateRule>[..._motoRule, ..._motoDivider];
 
   /// The motorcycle serial's own span and pitch: five cells from x 75, stepping
   /// by 41.8. The cells are 42 wide, a fifth of a unit more than the stride, so
@@ -429,14 +397,8 @@ abstract final class YemenNorthernPlates {
   static const double _motoSerialPitch = 41.8;
 
   static final List<PlateSlot> _motoGov2Serial5 = <PlateSlot>[
-    const PlateSlot(
-      alphabet: YemenAlphabets.easternGovernorateTens,
-      box: PlateBox(13, 95, 24, 89),
-    ),
-    const PlateSlot(
-      alphabet: YemenAlphabets.easternDigits,
-      box: PlateBox(37, 95, 24, 89),
-    ),
+    const PlateSlot(alphabet: YemenAlphabets.easternGovernorateTens, box: PlateBox(13, 95, 24, 89)),
+    const PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(37, 95, 24, 89)),
     ...plateRegister(
       alphabet: YemenAlphabets.easternDigits,
       count: 5,
@@ -632,20 +594,18 @@ abstract final class YemenNorthernPlates {
   /// The car geometries this package builds, keyed by
   /// `(governorate digits, serial digits)`. A combination that is missing is
   /// missing on purpose; see the class-level TODO.
-  static final Map<(int, int), PlateSpec> carGeometries =
-      <(int, int), PlateSpec>{
-        (2, 5): carGov2Serial5,
-        (1, 5): carGov1Serial5,
-        (2, 4): carGov2Serial4,
-        (2, 6): carGov2Serial6,
-      };
+  static final Map<(int, int), PlateSpec> carGeometries = <(int, int), PlateSpec>{
+    (2, 5): carGov2Serial5,
+    (1, 5): carGov1Serial5,
+    (2, 4): carGov2Serial4,
+    (2, 6): carGov2Serial6,
+  };
 
   /// The motorcycle geometries this package builds — one, and unverified.
-  static final Map<(int, int), PlateSpec> motoGeometries =
-      <(int, int), PlateSpec>{
-        // ignore: deprecated_member_use_from_same_package
-        (2, 5): motoGov2Serial5,
-      };
+  static final Map<(int, int), PlateSpec> motoGeometries = <(int, int), PlateSpec>{
+    // ignore: deprecated_member_use_from_same_package
+    (2, 5): motoGov2Serial5,
+  };
 
   /// The northern car plate with this register shape, or null when the
   /// combination is not one this package builds.
@@ -659,15 +619,11 @@ abstract final class YemenNorthernPlates {
   /// value across per `PlateCanvas.onSpecChange`. With `byGroupKey` a change of
   /// serial length keeps the serial and the governorate, truncating only the
   /// digits that no longer fit.
-  static PlateSpec? car({
-    required int governorateDigits,
-    required int serialDigits,
-  }) => carGeometries[(governorateDigits, serialDigits)];
+  static PlateSpec? car({required int governorateDigits, required int serialDigits}) =>
+      carGeometries[(governorateDigits, serialDigits)];
 
   /// The northern motorcycle plate with this register shape, or null. Its
   /// geometry is unverified — see the section comment above [motoGov2Serial5].
-  static PlateSpec? moto({
-    required int governorateDigits,
-    required int serialDigits,
-  }) => motoGeometries[(governorateDigits, serialDigits)];
+  static PlateSpec? moto({required int governorateDigits, required int serialDigits}) =>
+      motoGeometries[(governorateDigits, serialDigits)];
 }

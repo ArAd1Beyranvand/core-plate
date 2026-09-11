@@ -59,21 +59,7 @@ abstract final class PSAlphabets {
   /// from `H` to `J`.
   static const PlateAlphabet governorateLetters = PlateAlphabet(
     id: 'ps.governorateLetters',
-    characters: [
-      'A',
-      'B',
-      'C',
-      'D',
-      'E',
-      'F',
-      'G',
-      'H',
-      'J',
-      'K',
-      'L',
-      'M',
-      'N',
-    ],
+    characters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N'],
     input: AlphabetInput.chosen,
     isNumeric: false,
   );

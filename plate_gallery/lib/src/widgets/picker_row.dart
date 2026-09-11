@@ -4,12 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// One copy of the near-identical picker row both showcase apps carried.
 class PickerRow extends StatelessWidget {
-  const PickerRow({
-    super.key,
-    required this.label,
-    required this.children,
-    this.note,
-  });
+  const PickerRow({super.key, required this.label, required this.children, this.note});
 
   final String label;
   final String? note;
@@ -24,12 +19,7 @@ class PickerRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
+          Text(label, style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           const SizedBox(height: 6),
           Wrap(spacing: 8, runSpacing: 8, children: children),
           if (note != null) ...<Widget>[

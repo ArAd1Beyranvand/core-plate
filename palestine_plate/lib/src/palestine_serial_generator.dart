@@ -118,8 +118,7 @@ abstract final class PSSerialGenerator {
   /// [values] joined with no separator — the shape a filename or a synthetic
   /// dataset row wants, as opposed to [PlateSpec.renderGroup]'s grouped,
   /// dotted rendering.
-  static String toFilename(List<String?> values) =>
-      values.map((v) => v ?? '').join();
+  static String toFilename(List<String?> values) => values.map((v) => v ?? '').join();
 
   static String _digit(Random rng) => rng.nextInt(10).toString();
 }

@@ -115,23 +115,9 @@ abstract final class PSWestBankPlates {
   /// the governorate letter are isolated cells with a gap either side, so they
   /// stay literals.
   static final List<PlateSlot> _modernCarSlots = [
-    const PlateSlot(
-      alphabet: PSAlphabets.digits,
-      box: PlateBox(19.5, 9, 55, 92),
-    ),
-    ...plateRegister(
-      alphabet: PSAlphabets.digits,
-      count: 4,
-      left: 109.5,
-      top: 9,
-      width: 55,
-      height: 92,
-      pitch: 59,
-    ),
-    const PlateSlot(
-      alphabet: PSAlphabets.governorateLetters,
-      box: PlateBox(375.5, 9, 55, 92),
-    ),
+    const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(19.5, 9, 55, 92)),
+    ...plateRegister(alphabet: PSAlphabets.digits, count: 4, left: 109.5, top: 9, width: 55, height: 92, pitch: 59),
+    const PlateSlot(alphabet: PSAlphabets.governorateLetters, box: PlateBox(375.5, 9, 55, 92)),
   ];
 
   /// Dot geometry follows one rule everywhere in this file, so a band's height
@@ -180,19 +166,8 @@ abstract final class PSWestBankPlates {
   /// gap-to-cell ratio, at the pitch seven glyphs leave room for.
   // CALIBRATE — derived, not measured; no seven-glyph reference image exists.
   static final List<PlateSlot> _legacyCarSlots = [
-    const PlateSlot(
-      alphabet: PSAlphabets.districtDigits,
-      box: PlateBox(20, 9, 47, 92),
-    ),
-    ...plateRegister(
-      alphabet: PSAlphabets.digits,
-      count: 4,
-      left: 95,
-      top: 9,
-      width: 47,
-      height: 92,
-      pitch: 51,
-    ),
+    const PlateSlot(alphabet: PSAlphabets.districtDigits, box: PlateBox(20, 9, 47, 92)),
+    ...plateRegister(alphabet: PSAlphabets.digits, count: 4, left: 95, top: 9, width: 47, height: 92, pitch: 51),
     // The usage pair, past the second gap. Two cells at the serial's own
     // pitch, but a group of their own.
     const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(323, 9, 47, 92)),
@@ -276,24 +251,10 @@ abstract final class PSWestBankPlates {
     panel: _twoLinePanel,
     borderWidthRatioOverride: 0.027,
     slots: [
-      const PlateSlot(
-        alphabet: PSAlphabets.digits,
-        box: PlateBox(16.5, 12, 34, 60),
-      ),
-      ...plateRegister(
-        alphabet: PSAlphabets.digits,
-        count: 4,
-        left: 70.5,
-        top: 12,
-        width: 34,
-        height: 60,
-        pitch: 37,
-      ),
+      const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(16.5, 12, 34, 60)),
+      ...plateRegister(alphabet: PSAlphabets.digits, count: 4, left: 70.5, top: 12, width: 34, height: 60, pitch: 37),
       // Line 2: the governorate letter, centred on the serial field.
-      const PlateSlot(
-        alphabet: PSAlphabets.governorateLetters,
-        box: PlateBox(99, 80, 34, 60),
-      ),
+      const PlateSlot(alphabet: PSAlphabets.governorateLetters, box: PlateBox(99, 80, 34, 60)),
     ],
     rules: _twoLineRules,
     labels: _twoLineLabels,
@@ -310,28 +271,11 @@ abstract final class PSWestBankPlates {
     panel: _twoLinePanel,
     borderWidthRatioOverride: 0.027,
     slots: [
-      const PlateSlot(
-        alphabet: PSAlphabets.districtDigits,
-        box: PlateBox(16.5, 12, 34, 60),
-      ),
-      ...plateRegister(
-        alphabet: PSAlphabets.digits,
-        count: 4,
-        left: 70.5,
-        top: 12,
-        width: 34,
-        height: 60,
-        pitch: 37,
-      ),
+      const PlateSlot(alphabet: PSAlphabets.districtDigits, box: PlateBox(16.5, 12, 34, 60)),
+      ...plateRegister(alphabet: PSAlphabets.digits, count: 4, left: 70.5, top: 12, width: 34, height: 60, pitch: 37),
       // Line 2: the usage pair.
-      const PlateSlot(
-        alphabet: PSAlphabets.digits,
-        box: PlateBox(80.5, 80, 34, 60),
-      ),
-      const PlateSlot(
-        alphabet: PSAlphabets.digits,
-        box: PlateBox(117.5, 80, 34, 60),
-      ),
+      const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(80.5, 80, 34, 60)),
+      const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(117.5, 80, 34, 60)),
     ],
     rules: _twoLineRules,
     labels: _twoLineLabels,
@@ -388,12 +332,7 @@ abstract final class PSWestBankPlates {
     canvasWidth: 250,
     canvasHeight: 123,
     // The panel draws nothing; the identity block is the labels and rule below.
-    panel: PlatePanel(
-      box: PlateBox(0, 0, 0, 0),
-      flagScale: 0,
-      captionScale: 0,
-      padding: EdgeInsets.zero,
-    ),
+    panel: PlatePanel(box: PlateBox(0, 0, 0, 0), flagScale: 0, captionScale: 0, padding: EdgeInsets.zero),
     // 4 units of border on a 123-tall plate, measured off the reference.
     borderWidthRatioOverride: 0.0325,
     // Cells 30 x 62 at y=47, each centred on its glyph's measured centre:
@@ -405,23 +344,9 @@ abstract final class PSWestBankPlates {
     // It is 75 as of this register, so the four cells are one pitch throughout;
     // see the CHANGELOG.
     slots: [
-      const PlateSlot(
-        alphabet: PSAlphabets.digits,
-        box: PlateBox(12.5, 47, 30, 62),
-      ),
-      ...plateRegister(
-        alphabet: PSAlphabets.digits,
-        count: 4,
-        left: 60,
-        top: 47,
-        width: 30,
-        height: 62,
-        pitch: 32,
-      ),
-      const PlateSlot(
-        alphabet: PSAlphabets.governorateLetters,
-        box: PlateBox(205, 47, 30, 62),
-      ),
+      const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(12.5, 47, 30, 62)),
+      ...plateRegister(alphabet: PSAlphabets.digits, count: 4, left: 60, top: 47, width: 30, height: 62, pitch: 32),
+      const PlateSlot(alphabet: PSAlphabets.governorateLetters, box: PlateBox(205, 47, 30, 62)),
     ],
     rules: const [
       // The divider between `P` and `ف`: 3 wide at x=121, spanning the header
@@ -456,40 +381,19 @@ abstract final class PSWestBankPlates {
     country: PSCountries.westBankGreenInkInline,
     canvasWidth: 165,
     canvasHeight: 165,
-    panel: PlatePanel(
-      box: PlateBox(45, 118, 75, 38),
-      flagScale: 0,
-      captionScale: 1.5,
-      padding: EdgeInsets.zero,
-    ),
+    panel: PlatePanel(box: PlateBox(45, 118, 75, 38), flagScale: 0, captionScale: 1.5, padding: EdgeInsets.zero),
     borderWidthRatioOverride: 0.027,
     slots: [
-      const PlateSlot(
-        alphabet: PSAlphabets.digits,
-        box: PlateBox(12.5, 14, 24, 46),
-      ),
-      ...plateRegister(
-        alphabet: PSAlphabets.digits,
-        count: 4,
-        left: 50.5,
-        top: 14,
-        width: 24,
-        height: 46,
-        pitch: 26,
-      ),
-      const PlateSlot(
-        alphabet: PSAlphabets.governorateLetters,
-        box: PlateBox(70.5, 64, 24, 46),
-      ),
+      const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(12.5, 14, 24, 46)),
+      ...plateRegister(alphabet: PSAlphabets.digits, count: 4, left: 50.5, top: 14, width: 24, height: 46, pitch: 26),
+      const PlateSlot(alphabet: PSAlphabets.governorateLetters, box: PlateBox(70.5, 64, 24, 46)),
     ],
     rules: const [
       // The analogue of the one-line plate's vertical rule: on a stacked
       // layout the serial and the identity band are separated horizontally.
       PlateRule(box: PlateBox(12, 113, 141, 3)),
     ],
-    labels: [
-      PlateLabel(text: '·', box: PlateBox(35.45, 27.8, 16.1, 18.4), glyphHeight: 25.3),
-    ],
+    labels: [PlateLabel(text: '·', box: PlateBox(35.45, 27.8, 16.1, 18.4), glyphHeight: 25.3)],
     textGroups: _modernGroups,
   );
 
@@ -525,19 +429,8 @@ abstract final class PSWestBankPlates {
     borderWidthRatioOverride: 0.027,
     slots: [
       const PlateSlot(alphabet: PSAlphabets.digits, box: PlateBox(43, 38, 48, 64)),
-      ...plateRegister(
-        alphabet: PSAlphabets.digits,
-        count: 4,
-        left: 120,
-        top: 38,
-        width: 48,
-        height: 64,
-        pitch: 51,
-      ),
-      const PlateSlot(
-        alphabet: PSAlphabets.governorateLetters,
-        box: PlateBox(350, 38, 48, 64),
-      ),
+      ...plateRegister(alphabet: PSAlphabets.digits, count: 4, left: 120, top: 38, width: 48, height: 64, pitch: 51),
+      const PlateSlot(alphabet: PSAlphabets.governorateLetters, box: PlateBox(350, 38, 48, 64)),
     ],
     rules: _carRules,
     labels: const [

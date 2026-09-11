@@ -27,31 +27,24 @@ class PSWestBankModernValidator extends GatedPlateValidator {
 
   /// `H` is followed by `J`; `I` and `O` are never issued at all. See
   /// [PSGovernorate] for why.
-  static const String illegalLetterIO =
-      'The letters I and O are never issued; H is followed by J.';
+  static const String illegalLetterIO = 'The letters I and O are never issued; H is followed by J.';
 
   /// `P`–`T` were allocated to Gaza's governorates under the pre-2012 scheme
   /// and never printed on a West Bank plate.
-  static const String reservedGazaLetter =
-      'P, Q, R, S and T were allocated to Gaza and never issued.';
+  static const String reservedGazaLetter = 'P, Q, R, S and T were allocated to Gaza and never issued.';
 
-  static const String invalidGovernorate =
-      'Governorate letter must be one of A-N (I and O excluded).';
+  static const String invalidGovernorate = 'Governorate letter must be one of A-N (I and O excluded).';
 
   @override
   PlateValidation judge(PlateEntry entry) => validateFields(
-        region: entry.group('region'),
-        serial: entry.group('serial'),
-        governorate: entry.group('governorate'),
-      );
+    region: entry.group('region'),
+    serial: entry.group('serial'),
+    governorate: entry.group('governorate'),
+  );
 
   /// The country rule without a spec: pass the plate's own slot values in.
   /// Used directly by [PSSerialGenerator] and by the boundary-case tests.
-  static PlateValidation validateFields({
-    required String region,
-    required String serial,
-    required String governorate,
-  }) {
+  static PlateValidation validateFields({required String region, required String serial, required String governorate}) {
     if (!isDigitsOfLength(region, 1)) {
       return const PlateValidation.invalid(invalidRegion);
     }
@@ -64,8 +57,7 @@ class PSWestBankModernValidator extends GatedPlateValidator {
     if (PSGovernorate.reservedGazaLetters.contains(governorate)) {
       return const PlateValidation.invalid(reservedGazaLetter);
     }
-    if (governorate.length != 1 ||
-        !PSGovernorate.letters.contains(governorate)) {
+    if (governorate.length != 1 || !PSGovernorate.letters.contains(governorate)) {
       return const PlateValidation.invalid(invalidGovernorate);
     }
     return const PlateValidation.valid();
@@ -83,28 +75,18 @@ class PSWestBankLegacyValidator extends GatedPlateValidator {
   String get gateGroup => 'usage';
 
   /// `0` and `2` are not legal district codes — see [PSLegacyUsage.districts].
-  static const String invalidDistrictCode =
-      'District code must be 1 or 3-9 (0 and 2 are never issued).';
+  static const String invalidDistrictCode = 'District code must be 1 or 3-9 (0 and 2 are never issued).';
 
   static const String invalidSerial = 'Serial must be four digits.';
 
-  static const String invalidUsageCode =
-      'Usage code is not a legal class (see PSLegacyUsage.codes).';
+  static const String invalidUsageCode = 'Usage code is not a legal class (see PSLegacyUsage.codes).';
 
   @override
-  PlateValidation judge(PlateEntry entry) => validateFields(
-        district: entry.group('district'),
-        serial: entry.group('serial'),
-        usage: entry.group('usage'),
-      );
+  PlateValidation judge(PlateEntry entry) =>
+      validateFields(district: entry.group('district'), serial: entry.group('serial'), usage: entry.group('usage'));
 
-  static PlateValidation validateFields({
-    required String district,
-    required String serial,
-    required String usage,
-  }) {
-    if (district.length != 1 ||
-        !PSLegacyUsage.districtCodes.contains(district)) {
+  static PlateValidation validateFields({required String district, required String serial, required String usage}) {
+    if (district.length != 1 || !PSLegacyUsage.districtCodes.contains(district)) {
       return const PlateValidation.invalid(invalidDistrictCode);
     }
     if (!isDigitsOfLength(serial, 4)) {
@@ -127,26 +109,17 @@ class PSGazaValidator extends GatedPlateValidator {
   @override
   String get gateGroup => 'usage';
 
-  static const String gazaPrefixNotThree =
-      'A Gaza plate always begins with 3.';
+  static const String gazaPrefixNotThree = 'A Gaza plate always begins with 3.';
 
   static const String invalidSerial = 'Serial must be four digits.';
 
-  static const String invalidUsageCode =
-      'Usage code is not a legal Gaza class (00-29 or 40-59).';
+  static const String invalidUsageCode = 'Usage code is not a legal Gaza class (00-29 or 40-59).';
 
   @override
-  PlateValidation judge(PlateEntry entry) => validateFields(
-        prefix: entry.group('prefix'),
-        serial: entry.group('serial'),
-        usage: entry.group('usage'),
-      );
+  PlateValidation judge(PlateEntry entry) =>
+      validateFields(prefix: entry.group('prefix'), serial: entry.group('serial'), usage: entry.group('usage'));
 
-  static PlateValidation validateFields({
-    required String prefix,
-    required String serial,
-    required String usage,
-  }) {
+  static PlateValidation validateFields({required String prefix, required String serial, required String usage}) {
     if (prefix != '3') {
       return const PlateValidation.invalid(gazaPrefixNotThree);
     }

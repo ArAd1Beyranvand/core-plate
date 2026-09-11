@@ -21,8 +21,7 @@ class ExampleApp extends StatelessWidget {
               // render-time input rather than a field on the spec.
               theme: PSThemes.forUsage(PSUsage.private),
               validator: const PSWestBankModernValidator(),
-              autoValidate:
-                  true, // paints red on an invalid plate; never blocks input
+              autoValidate: true, // paints red on an invalid plate; never blocks input
               // The trailing governorate letter is a `chosen` alphabet, so the
               // host is asked for a character instead of the slot accepting
               // typing. Returning null declines; `plate_gallery` wires

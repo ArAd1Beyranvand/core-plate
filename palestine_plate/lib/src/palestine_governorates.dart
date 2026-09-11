@@ -50,21 +50,7 @@ enum PSGovernorate {
   /// Every issued letter, in allocation order — which is also the order
   /// `PSAlphabets.governorateLetters` presents them in, so a picker's wheel
   /// reads `A B C D E F G H J K L M N`.
-  static const List<String> letters = [
-    'A',
-    'B',
-    'C',
-    'D',
-    'E',
-    'F',
-    'G',
-    'H',
-    'J',
-    'K',
-    'L',
-    'M',
-    'N',
-  ];
+  static const List<String> letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N'];
 
   /// The two letters that are never issued anywhere in the scheme, and are
   /// misreads rather than values. See the enum doc.

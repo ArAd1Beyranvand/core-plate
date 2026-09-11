@@ -59,18 +59,13 @@ class GalleryEntry {
   final String? note;
 
   /// The livery to paint this entry in, given what is currently in its slots.
-  PlateTheme? themeFor(List<String?> values) =>
-      themeForValues?.call(values) ?? theme;
+  PlateTheme? themeFor(List<String?> values) => themeForValues?.call(values) ?? theme;
 }
 
 /// A run of entries under one heading — a system, a scheme, a form factor.
 @immutable
 class GallerySection {
-  const GallerySection({
-    required this.title,
-    required this.note,
-    required this.entries,
-  });
+  const GallerySection({required this.title, required this.note, required this.entries});
 
   final String title;
   final String note;
@@ -102,13 +97,9 @@ abstract interface class GallerySource {
 extension GallerySourceEntries on GallerySource {
   /// Every entry, sections flattened — what a picker offers and what a test
   /// counts.
-  List<GalleryEntry> get entries => <GalleryEntry>[
-    for (final GallerySection section in sections) ...section.entries,
-  ];
+  List<GalleryEntry> get entries => <GalleryEntry>[for (final GallerySection section in sections) ...section.entries];
 
   /// The distinct geometries the entries cover, by [PlateSpec.id]. The number
   /// a coverage test compares against the package's own catalogue surface.
-  Set<String> get specIds => <String>{
-    for (final GalleryEntry entry in entries) entry.spec.id,
-  };
+  Set<String> get specIds => <String>{for (final GalleryEntry entry in entries) entry.spec.id};
 }

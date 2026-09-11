@@ -18,10 +18,7 @@ class CatalogueScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final int total = gallerySources.fold(
-      0,
-      (int n, GallerySource s) => n + s.entries.length,
-    );
+    final int total = gallerySources.fold(0, (int n, GallerySource s) => n + s.entries.length);
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: <Widget>[
@@ -29,26 +26,18 @@ class CatalogueScreen extends StatelessWidget {
           'All $total plates the four country packages can draw. A card is a '
           'geometry, a livery and a country block — so two cards can share a '
           'spec and still be two different plates.',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+          style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 24),
         for (final GallerySource source in gallerySources) ...<Widget>[
           Text(source.countryName, style: theme.textTheme.headlineSmall),
           Text(
             source.packageName,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           for (final GallerySection section in source.sections) ...<Widget>[
-            SectionHeader(
-              title: section.title,
-              note: section.note,
-              count: section.entries.length,
-            ),
+            SectionHeader(title: section.title, note: section.note, count: section.entries.length),
             const SizedBox(height: 12),
             PlateCardGrid(entries: section.entries, onTap: onOpen),
             const SizedBox(height: 28),

@@ -59,11 +59,7 @@ class PlateText extends StatelessWidget {
         if (state.plateNumber.isEmpty) {
           return emptyPlate ?? const SizedBox.shrink();
         }
-        return PlateTextRow(
-          spec: state.spec,
-          values: state.plateNumber.values,
-          textStyle: textStyle,
-        );
+        return PlateTextRow(spec: state.spec, values: state.plateNumber.values, textStyle: textStyle);
       },
     );
   }
