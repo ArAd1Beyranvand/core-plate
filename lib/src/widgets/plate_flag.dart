@@ -14,6 +14,20 @@ import '../model/plate_country.dart';
 /// vector is drawn at the exact device-pixel size.
 ///
 /// A country with no flag asset renders nothing.
+///
+/// **The first frame that shows a flag pays for it.** The vector is parsed, or
+/// the bitmap decoded, the first time this widget paints — and if that first
+/// paint coincides with the start of an animation (a card sliding in, a spec
+/// being swapped), the parse lands inside the animation's first frame and shows
+/// as a stutter right at the start. This widget deliberately does not cache
+/// across mounts: it cannot know which countries a host is about to show, and
+/// holding every flag a process has ever rendered is the host's decision, not
+/// core's.
+///
+/// A host that animates a plate into view should warm the assets first, from
+/// `didChangeDependencies` of the screen that is about to show them — a
+/// `precacheImage` for a [RasterPlateAsset], and flutter_svg's own cache for an
+/// [SvgPlateAsset].
 class PlateFlag extends StatelessWidget {
   const PlateFlag({super.key, required this.country, this.borderRadius});
 

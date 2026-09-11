@@ -116,6 +116,44 @@ class _PlateCanvasState extends State<PlateCanvas> {
   /// as [PlateCanvas.controller]: that one outlives us.
   bool _ownsController = false;
 
+  /// The light Material theme the slots' selection colours are pinned to, and
+  /// the one colour it is derived from.
+  ///
+  /// [ThemeData.light] builds a colour scheme, a full text theme and some
+  /// thirty component sub-themes. It used to run on every [build], which under
+  /// `autoValidate` meant once per keystroke and, on a host that rebuilds the
+  /// canvas from an animation, once per frame. It depends on exactly one value,
+  /// so it is cached against that value: a verdict flip (which swaps
+  /// `activeColor` for `alertColor`) rebuilds it once, and nothing else does.
+  ThemeData? _selectionTheme;
+  Color? _selectionThemeColor;
+
+  /// The face clip, cached for the same reason: [_PlateFaceClipper.shouldReclip]
+  /// already stops the clip being recomputed, but a fresh clipper was still
+  /// allocated on every build.
+  _PlateFaceClipper? _faceClipper;
+
+  ThemeData _selectionThemeFor(Color active) {
+    final cached = _selectionTheme;
+    if (cached != null && _selectionThemeColor == active) return cached;
+    _selectionThemeColor = active;
+    return _selectionTheme = ThemeData.light().copyWith(
+      textSelectionTheme: TextSelectionThemeData(
+        selectionColor: active.withValues(alpha: 0.3),
+        cursorColor: active,
+        selectionHandleColor: active,
+      ),
+    );
+  }
+
+  _PlateFaceClipper _faceClipperFor(double border, double radius) {
+    final cached = _faceClipper;
+    if (cached != null && cached.border == border && cached.radius == radius) {
+      return cached;
+    }
+    return _faceClipper = _PlateFaceClipper(border: border, radius: radius);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -288,15 +326,10 @@ class _PlateCanvasState extends State<PlateCanvas> {
 
     // The plate's face is always white, so its cursor and text-selection
     // colours are pinned to a light Material theme regardless of the host
-    // app's brightness. Built once per canvas build and scoped over the whole
-    // slot list, instead of each typed slot constructing its own.
-    final selectionTheme = ThemeData.light().copyWith(
-      textSelectionTheme: TextSelectionThemeData(
-        selectionColor: theme.activeColor.withValues(alpha: 0.3),
-        cursorColor: theme.activeColor,
-        selectionHandleColor: theme.activeColor,
-      ),
-    );
+    // app's brightness. Cached against the one colour it derives from (see
+    // [_selectionThemeFor]) and scoped over the whole slot list, instead of
+    // each typed slot constructing its own.
+    final selectionTheme = _selectionThemeFor(theme.activeColor);
 
     // NOTE: this build deliberately does NOT watch the plate value.
     //
@@ -342,10 +375,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
               ),
               Positioned.fill(
                 child: ClipRRect(
-                  clipper: _PlateFaceClipper(
-                    border: border,
-                    radius: innerRadius,
-                  ),
+                  clipper: _faceClipperFor(border, innerRadius),
                   child: Stack(
                     children: [
                       _Placed(
