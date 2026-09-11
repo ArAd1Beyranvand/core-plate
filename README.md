@@ -34,7 +34,8 @@ dependencies:
 ```
 
 Then pick a country package (`iran_plate`, `germany_plate`, `palestine_plate`,
-`yemen_plate`) and, if you want the on-screen keyboard, `plate_keypad`.
+`yemen_plate`) and, if you want the on-screen keyboard, `plate_keypad`. The repo's
+`plate_gallery/` app draws every plate all four of them ship, in one place.
 
 ## Use
 
