@@ -221,39 +221,6 @@ void main() {
       expect(YemenUnifiedPlates.car(numberDigits: 7), isNull);
       expect(YemenUnifiedPlates.moto(numberDigits: 4), same(YemenUnifiedPlates.moto4));
     });
-
-    test('the deprecated shims return the same geometry sets', () {
-      for (final YemenUsage usage in YemenUsage.values) {
-        // ignore: deprecated_member_use
-        expect(
-          YemenNorthernPlates.byDigits(usage),
-          usage.onNorthern
-              ? YemenNorthernPlates.carGeometries
-              : isEmpty,
-          reason: usage.name,
-        );
-        // ignore: deprecated_member_use
-        expect(
-          YemenNorthernPlates.byDigits(usage, motorcycle: true),
-          usage.onNorthern
-              ? YemenNorthernPlates.motoGeometries
-              : isEmpty,
-          reason: usage.name,
-        );
-        // ignore: deprecated_member_use
-        expect(
-          YemenUnifiedPlates.byNumberLength(usage),
-          usage.onUnified ? YemenUnifiedPlates.carGeometries : isEmpty,
-          reason: usage.name,
-        );
-        // ignore: deprecated_member_use
-        expect(
-          YemenUnifiedPlates.byNumberLength(usage, motorcycle: true),
-          usage.onUnified ? YemenUnifiedPlates.motoGeometries : isEmpty,
-          reason: usage.name,
-        );
-      }
-    });
   });
 
   group('the usage axis is a country block, not a spec', () {

@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'yemen_alphabets.dart';
 import 'yemen_country.dart';
-import 'yemen_usage.dart';
 
 /// **System A** — the unified plate approved on 9 May 2026 by the Ministry of
 /// Interior of the internationally recognised government, and valid only in the
@@ -504,23 +503,6 @@ abstract final class YemenUnifiedPlates {
   /// digits, or null.
   static PlateSpec? moto({required int numberDigits}) =>
       motoGeometries[numberDigits];
-
-  /// The plates for [usage], keyed by how many digits the vehicle number has.
-  ///
-  /// Still empty for [YemenUsage.military], which System A does not issue — but
-  /// every usage System A *does* issue now returns the same geometries, because
-  /// the usage never varied the geometry in the first place.
-  @Deprecated(
-    'Usage no longer selects a spec — it selects a country block. '
-    'Use car()/moto() and pass YemenCountry.unifiedFor(usage) to the canvas. '
-    'Will be removed in 0.4.0.',
-  )
-  static Map<int, PlateSpec> byNumberLength(
-    YemenUsage usage, {
-    bool motorcycle = false,
-  }) => usage.onUnified
-      ? (motorcycle ? motoGeometries : carGeometries)
-      : const <int, PlateSpec>{};
 
   /// The number lengths a unified plate can have, shortest first.
   static const List<int> numberLengths = <int>[4, 5, 6];

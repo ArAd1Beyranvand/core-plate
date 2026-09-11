@@ -146,7 +146,7 @@ If the golden is genuinely failing, decide *in P0* whether to re-baseline it (`f
 
 **Target:** one standalone `plate_gallery/` at the repo root, depending on all five country packages plus `plate_keypad`. Every `<package>/example/` is reduced to a single ~30-line `main.dart` that renders one plate and nothing else — the pub.dev example, not a showcase.
 
-**Why it is one small phase and not the whole project:** the four showcase apps duplicate each other because there is no shared *catalogue* contract. Palestine exposes `.all` lists; Yemen exposes nested maps plus `byDigits`/`byNumberLength`; Iran and Germany expose nothing. P10 introduces a tiny `PlateCatalogEntry { spec, theme, country, validator, label }` record in the gallery app itself — **not in core** — and one adapter file per country. That is the entire consolidation.
+**Why it is one small phase and not the whole project:** the four showcase apps duplicate each other because there is no shared *catalogue* contract. Palestine exposes `.all` lists; Yemen exposes `carGeometries`/`motoGeometries` maps plus `car()`/`moto()`; Iran and Germany expose nothing. P10 introduces a tiny `PlateCatalogEntry { spec, theme, country, validator, label }` record in the gallery app itself — **not in core** — and one adapter file per country. That is the entire consolidation.
 
 **Acceptance criteria:**
 - `plate_gallery/` builds and runs on Linux desktop and Chrome; `flutter analyze` clean.

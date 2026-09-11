@@ -1,5 +1,10 @@
 ## 0.3.0
 
+- **Breaking: removed the `@Deprecated` `PSWestBankPlates.legacyCarForUsage`
+  shim.** 0.2.0 kept it for one release; this is that release. It returned
+  `legacyCar` for every usage. Pass `legacyCountryForUsage(usage)` to
+  `PlateCanvas.country` alongside `legacyCar` instead.
+
 - **Breaking: `PSSerialGenerator` is spec-driven.** `modernWestBank`,
   `legacyWestBank` and `gaza` now take a `PlateSpec` and an optional
   `random:`, matching `yemen_plate`'s generator shape. Each register's

@@ -234,19 +234,13 @@ abstract final class PSWestBankPlates {
   /// host hands to `PlateCanvas.country` beside the theme from
   /// `PSThemes.forUsage`.
   ///
-  /// Replaces `legacyCarForUsage`, which returned a whole second spec for a
-  /// colour. Geometry is identical across every legacy usage; only the ink
-  /// changes, and ink is a render-time choice.
+  /// Geometry is identical across every legacy usage; only the ink changes,
+  /// and ink is a render-time choice.
   static PlateCountry legacyCountryForUsage(PSUsage usage) => switch (usage) {
     PSUsage.publicTransport || PSUsage.tradePlate => PSCountries.westBankWhiteInk,
     PSUsage.government || PSUsage.exempt => PSCountries.westBankRedInk,
     _ => PSCountries.westBankGreenInk,
   };
-
-  /// Deprecated: returns [legacyCar] regardless of usage. The colour is now a
-  /// render-time input — pass [legacyCountryForUsage] to `PlateCanvas.country`.
-  @Deprecated('Use legacyCountryForUsage with PlateCanvas.country instead')
-  static PlateSpec legacyCarForUsage(PSUsage usage) => legacyCar;
 
   // -------------------------------------------------------------------------
   // Two-line 300 x 150, for imported vehicles whose bumper cannot take a

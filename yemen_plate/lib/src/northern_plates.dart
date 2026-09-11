@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'yemen_alphabets.dart';
 import 'yemen_country.dart';
-import 'yemen_usage.dart';
 
 /// **System B** — the 1993 format, still in force across the Houthi-controlled
 /// north, and the larger share of the fleet on the road, because
@@ -671,21 +670,4 @@ abstract final class YemenNorthernPlates {
     required int governorateDigits,
     required int serialDigits,
   }) => motoGeometries[(governorateDigits, serialDigits)];
-
-  /// The plates for [usage], keyed by `(governorate digits, serial digits)`.
-  ///
-  /// Still empty for [YemenUsage.police], which System B does not issue — but
-  /// every usage System B *does* issue now returns the same geometries, because
-  /// the usage never varied the geometry in the first place.
-  @Deprecated(
-    'Usage no longer selects a spec — it selects a country block and a theme. '
-    'Use car()/moto() and pass YemenCountry.northernFor(usage) to the canvas. '
-    'Will be removed in 0.4.0.',
-  )
-  static Map<(int, int), PlateSpec> byDigits(
-    YemenUsage usage, {
-    bool motorcycle = false,
-  }) => usage.onNorthern
-      ? (motorcycle ? motoGeometries : carGeometries)
-      : const <(int, int), PlateSpec>{};
 }

@@ -1,6 +1,6 @@
 name: core_plate_bloc
 description: "The optional bloc layer for the core_plate library — PlateCardBloc, the PlateCardBinding seam that mirrors it onto a PlateController, and the bloc-reading read-only views."
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/ArAd1Beyranvand/core-plate-bloc
 
 environment:
@@ -13,8 +13,9 @@ dependencies:
   flutter:
     sdk: flutter
   # The country-neutral engine, for PlateController, PlateSpec, PlateNumber and
-  # PlateCanvas. 0.4.0 is the release that stopped depending on bloc itself.
-  core_plate: ^0.5.0
+  # PlateCanvas. 0.4.0 is the release that stopped depending on bloc itself;
+  # 0.9.0 is required for PlateTextRow and noCharacterChooser.
+  core_plate: ^0.9.0
   flutter_bloc: ^9.1.1
   bloc: ^9.2.1
 

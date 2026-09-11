@@ -70,15 +70,13 @@ fails to compile rather than silently changing meaning.
   validator — which is what proves no group key or slot order moved when the
   clones went.
 
-### Deprecated
-
 - `YemenNorthernPlates.byDigits(usage, {motorcycle})` and
-  `YemenUnifiedPlates.byNumberLength(usage, {motorcycle})`. They still return a
-  map keyed by shape, and still return an empty one for a usage their system
-  does not issue (`police` on System B, `military` on System A) — but every
-  usage that *is* issued now yields the same geometries, because the usage never
-  varied the geometry. Removed in 0.4.0; use `car()` / `moto()` and pass the
-  usage to the canvas as `country:`.
+  `YemenUnifiedPlates.byNumberLength(usage, {motorcycle})`. Briefly staged as
+  deprecated shims during this release's development and removed before it
+  shipped, so no published version ever carried them. Every usage a system
+  issues yields the same geometries — the usage never varied the geometry — so
+  the shims only wrapped `carGeometries` / `motoGeometries` behind a usage
+  filter. Use `car()` / `moto()` and pass the usage to the canvas as `country:`.
 
 ### Fixed
 

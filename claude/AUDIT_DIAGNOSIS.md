@@ -121,7 +121,7 @@ core_plate_bloc ──► core_plate  (+ bloc, flutter_bloc)   [leaf; nothing im
 | Usage → theme lookup | — | — | — | — | `forUsage`, `forGazaUsageCode` | `forNorthernUsage`, `forUnifiedUsage` | Country-specific; shape is shared |
 | Usage → country lookup | — | — | — | — | *(implicit in spec choice)* | `unifiedFor`, `northernFor` | Yemen's is the better idiom |
 | `PlateCountry` consts per country | — | — | 1 | 1 | **7** | **12** | Palestine/Yemen counts are a symptom, not data |
-| Spec catalogue surface | — | — | *(none)* | *(none)* | `.all` lists | `car`/`moto` maps + `byDigits`/`byNumberLength` | **Four different idioms; no shared contract** |
+| Spec catalogue surface | — | — | *(none)* | *(none)* | `.all` lists | `carGeometries`/`motoGeometries` maps + `car()`/`moto()` | **Four different idioms; no shared contract** |
 | Serial generator | — | — | — | — | positional, spec-blind | spec-driven via text groups | **Two idioms; Yemen's is correct** |
 | Slot-index lookup by group key | `valueOfGroup` (values only) | — | — | — | — | private `_indicesOf` | **Belongs in `PlateSpec`** |
 | Evenly-pitched register, written cell by cell | *(no primitive)* | — | 14 slots | 7 slots | ~40 slots | 15 slots + 21 mirrors | **~140 of 281 `PlateBox` literals are an unrolled loop** |
