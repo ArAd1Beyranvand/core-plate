@@ -1,0 +1,9 @@
+include: ../../analysis_options.yaml
+
+# Package-specific: this example ships a Linux desktop runner whose generated
+# code is not this package's to lint. `exclude:` is a list, so it replaces
+# rather than extends the base's — build/** has to be restated here.
+analyzer:
+  exclude:
+    - build/**
+    - linux/**
