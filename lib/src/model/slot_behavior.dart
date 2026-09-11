@@ -43,9 +43,7 @@ SlotBehavior resolveSlotBehavior({
   if (mode == PlateMode.display) return SlotBehavior.glyph;
   switch (source) {
     case PlateInputSource.system:
-      return input == AlphabetInput.typed
-          ? SlotBehavior.imeField
-          : SlotBehavior.sheet;
+      return input == AlphabetInput.typed ? SlotBehavior.imeField : SlotBehavior.sheet;
     case PlateInputSource.hardwareKeyboard:
       return SlotBehavior.hardwareField;
     case PlateInputSource.packageKeypad:

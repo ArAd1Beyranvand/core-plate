@@ -12,23 +12,19 @@ const _panel = PlatePanel(box: PlateBox(0, 0, 10, 40));
 
 /// A spec with one digit slot per key in [keys], one single-slot group per key.
 PlateSpec _spec(List<String> keys) => PlateSpec(
-      id: 'stub-${keys.join()}',
-      country: _country,
-      canvasWidth: 400,
-      canvasHeight: 100,
-      panel: _panel,
-      slots: [
-        for (var i = 0; i < keys.length; i++)
-          PlateSlot(
-            alphabet: PlateAlphabet.latinDigits,
-            box: PlateBox(20 + i * 25.0, 5, 20, 30),
-          ),
-      ],
-      textGroups: [
-        for (var i = 0; i < keys.length; i++)
-          PlateTextGroup([i], key: keys[i]),
-      ],
-    );
+  id: 'stub-${keys.join()}',
+  country: _country,
+  canvasWidth: 400,
+  canvasHeight: 100,
+  panel: _panel,
+  slots: [
+    for (var i = 0; i < keys.length; i++)
+      PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(20 + i * 25.0, 5, 20, 30)),
+  ],
+  textGroups: [
+    for (var i = 0; i < keys.length; i++) PlateTextGroup([i], key: keys[i]),
+  ],
+);
 
 class _StubGated extends GatedPlateValidator {
   const _StubGated(this._gate);
@@ -102,18 +98,9 @@ void main() {
 
   group('PlateValidation equality', () {
     test('equal over reason', () {
-      expect(
-        const PlateValidation.invalid('x'),
-        const PlateValidation.invalid('x'),
-      );
-      expect(
-        const PlateValidation.invalid('x') == const PlateValidation.invalid('y'),
-        isFalse,
-      );
-      expect(
-        const PlateValidation.valid() == const PlateValidation.valid(),
-        isTrue,
-      );
+      expect(const PlateValidation.invalid('x'), const PlateValidation.invalid('x'));
+      expect(const PlateValidation.invalid('x') == const PlateValidation.invalid('y'), isFalse);
+      expect(const PlateValidation.valid() == const PlateValidation.valid(), isTrue);
     });
   });
 }

@@ -21,12 +21,7 @@ Future<String?> noCharacterChooser(PlateAlphabet alphabet) async => null;
 /// frame built against a longer spec than the value list it is handed renders a
 /// short plate instead of crashing.
 class PlateTextRow extends StatelessWidget {
-  const PlateTextRow({
-    super.key,
-    required this.spec,
-    required this.values,
-    this.textStyle,
-  });
+  const PlateTextRow({super.key, required this.spec, required this.values, this.textStyle});
 
   final PlateSpec spec;
   final List<String?> values;
@@ -34,23 +29,21 @@ class PlateTextRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DefaultTextStyle(
-        style: textStyle ?? const TextStyle(color: Color(0xFF000000)),
-        child: Directionality(
-          textDirection: spec.textDirection,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              for (final g in spec.effectiveTextGroups)
-                // Bounds-checked: a group index past the end of the value list
-                // is skipped rather than thrown on, so a spec swap that
-                // shortens the plate cannot crash a frame built against the
-                // longer one.
-                if (g.indices.any(
-                  (i) => i < values.length && (values[i] ?? '').isNotEmpty,
-                ))
-                  Text(spec.renderGroup(g, values)),
-            ],
-          ),
-        ),
-      );
+    style: textStyle ?? const TextStyle(color: Color(0xFF000000)),
+    child: Directionality(
+      textDirection: spec.textDirection,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          for (final g in spec.effectiveTextGroups)
+            // Bounds-checked: a group index past the end of the value list
+            // is skipped rather than thrown on, so a spec swap that
+            // shortens the plate cannot crash a frame built against the
+            // longer one.
+            if (g.indices.any((i) => i < values.length && (values[i] ?? '').isNotEmpty))
+              Text(spec.renderGroup(g, values)),
+        ],
+      ),
+    ),
+  );
 }

@@ -14,12 +14,7 @@ import '../input/plate_controller.dart';
 /// narrow, so a plain [ValueListenableBuilder] over it rebuilds exactly the
 /// slot that changed.
 class PlateSelector<T> extends StatefulWidget {
-  const PlateSelector({
-    super.key,
-    required this.controller,
-    required this.selector,
-    required this.builder,
-  });
+  const PlateSelector({super.key, required this.controller, required this.selector, required this.builder});
 
   final PlateController controller;
 
@@ -52,8 +47,7 @@ class _PlateSelectorState<T> extends State<PlateSelector<T>> {
     }
     // Re-select on a swapped controller *or* a swapped selector: either can
     // pick out a different value from the same keystrokes.
-    if (!identical(oldWidget.controller, widget.controller) ||
-        !identical(oldWidget.selector, widget.selector)) {
+    if (!identical(oldWidget.controller, widget.controller) || !identical(oldWidget.selector, widget.selector)) {
       _value = widget.selector(widget.controller);
     }
   }

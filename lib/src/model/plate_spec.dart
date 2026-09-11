@@ -29,12 +29,7 @@ class PlateSlot {
 /// alphabet.
 @immutable
 class PlateMirror {
-  const PlateMirror({
-    required this.source,
-    required this.box,
-    required this.glyphHeight,
-    this.alphabet,
-  });
+  const PlateMirror({required this.source, required this.box, required this.glyphHeight, this.alphabet});
 
   /// Index into [PlateSpec.slots] of the slot whose value is echoed.
   final int source;
@@ -74,11 +69,7 @@ class PlateDecal {
 /// Fixed text printed on the plate face (e.g. "ایران").
 @immutable
 class PlateLabel {
-  const PlateLabel({
-    required this.text,
-    required this.box,
-    required this.glyphHeight,
-  });
+  const PlateLabel({required this.text, required this.box, required this.glyphHeight});
 
   final String text;
   final PlateBox box;
@@ -91,12 +82,7 @@ class PlateLabel {
 /// flag and caption are laid out inside it.
 @immutable
 class PlatePanel {
-  const PlatePanel({
-    required this.box,
-    this.flagScale = 1.0,
-    this.captionScale = 1.0,
-    this.padding,
-  });
+  const PlatePanel({required this.box, this.flagScale = 1.0, this.captionScale = 1.0, this.padding});
 
   final PlateBox box;
 
@@ -183,8 +169,7 @@ class PlateSpec {
   /// The slot at [index], or null when [index] is outside the plate. Position
   /// is list position — [PlateSlot] carries no index field — so this is a
   /// bounds check and an indexing.
-  PlateSlot? slotAt(int index) =>
-      index >= 0 && index < slots.length ? slots[index] : null;
+  PlateSlot? slotAt(int index) => index >= 0 && index < slots.length ? slots[index] : null;
 
   /// [textGroups] if non-empty, else one group per slot in index order — the
   /// rule [textGroups]'s own doc comment describes. Callers should read this
@@ -221,12 +206,10 @@ class PlateSpec {
   }
 
   /// The slot focus advances to from [index], or null at the end of the plate.
-  int? nextIndex(int index) =>
-      index >= 0 && index + 1 < slots.length ? index + 1 : null;
+  int? nextIndex(int index) => index >= 0 && index + 1 < slots.length ? index + 1 : null;
 
   /// The slot focus steps back to from [index], or null at the start.
-  int? previousIndex(int index) =>
-      index > 0 && index < slots.length ? index - 1 : null;
+  int? previousIndex(int index) => index > 0 && index < slots.length ? index - 1 : null;
 
   /// Concatenates [values] at the indices of the text group with the given
   /// [key], unset slots rendering as ''. Returns '' if no group has that key.
@@ -280,10 +263,7 @@ bool debugValidateSpec(PlateSpec spec) {
   for (var i = 0; i < spec.slots.length; i++) {
     final b = spec.slots[i].box;
     assert(
-      b.left >= 0 &&
-          b.top >= 0 &&
-          b.right <= spec.canvasWidth &&
-          b.bottom <= spec.canvasHeight,
+      b.left >= 0 && b.top >= 0 && b.right <= spec.canvasWidth && b.bottom <= spec.canvasHeight,
       'PlateSlot $i in spec "${spec.id}" has a rect outside the '
       'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
     );
@@ -293,10 +273,7 @@ bool debugValidateSpec(PlateSpec spec) {
     final m = spec.mirrors[i];
     final b = m.box;
     assert(
-      b.left >= 0 &&
-          b.top >= 0 &&
-          b.right <= spec.canvasWidth &&
-          b.bottom <= spec.canvasHeight,
+      b.left >= 0 && b.top >= 0 && b.right <= spec.canvasWidth && b.bottom <= spec.canvasHeight,
       'PlateMirror $i in spec "${spec.id}" has a rect outside the '
       'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
     );
@@ -319,9 +296,7 @@ bool debugValidateSpec(PlateSpec spec) {
         if (spec.slotAt(i) != null) spec.slots[i].box,
     ];
     if (boxes.length != g.indices.length) continue;
-    final sameRow = boxes.every(
-      (b) => b.top == boxes.first.top && b.height == boxes.first.height,
-    );
+    final sameRow = boxes.every((b) => b.top == boxes.first.top && b.height == boxes.first.height);
     if (!sameRow) continue;
     final pitch = boxes[1].left - boxes[0].left;
     for (var n = 1; n < boxes.length; n++) {
@@ -373,5 +348,4 @@ bool debugValidateSpec(PlateSpec spec) {
 
 /// The identity of an alphabet's content: what it accepts, and how each
 /// accepted character is rendered.
-String _contentKey(PlateAlphabet a) =>
-    a.characters.map((c) => '$c=${a.render(c)}').join(' ');
+String _contentKey(PlateAlphabet a) => a.characters.map((c) => '$c=${a.render(c)}').join(' ');

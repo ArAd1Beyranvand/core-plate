@@ -44,22 +44,11 @@ class PlateFlag extends StatelessWidget {
     if (asset == null) return const SizedBox.shrink();
 
     final Widget flag = switch (asset) {
-      SvgPlateAsset() => SvgPicture.asset(
-        asset.path,
-        package: asset.package,
-        fit: BoxFit.fill,
-      ),
-      RasterPlateAsset() => Image.asset(
-        asset.path,
-        package: asset.package,
-        fit: BoxFit.fill,
-      ),
+      SvgPlateAsset() => SvgPicture.asset(asset.path, package: asset.package, fit: BoxFit.fill),
+      RasterPlateAsset() => Image.asset(asset.path, package: asset.package, fit: BoxFit.fill),
     };
 
     if (borderRadius == null) return flag;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius!),
-      child: flag,
-    );
+    return ClipRRect(borderRadius: BorderRadius.circular(borderRadius!), child: flag);
   }
 }

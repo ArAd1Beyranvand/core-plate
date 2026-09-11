@@ -140,11 +140,7 @@ class PlateSlotItem extends StatelessWidget {
 /// [SlotBehavior.glyph]: a bare rendered character on the white face, or
 /// nothing when the slot is unset. No focus node, no gestures.
 class _GlyphSlot extends StatelessWidget {
-  const _GlyphSlot({
-    required this.slot,
-    required this.value,
-    required this.theme,
-  });
+  const _GlyphSlot({required this.slot, required this.value, required this.theme});
 
   final PlateSlot slot;
   final String? value;
@@ -222,20 +218,12 @@ class _TypedField extends StatelessWidget {
           cursorColor: theme.activeColor,
           decoration: InputDecoration(
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(
-              vertical: slot.box.height * 0.12,
-            ),
+            contentPadding: EdgeInsets.symmetric(vertical: slot.box.height * 0.12),
             filled: false,
             counterText: '',
-            border: UnderlineInputBorder(
-              borderSide: BorderSide(color: theme.inactiveColor),
-            ),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: underlineColor),
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: theme.activeColor),
-            ),
+            border: UnderlineInputBorder(borderSide: BorderSide(color: theme.inactiveColor)),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: underlineColor)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: theme.activeColor)),
           ),
           onChanged: (typed) {
             if (slot.alphabet.accepts(typed)) {

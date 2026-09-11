@@ -17,8 +17,7 @@ class PlateValidation {
   // (e.g. PlateController.validation) notifies when the verdict changes,
   // not on every committed value that leaves the verdict the same.
   @override
-  bool operator ==(Object other) =>
-      other is PlateValidation && other.reason == reason;
+  bool operator ==(Object other) => other is PlateValidation && other.reason == reason;
 
   @override
   int get hashCode => reason.hashCode;
@@ -27,11 +26,7 @@ class PlateValidation {
 /// Everything a validator needs about a plate as it stands.
 @immutable
 class PlateEntry {
-  const PlateEntry({
-    required this.spec,
-    required this.values,
-    this.activeIndex,
-  });
+  const PlateEntry({required this.spec, required this.values, this.activeIndex});
 
   final PlateSpec spec;
   final List<String?> values;
@@ -46,8 +41,7 @@ class PlateEntry {
   String group(String key) => spec.valueOfGroup(key, values);
 
   /// The group containing [activeIndex], or null.
-  PlateTextGroup? get activeGroup =>
-      activeIndex == null ? null : spec.groupAt(activeIndex!);
+  PlateTextGroup? get activeGroup => activeIndex == null ? null : spec.groupAt(activeIndex!);
 }
 
 /// Whether every character of [value] is an ASCII digit, and [value] is not
@@ -57,12 +51,10 @@ class PlateEntry {
 /// three country packages, twice in the same file. Not a method on
 /// [PlateEntry], because a validator also asks it of values that never came
 /// from a slot — a database row, a scan result.
-bool isDigits(String value) =>
-    value.isNotEmpty && value.codeUnits.every((u) => u >= 0x30 && u <= 0x39);
+bool isDigits(String value) => value.isNotEmpty && value.codeUnits.every((u) => u >= 0x30 && u <= 0x39);
 
 /// [isDigits] and exactly [length] characters long.
-bool isDigitsOfLength(String value, int length) =>
-    value.length == length && isDigits(value);
+bool isDigitsOfLength(String value, int length) => value.length == length && isDigits(value);
 
 /// A rule about whether a plate's value is acceptable.
 ///
@@ -97,7 +89,6 @@ abstract class GatedPlateValidator extends PlateValidator {
   PlateValidation judge(PlateEntry entry);
 
   @override
-  PlateValidation validate(PlateEntry entry) => entry.group(gateGroup).isEmpty
-      ? const PlateValidation.valid()
-      : judge(entry);
+  PlateValidation validate(PlateEntry entry) =>
+      entry.group(gateGroup).isEmpty ? const PlateValidation.valid() : judge(entry);
 }

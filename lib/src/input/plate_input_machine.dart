@@ -29,11 +29,7 @@ class PlateInputMachine implements PlateInputTarget {
   }) {
     for (var i = 0; i < spec.slots.length; i++) {
       _focusNodes.add(FocusNode()..addListener(_handleFocusChange));
-      _controllers.add(
-        spec.slots[i].alphabet.input == AlphabetInput.typed
-            ? TextEditingController()
-            : null,
-      );
+      _controllers.add(spec.slots[i].alphabet.input == AlphabetInput.typed ? TextEditingController() : null);
     }
     // Seed the active slot to the first one before any focus lands, so a host
     // that renders its own keypad off [activeIndex] (e.g. picking a digit vs.
@@ -158,9 +154,7 @@ class PlateInputMachine implements PlateInputTarget {
     if (index == null) return;
     final values = readValues();
     final current = values[index];
-    final target = (current == null || current.isEmpty)
-        ? spec.previousIndex(index)
-        : index;
+    final target = (current == null || current.isEmpty) ? spec.previousIndex(index) : index;
     if (target == null) return;
     commit(target, '');
     _focusNodes[target].requestFocus();

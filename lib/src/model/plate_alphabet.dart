@@ -52,8 +52,7 @@ class PlateAlphabet {
   final bool isNumeric;
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) || (other is PlateAlphabet && other.id == id);
+  bool operator ==(Object other) => identical(this, other) || (other is PlateAlphabet && other.id == id);
 
   @override
   int get hashCode => id.hashCode;

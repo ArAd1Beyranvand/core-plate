@@ -125,12 +125,8 @@ class PlateTheme {
   }
 
   /// Text style for plate glyphs (digits/letters) at a given slot height.
-  TextStyle glyphStyle(double slotHeight, Color color) => TextStyle(
-    color: color,
-    fontWeight: FontWeight.w700,
-    fontSize: slotHeight * 0.72,
-    height: 1.0,
-  );
+  TextStyle glyphStyle(double slotHeight, Color color) =>
+      TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: slotHeight * 0.72, height: 1.0);
 
   /// The nearest enclosing [PlateTheme], or [PlateTheme.standard] if none.
   static PlateTheme of(BuildContext context) {
@@ -151,9 +147,7 @@ class PlateTheme {
   ];
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is PlateTheme && listEquals(other._props, _props);
+  bool operator ==(Object other) => identical(this, other) || other is PlateTheme && listEquals(other._props, _props);
 
   @override
   int get hashCode => Object.hashAll(_props);
@@ -166,6 +160,5 @@ class PlateThemeScope extends InheritedWidget {
   final PlateTheme theme;
 
   @override
-  bool updateShouldNotify(PlateThemeScope oldWidget) =>
-      theme != oldWidget.theme;
+  bool updateShouldNotify(PlateThemeScope oldWidget) => theme != oldWidget.theme;
 }

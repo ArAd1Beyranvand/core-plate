@@ -19,8 +19,7 @@ const _easternDigits = PlateAlphabet(
   glyphs: {'0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤', '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩'},
 );
 
-PlateSlot _slot(PlateAlphabet a, double left) =>
-    PlateSlot(alphabet: a, box: PlateBox(left, 5, 20, 30));
+PlateSlot _slot(PlateAlphabet a, double left) => PlateSlot(alphabet: a, box: PlateBox(left, 5, 20, 30));
 
 PlateSpec _spec({
   List<PlateAlphabet> alphabets = const [_digits, _digits, _digits],
@@ -37,15 +36,17 @@ PlateSpec _spec({
   textDirection: textDirection,
 );
 
-Future<void> _pump(WidgetTester tester, Widget child) => tester.pumpWidget(
-      Directionality(textDirection: TextDirection.ltr, child: child),
-    );
+Future<void> _pump(WidgetTester tester, Widget child) =>
+    tester.pumpWidget(Directionality(textDirection: TextDirection.ltr, child: child));
 
 void main() {
   testWidgets('empty group renders nothing; filled group renders through glyphs', (tester) async {
     final spec = _spec(
       alphabets: const [_digits, _easternDigits],
-      textGroups: const [PlateTextGroup([0]), PlateTextGroup([1])],
+      textGroups: const [
+        PlateTextGroup([0]),
+        PlateTextGroup([1]),
+      ],
     );
     await _pump(tester, PlateTextRow(spec: spec, values: const ['1', null]));
     expect(find.text('1'), findsOneWidget);
@@ -74,7 +75,11 @@ void main() {
 
   testWidgets('values shorter than slots renders what fits and does not throw', (tester) async {
     final spec = _spec(
-      textGroups: const [PlateTextGroup([0]), PlateTextGroup([1]), PlateTextGroup([2])],
+      textGroups: const [
+        PlateTextGroup([0]),
+        PlateTextGroup([1]),
+        PlateTextGroup([2]),
+      ],
     );
     await _pump(tester, PlateTextRow(spec: spec, values: const ['1']));
     expect(find.text('1'), findsOneWidget);
@@ -82,7 +87,11 @@ void main() {
   });
 
   testWidgets('null textStyle gives black', (tester) async {
-    final spec = _spec(textGroups: const [PlateTextGroup([0])]);
+    final spec = _spec(
+      textGroups: const [
+        PlateTextGroup([0]),
+      ],
+    );
     await _pump(tester, PlateTextRow(spec: spec, values: const ['1']));
     final style = tester.widget<DefaultTextStyle>(
       find.descendant(of: find.byType(PlateTextRow), matching: find.byType(DefaultTextStyle)),

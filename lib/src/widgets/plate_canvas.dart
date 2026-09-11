@@ -257,11 +257,8 @@ class _PlateCanvasState extends State<PlateCanvas> {
   /// The plate as it stands, for a validator to judge. [values] is passed in
   /// rather than read here so the auto-validating path can take it from the
   /// value it is already subscribed to.
-  PlateEntry _entryFor(List<String?> values) => PlateEntry(
-    spec: widget.spec,
-    values: values,
-    activeIndex: _machine.activeIndex,
-  );
+  PlateEntry _entryFor(List<String?> values) =>
+      PlateEntry(spec: widget.spec, values: values, activeIndex: _machine.activeIndex);
 
   /// Backs [PlateController.validation]. Null when there is no validator,
   /// which is what makes that getter null for a host that set none.
@@ -308,20 +305,14 @@ class _PlateCanvasState extends State<PlateCanvas> {
     }
     // PlateMode.display renders inert, picker-like slots regardless of the
     // configured source, so force [PlateInputSource.system] there.
-    _machine.inputSource = widget.mode == PlateMode.input
-        ? _resolveInputSource()
-        : PlateInputSource.system;
+    _machine.inputSource = widget.mode == PlateMode.input ? _resolveInputSource() : PlateInputSource.system;
 
     // Resolve each slot's behaviour once, here, from the three things that
     // decide it. Every gesture and rendering branch downstream is a switch on
     // this value — nothing re-derives it.
     final behaviors = <SlotBehavior>[
       for (final s in spec.slots)
-        resolveSlotBehavior(
-          mode: widget.mode,
-          input: s.alphabet.input,
-          source: _machine.inputSource,
-        ),
+        resolveSlotBehavior(mode: widget.mode, input: s.alphabet.input, source: _machine.inputSource),
     ];
 
     // The plate's face is always white, so its cursor and text-selection
@@ -380,11 +371,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
                     children: [
                       _Placed(
                         box: spec.panel.box,
-                        child: CountryPanel(
-                          country: country,
-                          theme: theme,
-                          panel: spec.panel,
-                        ),
+                        child: CountryPanel(country: country, theme: theme, panel: spec.panel),
                       ),
                       for (final r in spec.rules)
                         _Placed(
@@ -410,8 +397,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
                           box: m.box,
                           child: _MirrorBinding(
                             mirror: m,
-                            alphabet:
-                                m.alphabet ?? spec.slots[m.source].alphabet,
+                            alphabet: m.alphabet ?? spec.slots[m.source].alphabet,
                             theme: theme,
                             controller: _controller,
                           ),
@@ -427,12 +413,8 @@ class _PlateCanvasState extends State<PlateCanvas> {
                               theme: theme,
                               machine: _machine,
                               controller: _controller,
-                              onCompleted: widget.mode == PlateMode.input
-                                  ? () => _machine.advanceFrom(i)
-                                  : null,
-                              onPressed: behaviors[i] == SlotBehavior.sheet
-                                  ? () => _openPicker(i)
-                                  : null,
+                              onCompleted: widget.mode == PlateMode.input ? () => _machine.advanceFrom(i) : null,
+                              onPressed: behaviors[i] == SlotBehavior.sheet ? () => _openPicker(i) : null,
                             ),
                           ),
                         ),
@@ -457,11 +439,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
             controller: _controller,
             validate: (values) => validator.validate(_entryFor(values)),
             onVerdict: _publishVerdict,
-            builder: (verdict) => buildFace(
-              verdict.isValid
-                  ? theme
-                  : theme.copyWith(activeColor: theme.alertColor),
-            ),
+            builder: (verdict) => buildFace(verdict.isValid ? theme : theme.copyWith(activeColor: theme.alertColor)),
           )
         : buildFace(theme);
 
@@ -510,11 +488,7 @@ class _ValidationBinding extends StatelessWidget {
     return PlateSelector<PlateValidation>(
       controller: controller,
       selector: (c) => validate(c.values),
-      builder: (context, verdict) => _VerdictListener(
-        verdict: verdict,
-        onVerdict: onVerdict,
-        child: builder(verdict),
-      ),
+      builder: (context, verdict) => _VerdictListener(verdict: verdict, onVerdict: onVerdict, child: builder(verdict)),
     );
   }
 }
@@ -522,11 +496,7 @@ class _ValidationBinding extends StatelessWidget {
 /// Publishes [verdict] to [onVerdict] from lifecycle callbacks — never from
 /// `build` — so the side effect fires exactly once per verdict flip.
 class _VerdictListener extends StatefulWidget {
-  const _VerdictListener({
-    required this.verdict,
-    required this.onVerdict,
-    required this.child,
-  });
+  const _VerdictListener({required this.verdict, required this.onVerdict, required this.child});
 
   final PlateValidation verdict;
   final ValueChanged<PlateValidation> onVerdict;
@@ -564,13 +534,8 @@ class _Placed extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => Positioned(
-    left: box.left,
-    top: box.top,
-    width: box.width,
-    height: box.height,
-    child: child,
-  );
+  Widget build(BuildContext context) =>
+      Positioned(left: box.left, top: box.top, width: box.width, height: box.height, child: child);
 }
 
 /// The plate's border and white face, subscribed only to whether the plate is
@@ -589,8 +554,7 @@ class _FrameBinding extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: controller.completed,
-      builder: (context, isCompleted, _) =>
-          PlateFrame(isCompleted: isCompleted, theme: theme),
+      builder: (context, isCompleted, _) => PlateFrame(isCompleted: isCompleted, theme: theme),
     );
   }
 }
@@ -662,12 +626,7 @@ class _SlotBinding extends StatelessWidget {
 /// value, not a place to type — so it never touches the input machine and has
 /// no `syncController` call.
 class _MirrorBinding extends StatelessWidget {
-  const _MirrorBinding({
-    required this.mirror,
-    required this.alphabet,
-    required this.theme,
-    required this.controller,
-  });
+  const _MirrorBinding({required this.mirror, required this.alphabet, required this.theme, required this.controller});
 
   final PlateMirror mirror;
 
@@ -721,6 +680,5 @@ class _PlateFaceClipper extends CustomClipper<RRect> {
   static const _overlap = 0.75;
 
   @override
-  bool shouldReclip(_PlateFaceClipper old) =>
-      old.border != border || old.radius != radius;
+  bool shouldReclip(_PlateFaceClipper old) => old.border != border || old.radius != radius;
 }

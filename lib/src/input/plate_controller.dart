@@ -33,8 +33,7 @@ enum PlateValuePreservation {
 /// crosses between full and not; and the controller itself notifies on every
 /// committed change for whoever genuinely wants all of them.
 class PlateController extends ChangeNotifier {
-  PlateController({required PlateSpec spec, List<String?>? values})
-    : _spec = spec {
+  PlateController({required PlateSpec spec, List<String?>? values}) : _spec = spec {
     _values = List<String?>.filled(spec.slotCount, null);
     if (values != null) {
       for (var i = 0; i < spec.slotCount && i < values.length; i++) {
@@ -80,8 +79,7 @@ class PlateController extends ChangeNotifier {
   List<String?> get values => List<String?>.unmodifiable(_values);
 
   /// The character at [index], or null when [index] is outside the plate.
-  String? valueAt(int index) =>
-      index >= 0 && index < _values.length ? _values[index] : null;
+  String? valueAt(int index) => index >= 0 && index < _values.length ? _values[index] : null;
 
   /// The character at [index]; '' or null clears the slot. A character the
   /// slot's alphabet refuses is a no-op — the controller stores plates that
@@ -113,10 +111,8 @@ class PlateController extends ChangeNotifier {
 
   /// The plate as text: each of [PlateSpec.effectiveTextGroups] rendered
   /// through its slots' alphabets, joined by [sep].
-  String text({String sep = ' '}) => [
-    for (final group in _spec.effectiveTextGroups)
-      _spec.renderGroup(group, _values),
-  ].join(sep);
+  String text({String sep = ' '}) =>
+      [for (final group in _spec.effectiveTextGroups) _spec.renderGroup(group, _values)].join(sep);
 
   /// The characters of the group named [key], in canonical (storage) form —
   /// what a validator reads. '' when no group carries that key.
@@ -155,9 +151,7 @@ class PlateController extends ChangeNotifier {
   /// that is null forever, rather than throwing: a widget that outlives a
   /// shrinking spec by a frame should paint an empty slot, not crash.
   ValueListenable<String?> slot(int index) =>
-      index >= 0 && index < _slots.length
-      ? _slots[index]
-      : const _AlwaysNull<String?>();
+      index >= 0 && index < _slots.length ? _slots[index] : const _AlwaysNull<String?>();
 
   /// Whether the plate is full, as a listenable that fires on the flip and not
   /// on the keystrokes in between.
@@ -169,10 +163,7 @@ class PlateController extends ChangeNotifier {
   /// The slot listenables are re-founded for the new spec's length, so anything
   /// holding one from the old spec keeps a live object that simply stops being
   /// updated — hand out [slot] results per build rather than caching them.
-  void adoptSpec(
-    PlateSpec next, {
-    PlateValuePreservation preserve = PlateValuePreservation.byGroupKey,
-  }) {
+  void adoptSpec(PlateSpec next, {PlateValuePreservation preserve = PlateValuePreservation.byGroupKey}) {
     final migrated = _migrate(_spec, next, _values, preserve);
     _spec = next;
     _values = migrated;
@@ -292,14 +283,10 @@ class PlateController extends ChangeNotifier {
   }
 
   void _foundSlots() {
-    _slots = [
-      for (var i = 0; i < _spec.slotCount; i++)
-        ValueNotifier<String?>(_values[i]),
-    ];
+    _slots = [for (var i = 0; i < _spec.slotCount; i++) ValueNotifier<String?>(_values[i])];
   }
 
-  bool _computeCompleted() =>
-      _values.isNotEmpty && !_values.any((v) => v == null || v.isEmpty);
+  bool _computeCompleted() => _values.isNotEmpty && !_values.any((v) => v == null || v.isEmpty);
 
   /// [value] as this slot will store it: null for a cleared slot, and null as
   /// well for a character the slot's alphabet refuses.
@@ -317,28 +304,17 @@ class PlateController extends ChangeNotifier {
     return null;
   }
 
-  static bool _hasKeyedGroups(PlateSpec spec) =>
-      spec.effectiveTextGroups.any((g) => g.key != null);
+  static bool _hasKeyedGroups(PlateSpec spec) => spec.effectiveTextGroups.any((g) => g.key != null);
 
   /// [values], read against [from], rewritten as a value list for [to].
-  static List<String?> _migrate(
-    PlateSpec from,
-    PlateSpec to,
-    List<String?> values,
-    PlateValuePreservation preserve,
-  ) {
+  static List<String?> _migrate(PlateSpec from, PlateSpec to, List<String?> values, PlateValuePreservation preserve) {
     if (preserve == PlateValuePreservation.none) {
       return List<String?>.filled(to.slotCount, null);
     }
 
-    final byKey =
-        preserve == PlateValuePreservation.byGroupKey &&
-        (_hasKeyedGroups(from) || _hasKeyedGroups(to));
+    final byKey = preserve == PlateValuePreservation.byGroupKey && (_hasKeyedGroups(from) || _hasKeyedGroups(to));
     if (!byKey) {
-      return [
-        for (var i = 0; i < to.slotCount; i++)
-          i < values.length ? _sanitize(to, i, values[i]) : null,
-      ];
+      return [for (var i = 0; i < to.slotCount; i++) i < values.length ? _sanitize(to, i, values[i]) : null];
     }
 
     final result = List<String?>.filled(to.slotCount, null);
@@ -395,7 +371,5 @@ extension on String {
   /// The string as single characters. Plate alphabets are single-character
   /// sets, so splitting on code units would be wrong for any script outside
   /// the BMP; [runes] is the honest unit here.
-  List<String> get characters => [
-    for (final rune in runes) String.fromCharCode(rune),
-  ];
+  List<String> get characters => [for (final rune in runes) String.fromCharCode(rune)];
 }

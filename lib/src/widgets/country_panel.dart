@@ -12,12 +12,7 @@ import 'plate_flag.dart';
 /// Everything country-specific (flag, caption, panel colours) comes from
 /// [country]; adding a new country is a new [PlateCountry], not a new widget.
 class CountryPanel extends StatelessWidget {
-  const CountryPanel({
-    super.key,
-    required this.panel,
-    this.theme,
-    required this.country,
-  });
+  const CountryPanel({super.key, required this.panel, this.theme, required this.country});
 
   /// Colours to paint with. Falls back to [PlateTheme.of] / standard when null.
   /// Only used for values that are not country-specific.
@@ -99,12 +94,7 @@ class _Caption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(
-      color: color,
-      fontWeight: FontWeight.w800,
-      height: 1.0,
-      fontSize: _baseFontSize * scale,
-    );
+    final style = TextStyle(color: color, fontWeight: FontWeight.w800, height: 1.0, fontSize: _baseFontSize * scale);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,

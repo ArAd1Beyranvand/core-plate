@@ -23,32 +23,24 @@ const _chosen = PlateAlphabet(
   isNumeric: false,
 );
 
-PlateSpec _spec({
-  String id = 'zz.test',
-  List<PlateAlphabet> alphabets = const [_digits, _digits, _digits],
-}) => PlateSpec(
-  id: id,
-  country: _country,
-  canvasWidth: 400,
-  canvasHeight: 100,
-  panel: _panel,
-  slots: [
-    for (var i = 0; i < alphabets.length; i++)
-      PlateSlot(
-        alphabet: alphabets[i],
-        box: PlateBox(20 + i * 25.0, 5, 20, 30),
-      ),
-  ],
-);
+PlateSpec _spec({String id = 'zz.test', List<PlateAlphabet> alphabets = const [_digits, _digits, _digits]}) =>
+    PlateSpec(
+      id: id,
+      country: _country,
+      canvasWidth: 400,
+      canvasHeight: 100,
+      panel: _panel,
+      slots: [
+        for (var i = 0; i < alphabets.length; i++)
+          PlateSlot(alphabet: alphabets[i], box: PlateBox(20 + i * 25.0, 5, 20, 30)),
+      ],
+    );
 
 /// A machine plus the host state it reads and writes, so a test can assert on
 /// what was committed rather than on a controller's internals.
 class _Harness {
-  _Harness({
-    required PlateSpec spec,
-    List<String?>? values,
-    PlateInputSource inputSource = PlateInputSource.host,
-  }) : values = values ?? List<String?>.filled(spec.slotCount, null) {
+  _Harness({required PlateSpec spec, List<String?>? values, PlateInputSource inputSource = PlateInputSource.host})
+    : values = values ?? List<String?>.filled(spec.slotCount, null) {
     machine = PlateInputMachine(
       spec: spec,
       readValues: () => this.values,
@@ -78,10 +70,7 @@ class _Harness {
         child: Column(
           children: [
             for (var i = 0; i < machine.spec.slotCount; i++)
-              Focus(
-                focusNode: machine.focusNodeAt(i),
-                child: const SizedBox(width: 10, height: 10),
-              ),
+              Focus(focusNode: machine.focusNodeAt(i), child: const SizedBox(width: 10, height: 10)),
           ],
         ),
       ),
@@ -103,16 +92,10 @@ class _Harness {
 
 void main() {
   group('construction', () {
-    testWidgets('seeds activeIndex to 0 and does not announce it', (
-      tester,
-    ) async {
+    testWidgets('seeds activeIndex to 0 and does not announce it', (tester) async {
       final h = _Harness(spec: _spec());
       expect(h.machine.activeIndex, 0);
-      expect(
-        h.activeChanges,
-        isEmpty,
-        reason: 'the seed is reported by the canvas post-frame, not from here',
-      );
+      expect(h.activeChanges, isEmpty, reason: 'the seed is reported by the canvas post-frame, not from here');
       h.machine.dispose();
     });
 
@@ -123,24 +106,16 @@ void main() {
       h.machine.dispose();
     });
 
-    testWidgets('controllerAt is a field for typed slots and null for chosen', (
-      tester,
-    ) async {
-      final h = _Harness(
-        spec: _spec(alphabets: const [_digits, _chosen, _digits]),
-      );
+    testWidgets('controllerAt is a field for typed slots and null for chosen', (tester) async {
+      final h = _Harness(spec: _spec(alphabets: const [_digits, _chosen, _digits]));
       expect(h.machine.controllerAt(0), isA<TextEditingController>());
       expect(h.machine.controllerAt(1), isNull);
       expect(h.machine.controllerAt(2), isA<TextEditingController>());
       h.machine.dispose();
     });
 
-    testWidgets('focusNodeAt is never null, and one node per slot', (
-      tester,
-    ) async {
-      final h = _Harness(
-        spec: _spec(alphabets: const [_digits, _chosen, _digits]),
-      );
+    testWidgets('focusNodeAt is never null, and one node per slot', (tester) async {
+      final h = _Harness(spec: _spec(alphabets: const [_digits, _chosen, _digits]));
       final nodes = {for (var i = 0; i < 3; i++) h.machine.focusNodeAt(i)};
       expect(nodes, hasLength(3));
       h.machine.dispose();
@@ -163,9 +138,7 @@ void main() {
       await h.retire(tester);
     });
 
-    testWidgets('a character the active slot refuses is a no-op', (
-      tester,
-    ) async {
+    testWidgets('a character the active slot refuses is a no-op', (tester) async {
       final h = _Harness(spec: _spec());
       await h.mount(tester);
 
@@ -203,9 +176,7 @@ void main() {
       await h.retire(tester);
     });
 
-    testWidgets('steps back and clears the previous slot when already empty', (
-      tester,
-    ) async {
+    testWidgets('steps back and clears the previous slot when already empty', (tester) async {
       final h = _Harness(spec: _spec(), values: ['1', null, null]);
       await h.mount(tester);
       await h.focus(tester, 1);
@@ -252,9 +223,7 @@ void main() {
       await h.retire(tester);
     });
 
-    testWidgets('unfocuses at the last slot rather than wrapping', (
-      tester,
-    ) async {
+    testWidgets('unfocuses at the last slot rather than wrapping', (tester) async {
       final h = _Harness(spec: _spec());
       await h.mount(tester);
       await h.focus(tester, 2);
@@ -269,9 +238,7 @@ void main() {
       await h.retire(tester);
     });
 
-    testWidgets('requests the sheet for a chosen slot and does not focus it', (
-      tester,
-    ) async {
+    testWidgets('requests the sheet for a chosen slot and does not focus it', (tester) async {
       // chosen + system is the one combination that resolves to a sheet.
       final h = _Harness(
         spec: _spec(alphabets: const [_digits, _chosen, _digits]),
@@ -290,14 +257,10 @@ void main() {
       await h.retire(tester);
     });
 
-    testWidgets('focuses a chosen slot when the host supplies characters', (
-      tester,
-    ) async {
+    testWidgets('focuses a chosen slot when the host supplies characters', (tester) async {
       // Under host/packageKeypad the same slot is an externalField, not a
       // sheet: it takes focus and waits to be fed.
-      final h = _Harness(
-        spec: _spec(alphabets: const [_digits, _chosen, _digits]),
-      );
+      final h = _Harness(spec: _spec(alphabets: const [_digits, _chosen, _digits]));
       await h.mount(tester);
       await h.focus(tester, 0);
 
@@ -337,9 +300,7 @@ void main() {
   });
 
   group('focusSlot', () {
-    testWidgets('focuses the slot at index, and ignores out of range', (
-      tester,
-    ) async {
+    testWidgets('focuses the slot at index, and ignores out of range', (tester) async {
       final h = _Harness(spec: _spec());
       await h.mount(tester);
 
@@ -359,10 +320,7 @@ void main() {
     testWidgets('is a no-op when the text already matches', (tester) async {
       final h = _Harness(spec: _spec());
       final field = h.machine.controllerAt(0)!;
-      field.value = const TextEditingValue(
-        text: '5',
-        selection: TextSelection(baseOffset: 0, extentOffset: 1),
-      );
+      field.value = const TextEditingValue(text: '5', selection: TextSelection(baseOffset: 0, extentOffset: 1));
 
       h.machine.syncController(0, '5');
 
@@ -375,9 +333,7 @@ void main() {
       h.machine.dispose();
     });
 
-    testWidgets('sets a collapsed selection at the end otherwise', (
-      tester,
-    ) async {
+    testWidgets('sets a collapsed selection at the end otherwise', (tester) async {
       final h = _Harness(spec: _spec());
       final field = h.machine.controllerAt(0)!;
 
@@ -392,21 +348,15 @@ void main() {
       h.machine.dispose();
     });
 
-    testWidgets('is a no-op for a chosen slot, which has no field', (
-      tester,
-    ) async {
-      final h = _Harness(
-        spec: _spec(alphabets: const [_digits, _chosen, _digits]),
-      );
+    testWidgets('is a no-op for a chosen slot, which has no field', (tester) async {
+      final h = _Harness(spec: _spec(alphabets: const [_digits, _chosen, _digits]));
       expect(() => h.machine.syncController(1, 'ا'), returnsNormally);
       h.machine.dispose();
     });
   });
 
   group('dispose', () {
-    testWidgets('drops the focus listener before disposing the nodes', (
-      tester,
-    ) async {
+    testWidgets('drops the focus listener before disposing the nodes', (tester) async {
       final h = _Harness(spec: _spec());
       await h.mount(tester);
       await h.focus(tester, 1);
@@ -415,11 +365,7 @@ void main() {
       final announced = h.activeChanges.length;
 
       expect(h.machine.dispose, returnsNormally);
-      expect(
-        h.activeChanges.length,
-        announced,
-        reason: 'a listener surviving into dispose would announce again',
-      );
+      expect(h.activeChanges.length, announced, reason: 'a listener surviving into dispose would announce again');
     });
   });
 }

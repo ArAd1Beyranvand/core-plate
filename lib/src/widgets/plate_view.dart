@@ -18,13 +18,7 @@ import 'plate_text_row.dart';
 ///
 /// For a bare text rendering of the plate string, use [PlateTextView].
 class PlateView extends StatelessWidget {
-  const PlateView({
-    super.key,
-    required this.controller,
-    this.theme,
-    this.country,
-    this.emptyPlate,
-  });
+  const PlateView({super.key, required this.controller, this.theme, this.country, this.emptyPlate});
 
   final PlateController controller;
 
@@ -71,12 +65,7 @@ class PlateView extends StatelessWidget {
 /// just the characters rather than the graphical plate. The controller-driven
 /// counterpart of `PlateText`.
 class PlateTextView extends StatelessWidget {
-  const PlateTextView({
-    super.key,
-    required this.controller,
-    this.emptyPlate,
-    this.textStyle,
-  });
+  const PlateTextView({super.key, required this.controller, this.emptyPlate, this.textStyle});
 
   final PlateController controller;
   final Widget? emptyPlate;
@@ -88,11 +77,7 @@ class PlateTextView extends StatelessWidget {
       listenable: controller,
       builder: (context, _) => controller.isEmpty
           ? (emptyPlate ?? const SizedBox.shrink())
-          : PlateTextRow(
-              spec: controller.spec,
-              values: controller.values,
-              textStyle: textStyle,
-            ),
+          : PlateTextRow(spec: controller.spec, values: controller.values, textStyle: textStyle),
     );
   }
 }

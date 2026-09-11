@@ -20,10 +20,7 @@ class PlateFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CustomPaint(
-    painter: _PlateFramePainter(
-      theme: theme ?? PlateTheme.of(context),
-      isCompleted: isCompleted,
-    ),
+    painter: _PlateFramePainter(theme: theme ?? PlateTheme.of(context), isCompleted: isCompleted),
     child: const SizedBox.expand(),
   );
 }
@@ -44,29 +41,21 @@ class _PlateFramePainter extends CustomPainter {
 
     // Outer rounded rect: the black frame.
     final outerRect = Offset.zero & size;
-    final outerRRect = RRect.fromRectAndRadius(
-      outerRect,
-      Radius.circular(outerRadius),
-    );
+    final outerRRect = RRect.fromRectAndRadius(outerRect, Radius.circular(outerRadius));
     canvas.drawRRect(outerRRect, Paint()..color = _borderColor());
 
     // Inner rounded rect: the white face, inset by the border thickness.
     final innerRect = outerRect.deflate(border);
-    final innerRRect = RRect.fromRectAndRadius(
-      innerRect,
-      Radius.circular(innerRadius),
-    );
+    final innerRRect = RRect.fromRectAndRadius(innerRect, Radius.circular(innerRadius));
     canvas.drawRRect(innerRRect, Paint()..color = theme.plateBackground);
   }
 
   /// isCompleted shifts the border ~2% lighter (never recolours the plate).
   Color _borderColor() {
     if (!isCompleted) return theme.plateBorder;
-    return Color.lerp(theme.plateBorder, theme.plateBackground, 0.02) ??
-        theme.plateBorder;
+    return Color.lerp(theme.plateBorder, theme.plateBackground, 0.02) ?? theme.plateBorder;
   }
 
   @override
-  bool shouldRepaint(_PlateFramePainter old) =>
-      old.theme != theme || old.isCompleted != isCompleted;
+  bool shouldRepaint(_PlateFramePainter old) => old.theme != theme || old.isCompleted != isCompleted;
 }
