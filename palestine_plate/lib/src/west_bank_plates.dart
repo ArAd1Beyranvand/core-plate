@@ -125,8 +125,8 @@ abstract final class PSWestBankPlates {
   /// height, glyph 0.55 of it. Reproduces `palestine_plate`'s hand-tuned
   /// numbers exactly when applied to its band.
   static const List<PlateLabel> _modernCarLabels = [
-    PlateLabel(text: '·', box: PlateBox(71.4, 36.6, 32.2, 36.8), glyphHeight: 50.6),
-    PlateLabel(text: '·', box: PlateBox(344.4, 36.6, 32.2, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '-', box: PlateBox(71.4, 36.6, 32.2, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '-', box: PlateBox(344.4, 36.6, 32.2, 36.8), glyphHeight: 50.6),
   ];
 
   static const List<PlateTextGroup> _modernGroups = [
@@ -175,8 +175,8 @@ abstract final class PSWestBankPlates {
   ];
 
   static const List<PlateLabel> _legacyCarLabels = [
-    PlateLabel(text: '·', box: PlateBox(64.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
-    PlateLabel(text: '·', box: PlateBox(292.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '-', box: PlateBox(64.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '-', box: PlateBox(292.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
   ];
 
   static const List<PlateTextGroup> _legacyGroups = [
@@ -238,7 +238,7 @@ abstract final class PSWestBankPlates {
   );
 
   static const List<PlateLabel> _twoLineLabels = [
-    PlateLabel(text: '·', box: PlateBox(50, 30, 21, 24), glyphHeight: 33),
+    PlateLabel(text: '-', box: PlateBox(50, 30, 21, 24), glyphHeight: 33),
   ];
 
   /// [modernCar] wrapped onto two lines. `D DDDD` above, the governorate letter
@@ -360,8 +360,8 @@ abstract final class PSWestBankPlates {
       // Dots on this file's usual proportions, which the reference confirms:
       // box top 30% into the 62-tall band, box 0.35 x 0.40 of it, glyph 0.55.
       // Puts them at centre y=78, exactly where the reference's ink sits.
-      PlateLabel(text: '·', box: PlateBox(40.15, 65.6, 21.7, 24.8), glyphHeight: 34.1),
-      PlateLabel(text: '·', box: PlateBox(184.65, 65.6, 21.7, 24.8), glyphHeight: 34.1),
+      PlateLabel(text: '-', box: PlateBox(40.15, 65.6, 21.7, 24.8), glyphHeight: 34.1),
+      PlateLabel(text: '-', box: PlateBox(184.65, 65.6, 21.7, 24.8), glyphHeight: 34.1),
     ],
     textGroups: _modernGroups,
   );
@@ -393,7 +393,7 @@ abstract final class PSWestBankPlates {
       // layout the serial and the identity band are separated horizontally.
       PlateRule(box: PlateBox(12, 113, 141, 3)),
     ],
-    labels: [PlateLabel(text: '·', box: PlateBox(35.45, 27.8, 16.1, 18.4), glyphHeight: 25.3)],
+    labels: [PlateLabel(text: '-', box: PlateBox(35.45, 27.8, 16.1, 18.4), glyphHeight: 25.3)],
     textGroups: _modernGroups,
   );
 
@@ -438,8 +438,8 @@ abstract final class PSWestBankPlates {
       PlateLabel(text: 'اختبار', box: PlateBox(20, 8, 200, 26), glyphHeight: 26),
       // Right half: "under test" in Hebrew. A separate label — see the doc.
       PlateLabel(text: 'במבחן', box: PlateBox(230, 8, 200, 26), glyphHeight: 26),
-      PlateLabel(text: '·', box: PlateBox(94.3, 57.2, 22.4, 25.6), glyphHeight: 35.2),
-      PlateLabel(text: '·', box: PlateBox(324.3, 57.2, 22.4, 25.6), glyphHeight: 35.2),
+      PlateLabel(text: '-', box: PlateBox(94.3, 57.2, 22.4, 25.6), glyphHeight: 35.2),
+      PlateLabel(text: '-', box: PlateBox(324.3, 57.2, 22.4, 25.6), glyphHeight: 35.2),
     ],
     textGroups: _modernGroups,
   );

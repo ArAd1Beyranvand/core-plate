@@ -67,8 +67,8 @@ abstract final class PSGazaPlates {
   ];
 
   static const List<PlateLabel> _sevenCellLabels = [
-    PlateLabel(text: '·', box: PlateBox(64.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
-    PlateLabel(text: '·', box: PlateBox(292.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '-', box: PlateBox(64.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '-', box: PlateBox(292.9, 36.6, 32.2, 36.8), glyphHeight: 50.6),
   ];
 
   /// No vertical divider — the flag is positioned directly on the right.
@@ -138,8 +138,8 @@ abstract final class PSGazaPlates {
   ];
 
   static const List<PlateLabel> _motoLabels = [
-    PlateLabel(text: '·', box: PlateBox(56, 36.6, 18, 36.8), glyphHeight: 50.6),
-    PlateLabel(text: '·', box: PlateBox(272, 36.6, 18, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '-', box: PlateBox(56, 36.6, 18, 36.8), glyphHeight: 50.6),
+    PlateLabel(text: '-', box: PlateBox(272, 36.6, 18, 36.8), glyphHeight: 50.6),
   ];
 
   static const List<PlateRule> _motoRules = [];
@@ -195,7 +195,7 @@ abstract final class PSGazaPlates {
   /// this package: box top at 30% into the row, box height 40% of it, glyph
   /// 55% of it.
   static const List<PlateLabel> _twoLineLabels = [
-    PlateLabel(text: '·', box: PlateBox(49.5, 65.6, 21, 16.8), glyphHeight: 23.1),
+    PlateLabel(text: '-', box: PlateBox(49.5, 65.6, 21, 16.8), glyphHeight: 23.1),
   ];
 
   /// [car2012]'s grammar, wrapped onto two lines for a bumper too short for
