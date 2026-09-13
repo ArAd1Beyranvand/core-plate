@@ -69,13 +69,24 @@ class PlateDecal {
 /// Fixed text printed on the plate face (e.g. "ایران").
 @immutable
 class PlateLabel {
-  const PlateLabel({required this.text, required this.box, required this.glyphHeight});
+  const PlateLabel({required this.text, required this.box, required this.glyphHeight, this.color});
 
   final String text;
   final PlateBox box;
 
   /// Passed to the glyph style as the slot height.
   final double glyphHeight;
+
+  /// Ink for this label, or null for [PlateTheme.ink] — the digits' colour, and
+  /// the right answer whenever the label is printed on the plate's field.
+  ///
+  /// A label that sits on a coloured block rather than on the field is printed
+  /// in a colour the field's ink cannot express: a caption reversed out white
+  /// over a diplomatic plate's green band is still the same plate, printed in
+  /// one more ink. That is data about the label, not a second theme — a theme
+  /// carries one [PlateTheme.ink], and giving the band its own would recolour
+  /// the digits with it.
+  final Color? color;
 }
 
 /// The coloured country block on the plate face: where it sits, and how the

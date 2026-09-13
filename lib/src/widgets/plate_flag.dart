@@ -43,12 +43,23 @@ class PlateFlag extends StatelessWidget {
     final asset = country.flag;
     if (asset == null) return const SizedBox.shrink();
 
-    final Widget flag = switch (asset) {
+    Widget flag = switch (asset) {
       SvgPlateAsset() => SvgPicture.asset(asset.path, package: asset.package, fit: BoxFit.fill),
       RasterPlateAsset() => Image.asset(asset.path, package: asset.package, fit: BoxFit.fill),
     };
 
-    if (borderRadius == null) return flag;
-    return ClipRRect(borderRadius: BorderRadius.circular(borderRadius!), child: flag);
+    if (borderRadius != null) {
+      flag = ClipRRect(borderRadius: BorderRadius.circular(borderRadius!), child: flag);
+    }
+
+    final borderColor = country.flagBorderColor;
+    if (borderColor == null) return flag;
+    // Container's foregroundDecoration, not DecoratedBox: the flag itself is
+    // opaque and fills the whole box, so a border painted underneath it would
+    // be completely covered rather than framing it.
+    return Container(
+      foregroundDecoration: BoxDecoration(border: Border.all(color: borderColor, width: 1)),
+      child: flag,
+    );
   }
 }

@@ -352,7 +352,132 @@ class _PlateCanvasState extends State<PlateCanvas> {
     final outerRadius = theme.plateRadiusRatio * spec.canvasHeight;
     final innerRadius = (outerRadius - border).clamp(0.0, outerRadius);
 
-    Widget buildFace(PlateTheme theme) => FittedBox(
+    final clipper = _faceClipperFor(border, innerRadius);
+
+    // THE FACE IS TWO LAYERS, AND THAT IS THE WHOLE POINT.
+    //
+    // Every typed slot is a TextField, and EditableText wraps itself in
+    // `CompositedTransformTarget`s — real composited layers. A composited layer
+    // anywhere beneath a FittedBox forces that FittedBox to stop applying its
+    // scale to the canvas and push a TransformLayer instead. That takes the
+    // plate out of the vector pass: the face is recorded in plate coordinates
+    // and handed to the compositor to scale, which makes it a raster-cache
+    // candidate — and the engine takes it, after a few still frames. That is
+    // why the plate looks right the moment it appears and softens a beat
+    // later, why it churns while anything upstream keeps invalidating the
+    // cache, and why the first thing to go is the country flag's emblem, which
+    // is only a few device pixels across.
+    //
+    // So the printed furniture — frame, country panel and flag, rules, labels,
+    // decals — gets a FittedBox of its own with no TextField anywhere under it.
+    // Nothing in that subtree composites, so its scale stays on the canvas and
+    // the flag is drawn as vector at device resolution on every frame it
+    // paints. It cannot be dirtied by a keystroke either: the live characters
+    // live in the layer above it.
+    //
+    // [StackFit.passthrough] is what holds the two in register. It hands both
+    // layers this canvas's own constraints unchanged, so both FittedBoxes
+    // derive the same size, scale and alignment from the same plate-space
+    // [SizedBox] — the geometry is identical to the single FittedBox this
+    // replaced, and the stack sizes exactly as that one did.
+    final artwork = _PlateArtwork(
+      spec: spec,
+      theme: theme,
+      country: country,
+      controller: _controller,
+      clipper: clipper,
+    );
+
+    // The alert. With autoValidate on, the canvas judges the plate itself and
+    // paints the completed-field underline in the theme's alert colour — that,
+    // and nothing else: no dialog, no exception, and above all no rejected
+    // keystroke. With it off the validator is never called from here; a host
+    // that wants its own timing reads PlateController.validation.
+    //
+    // Only the input layer is inside the binding: a verdict flips
+    // `activeColor`, which recolours slot underlines and nothing else, so the
+    // artwork no longer rebuilds when the plate crosses between valid and
+    // invalid.
+    final validator = widget.validator;
+    final Widget inputs = widget.autoValidate && validator != null
+        ? _ValidationBinding(
+            controller: _controller,
+            validate: (values) => validator.validate(_entryFor(values)),
+            onVerdict: _publishVerdict,
+            builder: (verdict) => _PlateInputs(
+              spec: spec,
+              theme: verdict.isValid ? theme : theme.copyWith(activeColor: theme.alertColor),
+              behaviors: behaviors,
+              machine: _machine,
+              controller: _controller,
+              mode: widget.mode,
+              onPick: _openPicker,
+              clipper: clipper,
+            ),
+          )
+        : _PlateInputs(
+            spec: spec,
+            theme: theme,
+            behaviors: behaviors,
+            machine: _machine,
+            controller: _controller,
+            mode: widget.mode,
+            onPick: _openPicker,
+            clipper: clipper,
+          );
+
+    final Widget face = Stack(
+      fit: StackFit.passthrough,
+      children: [artwork, inputs],
+    );
+
+    // Wrap in a Material so the typed slots' TextFields have the Material
+    // ancestor they require. Without this a consumer must place PlateCanvas
+    // under a Scaffold (or their own Material) or it throws on first build.
+    // `type: transparency` adds no ink or surface colour — the plate paints
+    // its own white face.
+    return Theme(
+      data: selectionTheme,
+      child: Material(type: MaterialType.transparency, child: face),
+    );
+  }
+}
+
+/// The plate's printed furniture: the frame, the country panel and its flag,
+/// the rules, the labels and the decals. Everything that is painted on a plate
+/// rather than typed into one.
+///
+/// **No TextField may ever appear in this subtree**, and that is a load-bearing
+/// property, not a tidiness one. Nothing here composites, so this layer's
+/// [FittedBox] keeps its scale on the canvas and the whole subtree — most of
+/// all the flag, whose emblem is a handful of device pixels wide — is drawn as
+/// vector at device resolution instead of being rasterised in plate
+/// coordinates and resampled. See the note in [_PlateCanvasState.build].
+///
+/// It is also entirely static between spec changes: no binding in it watches a
+/// character, so typing cannot repaint it. The one exception is the frame,
+/// which follows a single bool through [_FrameBinding].
+class _PlateArtwork extends StatelessWidget {
+  const _PlateArtwork({
+    required this.spec,
+    required this.theme,
+    required this.country,
+    required this.controller,
+    required this.clipper,
+  });
+
+  final PlateSpec spec;
+  final PlateTheme theme;
+  final PlateCountry country;
+  final PlateController controller;
+
+  /// The white face's rounded-rect clip, built once by the canvas and shared
+  /// with [_PlateInputs] so both layers clip to exactly the same geometry.
+  final _PlateFaceClipper clipper;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
       fit: BoxFit.contain,
       child: SizedBox(
         width: spec.canvasWidth,
@@ -362,11 +487,11 @@ class _PlateCanvasState extends State<PlateCanvas> {
           child: Stack(
             children: [
               Positioned.fill(
-                child: _FrameBinding(theme: theme, controller: _controller),
+                child: _FrameBinding(theme: theme, controller: controller),
               ),
               Positioned.fill(
                 child: ClipRRect(
-                  clipper: _faceClipperFor(border, innerRadius),
+                  clipper: clipper,
                   child: Stack(
                     children: [
                       _Placed(
@@ -384,39 +509,13 @@ class _PlateCanvasState extends State<PlateCanvas> {
                           child: Text(
                             l.text,
                             textAlign: TextAlign.center,
-                            style: theme.glyphStyle(l.glyphHeight, theme.ink),
+                            style: theme.glyphStyle(l.glyphHeight, l.color ?? theme.ink),
                           ),
                         ),
                       for (final d in spec.decals)
                         _Placed(
                           box: d.box,
                           child: Image(image: d.image, fit: BoxFit.contain),
-                        ),
-                      for (final m in spec.mirrors)
-                        _Placed(
-                          box: m.box,
-                          child: _MirrorBinding(
-                            mirror: m,
-                            alphabet: m.alphabet ?? spec.slots[m.source].alphabet,
-                            theme: theme,
-                            controller: _controller,
-                          ),
-                        ),
-                      for (var i = 0; i < spec.slots.length; i++)
-                        _Placed(
-                          box: spec.slots[i].box,
-                          child: Center(
-                            child: _SlotBinding(
-                              index: i,
-                              slot: spec.slots[i],
-                              behavior: behaviors[i],
-                              theme: theme,
-                              machine: _machine,
-                              controller: _controller,
-                              onCompleted: widget.mode == PlateMode.input ? () => _machine.advanceFrom(i) : null,
-                              onPressed: behaviors[i] == SlotBehavior.sheet ? () => _openPicker(i) : null,
-                            ),
-                          ),
                         ),
                     ],
                   ),
@@ -427,30 +526,87 @@ class _PlateCanvasState extends State<PlateCanvas> {
         ),
       ),
     );
+  }
+}
 
-    // The alert. With autoValidate on, the canvas judges the plate itself and
-    // paints the completed-field underline in the theme's alert colour — that,
-    // and nothing else: no dialog, no exception, and above all no rejected
-    // keystroke. With it off the validator is never called from here; a host
-    // that wants its own timing reads PlateController.validation.
-    final validator = widget.validator;
-    final Widget face = widget.autoValidate && validator != null
-        ? _ValidationBinding(
-            controller: _controller,
-            validate: (values) => validator.validate(_entryFor(values)),
-            onVerdict: _publishVerdict,
-            builder: (verdict) => buildFace(verdict.isValid ? theme : theme.copyWith(activeColor: theme.alertColor)),
-          )
-        : buildFace(theme);
+/// The plate's live characters: the typed slots and the mirrors that echo
+/// them. Drawn over [_PlateArtwork], in its own [FittedBox], clipped to the
+/// same white face.
+///
+/// This is the layer the TextFields composite, and the layer a keystroke
+/// repaints. Keeping it to just the glyphs is what stops a keystroke reaching
+/// the flag.
+class _PlateInputs extends StatelessWidget {
+  const _PlateInputs({
+    required this.spec,
+    required this.theme,
+    required this.behaviors,
+    required this.machine,
+    required this.controller,
+    required this.mode,
+    required this.onPick,
+    required this.clipper,
+  });
 
-    // Wrap in a Material so the typed slots' TextFields have the Material
-    // ancestor they require. Without this a consumer must place PlateCanvas
-    // under a Scaffold (or their own Material) or it throws on first build.
-    // `type: transparency` adds no ink or surface colour — the plate paints
-    // its own white face.
-    return Theme(
-      data: selectionTheme,
-      child: Material(type: MaterialType.transparency, child: face),
+  final PlateSpec spec;
+  final PlateTheme theme;
+
+  /// One per slot, resolved by the canvas from mode, alphabet and input source.
+  final List<SlotBehavior> behaviors;
+  final PlateInputMachine machine;
+  final PlateController controller;
+  final PlateMode mode;
+
+  /// Opens the character picker for a `sheet`-behaviour slot.
+  final void Function(int index) onPick;
+
+  /// Shared with [_PlateArtwork]; see its field of the same name.
+  final _PlateFaceClipper clipper;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: SizedBox(
+        width: spec.canvasWidth,
+        height: spec.canvasHeight,
+        child: Directionality(
+          textDirection: spec.textDirection,
+          child: ClipRRect(
+            clipper: clipper,
+            child: Stack(
+              children: [
+                for (final m in spec.mirrors)
+                  _Placed(
+                    box: m.box,
+                    child: _MirrorBinding(
+                      mirror: m,
+                      alphabet: m.alphabet ?? spec.slots[m.source].alphabet,
+                      theme: theme,
+                      controller: controller,
+                    ),
+                  ),
+                for (var i = 0; i < spec.slots.length; i++)
+                  _Placed(
+                    box: spec.slots[i].box,
+                    child: Center(
+                      child: _SlotBinding(
+                        index: i,
+                        slot: spec.slots[i],
+                        behavior: behaviors[i],
+                        theme: theme,
+                        machine: machine,
+                        controller: controller,
+                        onCompleted: mode == PlateMode.input ? () => machine.advanceFrom(i) : null,
+                        onPressed: behaviors[i] == SlotBehavior.sheet ? () => onPick(i) : null,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

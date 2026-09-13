@@ -26,6 +26,7 @@ class PlateCountry {
     required this.panelTextColor,
     this.flagAspectRatio = 7 / 4,
     this.flag,
+    this.flagBorderColor,
   });
 
   /// ISO 3166-1 alpha-2 country code, lower-case. Used for equality and
@@ -49,6 +50,11 @@ class PlateCountry {
   /// The flag asset this country ships, or null for a country with no flag.
   /// [PlateFlag] renders nothing when it is null.
   final PlateAsset? flag;
+
+  /// A thin outline stroked around the flag's own rectangle, or null for no
+  /// outline. Some countries' flags are printed on a plate with a fine dark
+  /// border around them (Bahrain's, for one); most have none.
+  final Color? flagBorderColor;
 
   @override
   bool operator ==(Object other) => identical(this, other) || (other is PlateCountry && other.code == code);

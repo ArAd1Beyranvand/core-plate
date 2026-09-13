@@ -1,3 +1,12 @@
+## 0.9.1
+
+**`PlateLabel.color`.** A label may now name the ink it is printed in; null
+keeps `PlateTheme.ink`, so every existing label is unchanged. A caption that
+sits on a coloured block rather than on the plate's field — reversed out white
+over a diplomatic plate's green band, say — is printed in an ink the field's
+ink cannot express, and that is data about the label. The alternative was a
+second theme per plate, which would have recoloured the digits too.
+
 ## 0.9.0
 
 **Breaking: removed deprecated symbols.**
