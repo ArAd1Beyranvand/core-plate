@@ -158,6 +158,9 @@ class _GlyphSlot extends StatelessWidget {
               child: Text(
                 slot.alphabet.render(v),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.clip,
                 style: theme.glyphStyle(slot.box.height, theme.ink),
               ),
             ),
@@ -283,11 +286,17 @@ class _ChosenSlot extends StatelessWidget {
         ? Text(
             slot.alphabet.placeholder,
             textAlign: TextAlign.center,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.clip,
             style: theme.glyphStyle(slot.box.height, theme.inactiveColor),
           )
         : Text(
             slot.alphabet.render(value!),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.clip,
             style: theme.glyphStyle(slot.box.height, theme.ink),
           );
 
