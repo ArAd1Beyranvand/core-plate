@@ -144,6 +144,7 @@ class PlateSpec {
     this.mirrors = const <PlateMirror>[],
     this.textDirection = TextDirection.ltr,
     this.borderWidthRatioOverride,
+    this.inkOverride,
     this.textGroups = const <PlateTextGroup>[],
   });
 
@@ -168,6 +169,24 @@ class PlateSpec {
 
   /// Applied via theme.copyWith when non-null.
   final double? borderWidthRatioOverride;
+
+  /// The one ink this plate is printed in, or null for the theme's own.
+  ///
+  /// A plate whose print colour is *part of its design* rather than part of the
+  /// host's livery: Germany prints tax-exempt plates in green and dealer plates
+  /// in red on the same white face as an ordinary one, and a caller should not
+  /// have to hand the canvas a second theme to say so.
+  ///
+  /// Overrides the full monochrome set — glyphs, border, rules and the
+  /// completed-field outline — because a real plate does not print its rim in a
+  /// different colour from its characters: a green plate has a green rim, a red
+  /// one a red rim. This is the same substitution [PlateTheme.monochrome]
+  /// makes, applied to an existing theme.
+  ///
+  /// Not a general theme escape hatch. It sits beside
+  /// [borderWidthRatioOverride] as the second single-field override, and a
+  /// third would be the signal to collapse both into one override object.
+  final Color? inkOverride;
 
   /// Groups of slot indices for the plain-text rendering of the plate, listed
   /// in [textDirection] reading order. Empty means each slot is its own

@@ -303,6 +303,12 @@ class _PlateCanvasState extends State<PlateCanvas> {
     if (spec.borderWidthRatioOverride != null) {
       theme = theme.copyWith(borderWidthRatio: spec.borderWidthRatioOverride!);
     }
+    if (spec.inkOverride != null) {
+      // The whole monochrome set, as [PlateSpec.inkOverride] documents: a plate
+      // printed in green has a green rim and green rules, not black ones.
+      final ink = spec.inkOverride!;
+      theme = theme.copyWith(ink: ink, plateBorder: ink, dividerColor: ink, activeColor: ink);
+    }
     // PlateMode.display renders inert, picker-like slots regardless of the
     // configured source, so force [PlateInputSource.system] there.
     _machine.inputSource = widget.mode == PlateMode.input ? _resolveInputSource() : PlateInputSource.system;
@@ -426,10 +432,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
             clipper: clipper,
           );
 
-    final Widget face = Stack(
-      fit: StackFit.passthrough,
-      children: [artwork, inputs],
-    );
+    final Widget face = Stack(fit: StackFit.passthrough, children: [artwork, inputs]);
 
     // Wrap in a Material so the typed slots' TextFields have the Material
     // ancestor they require. Without this a consumer must place PlateCanvas
