@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <!-- Cedar of Lebanon - stylized silhouette -->
+  <g id="cedar" fill="#ffffff">
+    <!-- Trunk -->
+    <rect x="45" y="80" width="10" height="30" rx="2"/>
+
+    <!-- Lower foliage layers (conical shape) -->
+    <polygon points="50,20 30,50 70,50"/>
+    <polygon points="50,35 25,65 75,65"/>
+    <polygon points="50,50 20,80 80,80"/>
+
+    <!-- Add some texture with internal details -->
+    <ellipse cx="50" cy="40" rx="15" ry="12" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.6"/>
+    <ellipse cx="50" cy="60" rx="20" ry="15" fill="none" stroke="#ffffff" stroke-width="0.5" opacity="0.6"/>
+  </g>
+</svg>
