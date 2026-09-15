@@ -104,13 +104,13 @@ abstract final class LebanonPlates {
   /// face, so extending it under the frame kills the hairline seam a flush edge
   /// leaves once the whole canvas is scaled.
   ///
-  /// The cedar is displayed at the top, with the usage word below it.
+  /// The cedar is displayed at the center, with the usage word below it.
   /// `CountryPanel` lays a flag out at the top and the caption at the bottom.
   static const PlatePanel _oneLinePanel = PlatePanel(
     box: PlateBox(0, 0, 126, _oneLineHeight),
-    flagScale: 0.4,
+    flagScale: 0.8,
     captionScale: 1.1, // CALIBRATE
-    padding: EdgeInsets.fromLTRB(10, 75, 8, 20), // CALIBRATE
+    padding: EdgeInsets.fromLTRB(10, 40, 8, 20), // CALIBRATE
   );
 
   /// لبنان, printed in the upper half of the band.
@@ -141,12 +141,12 @@ abstract final class LebanonPlates {
   /// The blue band across the top. Runs past the frame on three edges, for the
   /// reason [_oneLinePanel] does.
   ///
-  /// The cedar is displayed with the caption, left-aligned in the inner box.
+  /// The cedar is displayed centered, with the caption below it.
   static const PlatePanel _twoLinePanel = PlatePanel(
     box: PlateBox(0, 0, _twoLineWidth, 88),
-    flagScale: 0.35,
+    flagScale: 0.75,
     captionScale: 1.0, // CALIBRATE
-    padding: EdgeInsets.fromLTRB(16, 16, 16, 14), // CALIBRATE
+    padding: EdgeInsets.fromLTRB(16, 8, 16, 8), // CALIBRATE
   );
 
   static const List<PlateLabel> _twoLineLabels = <PlateLabel>[
