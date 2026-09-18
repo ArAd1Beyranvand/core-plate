@@ -28,6 +28,7 @@ class PlateSlotItem extends StatelessWidget {
     required this.focusNode,
     required this.onChanged,
     required this.onCompleted,
+    required this.onBackspace,
     this.theme,
     this.onPressed,
   });
@@ -51,6 +52,12 @@ class PlateSlotItem extends StatelessWidget {
   /// Fires after a non-empty commit.
   final VoidCallback? onCompleted;
 
+  /// The plate-level backspace, fired only when this slot is ALREADY empty:
+  /// the first press clears the slot and stays put, the second one steps back.
+  /// A press on a filled slot never reaches here — the field (or the `Focus`
+  /// below) clears it in place through [onChanged].
+  final VoidCallback? onBackspace;
+
   final PlateTheme? theme;
 
   /// Opens the picker; [SlotBehavior.sheet] only.
@@ -73,6 +80,7 @@ class PlateSlotItem extends StatelessWidget {
           focusNode: focusNode,
           onChanged: onChanged,
           onCompleted: onCompleted,
+          onBackspace: onBackspace,
           theme: effectiveTheme,
         );
 
@@ -88,6 +96,7 @@ class PlateSlotItem extends StatelessWidget {
             focusNode: focusNode,
             onChanged: onChanged,
             onCompleted: onCompleted,
+            onBackspace: onBackspace,
             theme: effectiveTheme,
           );
         }
@@ -98,6 +107,7 @@ class PlateSlotItem extends StatelessWidget {
           focusNode: focusNode,
           onChanged: onChanged,
           onPressed: onPressed,
+          onBackspace: onBackspace,
           theme: effectiveTheme,
         );
 
@@ -110,6 +120,7 @@ class PlateSlotItem extends StatelessWidget {
             focusNode: focusNode,
             onChanged: onChanged,
             onCompleted: onCompleted,
+            onBackspace: onBackspace,
             theme: effectiveTheme,
           );
         }
@@ -120,6 +131,7 @@ class PlateSlotItem extends StatelessWidget {
           focusNode: focusNode,
           onChanged: onChanged,
           onPressed: onPressed,
+          onBackspace: onBackspace,
           theme: effectiveTheme,
         );
 
@@ -131,6 +143,7 @@ class PlateSlotItem extends StatelessWidget {
           focusNode: focusNode,
           onChanged: onChanged,
           onPressed: onPressed,
+          onBackspace: onBackspace,
           theme: effectiveTheme,
         );
     }
@@ -155,13 +168,16 @@ class _GlyphSlot extends StatelessWidget {
       child: v.isEmpty
           ? null
           : Center(
-              child: Text(
-                slot.alphabet.render(v),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.clip,
-                style: theme.glyphStyle(slot.box.height, theme.ink),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  slot.alphabet.render(v),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.clip,
+                  style: theme.glyphStyle(slot.box.height, theme.ink),
+                ),
               ),
             ),
     );
@@ -182,6 +198,7 @@ class _TypedField extends StatelessWidget {
     required this.focusNode,
     required this.onChanged,
     required this.onCompleted,
+    required this.onBackspace,
     required this.theme,
   });
 
@@ -191,6 +208,7 @@ class _TypedField extends StatelessWidget {
   final FocusNode focusNode;
   final ValueChanged<String> onChanged;
   final VoidCallback? onCompleted;
+  final VoidCallback? onBackspace;
   final PlateTheme theme;
 
   @override
@@ -209,44 +227,61 @@ class _TypedField extends StatelessWidget {
     return SizedBox(
       width: slot.box.width,
       height: slot.box.height,
-      child: ListenableBuilder(
-        listenable: focusNode,
-        builder: (context, _) => TextField(
-          controller: controller,
-          focusNode: focusNode,
-          readOnly: readOnly,
-          showCursor: readOnly ? focusNode.hasFocus : null,
-          textAlign: TextAlign.center,
-          style: theme.glyphStyle(slot.box.height, theme.ink),
-          cursorColor: theme.activeColor,
-          decoration: InputDecoration(
-            isDense: true,
-            contentPadding: EdgeInsets.symmetric(vertical: slot.box.height * 0.12),
-            filled: false,
-            counterText: '',
-            border: UnderlineInputBorder(borderSide: BorderSide(color: theme.inactiveColor)),
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: underlineColor)),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: theme.activeColor)),
-          ),
-          onChanged: (typed) {
-            if (slot.alphabet.accepts(typed)) {
-              onChanged(typed);
-              if (typed != '') {
-                if (onCompleted != null) onCompleted!();
+      // Sits ABOVE the field's own focus node, so the field still deletes its
+      // own character first and only an unhandled backspace — one pressed on an
+      // empty slot — reaches the plate. That is the two-press rule: clear here,
+      // then step back.
+      child: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        onKeyEvent: (node, event) {
+          if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
+          if (event.logicalKey != LogicalKeyboardKey.backspace) return KeyEventResult.ignored;
+          // A read-only field (externalField) cannot delete anything itself, so
+          // every backspace on it is the plate's to handle.
+          if (!readOnly && controller.text.isNotEmpty) return KeyEventResult.ignored;
+          onBackspace?.call();
+          return KeyEventResult.handled;
+        },
+        child: ListenableBuilder(
+          listenable: focusNode,
+          builder: (context, _) => TextField(
+            controller: controller,
+            focusNode: focusNode,
+            readOnly: readOnly,
+            showCursor: readOnly ? focusNode.hasFocus : null,
+            textAlign: TextAlign.center,
+            style: theme.glyphStyle(slot.box.height, theme.ink),
+            cursorColor: theme.activeColor,
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(vertical: slot.box.height * 0.12),
+              filled: false,
+              counterText: '',
+              border: UnderlineInputBorder(borderSide: BorderSide(color: theme.inactiveColor)),
+              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: underlineColor)),
+              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: theme.activeColor)),
+            ),
+            onChanged: (typed) {
+              if (slot.alphabet.accepts(typed)) {
+                onChanged(typed);
+                if (typed != '') {
+                  if (onCompleted != null) onCompleted!();
+                }
+              } else {
+                controller.text = '';
+                onChanged('');
               }
-            } else {
-              controller.text = '';
-              onChanged('');
-            }
-          },
-          maxLength: 1,
-          // hardwareField keeps a TextField but suppresses the IME; the other
-          // two show it, numeric where the alphabet is digits-only.
-          keyboardType: behavior == SlotBehavior.hardwareField
-              ? TextInputType.none
-              : slot.alphabet.isNumeric
-              ? TextInputType.number
-              : TextInputType.text,
+            },
+            maxLength: 1,
+            // hardwareField keeps a TextField but suppresses the IME; the other
+            // two show it, numeric where the alphabet is digits-only.
+            keyboardType: behavior == SlotBehavior.hardwareField
+                ? TextInputType.none
+                : slot.alphabet.isNumeric
+                ? TextInputType.number
+                : TextInputType.text,
+          ),
         ),
       ),
     );
@@ -267,6 +302,7 @@ class _ChosenSlot extends StatelessWidget {
     required this.focusNode,
     required this.onChanged,
     required this.onPressed,
+    required this.onBackspace,
     required this.theme,
   });
 
@@ -276,6 +312,7 @@ class _ChosenSlot extends StatelessWidget {
   final FocusNode focusNode;
   final ValueChanged<String> onChanged;
   final VoidCallback? onPressed;
+  final VoidCallback? onBackspace;
   final PlateTheme theme;
 
   @override
@@ -307,7 +344,9 @@ class _ChosenSlot extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: underlineColor)),
         ),
-        child: Center(child: letter),
+        child: Center(
+          child: FittedBox(fit: BoxFit.scaleDown, child: letter),
+        ),
       ),
     );
 
@@ -328,7 +367,14 @@ class _ChosenSlot extends StatelessWidget {
           ? (node, event) {
               if (event is! KeyDownEvent) return KeyEventResult.ignored;
               if (event.logicalKey == LogicalKeyboardKey.backspace) {
-                onChanged('');
+                // Same two-press rule as the typed field: the first press
+                // clears this slot and stays, and a press on an already-empty
+                // slot is the plate's, which steps back to the previous one.
+                if (isEmpty) {
+                  onBackspace?.call();
+                } else {
+                  onChanged('');
+                }
                 return KeyEventResult.handled;
               }
               final ch = event.character;

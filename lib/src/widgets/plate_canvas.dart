@@ -779,6 +779,9 @@ class _SlotBinding extends StatelessWidget {
           focusNode: machine.focusNodeAt(index),
           onChanged: (v) => controller.setAt(index, v),
           onCompleted: onCompleted,
+          // A backspace the slot could not use itself goes to the machine,
+          // which clears the previous slot and focuses it.
+          onBackspace: machine.backspaceCharacter,
           onPressed: onPressed,
         );
       },
