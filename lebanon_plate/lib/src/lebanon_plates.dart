@@ -150,7 +150,7 @@ abstract final class LebanonPlates {
     box: PlateBox(0, 0, _twoLineWidth, 88),
     flagScale: 0.85,
     captionScale: 1.0, // CALIBRATE
-    padding: EdgeInsets.fromLTRB(150, 16, 16, 16), // CALIBRATE
+    padding: EdgeInsets.fromLTRB(236, 16, 16, 16), // CALIBRATE
     direction: Axis.horizontal,
   );
 
