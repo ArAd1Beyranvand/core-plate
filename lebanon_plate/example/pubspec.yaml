@@ -1,0 +1,19 @@
+name: lebanon_plate_example
+description: Minimal example — a one-line Lebanese plate, with its band caption and field colour derived from usage.
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core_plate: ^0.9.0
+  lebanon_plate: ^0.1.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
