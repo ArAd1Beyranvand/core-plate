@@ -249,6 +249,12 @@ class _TypedField extends StatelessWidget {
             controller: controller,
             focusNode: focusNode,
             readOnly: readOnly,
+            // A slot fed from outside keeps its focus when something outside it
+            // is tapped, because that something is usually the very keypad
+            // feeding it. TextField's default drops focus on desktop
+            // (linux/macOS/windows) at pointer-down, which would disarm the pad
+            // one press before it could submit anything.
+            onTapOutside: readOnly ? (PointerDownEvent _) {} : null,
             showCursor: readOnly ? focusNode.hasFocus : null,
             textAlign: TextAlign.center,
             style: theme.glyphStyle(slot.box.height, theme.ink),
