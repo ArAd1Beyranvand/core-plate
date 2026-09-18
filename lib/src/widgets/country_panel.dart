@@ -38,49 +38,56 @@ class CountryPanel extends StatelessWidget {
             final resolvedPadding = panel.padding ?? EdgeInsets.all(uniformPad);
             final innerW = constraints.maxWidth - resolvedPadding.horizontal;
             final innerH = constraints.maxHeight - resolvedPadding.vertical;
-            // Flag: scale the width by flagScale; height follows the
-            // country's flag aspect ratio, clamped to the available height so
-            // small panels never overflow.
-            var flagW = innerW * panel.flagScale;
-            var flagH = flagW / country.flagAspectRatio;
-            if (flagH > innerH) {
-              flagH = innerH;
-              flagW = flagH * country.flagAspectRatio;
-            }
-            final captionH = (innerH - flagH).clamp(0.0, innerH);
+            final flag = _flagSize(panel: panel, country: country, innerW: innerW, innerH: innerH);
+            final caption = SizedBox(
+              width: panel.direction == Axis.horizontal ? (innerW - flag.width).clamp(0.0, innerW) : null,
+              height: panel.direction == Axis.vertical ? (innerH - flag.height).clamp(0.0, innerH) : null,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: _Caption(lines: country.captionLines, color: country.panelTextColor, scale: panel.captionScale),
+              ),
+            );
+            final flagBox = SizedBox(width: flag.width, height: flag.height, child: PlateFlag(country: country));
             return Padding(
               padding: resolvedPadding,
-              // Flag pinned to the top, caption pinned to the bottom, with the
+              // Flag pinned to one end, caption pinned to the other, with the
               // slack between them (matches a real plate's panel).
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    width: flagW,
-                    height: flagH,
-                    child: PlateFlag(country: country),
-                  ),
-                  SizedBox(
-                    height: captionH,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: _Caption(
-                        lines: country.captionLines,
-                        color: country.panelTextColor,
-                        scale: panel.captionScale,
-                      ),
+              child: panel.direction == Axis.horizontal
+                  ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [flagBox, caption])
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [flagBox, caption],
                     ),
-                  ),
-                ],
-              ),
             );
           },
         ),
       ),
     );
   }
+}
+
+/// The flag's size inside the panel: [PlatePanel.flagScale] of the axis that
+/// is shared with the caption ([Axis.horizontal] scales width, [Axis.vertical]
+/// scales height), clamped to the other axis so the flag never overflows.
+Size _flagSize({required PlatePanel panel, required PlateCountry country, required double innerW, required double innerH}) {
+  if (panel.direction == Axis.horizontal) {
+    var flagH = innerH * panel.flagScale;
+    var flagW = flagH * country.flagAspectRatio;
+    if (flagW > innerW) {
+      flagW = innerW;
+      flagH = flagW / country.flagAspectRatio;
+    }
+    return Size(flagW, flagH);
+  }
+  var flagW = innerW * panel.flagScale;
+  var flagH = flagW / country.flagAspectRatio;
+  if (flagH > innerH) {
+    flagH = innerH;
+    flagW = flagH * country.flagAspectRatio;
+  }
+  return Size(flagW, flagH);
 }
 
 class _Caption extends StatelessWidget {

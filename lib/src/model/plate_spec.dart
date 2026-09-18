@@ -118,7 +118,13 @@ class PlateLabel {
 /// flag and caption are laid out inside it.
 @immutable
 class PlatePanel {
-  const PlatePanel({required this.box, this.flagScale = 1.0, this.captionScale = 1.0, this.padding});
+  const PlatePanel({
+    required this.box,
+    this.flagScale = 1.0,
+    this.captionScale = 1.0,
+    this.padding,
+    this.direction = Axis.vertical,
+  });
 
   final PlateBox box;
 
@@ -135,6 +141,12 @@ class PlatePanel {
   /// Padding around the flag + caption inside the country panel. Null keeps
   /// the default: a uniform inset of 10% of the panel's height on all sides.
   final EdgeInsets? padding;
+
+  /// How the flag and caption stack inside the panel: [Axis.vertical] (the
+  /// default) puts the flag above the caption, for a panel taller than it is
+  /// wide. [Axis.horizontal] puts the flag beside the caption, for a panel
+  /// wider than it is tall.
+  final Axis direction;
 }
 
 /// One visual group in the plain-text rendering of a plate (e.g. a digit
