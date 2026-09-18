@@ -149,7 +149,9 @@ abstract final class LebanonPlates {
   static const PlatePanel _twoLinePanel = PlatePanel(
     box: PlateBox(0, 0, _twoLineWidth, 88),
     flagScale: 0.85,
-    captionScale: 1.0, // CALIBRATE
+    // The caption's font size is unrelated to لبنان's `glyphHeight`, so left
+    // at the default it renders visibly smaller; scaled up to roughly match.
+    captionScale: 1.9, // CALIBRATE
     padding: EdgeInsets.fromLTRB(236, 16, 16, 16), // CALIBRATE
     direction: Axis.horizontal,
   );
