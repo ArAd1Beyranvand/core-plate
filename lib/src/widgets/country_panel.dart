@@ -44,7 +44,14 @@ class CountryPanel extends StatelessWidget {
               height: panel.direction == Axis.vertical ? (innerH - flag.height).clamp(0.0, innerH) : null,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+                // Vertical: the caption box runs from under the flag to the
+                // panel's bottom edge, left-aligned like the flag above it.
+                // Horizontal: the caption box runs from beside the flag to
+                // the panel's right edge; pinning to that far edge mirrors
+                // the flag sitting flush against the padding on its side, so
+                // the gap around the flag reads as deliberate spacing rather
+                // than the caption clinging to one side of its box.
+                alignment: panel.direction == Axis.horizontal ? Alignment.centerRight : Alignment.centerLeft,
                 child: _Caption(lines: country.captionLines, color: country.panelTextColor, scale: panel.captionScale),
               ),
             );
