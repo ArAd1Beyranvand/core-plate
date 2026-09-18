@@ -59,13 +59,16 @@ class CountryPanel extends StatelessWidget {
             return Padding(
               padding: resolvedPadding,
               // Flag pinned to one end, caption pinned to the other, with the
-              // slack between them (matches a real plate's panel).
+              // slack between them (matches a real plate's panel). In the
+              // vertical layout the caption stays left-aligned but the flag
+              // is centred across the panel's width, rather than sharing the
+              // caption's left edge.
               child: panel.direction == Axis.horizontal
                   ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [flagBox, caption])
                   : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [flagBox, caption],
+                      children: [Center(child: flagBox), caption],
                     ),
             );
           },
