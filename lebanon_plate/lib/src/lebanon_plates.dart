@@ -104,16 +104,18 @@ abstract final class LebanonPlates {
   /// face, so extending it under the frame kills the hairline seam a flush edge
   /// leaves once the whole canvas is scaled.
   ///
-  /// The cedar is displayed at the top, with the usage word below it.
-  /// `CountryPanel` lays a flag out at the top and the caption at the bottom.
+  /// The band reads top to bottom as a column: لبنان, then the cedar, then the
+  /// usage word. `CountryPanel`'s own [PlatePanel.direction] (vertical, the
+  /// default) lays the cedar above the caption; the top padding below leaves
+  /// لبنان room to sit above both, still on the same blue box.
   static const PlatePanel _oneLinePanel = PlatePanel(
     box: PlateBox(0, 0, 126, _oneLineHeight),
-    flagScale: 0.5,
+    flagScale: 0.62,
     captionScale: 1.1, // CALIBRATE
-    padding: EdgeInsets.fromLTRB(10, 60, 8, 10), // CALIBRATE
+    padding: EdgeInsets.fromLTRB(10, 86, 8, 10), // CALIBRATE
   );
 
-  /// لبنان, printed in the upper half of the band.
+  /// لبنان, printed at the top of the band, above the cedar.
   ///
   /// A [PlateLabel] rather than a caption line, because the country name does
   /// not vary with usage and the caption does: putting it here keeps one
@@ -121,7 +123,7 @@ abstract final class LebanonPlates {
   /// is stated explicitly — a label defaults to the theme's ink, which is black
   /// on a white plate and would vanish into the blue band.
   static const List<PlateLabel> _oneLineLabels = <PlateLabel>[
-    PlateLabel(text: 'لبنان', box: PlateBox(10, 22, 106, 64), glyphHeight: 58, color: LebanonColors.bandInk),
+    PlateLabel(text: 'لبنان', box: PlateBox(10, 14, 106, 56), glyphHeight: 50, color: LebanonColors.bandInk),
   ];
 
   /// The letter cell.
@@ -138,19 +140,22 @@ abstract final class LebanonPlates {
   static const double _twoLineWidth = 520;
   static const double _twoLineHeight = 288;
 
-  /// The blue band across the top. Runs past the frame on three edges, for the
-  /// reason [_oneLinePanel] does.
-  ///
-  /// The cedar is displayed with the caption, left-aligned in the inner box.
+  /// The band across the top reads left to right as a row: لبنان, then the
+  /// cedar, then the usage word. The panel box spans the whole band, so the
+  /// blue fill runs edge to edge; [PlatePanel.direction] is horizontal so
+  /// `CountryPanel` lays the cedar and caption side by side instead of
+  /// stacked, and the left padding reserves room for لبنان — its own
+  /// [PlateLabel] — ahead of them.
   static const PlatePanel _twoLinePanel = PlatePanel(
     box: PlateBox(0, 0, _twoLineWidth, 88),
-    flagScale: 0.5,
+    flagScale: 0.85,
     captionScale: 1.0, // CALIBRATE
-    padding: EdgeInsets.fromLTRB(16, 16, 16, 8), // CALIBRATE
+    padding: EdgeInsets.fromLTRB(150, 16, 16, 16), // CALIBRATE
+    direction: Axis.horizontal,
   );
 
   static const List<PlateLabel> _twoLineLabels = <PlateLabel>[
-    PlateLabel(text: 'لبنان', box: PlateBox(396, 18, 110, 56), glyphHeight: 52, color: LebanonColors.bandInk),
+    PlateLabel(text: 'لبنان', box: PlateBox(16, 18, 130, 52), glyphHeight: 46, color: LebanonColors.bandInk),
   ];
 
   static const PlateSlot _twoLineLetter = PlateSlot(

@@ -38,6 +38,7 @@ abstract final class LebanonCountry {
     panelColor: LebanonColors.band,
     panelTextColor: LebanonColors.bandInk,
     flag: SvgPlateAsset('assets/cedar.svg', package: 'lebanon_plate'),
+    flagAspectRatio: 1.0,
   );
 
   /// خصوصي — the band on an ordinary private plate.
@@ -47,6 +48,7 @@ abstract final class LebanonCountry {
     panelColor: LebanonColors.band,
     panelTextColor: LebanonColors.bandInk,
     flag: SvgPlateAsset('assets/cedar.svg', package: 'lebanon_plate'),
+    flagAspectRatio: 1.0,
   );
 
   /// مؤسسات — the band on a red public-institution plate.
@@ -56,6 +58,7 @@ abstract final class LebanonCountry {
     panelColor: LebanonColors.band,
     panelTextColor: LebanonColors.bandInk,
     flag: SvgPlateAsset('assets/cedar.svg', package: 'lebanon_plate'),
+    flagAspectRatio: 1.0,
   );
 
   /// The band captioned for [usage].
