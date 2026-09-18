@@ -497,10 +497,18 @@ class _PlateArtwork extends StatelessWidget {
                   clipper: clipper,
                   child: Stack(
                     children: [
-                      _Placed(
-                        box: spec.panel.box,
-                        child: CountryPanel(country: country, theme: theme, panel: spec.panel),
-                      ),
+                      if (!spec.noPanel)
+                        _Placed(
+                          box: spec.panel.box,
+                          child: CountryPanel(country: country, theme: theme, panel: spec.panel),
+                        ),
+                      // Under the rules, labels and decals: a band is the field
+                      // the ink is printed on, not something printed over them.
+                      if (spec.rightBand case final band?)
+                        _Placed(
+                          box: band.box,
+                          child: ColoredBox(color: band.color),
+                        ),
                       for (final r in spec.rules)
                         _Placed(
                           box: r.box,

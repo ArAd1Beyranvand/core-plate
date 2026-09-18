@@ -51,6 +51,31 @@ class PlateRule {
   final PlateBox box;
 }
 
+/// A solid block of colour on the plate face — the coloured band a validity
+/// date is printed over at the right-hand end of a German short-term (`04`) or
+/// export plate.
+///
+/// A [PlateRule] painted fat would be the wrong tool twice over: a rule is a
+/// divider and takes the theme's [PlateTheme.dividerColor], which
+/// [PlateSpec.inkOverride] recolours along with the glyphs, so a red export
+/// band would follow the print colour instead of being its own. A band carries
+/// its own [color] precisely because it is not printed in the plate's ink — it
+/// is the field the ink is printed *on*.
+///
+/// It paints nothing but the rectangle. The characters over it are ordinary
+/// slots and [PlateLabel]s, positioned inside [box] and given their own colour
+/// where the band's fill demands one — see [PlateLabel.color].
+@immutable
+class PlateBand {
+  const PlateBand({required this.box, required this.color});
+
+  final PlateBox box;
+
+  /// The band's fill. Deliberately not derived from the theme: the yellow of a
+  /// short-term plate and the red of an export one are the design, not livery.
+  final Color color;
+}
+
 /// A fixed image painted on the plate face at a set position — a sticker or
 /// badge that sits *between* character groups rather than inside a slot (e.g.
 /// the German inspection and federal-state stickers). Like [PlateLabel] and
@@ -138,6 +163,8 @@ class PlateSpec {
     required this.canvasHeight,
     required this.panel,
     required this.slots,
+    this.noPanel = false,
+    this.rightBand,
     this.rules = const <PlateRule>[],
     this.labels = const <PlateLabel>[],
     this.decals = const <PlateDecal>[],
@@ -155,6 +182,29 @@ class PlateSpec {
 
   final double canvasWidth, canvasHeight;
   final PlatePanel panel;
+
+  /// Suppresses [panel] entirely: nothing is painted where the country block
+  /// would go, and the plate's characters start at the face's left edge.
+  ///
+  /// Not every plate carries a country block. Germany's short-term (`04`) and
+  /// export plates have no euroband at all — the area code begins a few
+  /// millimetres in from the rim — and a design that has one is the common
+  /// case, not the only one.
+  ///
+  /// A bool beside [panel] rather than a nullable [panel], because the panel is
+  /// the one piece of chrome a renderer may be handed from outside the spec
+  /// ([PlateCanvas.country]), and every existing caller reads `spec.panel.box`
+  /// unconditionally. A suppressed panel still declares its geometry; the face
+  /// simply does not paint it.
+  final bool noPanel;
+
+  /// A solid block of colour at the right-hand end of the plate, or null for a
+  /// plate with none. See [PlateBand].
+  ///
+  /// Named for where it sits because that is the only place the formats that
+  /// use one put it, and a `bands` list would invite a plate striped like a
+  /// deckchair. A second position is the signal to generalise, not this one.
+  final PlateBand? rightBand;
 
   final List<PlateSlot> slots;
   final List<PlateRule> rules;
@@ -311,6 +361,16 @@ bool debugValidateSpec(PlateSpec spec) {
       m.source >= 0 && m.source < spec.slots.length,
       'PlateMirror $i in spec "${spec.id}" echoes slot ${m.source}, which is '
       'not a slot index (0..${spec.slots.length - 1}).',
+    );
+  }
+
+  final band = spec.rightBand;
+  if (band != null) {
+    final b = band.box;
+    assert(
+      b.left >= 0 && b.top >= 0 && b.right <= spec.canvasWidth && b.bottom <= spec.canvasHeight,
+      'The right band in spec "${spec.id}" has a rect outside the '
+      'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
     );
   }
 
