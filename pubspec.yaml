@@ -13,6 +13,8 @@ workspace:
   - plate_keypad/example
   - iran_plate
   - iran_plate/example
+  - iranshahr
+  - iranshahr/example
   - germany_plate
   - germany_plate/example
   - palestine_plate
