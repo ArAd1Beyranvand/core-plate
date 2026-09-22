@@ -275,6 +275,14 @@ class PlateController extends ChangeNotifier {
 
   @override
   void dispose() {
+    // Drop the canvas first. A host is allowed to retire a controller while the
+    // canvas showing it is still mounted — the showcase does exactly that, the
+    // moment the outgoing plate has faded to nothing — and that canvas's own
+    // dispose still runs afterwards, calling [detach]. With the target cleared
+    // here that detach no longer matches, so it returns instead of notifying a
+    // disposed ChangeNotifier and throwing mid-unmount.
+    _target = null;
+    _probe = null;
     for (final slot in _slots) {
       slot.dispose();
     }
