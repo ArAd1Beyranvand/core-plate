@@ -4,16 +4,28 @@ GO VEGAN 🌱
 
 ==================================
 
+<!-- METADATA: core_plate
+packages: 9
+countries: 8
+-->
+
 The backbone of license plate packages for countries that actually exist (we checked).
 
 ## Available plates
 
+### Core
 - [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
 - [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer, for hosts already bloc-shaped.
+
+### Countries
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's license plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's license plates.
 - [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's license plates.
 - [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's license plates.
+- [`iranshahr_plate`](https://pub.dev/packages/iranshahr_plate) - Bahrain's, Azerbaijan's and Afghanistan's license plates.
+- [`lebanon_plate`](https://pub.dev/packages/lebanon_plate) - Lebanon's license plates.
+
+### Utilities
 - [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
 
 # core_plate

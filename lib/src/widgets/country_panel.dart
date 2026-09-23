@@ -39,36 +39,57 @@ class CountryPanel extends StatelessWidget {
             final innerW = constraints.maxWidth - resolvedPadding.horizontal;
             final innerH = constraints.maxHeight - resolvedPadding.vertical;
             final flag = _flagSize(panel: panel, country: country, innerW: innerW, innerH: innerH);
-            final caption = SizedBox(
-              width: panel.direction == Axis.horizontal ? (innerW - flag.width).clamp(0.0, innerW) : null,
-              height: panel.direction == Axis.vertical ? (innerH - flag.height).clamp(0.0, innerH) : null,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                // Vertical: the caption box runs from under the flag to the
-                // panel's bottom edge, left-aligned like the flag above it.
-                // Horizontal: the caption box runs from beside the flag to
-                // the panel's right edge; pinning to that far edge mirrors
-                // the flag sitting flush against the padding on its side, so
-                // the gap around the flag reads as deliberate spacing rather
-                // than the caption clinging to one side of its box.
-                alignment: panel.direction == Axis.horizontal ? Alignment.centerRight : Alignment.centerLeft,
-                child: _Caption(lines: country.captionLines, color: country.panelTextColor, scale: panel.captionScale),
-              ),
-            );
+            final horizontal = panel.direction == Axis.horizontal;
+            // The room the flag leaves, and how many pieces of wording have to
+            // share it. A heading and a caption split it evenly; either one
+            // alone takes the lot, which is the layout this widget has always
+            // had.
+            final hasHeading = country.headingLines.isNotEmpty;
+            final slackW = horizontal ? (innerW - flag.width).clamp(0.0, innerW) : null;
+            final slackH = horizontal ? null : (innerH - flag.height).clamp(0.0, innerH);
+            final share = hasHeading ? 0.5 : 1.0;
+
             final flagBox = SizedBox(width: flag.width, height: flag.height, child: PlateFlag(country: country));
+            final children = <Widget>[
+              // The heading sits on the far side of the flag from the caption.
+              // In the horizontal layout that means pinning to the opposite
+              // edge — the caption clings to the end of the panel, the heading
+              // to its start. In the vertical one both stay left-aligned,
+              // because the panel's two lines of wording share a left margin
+              // however the flag between them is centred.
+              if (hasHeading)
+                _PanelWording(
+                  lines: country.headingLines,
+                  color: country.panelTextColor,
+                  scale: panel.captionScale,
+                  alignment: Alignment.centerLeft,
+                  width: slackW == null ? null : slackW * share,
+                  height: slackH == null ? null : slackH * share,
+                ),
+              horizontal ? flagBox : Center(child: flagBox),
+              _PanelWording(
+                lines: country.captionLines,
+                color: country.panelTextColor,
+                scale: panel.captionScale,
+                alignment: horizontal ? Alignment.centerRight : Alignment.centerLeft,
+                width: slackW == null ? null : slackW * share,
+                height: slackH == null ? null : slackH * share,
+              ),
+            ];
             return Padding(
               padding: resolvedPadding,
               // Flag pinned to one end, caption pinned to the other, with the
-              // slack between them (matches a real plate's panel). In the
-              // vertical layout the caption stays left-aligned but the flag
-              // is centred across the panel's width, rather than sharing the
-              // caption's left edge.
-              child: panel.direction == Axis.horizontal
-                  ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [flagBox, caption])
+              // slack between them (matches a real plate's panel) — or, where
+              // there is a heading too, the flag in the middle with a band of
+              // wording above and below it. In the vertical layout the wording
+              // stays left-aligned but the flag is centred across the panel's
+              // width, rather than sharing the wording's left edge.
+              child: horizontal
+                  ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: children)
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [Center(child: flagBox), caption],
+                      children: children,
                     ),
             );
           },
@@ -98,6 +119,51 @@ Size _flagSize({required PlatePanel panel, required PlateCountry country, requir
     flagW = flagH * country.flagAspectRatio;
   }
   return Size(flagW, flagH);
+}
+
+/// One band of wording in the panel — the heading above the flag, or the
+/// caption below it — scaled down to whatever room the flag left it.
+///
+/// The two are one widget with different lines and a different alignment,
+/// because that is all that separates them.
+class _PanelWording extends StatelessWidget {
+  const _PanelWording({
+    required this.lines,
+    required this.color,
+    required this.scale,
+    required this.alignment,
+    required this.width,
+    required this.height,
+  });
+
+  final List<String> lines;
+  final Color color;
+  final double scale;
+
+  /// Where the wording sits inside the room it is given. Vertical: the box runs
+  /// from the flag to the panel's near edge, left-aligned like the flag beside
+  /// it. Horizontal: the box runs from the flag to the panel's far edge, and
+  /// pinning to that edge mirrors the flag sitting flush against the padding on
+  /// its own side, so the gap between them reads as deliberate spacing rather
+  /// than as the wording clinging to one side of its box.
+  final Alignment alignment;
+
+  /// The band's extent along the axis it shares with the flag; null on the
+  /// other axis, which the panel's own cross-axis stretch settles.
+  final double? width, height;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: alignment,
+        child: _Caption(lines: lines, color: color, scale: scale),
+      ),
+    );
+  }
 }
 
 class _Caption extends StatelessWidget {

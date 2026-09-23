@@ -24,6 +24,7 @@ class PlateCountry {
     required this.captionLines,
     required this.panelColor,
     required this.panelTextColor,
+    this.headingLines = const <String>[],
     this.flagAspectRatio = 7 / 4,
     this.flag,
     this.flagBorderColor,
@@ -36,6 +37,25 @@ class PlateCountry {
   /// The lines of text printed on the panel beside the flag, top to bottom
   /// (e.g. `['EU']`). Always laid out LTR.
   final List<String> captionLines;
+
+  /// Lines printed on the *far* side of the flag from [captionLines] — above it
+  /// in a vertical panel, before it in a horizontal one. Empty on almost every
+  /// country, which is why it defaults to empty and sits after the required
+  /// arguments.
+  ///
+  /// A panel is normally two things stacked, flag then wording, and that is all
+  /// [captionLines] ever had to express. An Afghan plate's block is three: the
+  /// province's name in Persian, the Darul Aman emblem, and the province's
+  /// three-letter Latin code — name *over* emblem *over* code. The name cannot
+  /// be a [PlateLabel] in the spec, because the province is the runtime axis
+  /// this whole block varies along; it cannot be a second [captionLines] entry,
+  /// because the emblem has to come between the two lines and not after both.
+  ///
+  /// So it is a heading: same ink, same alignment, same [PlatePanel.captionScale],
+  /// on the other side of the flag. [CountryPanel] splits the room left over
+  /// after the flag between the two when both are present, and lays out exactly
+  /// as it always did when this is empty.
+  final List<String> headingLines;
 
   /// Background colour of the country panel block.
   final Color panelColor;
