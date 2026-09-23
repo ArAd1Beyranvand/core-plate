@@ -55,7 +55,7 @@ One rule generates all three: *N cells filling x ∈ [140, 530).* 390/5 = 78 ✓
 rule puts it at 336, and its last cell ends at 531, one unit past the 530 every sibling layout ends at.**
 
 Then `northern_plates.dart:295-490` declares the **same numbers again** as `PlateMirror`s, because a
-northern plate prints its number twice — eastern numerals in the upper band, Latin in the lower. Four
+northern plate prints its number twice — iranian numerals in the upper band, Latin in the lower. Four
 mirror lists, 21 literals, roughly 150 lines, all of them a copy of the slot geometry with `top` and
 `height` swapped for `_echoTop` / `_echoHeight` and the alphabet swapped for `YemenAlphabets.digits`.
 

@@ -73,7 +73,7 @@ The Yemen pair is the important one. Two goldens off a single spec is the whole 
 pixels: if `country:` and `theme:` are wired correctly, the two images differ in field colour and panel
 word and in nothing else.
 
-Add a `PlateMirror` case too — `carGov2Serial5` prints its number twice, in Latin and eastern numerals,
+Add a `PlateMirror` case too — `carGov2Serial5` prints its number twice, in Latin and iranian numerals,
 and nothing renders mirrors under test today.
 
 **And add a golden for each spec P3B corrected**, so the three drift fixes have a pinned appearance

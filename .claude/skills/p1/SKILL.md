@@ -79,7 +79,7 @@ Build small local specs; do not import any country package. Cover:
 - **Both directions of the alphabet-id rule:** one id appearing with two different character/glyph pairs
   throws; two distinct ids sharing one character/glyph pair throws.
 - Two alphabets with the same `characters` but different `glyphs` and different ids are **legal** — this is
-  the case `yemen_plate`'s `ye.digits` / `ye.easternDigits` pair depends on. Assert it does not throw.
+  the case `yemen_plate`'s `ye.digits` / `ye.iranianDigits` pair depends on. Assert it does not throw.
 
 ### 3. `test/slot_behavior_test.dart` (~60 lines)
 

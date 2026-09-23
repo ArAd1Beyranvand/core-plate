@@ -178,8 +178,8 @@ Substitutions, one for one:
 Add `core_plate/test/plate_validator_test.dart`:
 
 - `isDigits`: true for `'0'`, `'0123456789'`; false for `''`, `'1a'`, `'+9'`, `' 9'`, `'١٢٣'`
-  (eastern Arabic numerals are **not** ASCII digits — this is the case a naive `int.tryParse` gets wrong
-  and it matters, because `yemen_plate` stores ASCII and renders eastern glyphs).
+  (iranian Arabic numerals are **not** ASCII digits — this is the case a naive `int.tryParse` gets wrong
+  and it matters, because `yemen_plate` stores ASCII and renders iranian glyphs).
 - `isDigitsOfLength`: exact-length behaviour at the boundaries.
 - `GatedPlateValidator`: with a stub subclass, `judge` is not called when the gate group is empty; it is
   called when non-empty; a gate key no group carries means `entry.group(...)` returns `''` and the

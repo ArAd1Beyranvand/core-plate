@@ -92,31 +92,31 @@ abstract final class YemenNorthernPlates {
   // wide serial cell, side by side. There is no second horizontal rule inside
   // the row.
   //
-  // The photograph also shows a small Latin-digit echo under each big digit
+  // The photograph also shows a small Latin-digit row under each big digit
   // (e.g. big "٢" over small "2"):
   //
   //   small Latin row  y 0.697 .. 0.882   same x and width as the big digit
   //
-  // That echo is built with `PlateMirror`, and it is deliberately not a second
-  // row of slots. One number is printed twice; a second row of slots would be
-  // two values, two focus stops and two entries in every text group for one
-  // fact. A mirror names the slot it echoes and renders that slot's value
-  // read-only, so `slots.length`, `textGroups`, `isCompleted`, focus traversal
-  // and the validators are all untouched by it.
+  // That row is built with `PlateMirror`, and it is still ONE value printed
+  // twice — not two values. Both rows share the source slot's character: a
+  // mirror names the slot it echoes and carries no position of its own, so
+  // `slots.length`, `textGroups`, `isCompleted` and the validators are untouched
+  // by it. What changed is that these mirrors are `editable`, so the small row
+  // is a second register the user can type into as well as read: a keystroke in
+  // either row writes the one shared value, and the other row re-renders it in
+  // its own script. The big (iranian) row is the primary input row.
   //
   // Which row gets which numerals: the *slot* carries
-  // `YemenAlphabets.easternDigits`, so the big row prints ٠..٩. A mirror with
-  // no alphabet of its own renders through the source slot's, which here would
-  // print the eastern figures a second time, so each mirror names
-  // `YemenAlphabets.digits` to get the small row's Latin ones. Storage stays
-  // ASCII on both rows; the numerals are a rendering, never a value.
+  // `YemenAlphabets.iranianDigits`, so the big row prints (and now types) ٠..٩.
+  // Each editable mirror names `YemenAlphabets.digits` to get the small row's
+  // Latin ones. Storage stays ASCII on both rows — core folds a typed iranian
+  // numeral back to its ASCII character (`PlateAlphabet.canonical`) — so the
+  // numerals are a rendering, never a value.
   //
-  // KNOWN LIMITATION, not fixable here: in `PlateMode.input` the big row still
-  // shows ASCII while typing. `_TypedField` in core's `plate_slot_item.dart`
-  // paints `controller.text` directly and never calls `alphabet.render` — only
-  // `_GlyphSlot` and `_ChosenSlot` do — so the eastern numerals appear in
-  // `PlateMode.display` and not under the caret. That is core's existing
-  // TODO(national-numerals); see it rather than working around it here.
+  // The big row now shows iranian numerals under the caret in `PlateMode.input`
+  // too: core's `_TypedField` renders the alphabet's display form and folds it
+  // back on commit, which closed the old TODO(national-numerals) this comment
+  // used to warn about.
 
   /// `اليمن`, on the left of the top band.
   ///
@@ -207,17 +207,17 @@ abstract final class YemenNorthernPlates {
   // still possible through other paths and `YemenNorthernValidator` is what
   // rejects it.
   static const PlateSlot _carGovTens = PlateSlot(
-    alphabet: YemenAlphabets.easternGovernorateTens,
+    alphabet: YemenAlphabets.iranianGovernorateTens,
     box: PlateBox(24, 95, 44, 89),
   );
   static const PlateSlot _carGovUnits = PlateSlot(
-    alphabet: YemenAlphabets.easternDigits,
+    alphabet: YemenAlphabets.iranianDigits,
     box: PlateBox(68, 95, 44, 89),
   );
 
   /// A lone governorate digit, centred in the same cell the pair straddles.
   static const PlateSlot _carGovSingle = PlateSlot(
-    alphabet: YemenAlphabets.easternDigits,
+    alphabet: YemenAlphabets.iranianDigits,
     box: PlateBox(38, 95, 60, 89),
   );
 
@@ -241,7 +241,7 @@ abstract final class YemenNorthernPlates {
 
   /// The serial digits alone, without the governorate cells that precede them.
   static List<PlateSlot> _carSerial(int count) => plateRegisterAcross(
-    alphabet: YemenAlphabets.easternDigits,
+    alphabet: YemenAlphabets.iranianDigits,
     count: count,
     left: _serialLeft,
     right: _serialRight,
@@ -285,12 +285,14 @@ abstract final class YemenNorthernPlates {
     box: PlateBox(24, _echoTop, 44, _echoHeight),
     glyphHeight: _echoHeight,
     alphabet: YemenAlphabets.digits,
+    editable: true,
   );
   static const PlateMirror _carEchoGovUnits = PlateMirror(
     source: 1,
     box: PlateBox(68, _echoTop, 44, _echoHeight),
     glyphHeight: _echoHeight,
     alphabet: YemenAlphabets.digits,
+    editable: true,
   );
 
   /// The echo under [_carGovSingle], which straddles the pair's two cells.
@@ -299,6 +301,7 @@ abstract final class YemenNorthernPlates {
     box: PlateBox(38, _echoTop, 60, _echoHeight),
     glyphHeight: _echoHeight,
     alphabet: YemenAlphabets.digits,
+    editable: true,
   );
 
   /// The echo band under a serial register of [count] digits, the first of them
@@ -314,6 +317,7 @@ abstract final class YemenNorthernPlates {
     width: (_serialRight - _serialLeft) / count,
     height: _echoHeight,
     alphabet: YemenAlphabets.digits,
+    editable: true,
   );
 
   static final List<PlateMirror> _carMirrorsGov2Serial4 = <PlateMirror>[
@@ -397,10 +401,10 @@ abstract final class YemenNorthernPlates {
   static const double _motoSerialPitch = 41.8;
 
   static final List<PlateSlot> _motoGov2Serial5 = <PlateSlot>[
-    const PlateSlot(alphabet: YemenAlphabets.easternGovernorateTens, box: PlateBox(13, 95, 24, 89)),
-    const PlateSlot(alphabet: YemenAlphabets.easternDigits, box: PlateBox(37, 95, 24, 89)),
+    const PlateSlot(alphabet: YemenAlphabets.iranianGovernorateTens, box: PlateBox(13, 95, 24, 89)),
+    const PlateSlot(alphabet: YemenAlphabets.iranianDigits, box: PlateBox(37, 95, 24, 89)),
     ...plateRegister(
-      alphabet: YemenAlphabets.easternDigits,
+      alphabet: YemenAlphabets.iranianDigits,
       count: 5,
       left: _motoSerialLeft,
       top: 95,
@@ -433,12 +437,14 @@ abstract final class YemenNorthernPlates {
       box: PlateBox(13, _echoTop, 24, _echoHeight),
       glyphHeight: _motoEchoHeight,
       alphabet: YemenAlphabets.digits,
+      editable: true,
     ),
     const PlateMirror(
       source: 1,
       box: PlateBox(37, _echoTop, 24, _echoHeight),
       glyphHeight: _motoEchoHeight,
       alphabet: YemenAlphabets.digits,
+      editable: true,
     ),
     // The same span and pitch as the serial above, so an echo cannot sit
     // anywhere but under the digit it echoes.
@@ -451,6 +457,7 @@ abstract final class YemenNorthernPlates {
       pitch: _motoSerialPitch,
       glyphHeight: _motoEchoHeight,
       alphabet: YemenAlphabets.digits,
+      editable: true,
     ),
   ];
 

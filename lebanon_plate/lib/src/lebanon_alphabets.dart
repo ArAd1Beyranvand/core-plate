@@ -11,7 +11,7 @@ import 'lebanon_letters.dart';
 /// Both are Latin. Lebanon prints its serials in Latin figures and its letters
 /// in Latin capitals — the only Arabic on the face is لبنان and the usage word,
 /// and those are band text, not slots — so unlike its neighbours this package
-/// ships no eastern-numeral twin.
+/// ships no iranian-numeral twin.
 abstract final class LebanonAlphabets {
   /// The ten Latin digits, behind every slot but the first.
   static const PlateAlphabet digits = PlateAlphabet(
