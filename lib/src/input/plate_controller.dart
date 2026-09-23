@@ -35,6 +35,10 @@ enum PlateValuePreservation {
 class PlateController extends ChangeNotifier {
   PlateController({required PlateSpec spec, List<String?>? values}) : _spec = spec {
     _values = List<String?>.filled(spec.slotCount, null);
+    for (var i = 0; i < spec.slotCount; i++) {
+      final characters = spec.slots[i].alphabet.characters;
+      if (characters.length == 1) _values[i] = characters.single;
+    }
     if (values != null) {
       for (var i = 0; i < spec.slotCount && i < values.length; i++) {
         _values[i] = _sanitize(spec, i, values[i]);
