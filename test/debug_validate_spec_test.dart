@@ -13,9 +13,9 @@ const _panel = PlatePanel(box: PlateBox(0, 0, 10, 40));
 const _digits = PlateAlphabet.latinDigits;
 
 /// Same accepted characters as [_digits], different rendering, different id —
-/// the legal pair `yemen_plate`'s `ye.digits` / `ye.easternDigits` depends on.
-const _easternDigits = PlateAlphabet(
-  id: 'zz.eastern',
+/// the legal pair `yemen_plate`'s `ye.digits` / `ye.iranianDigits` depends on.
+const _iranianDigits = PlateAlphabet(
+  id: 'zz.iranian',
   characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
   input: AlphabetInput.typed,
   isNumeric: false,
@@ -133,7 +133,7 @@ void main() {
       final spec = _spec(
         slots: const [
           PlateSlot(alphabet: _digits, box: PlateBox(20, 5, 20, 30)),
-          PlateSlot(alphabet: _easternDigits, box: PlateBox(50, 5, 20, 30)),
+          PlateSlot(alphabet: _iranianDigits, box: PlateBox(50, 5, 20, 30)),
         ],
       );
       expect(debugValidateSpec(spec), isTrue);
@@ -164,7 +164,7 @@ void main() {
     });
 
     test('a mirror rendering through a different numeral system is legal', () {
-      final spec = _spec(mirrors: [_mirrorAt(alphabet: _easternDigits)]);
+      final spec = _spec(mirrors: [_mirrorAt(alphabet: _iranianDigits)]);
       expect(debugValidateSpec(spec), isTrue);
     });
   });

@@ -14,24 +14,42 @@ class PlateSlot {
   final PlateBox box;
 }
 
-/// A read-only echo of a slot's value, painted somewhere else on the plate.
+/// An echo of a slot's value, painted somewhere else on the plate.
 ///
 /// A plate that prints the same number twice — big national numerals on top,
 /// the same number again smaller in Latin digits beneath — is one value with
-/// two presentations, not two slots. A mirror is stateful (it shows a value
-/// that changes) but not editable: it owns no [FocusNode], no controller and no
-/// position in [PlateSpec.slots], so it never appears in text groups, focus
-/// traversal, completion or validation.
+/// two presentations, not two slots. A mirror shares that ONE value with its
+/// [source] slot: it owns no position in [PlateSpec.slots], so it never adds to
+/// [PlateSpec.slotCount], text groups, completion or validation. What varies is
+/// whether it is a place to *type*:
+///
+/// - [editable] `false` (the default) — a read-only echo. It owns no
+///   [FocusNode] and no controller and cannot be focused; it only shows the
+///   value the source holds.
+/// - [editable] `true` — a real input field bound to the source's value. It
+///   owns its own [FocusNode] and text controller but writes to and reads from
+///   the source's position, so the two registers stay one value: typing in
+///   either updates both. This is how a plate offers the same number in two
+///   scripts as two editable rows — the iranian-numeral row and the Latin row —
+///   without becoming two values with two focus stops in the grammar. The
+///   source slot is the primary row; the editable mirror is the paired one.
 ///
 /// [alphabet] IS the transform: [PlateAlphabet.glyphs] is the storage -> display
 /// map, so echoing a slot in another numeral system means pointing [alphabet] at
-/// an alphabet with different glyphs. Null renders through the source slot's own
-/// alphabet.
+/// an alphabet with different glyphs. Null renders (and, when editable, accepts)
+/// through the source slot's own alphabet.
 @immutable
 class PlateMirror {
-  const PlateMirror({required this.source, required this.box, required this.glyphHeight, this.alphabet});
+  const PlateMirror({
+    required this.source,
+    required this.box,
+    required this.glyphHeight,
+    this.alphabet,
+    this.editable = false,
+  });
 
-  /// Index into [PlateSpec.slots] of the slot whose value is echoed.
+  /// Index into [PlateSpec.slots] of the slot whose value is echoed — and, when
+  /// [editable], written to.
   final int source;
 
   final PlateBox box;
@@ -39,8 +57,13 @@ class PlateMirror {
   /// Passed to the glyph style as the slot height.
   final double glyphHeight;
 
-  /// Renders the echoed value. Null means the source slot's own alphabet.
+  /// Renders the echoed value, and — when [editable] — the alphabet the paired
+  /// field accepts input in. Null means the source slot's own alphabet.
   final PlateAlphabet? alphabet;
+
+  /// Whether this mirror is a second input field bound to [source]'s value
+  /// rather than a read-only echo of it. See the class doc.
+  final bool editable;
 }
 
 /// A painted rule (e.g. a vertical divider between character groups).

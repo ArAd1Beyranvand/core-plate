@@ -49,7 +49,7 @@ void main() {
       expect(isDigits('0123456789'), isTrue);
     });
 
-    test('false for empty, letters, signs, spaces, eastern glyphs', () {
+    test('false for empty, letters, signs, spaces, iranian glyphs', () {
       expect(isDigits(''), isFalse);
       expect(isDigits('1a'), isFalse);
       expect(isDigits('+9'), isFalse);

@@ -75,6 +75,10 @@ List<PlateSlot> plateRegisterAcross({
 /// direction as the slots it echoes. [glyphHeight] defaults to [height], and
 /// [alphabet] null renders through each source slot's own alphabet — the
 /// [PlateMirror] default.
+///
+/// [editable] makes the whole band a row of paired input fields rather than a
+/// read-only echo — a second register the user can type into, each cell bound to
+/// its source slot's value. See [PlateMirror.editable].
 List<PlateMirror> plateEcho({
   required Iterable<int> sources,
   required double left,
@@ -84,6 +88,7 @@ List<PlateMirror> plateEcho({
   double? pitch,
   double? glyphHeight,
   PlateAlphabet? alphabet,
+  bool editable = false,
 }) {
   final step = pitch ?? width;
   final list = sources.toList(growable: false);
@@ -95,6 +100,7 @@ List<PlateMirror> plateEcho({
         box: PlateBox(left + i++ * step, top, width, height),
         glyphHeight: glyphHeight ?? height,
         alphabet: alphabet,
+        editable: editable,
       ),
   ]);
 }

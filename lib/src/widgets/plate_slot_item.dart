@@ -213,10 +213,12 @@ class _TypedField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO(national-numerals): the controller keeps ASCII so the bloc stays
-    // ASCII; a two-way TextInputFormatter that displays national numerals while
-    // storing ASCII is fiddly to get right (cursor/selection), so the field
-    // shows ASCII for now.
+    // National numerals: the field's controller carries the alphabet's DISPLAY
+    // form (the machine renders it in `syncController`), and `onChanged` folds
+    // whatever was typed back to the canonical character before it reaches the
+    // host — so the bloc stays ASCII while the slot both shows and accepts its
+    // own script. `alphabet.accepts` takes either form, and `alphabet.canonical`
+    // does the fold. Latin slots have no glyphs, so both are the identity.
     final isEmpty = controller.text.isEmpty;
     final underlineColor = isEmpty ? theme.inactiveColor : theme.activeColor;
 
@@ -270,7 +272,9 @@ class _TypedField extends StatelessWidget {
             ),
             onChanged: (typed) {
               if (slot.alphabet.accepts(typed)) {
-                onChanged(typed);
+                // Store the canonical character, not the glyph the user typed:
+                // a national-numeral slot accepts `'۵'` but the host keeps `'5'`.
+                onChanged(slot.alphabet.canonical(typed));
                 if (typed != '') {
                   if (onCompleted != null) onCompleted!();
                 }
@@ -385,7 +389,7 @@ class _ChosenSlot extends StatelessWidget {
               }
               final ch = event.character;
               if (ch != null && ch.length == 1 && slot.alphabet.accepts(ch)) {
-                onChanged(ch);
+                onChanged(slot.alphabet.canonical(ch));
                 return KeyEventResult.handled;
               }
               // Everything else (digits, arrows, ...) reaches the next field.

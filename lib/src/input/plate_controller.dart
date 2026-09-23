@@ -57,8 +57,9 @@ class PlateController extends ChangeNotifier {
     var index = 0;
     for (final character in text.characters) {
       if (index >= spec.slotCount) break;
-      if (!spec.slots[index].alphabet.accepts(character)) continue;
-      values[index] = character;
+      final alphabet = spec.slots[index].alphabet;
+      if (!alphabet.accepts(character)) continue;
+      values[index] = alphabet.canonical(character);
       index++;
     }
     return PlateController(spec: spec, values: values);
@@ -298,11 +299,16 @@ class PlateController extends ChangeNotifier {
 
   /// [value] as this slot will store it: null for a cleared slot, and null as
   /// well for a character the slot's alphabet refuses.
+  ///
+  /// A national-numeral slot accepts either the storage character or the display
+  /// glyph the user typed on that script's keyboard, so the accepted value is
+  /// folded to canonical (storage) form here — the plate stores `'5'` whether
+  /// `'5'` or `'۵'` was entered. See [PlateAlphabet.canonical].
   static String? _sanitize(PlateSpec spec, int index, String? value) {
     if (value == null || value.isEmpty) return null;
     final slot = spec.slotAt(index);
     if (slot == null || !slot.alphabet.accepts(value)) return null;
-    return value;
+    return slot.alphabet.canonical(value);
   }
 
   static PlateTextGroup? _groupNamed(PlateSpec spec, String key) {

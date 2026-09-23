@@ -31,6 +31,23 @@ class PlateInputMachine implements PlateInputTarget {
       _focusNodes.add(FocusNode()..addListener(_handleFocusChange));
       _controllers.add(spec.slots[i].alphabet.input == AlphabetInput.typed ? TextEditingController() : null);
     }
+    // An editable mirror is a second field over one of the slots — a paired
+    // input row in another script — so it gets its own focus node and text
+    // controller, but it is NOT a slot: it never enters _focusNodes/_controllers
+    // and so adds nothing to the plate's slot count, focus grammar or
+    // completion. Its focus is reported as its source slot's, so a keypad or the
+    // active-index report reads the same alphabet whichever row is being typed.
+    for (var i = 0; i < spec.mirrors.length; i++) {
+      final mirror = spec.mirrors[i];
+      final alphabet = mirror.alphabet ?? spec.slots[mirror.source].alphabet;
+      if (mirror.editable && alphabet.input == AlphabetInput.typed) {
+        _mirrorFocusNodes.add(FocusNode()..addListener(_handleFocusChange));
+        _mirrorControllers.add(TextEditingController());
+      } else {
+        _mirrorFocusNodes.add(null);
+        _mirrorControllers.add(null);
+      }
+    }
     // Seed the active slot to the first one before any focus lands, so a host
     // that renders its own keypad off [activeIndex] (e.g. picking a digit vs.
     // letters pad from the slot's alphabet) starts on the alphabet the first
@@ -68,12 +85,26 @@ class PlateInputMachine implements PlateInputTarget {
   final List<FocusNode> _focusNodes = [];
   final List<TextEditingController?> _controllers = [];
 
+  // Parallel to [PlateSpec.mirrors]. Null entries are read-only mirrors (and
+  // editable mirrors over a chosen alphabet, which have no text field); a
+  // non-null entry is an editable mirror's own field over its source slot.
+  final List<FocusNode?> _mirrorFocusNodes = [];
+  final List<TextEditingController?> _mirrorControllers = [];
+
   int? _activeIndex;
 
   FocusNode focusNodeAt(int index) => _focusNodes[index];
 
   /// Null for chosen slots, which have no text field.
   TextEditingController? controllerAt(int index) => _controllers[index];
+
+  /// The focus node of the editable mirror at [mirrorIndex], or null when that
+  /// mirror is read-only (or chosen-alphabet and so has no field).
+  FocusNode? mirrorFocusNodeAt(int mirrorIndex) => _mirrorFocusNodes[mirrorIndex];
+
+  /// The text controller of the editable mirror at [mirrorIndex], or null as
+  /// [mirrorFocusNodeAt].
+  TextEditingController? mirrorControllerAt(int mirrorIndex) => _mirrorControllers[mirrorIndex];
 
   @override
   int? get activeIndex => _activeIndex;
@@ -84,6 +115,17 @@ class PlateInputMachine implements PlateInputTarget {
       if (_focusNodes[i].hasFocus) {
         active = i;
         break;
+      }
+    }
+    // An editable mirror reports focus as its source slot's: the two share one
+    // value, so the active alphabet a keypad reads is the same whichever row
+    // holds the caret.
+    if (active == null) {
+      for (var i = 0; i < _mirrorFocusNodes.length; i++) {
+        if (_mirrorFocusNodes[i]?.hasFocus ?? false) {
+          active = spec.mirrors[i].source;
+          break;
+        }
       }
     }
     if (active != _activeIndex) {
@@ -122,7 +164,30 @@ class PlateInputMachine implements PlateInputTarget {
   void syncController(int index, String? value) {
     final field = _controllers[index];
     if (field == null) return;
-    final text = value ?? '';
+    // The field shows the alphabet's display form (national numerals where the
+    // slot renders them), while the host stores the canonical value. Rendering
+    // here — and canonicalising back in the field's onChanged — is what lets a
+    // national-numeral slot type in its own script instead of ASCII, closing
+    // core's old TODO(national-numerals).
+    final stored = value ?? '';
+    final text = stored.isEmpty ? '' : spec.slots[index].alphabet.render(stored);
+    if (field.text == text) return;
+    field.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+
+  /// Keeps an editable mirror's field in step with its source slot's value,
+  /// rendered through the mirror's own alphabet — the Latin row shows `5` where
+  /// the iranian row shows `٥` for the one value they share. [alphabet] is the
+  /// mirror's resolved alphabet, passed in because the machine does not resolve
+  /// the mirror-or-source fallback itself.
+  void syncMirrorController(int mirrorIndex, PlateAlphabet alphabet, String? value) {
+    final field = _mirrorControllers[mirrorIndex];
+    if (field == null) return;
+    final stored = value ?? '';
+    final text = stored.isEmpty ? '' : alphabet.render(stored);
     if (field.text == text) return;
     field.value = TextEditingValue(
       text: text,
@@ -137,6 +202,13 @@ class PlateInputMachine implements PlateInputTarget {
     for (final f in _focusNodes) {
       f.removeListener(_handleFocusChange);
       f.dispose();
+    }
+    for (final c in _mirrorControllers) {
+      c?.dispose();
+    }
+    for (final f in _mirrorFocusNodes) {
+      f?.removeListener(_handleFocusChange);
+      f?.dispose();
     }
   }
 

@@ -11,8 +11,8 @@ const _country = PlateCountry(
 
 const _panel = PlatePanel(box: PlateBox(0, 0, 10, 40));
 const _digits = PlateAlphabet.latinDigits;
-const _easternDigits = PlateAlphabet(
-  id: 'zz.eastern',
+const _iranianDigits = PlateAlphabet(
+  id: 'zz.iranian',
   characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
   input: AlphabetInput.typed,
   isNumeric: false,
@@ -42,7 +42,7 @@ Future<void> _pump(WidgetTester tester, Widget child) =>
 void main() {
   testWidgets('empty group renders nothing; filled group renders through glyphs', (tester) async {
     final spec = _spec(
-      alphabets: const [_digits, _easternDigits],
+      alphabets: const [_digits, _iranianDigits],
       textGroups: const [
         PlateTextGroup([0]),
         PlateTextGroup([1]),

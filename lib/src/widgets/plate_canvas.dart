@@ -587,15 +587,30 @@ class _PlateInputs extends StatelessWidget {
             clipper: clipper,
             child: Stack(
               children: [
-                for (final m in spec.mirrors)
+                for (var mi = 0; mi < spec.mirrors.length; mi++)
                   _Placed(
-                    box: m.box,
-                    child: _MirrorBinding(
-                      mirror: m,
-                      alphabet: m.alphabet ?? spec.slots[m.source].alphabet,
-                      theme: theme,
-                      controller: controller,
-                    ),
+                    box: spec.mirrors[mi].box,
+                    child: mode == PlateMode.input && spec.mirrors[mi].editable && machine.mirrorControllerAt(mi) != null
+                        ? Center(
+                            child: _EditableMirrorBinding(
+                              mirrorIndex: mi,
+                              mirror: spec.mirrors[mi],
+                              alphabet: spec.mirrors[mi].alphabet ?? spec.slots[spec.mirrors[mi].source].alphabet,
+                              behavior: behaviors[spec.mirrors[mi].source],
+                              theme: theme,
+                              machine: machine,
+                              controller: controller,
+                              onCompleted: mode == PlateMode.input
+                                  ? () => machine.advanceFrom(spec.mirrors[mi].source)
+                                  : null,
+                            ),
+                          )
+                        : _MirrorBinding(
+                            mirror: spec.mirrors[mi],
+                            alphabet: spec.mirrors[mi].alphabet ?? spec.slots[spec.mirrors[mi].source].alphabet,
+                            theme: theme,
+                            controller: controller,
+                          ),
                   ),
                 for (var i = 0; i < spec.slots.length; i++)
                   _Placed(
@@ -819,6 +834,64 @@ class _MirrorBinding extends StatelessWidget {
           style: theme.glyphStyle(mirror.glyphHeight, theme.ink),
         ),
       ),
+    );
+  }
+}
+
+/// An editable mirror: a second input field bound to a slot's value, in another
+/// script. It is [_SlotBinding]'s counterpart for a paired row — the iranian
+/// figures above, the Latin figures below — but it commits to and reads from the
+/// SOURCE slot's position, so the two registers are one value, one focus grammar
+/// and one entry in every validator. Typing in either updates both.
+///
+/// Its field, focus node and per-value sync come from the machine's mirror
+/// arrays (see [PlateInputMachine.mirrorControllerAt]), not the slot arrays, so
+/// it adds no slot. It renders through [PlateSlotItem] exactly as a slot does,
+/// over a synthetic [PlateSlot] carrying the mirror's alphabet and echo size.
+class _EditableMirrorBinding extends StatelessWidget {
+  const _EditableMirrorBinding({
+    required this.mirrorIndex,
+    required this.mirror,
+    required this.alphabet,
+    required this.behavior,
+    required this.theme,
+    required this.machine,
+    required this.controller,
+    required this.onCompleted,
+  });
+
+  final int mirrorIndex;
+  final PlateMirror mirror;
+
+  /// The mirror's own alphabet, or the source slot's — resolved by the canvas.
+  final PlateAlphabet alphabet;
+
+  /// The source slot's resolved behaviour: the paired field takes input the same
+  /// way the primary row does (IME, hardware or external).
+  final SlotBehavior behavior;
+  final PlateTheme theme;
+  final PlateInputMachine machine;
+  final PlateController controller;
+  final VoidCallback? onCompleted;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String?>(
+      valueListenable: controller.slot(mirror.source),
+      builder: (context, value, _) {
+        machine.syncMirrorController(mirrorIndex, alphabet, value);
+        return PlateSlotItem(
+          slot: PlateSlot(alphabet: alphabet, box: PlateBox(0, 0, mirror.box.width, mirror.glyphHeight)),
+          behavior: behavior,
+          theme: theme,
+          value: value,
+          controller: machine.mirrorControllerAt(mirrorIndex),
+          focusNode: machine.mirrorFocusNodeAt(mirrorIndex)!,
+          onChanged: (v) => controller.setAt(mirror.source, v),
+          onCompleted: onCompleted,
+          onBackspace: machine.backspaceCharacter,
+        );
+      },
     );
   }
 }
