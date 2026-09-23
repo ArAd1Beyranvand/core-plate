@@ -34,13 +34,11 @@ enum PlateValuePreservation {
 /// committed change for whoever genuinely wants all of them.
 class PlateController extends ChangeNotifier {
   PlateController({required PlateSpec spec, List<String?>? values}) : _spec = spec {
-    _values = List<String?>.filled(spec.slotCount, null);
-    for (var i = 0; i < spec.slotCount; i++) {
-      final characters = spec.slots[i].alphabet.characters;
-      if (characters.length == 1) _values[i] = characters.single;
-    }
+    _values = [for (var i = 0; i < spec.slotCount; i++) _printedCharacter(spec, i)];
     if (values != null) {
       for (var i = 0; i < spec.slotCount && i < values.length; i++) {
+        final printed = _printedCharacter(spec, i);
+        if (printed != null) continue;
         _values[i] = _sanitize(spec, i, values[i]);
       }
     }
@@ -89,8 +87,13 @@ class PlateController extends ChangeNotifier {
   /// The character at [index]; '' or null clears the slot. A character the
   /// slot's alphabet refuses is a no-op — the controller stores plates that
   /// could exist, and never bars a keystroke by way of an exception.
+  ///
+  /// A slot whose alphabet holds exactly one character is printed on every
+  /// plate of this design, not typed: it always holds that character, and
+  /// this is a no-op against it.
   void setAt(int index, String? value) {
     if (index < 0 || index >= _values.length) return;
+    if (_printedCharacter(_spec, index) != null) return;
     final next = _sanitize(_spec, index, value);
     if (next == null && value != null && value.isNotEmpty) return;
     _values[index] = next;
@@ -100,10 +103,13 @@ class PlateController extends ChangeNotifier {
   }
 
   /// Every slot at once, in index order, as [PlateController.new] reads them.
-  /// Notifies once for the whole write rather than once per slot.
+  /// Notifies once for the whole write rather than once per slot. A printed
+  /// slot (see [setAt]) ignores whatever [values] carries for it and keeps its
+  /// fixed character, so [clear] cannot blank it either.
   void setValues(List<String?> values) {
     for (var i = 0; i < _values.length; i++) {
-      final next = i < values.length ? _sanitize(_spec, i, values[i]) : null;
+      final printed = _printedCharacter(_spec, i);
+      final next = printed ?? (i < values.length ? _sanitize(_spec, i, values[i]) : null);
       _values[i] = next;
       _slots[i].value = next;
     }
@@ -133,6 +139,7 @@ class PlateController extends ChangeNotifier {
     final characters = value.characters;
     for (var n = 0; n < group.indices.length; n++) {
       final index = group.indices[n];
+      if (_printedCharacter(_spec, index) != null) continue;
       final character = n < characters.length ? characters[n] : '';
       _values[index] = _sanitize(_spec, index, character);
       _slots[index].value = _values[index];
@@ -315,6 +322,14 @@ class PlateController extends ChangeNotifier {
     return slot.alphabet.canonical(value);
   }
 
+  /// The fixed character of the slot at [index], for a slot whose alphabet
+  /// holds exactly one character — printed on every plate of this design, not
+  /// typed. Null for an ordinary slot.
+  static String? _printedCharacter(PlateSpec spec, int index) {
+    final characters = spec.slots[index].alphabet.characters;
+    return characters.length == 1 ? characters.single : null;
+  }
+
   static PlateTextGroup? _groupNamed(PlateSpec spec, String key) {
     for (final group in spec.effectiveTextGroups) {
       if (group.key == key) return group;
@@ -341,8 +356,7 @@ class PlateController extends ChangeNotifier {
     // plate of this design, not typed: fill it from the alphabet. Done first
     // so a matched group covering the same slot still wins.
     for (var i = 0; i < to.slotCount; i++) {
-      final characters = to.slots[i].alphabet.characters;
-      if (characters.length == 1) result[i] = characters.single;
+      result[i] = _printedCharacter(to, i);
     }
 
     for (final target in to.effectiveTextGroups) {
