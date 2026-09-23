@@ -73,13 +73,16 @@ abstract final class PSAlphabets {
   /// was deliberately retained when Gaza took its numbering independent in
   /// 2012.
   ///
+  /// Marked as `chosen` not `typed` to prevent user editing — a plate slot that
+  /// holds only one character should be display-only, not a text input field.
+  ///
   /// `PSGazaValidator` checks it anyway, and that is not redundant: a value can
   /// reach a validator from a database row or a scan result, and never touch a
   /// slot.
   static const PlateAlphabet gazaPrefix = PlateAlphabet(
     id: 'ps.gazaPrefix',
     characters: ['3'],
-    input: AlphabetInput.typed,
+    input: AlphabetInput.chosen,
     isNumeric: true,
   );
 }
