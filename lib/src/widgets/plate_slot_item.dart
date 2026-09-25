@@ -266,6 +266,8 @@ class _TypedField extends StatelessWidget {
               contentPadding: EdgeInsets.symmetric(vertical: slot.box.height * 0.12),
               filled: false,
               counterText: '',
+              hintText: slot.alphabet.placeholder,
+              hintStyle: theme.glyphStyle(slot.box.height, theme.inactiveColor),
               border: UnderlineInputBorder(borderSide: BorderSide(color: theme.inactiveColor)),
               enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: underlineColor)),
               focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: theme.activeColor)),
