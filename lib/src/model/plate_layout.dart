@@ -1,23 +1,15 @@
-/// Constructors for the *regular* parts of a plate face.
+/// Constructors for the *regular* parts of a plate face: registers, runs of
+/// equal cells at a constant pitch. [PlateTextGroup] declares which slots form
+/// a register; these say where the cells sit.
 ///
-/// A real plate is not a bag of rectangles: it is a small number of registers —
-/// runs of equal cells at a constant pitch, separated by wider gaps.
-/// [PlateTextGroup] already declares which slots form a register; these say
-/// where the cells sit. Writing a register out cell by cell is a for-loop
-/// unrolled by hand, and a hand-unrolled loop drifts: one rounded coordinate is
-/// invisible until someone measures the plate.
+/// They build ordinary [PlateSlot] / [PlateMirror] / [PlateRule] values, so the
+/// widget layer cannot tell a generated register from a literal one. Irregular
+/// elements — an isolated cell, a label, a divider straddling a gap — stay
+/// literals; forcing one through a register constructor is worse than writing
+/// the four numbers.
 ///
-/// These build the ordinary [PlateSlot] / [PlateMirror] / [PlateRule] types and
-/// nothing else. The widget layer reads `spec.slots` exactly as before and
-/// cannot tell a generated register from a literal one. An *irregular* element —
-/// an isolated cell, a label, a decal, a divider that straddles a gap — stays a
-/// literal: forcing it through a register constructor is worse than writing the
-/// four numbers.
-///
-/// A list these return is `final`, not `const`, so a spec built from one is a
-/// `static final` rather than a `static const`. That costs nothing: it is
-/// initialised lazily, once per isolate, and [PlateSpec] equality is over `id`
-/// alone, so const canonicalisation was never load-bearing for identity.
+/// These return `final` lists, so a spec built from one is a `static final`.
+/// Harmless: it initialises lazily and [PlateSpec] equality is over `id` alone.
 library;
 
 import 'plate_alphabet.dart';
@@ -46,14 +38,11 @@ List<PlateSlot> plateRegister({
   ]);
 }
 
-/// [count] flush cells filling `[left, right)` exactly — the same register as
-/// [plateRegister], expressed by the span it must fill rather than by the width
-/// of one cell.
+/// [count] flush cells filling `[left, right)` exactly — [plateRegister]
+/// expressed by the span to fill rather than by one cell's width.
 ///
-/// Prefer this wherever the register is defined by its bounds: it cannot round
-/// wrong. A run of four, five or six cells across one span produces three
-/// different cell widths from one declaration, and every one of them ends flush
-/// at [right].
+/// Prefer this wherever the register is defined by its bounds: changing [count]
+/// re-derives the cell width and still ends flush at [right].
 List<PlateSlot> plateRegisterAcross({
   required PlateAlphabet alphabet,
   required int count,
@@ -69,16 +58,11 @@ List<PlateSlot> plateRegisterAcross({
 }
 
 /// One [PlateMirror] per entry of [sources], laid out as a register: the echo
-/// band a plate that prints its number twice needs.
+/// band a plate printing its number twice needs. Mirrors come out in [sources]
+/// order, so the echo reads in the same direction as the slots it echoes.
 ///
-/// The mirrors come out in [sources] order, so the echo reads in the same
-/// direction as the slots it echoes. [glyphHeight] defaults to [height], and
-/// [alphabet] null renders through each source slot's own alphabet — the
-/// [PlateMirror] default.
-///
-/// [editable] makes the whole band a row of paired input fields rather than a
-/// read-only echo — a second register the user can type into, each cell bound to
-/// its source slot's value. See [PlateMirror.editable].
+/// [editable] makes the whole band a row of paired input fields — see
+/// [PlateMirror].
 List<PlateMirror> plateEcho({
   required Iterable<int> sources,
   required double left,
@@ -91,13 +75,11 @@ List<PlateMirror> plateEcho({
   bool editable = false,
 }) {
   final step = pitch ?? width;
-  final list = sources.toList(growable: false);
-  var i = 0;
   return List<PlateMirror>.unmodifiable(<PlateMirror>[
-    for (final source in list)
+    for (final (i, source) in sources.indexed)
       PlateMirror(
         source: source,
-        box: PlateBox(left + i++ * step, top, width, height),
+        box: PlateBox(left + i * step, top, width, height),
         glyphHeight: glyphHeight ?? height,
         alphabet: alphabet,
         editable: editable,
@@ -106,10 +88,8 @@ List<PlateMirror> plateEcho({
 }
 
 /// [count] identical rules stepping by [stepX] across and [stepY] down: a
-/// stippled separator, or any other repeated mark.
-///
-/// Both steps default to 0, so a caller states the one axis the run moves along
-/// and says nothing about the other.
+/// stippled separator, or any other repeated mark. Both steps default to 0, so
+/// a caller names only the axis the run moves along.
 List<PlateRule> plateStipple({
   required int count,
   required double left,

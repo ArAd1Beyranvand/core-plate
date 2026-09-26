@@ -4,8 +4,8 @@ import 'plate_alphabet.dart';
 import 'plate_box.dart';
 import 'plate_country.dart';
 
-/// One editable position on a plate. [box].height doubles as the slot height
-/// passed to the glyph style — do not add a separate field for it.
+/// One editable position on a plate. [box].height doubles as the glyph height,
+/// so there is deliberately no separate field for it.
 @immutable
 class PlateSlot {
   const PlateSlot({required this.alphabet, required this.box});
@@ -14,30 +14,18 @@ class PlateSlot {
   final PlateBox box;
 }
 
-/// An echo of a slot's value, painted somewhere else on the plate.
+/// An echo of a slot's value, painted elsewhere on the plate — the same number
+/// printed twice, once per script.
 ///
-/// A plate that prints the same number twice — big national numerals on top,
-/// the same number again smaller in Latin digits beneath — is one value with
-/// two presentations, not two slots. A mirror shares that ONE value with its
-/// [source] slot: it owns no position in [PlateSpec.slots], so it never adds to
-/// [PlateSpec.slotCount], text groups, completion or validation. What varies is
-/// whether it is a place to *type*:
+/// A mirror shares the [source] slot's single value and owns no position in
+/// [PlateSpec.slots], so it never adds to [PlateSpec.slotCount], text groups,
+/// completion or validation. When [editable] it is still one value: it gets its
+/// own [FocusNode] and text controller but reads and writes the source's
+/// position, so typing in either row updates both.
 ///
-/// - [editable] `false` (the default) — a read-only echo. It owns no
-///   [FocusNode] and no controller and cannot be focused; it only shows the
-///   value the source holds.
-/// - [editable] `true` — a real input field bound to the source's value. It
-///   owns its own [FocusNode] and text controller but writes to and reads from
-///   the source's position, so the two registers stay one value: typing in
-///   either updates both. This is how a plate offers the same number in two
-///   scripts as two editable rows — the iranian-numeral row and the Latin row —
-///   without becoming two values with two focus stops in the grammar. The
-///   source slot is the primary row; the editable mirror is the paired one.
-///
-/// [alphabet] IS the transform: [PlateAlphabet.glyphs] is the storage -> display
-/// map, so echoing a slot in another numeral system means pointing [alphabet] at
-/// an alphabet with different glyphs. Null renders (and, when editable, accepts)
-/// through the source slot's own alphabet.
+/// [alphabet] is the transform — echoing in another numeral system means
+/// pointing it at an alphabet with different [PlateAlphabet.glyphs]. Null uses
+/// the source slot's own.
 @immutable
 class PlateMirror {
   const PlateMirror({
@@ -48,21 +36,12 @@ class PlateMirror {
     this.editable = false,
   });
 
-  /// Index into [PlateSpec.slots] of the slot whose value is echoed — and, when
-  /// [editable], written to.
+  /// Index into [PlateSpec.slots].
   final int source;
 
   final PlateBox box;
-
-  /// Passed to the glyph style as the slot height.
   final double glyphHeight;
-
-  /// Renders the echoed value, and — when [editable] — the alphabet the paired
-  /// field accepts input in. Null means the source slot's own alphabet.
   final PlateAlphabet? alphabet;
-
-  /// Whether this mirror is a second input field bound to [source]'s value
-  /// rather than a read-only echo of it. See the class doc.
   final bool editable;
 }
 
@@ -74,41 +53,28 @@ class PlateRule {
   final PlateBox box;
 }
 
-/// A solid block of colour on the plate face — the coloured band a validity
-/// date is printed over at the right-hand end of a German short-term (`04`) or
-/// export plate.
+/// A solid block of colour on the plate face — the band a validity date is
+/// printed over at the end of a short-term or export plate.
 ///
-/// A [PlateRule] painted fat would be the wrong tool twice over: a rule is a
-/// divider and takes the theme's [PlateTheme.dividerColor], which
-/// [PlateSpec.inkOverride] recolours along with the glyphs, so a red export
-/// band would follow the print colour instead of being its own. A band carries
-/// its own [color] precisely because it is not printed in the plate's ink — it
-/// is the field the ink is printed *on*.
-///
-/// It paints nothing but the rectangle. The characters over it are ordinary
-/// slots and [PlateLabel]s, positioned inside [box] and given their own colour
-/// where the band's fill demands one — see [PlateLabel.color].
+/// Paints only the rectangle; the characters over it are ordinary slots and
+/// [PlateLabel]s positioned inside [box]. Not a fat [PlateRule], because a rule
+/// takes the theme's divider colour and so would follow [PlateSpec.inkOverride];
+/// a band is the field the ink is printed *on*, so it carries its own [color].
 @immutable
 class PlateBand {
   const PlateBand({required this.box, required this.color});
 
   final PlateBox box;
-
-  /// The band's fill. Deliberately not derived from the theme: the yellow of a
-  /// short-term plate and the red of an export one are the design, not livery.
   final Color color;
 }
 
-/// A fixed image painted on the plate face at a set position — a sticker or
-/// badge that sits *between* character groups rather than inside a slot (e.g.
-/// the German inspection and federal-state stickers). Like [PlateLabel] and
-/// [PlateRule], it is pure plate-space geometry plus content: the widget layer
-/// paints whatever [image] provides, so adding one never means a new widget.
+/// A fixed image on the plate face — a sticker or badge that sits between
+/// character groups rather than inside a slot.
 @immutable
 class PlateDecal {
   const PlateDecal({required this.image, required this.box});
 
-  /// The image to paint, e.g. an `AssetImage(..., package: 'germany_plate')`.
+  /// e.g. an `AssetImage(..., package: 'germany_plate')`.
   final ImageProvider image;
 
   final PlateBox box;
@@ -121,19 +87,11 @@ class PlateLabel {
 
   final String text;
   final PlateBox box;
-
-  /// Passed to the glyph style as the slot height.
   final double glyphHeight;
 
-  /// Ink for this label, or null for [PlateTheme.ink] — the digits' colour, and
-  /// the right answer whenever the label is printed on the plate's field.
-  ///
-  /// A label that sits on a coloured block rather than on the field is printed
-  /// in a colour the field's ink cannot express: a caption reversed out white
-  /// over a diplomatic plate's green band is still the same plate, printed in
-  /// one more ink. That is data about the label, not a second theme — a theme
-  /// carries one [PlateTheme.ink], and giving the band its own would recolour
-  /// the digits with it.
+  /// Ink for this label, or null for the theme's. Set it only for a label on a
+  /// [PlateBand], where the field's ink would be illegible — the theme carries
+  /// one ink, and overriding that would recolour the digits too.
   final Color? color;
 }
 
@@ -151,24 +109,13 @@ class PlatePanel {
 
   final PlateBox box;
 
-  /// Scale factor applied to the flag inside the country panel. Defaults to
-  /// 1.0 (full size). Use a smaller value (e.g. 0.4) for compact plates where
-  /// the panel is too shallow to display a full-size flag legibly.
   final double flagScale;
-
-  /// Scale factor applied to the country caption inside the panel. Defaults
-  /// to 1.0 (full size). Use a smaller value on compact plates where a
-  /// bigger flag needs the caption to give up some room.
   final double captionScale;
 
-  /// Padding around the flag + caption inside the country panel. Null keeps
-  /// the default: a uniform inset of 10% of the panel's height on all sides.
+  /// Null means a uniform inset of 10% of the panel's height.
   final EdgeInsets? padding;
 
-  /// How the flag and caption stack inside the panel: [Axis.vertical] (the
-  /// default) puts the flag above the caption, for a panel taller than it is
-  /// wide. [Axis.horizontal] puts the flag beside the caption, for a panel
-  /// wider than it is tall.
+  /// [Axis.vertical] puts the flag above the caption, horizontal beside it.
   final Axis direction;
 }
 
@@ -210,7 +157,7 @@ class PlateSpec {
     this.textGroups = const <PlateTextGroup>[],
   });
 
-  /// Stable identifier, e.g. 'xx.car'. Used for equality and persistence.
+  /// Stable identifier, e.g. 'xx.car'. The sole basis of [operator ==].
   final String id;
 
   final PlateCountry country;
@@ -218,27 +165,17 @@ class PlateSpec {
   final double canvasWidth, canvasHeight;
   final PlatePanel panel;
 
-  /// Suppresses [panel] entirely: nothing is painted where the country block
-  /// would go, and the plate's characters start at the face's left edge.
+  /// Suppresses [panel] for a plate with no country block, such as a German
+  /// short-term or export plate.
   ///
-  /// Not every plate carries a country block. Germany's short-term (`04`) and
-  /// export plates have no euroband at all — the area code begins a few
-  /// millimetres in from the rim — and a design that has one is the common
-  /// case, not the only one.
-  ///
-  /// A bool beside [panel] rather than a nullable [panel], because the panel is
-  /// the one piece of chrome a renderer may be handed from outside the spec
-  /// ([PlateCanvas.country]), and every existing caller reads `spec.panel.box`
-  /// unconditionally. A suppressed panel still declares its geometry; the face
-  /// simply does not paint it.
+  /// A bool rather than a nullable [panel]: callers read `spec.panel.box`
+  /// unconditionally, so a suppressed panel still declares its geometry and the
+  /// face simply does not paint it.
   final bool noPanel;
 
-  /// A solid block of colour at the right-hand end of the plate, or null for a
-  /// plate with none. See [PlateBand].
-  ///
-  /// Named for where it sits because that is the only place the formats that
-  /// use one put it, and a `bands` list would invite a plate striped like a
-  /// deckchair. A second position is the signal to generalise, not this one.
+  /// A solid block of colour at the right-hand end of the plate. Named for its
+  /// position because that is the only place the formats using one put it — a
+  /// second position is the signal to generalise into a list.
   final PlateBand? rightBand;
 
   final List<PlateSlot> slots;
@@ -246,8 +183,7 @@ class PlateSpec {
   final List<PlateLabel> labels;
   final List<PlateDecal> decals;
 
-  /// Read-only echoes of slot values. Purely presentational: they do not add
-  /// to [slotCount] and carry no input state.
+  /// Echoes of slot values. See [PlateMirror] — they never add to [slotCount].
   final List<PlateMirror> mirrors;
 
   final TextDirection textDirection;
@@ -255,45 +191,25 @@ class PlateSpec {
   /// Applied via theme.copyWith when non-null.
   final double? borderWidthRatioOverride;
 
-  /// The one ink this plate is printed in, or null for the theme's own.
+  /// The one ink this plate is printed in, for a design whose print colour is
+  /// its own rather than the host's livery (Germany's green tax-exempt and red
+  /// dealer plates). Null for the theme's ink.
   ///
-  /// A plate whose print colour is *part of its design* rather than part of the
-  /// host's livery: Germany prints tax-exempt plates in green and dealer plates
-  /// in red on the same white face as an ordinary one, and a caller should not
-  /// have to hand the canvas a second theme to say so.
-  ///
-  /// Overrides the full monochrome set — glyphs, border, rules and the
-  /// completed-field outline — because a real plate does not print its rim in a
-  /// different colour from its characters: a green plate has a green rim, a red
-  /// one a red rim. This is the same substitution [PlateTheme.monochrome]
-  /// makes, applied to an existing theme.
-  ///
-  /// Not a general theme escape hatch. It sits beside
-  /// [borderWidthRatioOverride] as the second single-field override, and a
-  /// third would be the signal to collapse both into one override object.
+  /// Replaces the whole monochrome set — glyphs, border, rules, completed-field
+  /// outline — since a green plate has a green rim, not a black one.
   final Color? inkOverride;
 
-  /// Groups of slot indices for the plain-text rendering of the plate, listed
-  /// in [textDirection] reading order. Empty means each slot is its own
-  /// group, in index order.
+  /// Groups of slot indices for the plain-text rendering, in [textDirection]
+  /// reading order. Empty means one group per slot in index order.
   final List<PlateTextGroup> textGroups;
 
-  /// How many values this plate stores. Derived, never hard-coded.
   int get slotCount => slots.length;
 
-  /// The slot at [index], or null when [index] is outside the plate. Position
-  /// is list position — [PlateSlot] carries no index field — so this is a
-  /// bounds check and an indexing.
+  /// The slot at [index], or null when [index] is outside the plate.
   PlateSlot? slotAt(int index) => index >= 0 && index < slots.length ? slots[index] : null;
 
-  /// [textGroups] if non-empty, else one group per slot in index order — the
-  /// rule [textGroups]'s own doc comment describes. Callers should read this
-  /// rather than reimplementing the fallback.
-  ///
-  /// The fallback list is rebuilt per call rather than cached: [PlateSpec] is
-  /// `const`-constructed and `@immutable`, and a plate has a handful of slots,
-  /// so a fresh `List` of that many [PlateTextGroup]s is cheaper than breaking
-  /// const to install a lazy field.
+  /// [textGroups], or the one-group-per-slot fallback. Read this rather than
+  /// reimplementing the fallback.
   List<PlateTextGroup> get effectiveTextGroups => textGroups.isNotEmpty
       ? textGroups
       : [
@@ -326,41 +242,28 @@ class PlateSpec {
   /// The slot focus steps back to from [index], or null at the start.
   int? previousIndex(int index) => index > 0 && index < slots.length ? index - 1 : null;
 
-  /// Concatenates [values] at the indices of the text group with the given
-  /// [key], unset slots rendering as ''. Returns '' if no group has that key.
-  ///
-  /// Walks [effectiveTextGroups] for consistency, though an unkeyed spec has no
-  /// keyed groups by definition — the fallback groups carry no [key] — so this
-  /// only ever matches on a spec that declares its groups explicitly.
-  String valueOfGroup(String key, List<String?> values) {
+  PlateTextGroup? _groupNamed(String key) {
     for (final g in effectiveTextGroups) {
-      if (g.key != key) continue;
-      final buffer = StringBuffer();
-      for (final i in g.indices) {
-        buffer.write(i < values.length ? (values[i] ?? '') : '');
-      }
-      return buffer.toString();
+      if (g.key == key) return g;
     }
-    return '';
+    return null;
   }
 
-  /// The slot indices of the text group named [key], or an empty list when no
-  /// group carries that key.
-  ///
-  /// The counterpart to [valueOfGroup]: that reads a register's characters,
-  /// this names the positions they live in — what anything that *writes* a
-  /// register needs. Walks [effectiveTextGroups], so a spec that declares no
-  /// groups answers consistently with every other accessor here (its fallback
-  /// groups carry no keys, so the answer is empty).
-  ///
-  /// Returns empty rather than throwing: a caller that wants the strict
-  /// behaviour tests for it and says so in its own terms.
-  List<int> indicesOfGroup(String key) {
-    for (final g in effectiveTextGroups) {
-      if (g.key == key) return g.indices;
+  /// The raw (unrendered) [values] of the group named [key], concatenated.
+  /// Unset slots and an unknown key both give ''.
+  String valueOfGroup(String key, List<String?> values) {
+    final group = _groupNamed(key);
+    if (group == null) return '';
+    final buffer = StringBuffer();
+    for (final i in group.indices) {
+      buffer.write(i < values.length ? (values[i] ?? '') : '');
     }
-    return const <int>[];
+    return buffer.toString();
   }
+
+  /// The slot indices of the group named [key] — what a caller that *writes* a
+  /// register needs. Empty for an unknown key.
+  List<int> indicesOfGroup(String key) => _groupNamed(key)?.indices ?? const <int>[];
 
   @override
   bool operator ==(Object other) => other is PlateSpec && other.id == id;
@@ -369,29 +272,26 @@ class PlateSpec {
   int get hashCode => id.hashCode;
 }
 
-/// Debug-only sanity check for a [PlateSpec]'s internal consistency: every
-/// slot and mirror rect fits within the canvas, every mirror echoes a real
-/// slot, and alphabet ids key content one-to-one. Always returns true — call
-/// it inside an
-/// `assert(...)` so it's stripped from release builds.
+/// Debug-only consistency check: every rect fits the canvas, every mirror
+/// echoes a real slot, registers are evenly pitched, and alphabet ids key
+/// content one-to-one. Always returns true — call it inside an `assert(...)` so
+/// it is stripped from release builds.
 bool debugValidateSpec(PlateSpec spec) {
-  for (var i = 0; i < spec.slots.length; i++) {
-    final b = spec.slots[i].box;
+  void checkInCanvas(PlateBox b, String what) {
     assert(
       b.left >= 0 && b.top >= 0 && b.right <= spec.canvasWidth && b.bottom <= spec.canvasHeight,
-      'PlateSlot $i in spec "${spec.id}" has a rect outside the '
+      '$what in spec "${spec.id}" has a rect outside the '
       'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
     );
   }
 
+  for (var i = 0; i < spec.slots.length; i++) {
+    checkInCanvas(spec.slots[i].box, 'PlateSlot $i');
+  }
+
   for (var i = 0; i < spec.mirrors.length; i++) {
     final m = spec.mirrors[i];
-    final b = m.box;
-    assert(
-      b.left >= 0 && b.top >= 0 && b.right <= spec.canvasWidth && b.bottom <= spec.canvasHeight,
-      'PlateMirror $i in spec "${spec.id}" has a rect outside the '
-      'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
-    );
+    checkInCanvas(m.box, 'PlateMirror $i');
     assert(
       m.source >= 0 && m.source < spec.slots.length,
       'PlateMirror $i in spec "${spec.id}" echoes slot ${m.source}, which is '
@@ -400,20 +300,12 @@ bool debugValidateSpec(PlateSpec spec) {
   }
 
   final band = spec.rightBand;
-  if (band != null) {
-    final b = band.box;
-    assert(
-      b.left >= 0 && b.top >= 0 && b.right <= spec.canvasWidth && b.bottom <= spec.canvasHeight,
-      'The right band in spec "${spec.id}" has a rect outside the '
-      'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
-    );
-  }
+  if (band != null) checkInCanvas(band.box, 'The right band');
 
-  // A register drifts silently: a hand-written run of cells is a for-loop
-  // unrolled by hand, and one rounded coordinate is invisible until someone
-  // measures the plate. Checked only for keyed groups of three or more cells
-  // that share a row, so a two-line layout — which splits one register across
-  // two bands — is exempt, as is a pair, which has no pitch to be wrong about.
+  // One rounded coordinate in a hand-written run of cells is invisible until
+  // someone measures the plate. Only keyed groups of three or more cells on one
+  // row have a pitch to be wrong about; a two-line layout splits a register
+  // across bands, so it is exempt.
   for (final g in spec.effectiveTextGroups) {
     if (g.key == null || g.indices.length < 3) continue;
     final boxes = <PlateBox>[
@@ -435,15 +327,10 @@ bool debugValidateSpec(PlateSpec spec) {
     }
   }
 
-  // Alphabet ids must be a stable key for *rendered* character content: within
-  // one spec, no id may appear with two different characters/glyphs pairs, and
-  // no two distinct ids may share one pair.
-  //
-  // The key is characters AND glyphs, not characters alone. `characters` is the
-  // accepted (storage) set, so an alphabet that accepts ASCII digits but prints
-  // them as national numerals carries the same list as `latin.digits` and a
-  // genuinely different meaning - keying on the list alone would call that a
-  // collision. Mirrors' alphabets are walked too: they render on the same face.
+  // Within one spec an alphabet id must map one-to-one onto rendered content.
+  // The key is characters AND glyphs: an alphabet accepting ASCII digits but
+  // printing national numerals shares `latin.digits`' character list and means
+  // something else entirely.
   final byId = <String, String>{};
   final byContent = <String, String>{};
   for (final a in <PlateAlphabet>[
@@ -471,6 +358,5 @@ bool debugValidateSpec(PlateSpec spec) {
   return true;
 }
 
-/// The identity of an alphabet's content: what it accepts, and how each
-/// accepted character is rendered.
+/// What an alphabet accepts, paired with how each accepted character renders.
 String _contentKey(PlateAlphabet a) => a.characters.map((c) => '$c=${a.render(c)}').join(' ');

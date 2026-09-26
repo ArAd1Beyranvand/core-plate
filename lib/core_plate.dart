@@ -1,136 +1,75 @@
 /// Data-driven vehicle licence plates for Flutter.
 ///
-/// A plate is a `const` [PlateSpec]: canvas geometry, a country panel, a list
-/// of slots over alphabets, and optional chrome (rules, labels, decals). The
-/// widget layer paints whatever a spec describes, so **adding a plate — for a
-/// new country or an existing one — means adding a const, never a widget.**
+/// A plate is a `const` [PlateSpec]: canvas geometry, a country panel, slots
+/// over alphabets, and optional chrome. The widget layer paints whatever a spec
+/// describes, so adding a plate means adding a const, never a widget.
 ///
-/// What this package deliberately does not do:
+/// Deliberate non-goals:
 ///
-/// - **It does not know any country.** Not one file here names a country, and
-///   it ships no assets. Plates, alphabets and flags are data, and each
-///   country's live in that country's own package. `grep` over `lib/` is the
-///   standing proof, so keep it that way: a country name in this package, even
-///   in a comment, is the bug.
-/// - **It does not police input.** A [PlateValidator] answers "is this plate
-///   valid?" and never bars a keystroke.
-/// - **It does not own your keyboard.** [PlateInputSource] lets the host
-///   supply characters from its own UI through a [PlateController].
-/// - **It does not choose your state management.** A plate holds its own
-///   characters in a [PlateController] — a [ChangeNotifier], and no dependency
-///   beyond Flutter. If your code around the plate is bloc-shaped, the
-///   `core_plate_bloc` package provides a bloc mirrored onto that controller;
-///   this package neither knows nor asks.
+/// - **No country knowledge.** Nothing here names a country and no assets ship
+///   with it; plates, alphabets and flags live in each country's own package.
+///   A country name in this package, even in a comment, is a bug.
+/// - **No input policing.** A [PlateValidator] answers "is this plate valid?"
+///   and never bars a keystroke.
+/// - **No keyboard ownership.** [PlateInputSource] lets the host feed
+///   characters from its own UI through a [PlateController].
+/// - **No state-management opinion.** A plate holds its characters in a
+///   [PlateController], a [ChangeNotifier] with no dependency beyond Flutter.
+///   For bloc-shaped hosts, `core_plate_bloc` mirrors a bloc onto it.
 ///
-/// Everything reachable from this file is API this package supports. Anything
-/// under `src/` that this file does not export is an implementation detail:
-/// it can change or disappear without a major version. In particular the
-/// input state machine, the slot widget and the plate frame are core's
-/// business, not a consumer's.
+/// Anything under `src/` this file does not export is an implementation detail
+/// — in particular the input state machine, the slot widget and the frame.
 library;
 
-// ---------------------------------------------------------------------------
 // Model — the plate as data. This is the part a consumer writes.
-// ---------------------------------------------------------------------------
-
-/// Geometry primitive shared by every positioned element on the plate face.
 export 'src/model/plate_box.dart';
-
-/// The spec itself and everything that composes into one, plus the
-/// `assert`-only consistency check for spec authors.
 export 'src/model/plate_spec.dart';
 
-/// Constructors for the regular parts of a face: a register of equal cells, an
-/// echo band, a stipple. A plate is registers, not rectangles — and a register
-/// written cell by cell is a for-loop unrolled by hand, which drifts.
+/// Constructors for the regular parts of a face. A plate is registers, not
+/// rectangles, and a register written cell by cell drifts.
 export 'src/model/plate_layout.dart';
 
-/// The character set behind a slot, and how the user supplies a character
-/// from it.
 export 'src/model/plate_alphabet.dart';
-
-/// The country block on the plate face, and the flag/badge images it paints.
 export 'src/model/plate_country.dart';
 export 'src/model/plate_asset.dart';
-
-/// The entered value and whether the plate is being displayed or edited.
 export 'src/model/plate_number.dart';
-
-/// Where characters come from: the system IME, a hardware keyboard, this
-/// package's keypad, or the host's own UI.
 export 'src/model/plate_input_source.dart';
 
-/// What a slot does about input, resolved from mode + alphabet + source.
-///
-/// `show:` — `resolveSlotBehavior` performs that resolution and is core's
-/// business: a consumer reads a [SlotBehavior], it does not derive one.
+/// `resolveSlotBehavior` is withheld: a consumer reads a [SlotBehavior], it
+/// does not derive one.
 export 'src/model/slot_behavior.dart' show SlotBehavior;
-
-// ---------------------------------------------------------------------------
-// Theme — colours and ratios, inherited or passed explicitly.
-// ---------------------------------------------------------------------------
 
 export 'src/theme/plate_theme.dart';
 
-// ---------------------------------------------------------------------------
-// Widgets — the plate on screen.
-// ---------------------------------------------------------------------------
-
-/// The editable plate, and the read-only pair for displaying one from a
-/// [PlateController]. Both take an optional `country:` that overrides
-/// [PlateSpec.country] at render time, the way `theme:` overrides the
-/// inherited [PlateTheme] — so a usage-varying panel is a render argument, not
-/// a second spec.
+/// The editable plate and the read-only pair. Both take an optional `country:`
+/// overriding [PlateSpec.country] at render time, so a usage-varying panel is a
+/// render argument rather than a second spec.
 export 'src/widgets/plate_canvas.dart';
 export 'src/widgets/plate_view.dart';
 
-/// The bare text row shared by `PlateTextView` and `core_plate_bloc`'s
-/// `PlateText`, plus `noCharacterChooser` — the required-but-never-called
-/// chooser for [PlateMode.display].
+/// The bare text row shared with `core_plate_bloc`'s `PlateText`, plus
+/// `noCharacterChooser` for [PlateMode.display].
 export 'src/widgets/plate_text_row.dart';
 
-/// Pieces of plate chrome a host may also place on its own.
+// Plate chrome a host may also place on its own.
 export 'src/widgets/country_panel.dart';
 export 'src/widgets/plate_flag.dart';
 
-// The on-screen keypad and the `chosen`-slot character picker live in the
-// `plate_keypad` package. A host that wants either depends on `plate_keypad`
-// and passes `PlateCharacterPicker.show` as [PlateCanvas.onChooseCharacter].
+// The keypad and the `chosen`-slot character picker live in `plate_keypad`; a
+// host that wants either passes `PlateCharacterPicker.show` as
+// `PlateCanvas.onChooseCharacter`.
 
-// ---------------------------------------------------------------------------
-// Input — driving character entry from outside the plate.
-// ---------------------------------------------------------------------------
-
-/// The plate's handle: it owns the characters and drives focus and
-/// navigation. The primary API for a host that wants to read or write the
-/// value, track the active slot, or feed characters from its own keypad.
-/// `PlateInputMachine` — the implementation a [PlateCanvas] attaches on the
-/// host's behalf — is deliberately absent: a consumer never constructs one.
+/// The plate's handle: it owns the characters and drives focus and navigation.
 export 'src/input/plate_controller.dart';
 
 /// `PlateInputTarget`, the interface the handle drives.
 export 'src/input/plate_input_controller.dart';
 
-/// Rebuilds on a *derived* piece of a [PlateController] only when that piece
-/// changes. Per-slot listening needs no such thing: `PlateController.slot(i)`
-/// with a `ValueListenableBuilder` is already as narrow as it gets.
+/// Rebuilds on a *derived* piece of a [PlateController]. Per-slot listening
+/// needs none: `PlateController.slot(i)` in a `ValueListenableBuilder` is
+/// already as narrow as it gets.
 export 'src/widgets/plate_selector.dart';
 
-// State — a canvas keeps its values in a [PlateController], exported above with
-// the rest of the input surface. The bloc, `PlateCardBinding`, `ShowPlate` and
-// `PlateText` live in the `core_plate_bloc` package; this package has no
-// `flutter_bloc` or `bloc` dependency. See CHANGELOG.md for the migration.
-
-// ---------------------------------------------------------------------------
-// Validation — advisory verdicts on a filled plate.
-// ---------------------------------------------------------------------------
-
-/// `PlateValidation`, `PlateEntry`, the `PlateValidator` base and its
-/// `GatedPlateValidator` subclass (quiet until one register fills), plus the
-/// `isDigits` / `isDigitsOfLength` primitives every country rule shares.
+/// `PlateValidation`, `PlateEntry`, the `PlateValidator` base and
+/// `GatedPlateValidator`, plus the `isDigits` primitives country rules share.
 export 'src/validators/plate_validator.dart';
-
-// Country constants, alphabets, specs, flags and country-specific validators
-// live in one package each. They are deliberately not named here — see the
-// note above. A host depends on the countries it actually draws, and on none
-// of them to compile. See CHANGELOG.md for the import a consumer switches to.

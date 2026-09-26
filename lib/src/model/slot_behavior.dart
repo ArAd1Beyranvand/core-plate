@@ -2,9 +2,8 @@ import 'plate_alphabet.dart';
 import 'plate_input_source.dart';
 import 'plate_number.dart';
 
-/// What a slot does about input, resolved once from the three things that
-/// decide it. Every rendering and gesture decision in [PlateSlotItem] is a
-/// switch on this — none of them re-derives it from [PlateInputSource].
+/// What a slot does about input, resolved once. Every rendering and gesture
+/// decision in `PlateSlotItem` switches on this rather than re-deriving it.
 enum SlotBehavior {
   /// Read-only glyph. No focus node, no gestures. [PlateMode.display].
   glyph,
@@ -24,17 +23,8 @@ enum SlotBehavior {
   sheet,
 }
 
-/// Ports the exact mapping the widget layer used to re-derive in five places:
-///
-/// | mode | alphabet input | source | behavior |
-/// |---|---|---|---|
-/// | display | any | any | [SlotBehavior.glyph] |
-/// | input | typed | system | [SlotBehavior.imeField] |
-/// | input | typed | hardwareKeyboard | [SlotBehavior.hardwareField] |
-/// | input | typed | packageKeypad / host | [SlotBehavior.externalField] |
-/// | input | chosen | system | [SlotBehavior.sheet] |
-/// | input | chosen | hardwareKeyboard | [SlotBehavior.hardwareField] |
-/// | input | chosen | packageKeypad / host | [SlotBehavior.externalField] |
+/// Note that [AlphabetInput.chosen] only reaches [SlotBehavior.sheet] under
+/// [PlateInputSource.system]; every other source drives its own field type.
 SlotBehavior resolveSlotBehavior({
   required PlateMode mode,
   required AlphabetInput input,

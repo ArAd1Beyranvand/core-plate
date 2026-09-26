@@ -12,12 +12,8 @@ class PlateNumber {
 
   bool get isEmpty => !values.any((e) => e != null);
 
-  /// Value equality over [values].
-  ///
-  /// Without this the class was identity-compared, so anything watching a
-  /// [PlateNumber] — notably `context.select` in the canvas — treated every
-  /// bloc emission as a change and rebuilt, even when the characters were
-  /// identical.
+  /// Value equality, so that watchers rebuild on a real character change
+  /// rather than on every emission.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
