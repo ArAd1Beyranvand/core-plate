@@ -20,18 +20,12 @@ enum PlateValuePreservation {
   byGroupKey,
 }
 
-/// A host-facing handle that *owns* one plate's characters and drives its
-/// focus and navigation.
+/// Owns a plate's characters and drives focus and navigation. Pass to
+/// [PlateCanvas] as `controller:` to read or write the value, track the active
+/// slot, or feed characters from your own keypad.
 ///
-/// Pass one to a [PlateCanvas] as `controller:` to read or write the value, to
-/// see which slot is active, or to enter characters from your own on-screen
-/// keypad. A canvas with no controller makes a private one.
-///
-/// Listening is available at two grains, and the finer one is the point:
-/// [slot] hands back a listenable for a single position, so a keystroke
-/// rebuilds the one slot it landed in; [completed] flips only when the plate
-/// crosses between full and not; and the controller itself notifies on every
-/// committed change for whoever genuinely wants all of them.
+/// Listen at two grains: [slot] rebuilds one position per keystroke, [completed]
+/// flips on full/not-full, and the controller itself notifies on every change.
 class PlateController extends ChangeNotifier {
   PlateController({required PlateSpec spec, List<String?>? values}) : _spec = spec {
     _values = [for (var i = 0; i < spec.slotCount; i++) _printedCharacter(spec, i)];
@@ -46,13 +40,12 @@ class PlateController extends ChangeNotifier {
     _completed = ValueNotifier<bool>(_computeCompleted());
   }
 
-  /// The plate as [values] describes it, characters the slots refuse dropped.
+  /// [values] with characters the slots refuse dropped.
   factory PlateController.fromValues(PlateSpec spec, List<String?> values) =>
       PlateController(spec: spec, values: values);
 
-  /// One character of [text] per slot, in index order, skipping characters the
-  /// slot's alphabet refuses. Separators in [text] therefore cost nothing: a
-  /// space is not in any alphabet, so it is passed over rather than consuming
+  /// One character of [text] per slot in order; skipping characters no alphabet
+  /// accepts. Separators cost nothing — a space is skipped rather than consuming
   /// a slot.
   factory PlateController.fromText(PlateSpec spec, String text) {
     final values = List<String?>.filled(spec.slotCount, null);
@@ -72,25 +65,19 @@ class PlateController extends ChangeNotifier {
   late List<ValueNotifier<String?>> _slots;
   late final ValueNotifier<bool> _completed;
 
-  /// The plate this controller holds a value for. Changed only through
-  /// [adoptSpec], which decides what happens to the characters.
+  /// The plate this controller holds values for. Changed only through [adoptSpec].
   PlateSpec get spec => _spec;
 
-  /// The characters in slot order. Always [PlateSpec.slotCount] long, with
-  /// null for an unset slot. Unmodifiable — write through [setAt],
-  /// [setValues], [setGroup] or [clear].
+  /// The characters in slot order, [PlateSpec.slotCount] long. Unmodifiable;
+  /// write through [setAt], [setValues], [setGroup] or [clear].
   List<String?> get values => List<String?>.unmodifiable(_values);
 
   /// The character at [index], or null when [index] is outside the plate.
   String? valueAt(int index) => index >= 0 && index < _values.length ? _values[index] : null;
 
-  /// The character at [index]; '' or null clears the slot. A character the
-  /// slot's alphabet refuses is a no-op — the controller stores plates that
-  /// could exist, and never bars a keystroke by way of an exception.
-  ///
-  /// A slot whose alphabet holds exactly one character is printed on every
-  /// plate of this design, not typed: it always holds that character, and
-  /// this is a no-op against it.
+  /// Set the character at [index]; '' or null clears it. A character the slot's
+  /// alphabet refuses is a no-op. A slot with one printed character always
+  /// holds it.
   void setAt(int index, String? value) {
     if (index < 0 || index >= _values.length) return;
     if (_printedCharacter(_spec, index) != null) return;
@@ -102,10 +89,8 @@ class PlateController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Every slot at once, in index order, as [PlateController.new] reads them.
-  /// Notifies once for the whole write rather than once per slot. A printed
-  /// slot (see [setAt]) ignores whatever [values] carries for it and keeps its
-  /// fixed character, so [clear] cannot blank it either.
+  /// Every slot at once, in index order. Notifies once for the whole write. A
+  /// printed slot keeps its fixed character and ignores [values].
   void setValues(List<String?> values) {
     for (var i = 0; i < _values.length; i++) {
       final printed = _printedCharacter(_spec, i);
@@ -120,19 +105,17 @@ class PlateController extends ChangeNotifier {
   /// Empty every slot.
   void clear() => setValues(List<String?>.filled(_values.length, null));
 
-  /// The plate as text: each of [PlateSpec.effectiveTextGroups] rendered
-  /// through its slots' alphabets, joined by [sep].
+  /// Each [PlateSpec.effectiveTextGroups] rendered through its slots' alphabets,
+  /// joined by [sep].
   String text({String sep = ' '}) =>
       [for (final group in _spec.effectiveTextGroups) _spec.renderGroup(group, _values)].join(sep);
 
-  /// The characters of the group named [key], in canonical (storage) form —
-  /// what a validator reads. '' when no group carries that key.
+  /// The characters of the group named [key], in canonical (storage) form. ''
+  /// when no group carries that key.
   String group(String key) => _spec.valueOfGroup(key, _values);
 
-  /// Writes [value] across the slots of the group named [key], one character
-  /// per slot in group order, stopping at the shorter of the two. Characters
-  /// the target slot refuses clear it rather than being forced in. No-op when
-  /// no group carries that key.
+  /// Write [value] across the slots of the group named [key], one character per
+  /// slot in order. Characters the target slot refuses clear it instead.
   void setGroup(String key, String value) {
     final group = _groupNamed(_spec, key);
     if (group == null) return;
@@ -148,33 +131,24 @@ class PlateController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Whether every slot holds a character.
   bool get isCompleted => _completed.value;
-
-  /// Whether no slot holds a character.
   bool get isEmpty => !_values.any((v) => v != null && v.isNotEmpty);
 
-  /// The value as the model type a bloc, a validator or a host's own storage
-  /// speaks in.
+  /// The value as a [PlateNumber] for a bloc or validator.
   PlateNumber get plateNumber => PlateNumber(values: _values);
 
-  /// The character at [index] on its own, so a widget can subscribe to one
-  /// slot instead of to the whole plate. Out of range returns a listenable
-  /// that is null forever, rather than throwing: a widget that outlives a
-  /// shrinking spec by a frame should paint an empty slot, not crash.
+  /// A listenable for the character at [index]. Out of range returns a listenable
+  /// that is null forever, so a widget outliving a shrinking spec paints an empty
+  /// slot rather than crashing.
   ValueListenable<String?> slot(int index) =>
       index >= 0 && index < _slots.length ? _slots[index] : const _AlwaysNull<String?>();
 
-  /// Whether the plate is full, as a listenable that fires on the flip and not
-  /// on the keystrokes in between.
+  /// Whether the plate is full, as a listenable that fires on the flip only.
   ValueListenable<bool> get completed => _completed;
 
-  /// Swaps the plate under the value, carrying the characters across as
-  /// [preserve] directs, and notifies once.
-  ///
-  /// The slot listenables are re-founded for the new spec's length, so anything
-  /// holding one from the old spec keeps a live object that simply stops being
-  /// updated — hand out [slot] results per build rather than caching them.
+  /// Swap the plate under the value, carrying the characters across as [preserve]
+  /// directs. The slot listenables are re-founded, so pass [slot] results per
+  /// build rather than caching them.
   void adoptSpec(PlateSpec next, {PlateValuePreservation preserve = PlateValuePreservation.byGroupKey}) {
     final migrated = _migrate(_spec, next, _values, preserve);
     _spec = next;
@@ -187,62 +161,36 @@ class PlateController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Focus and navigation -------------------------------------------------
-  //
-  // A host renders its own on-screen keypad, reads [activeIndex] (or
-  // [activeSlot]) to decide which keys to show, and calls [submit]/[backspace]
-  // to enter or remove characters. Every operation is proxied to the attached
-  // canvas, which owns the focus.
-
   PlateInputTarget? _target;
-
   PlateValidation? Function()? _probe;
   PlateValidation? _lastVerdict;
 
-  /// The verdict on the plate as it stands, or null when the canvas has no
-  /// validator (or none is attached). A host reads this to decide its own
-  /// timing — paint something, enable a submit button — instead of validating
-  /// by hand.
-  ///
-  /// Computed on demand, so it is meaningful whether or not the canvas runs
-  /// `autoValidate`: a host that validates on submit only pays for exactly the
-  /// validations it asks for.
+  /// The current validation verdict, or null when the canvas has no validator.
+  /// Computed on demand — a host that validates on submit only pays for exactly
+  /// the validations it asks for.
   PlateValidation? get validation => _probe?.call();
 
-  /// Called by PlateCanvas. Do not call from app code.
-  ///
-  /// Installs the callback behind [validation]; pass null when detaching.
+  /// Called by PlateCanvas. Do not call from app code. Installs the probe.
   void installValidation(PlateValidation? Function()? probe) {
     _probe = probe;
     _lastVerdict = null;
   }
 
-  /// Called by PlateCanvas while it is auto-validating. Do not call from app
-  /// code.
-  ///
-  /// Notifies on a change of *verdict* (over [PlateValidation]'s equality,
-  /// i.e. its reason), not on every committed value — so a listener rebuilds
-  /// on a flip, not on a keystroke. Putting the narrowing here keeps that
-  /// property true for every consumer rather than for whichever one
-  /// remembered to implement it.
+  /// Called by PlateCanvas. Do not call from app code. Notifies on a change of
+  /// verdict, not on every keystroke.
   void reportValidation(PlateValidation? value) {
     if (_lastVerdict == value) return;
     _lastVerdict = value;
     notifyListeners();
   }
 
-  /// Called by PlateCanvas. Do not call from app code.
   void attach(PlateInputTarget target) {
     _target = target;
     notifyListeners();
   }
 
-  /// Called by PlateCanvas. Do not call from app code.
-  ///
-  /// Guarded so that when a PlateCanvas is rebuilt into a new element — the new
-  /// state attaches before the old one disposes — the old state's detach does
-  /// not null out the live target. Still load-bearing after a spec swap, which
-  /// retires one machine and attaches its replacement.
+  /// Guarded so that a detach from the old state does not null out a live
+  /// target when PlateCanvas rebuilds into a new element.
   void detach(PlateInputTarget target) {
     if (identical(_target, target)) {
       _target = null;
@@ -250,49 +198,33 @@ class PlateController extends ChangeNotifier {
     }
   }
 
-  /// Called by PlateCanvas when its active slot changes.
   void notifyActiveSlotChanged() => notifyListeners();
 
-  /// The position of the slot currently accepting input, or null when the
-  /// plate is unfocused (or no canvas is attached). Hosts read it to decide
-  /// which keypad to show.
+  /// The position of the slot currently accepting input, or null when unfocused.
   int? get activeIndex => _target?.activeIndex;
 
-  /// The slot currently accepting input, resolved against [spec] — the
-  /// convenience for hosts that need the slot's alphabet rather than just its
-  /// position. Null when the plate is unfocused.
+  /// The slot currently accepting input. Null when unfocused.
   PlateSlot? get activeSlot => _spec.slotAt(activeIndex ?? -1);
 
-  /// Whether a canvas is currently attached.
   bool get isAttached => _target != null;
 
-  /// Commit [character] to the active slot and advance focus, exactly as typing
-  /// into that slot would. No-op when there is no active slot, or when the
-  /// active slot's alphabet does not accept [character].
+  /// Commit [character] to the active slot and advance focus, as typing would.
   void submit(String character) => _target?.submitCharacter(character);
 
-  /// Clear the active slot; if it is already empty, step focus backwards to the
-  /// preceding slot and clear that instead. No-op at the start of the plate.
+  /// Clear the active slot; if already empty, step back and clear that instead.
   void backspace() => _target?.backspaceCharacter();
 
-  /// Focus the first slot with a null/empty value, or the first slot if the
-  /// plate is empty. Used to (re)enter the plate programmatically.
+  /// Focus the first slot with a null/empty value, or the first slot if empty.
   void focusFirstEmpty() => _target?.focusFirstEmptySlot();
 
-  /// Focus the slot at [index] directly, without regard to its value. Used by
-  /// hosts that drive character entry programmatically (e.g. a scripted
-  /// demo) and need the visible focus/cursor to track the slot being written
-  /// to, the way it would if the user had tapped there.
+  /// Focus the slot at [index] directly. Used when the host drives character
+  /// entry programmatically and needs the cursor to track.
   void focusSlot(int index) => _target?.focusSlot(index);
 
   @override
   void dispose() {
-    // Drop the canvas first. A host is allowed to retire a controller while the
-    // canvas showing it is still mounted — the showcase does exactly that, the
-    // moment the outgoing plate has faded to nothing — and that canvas's own
-    // dispose still runs afterwards, calling [detach]. With the target cleared
-    // here that detach no longer matches, so it returns instead of notifying a
-    // disposed ChangeNotifier and throwing mid-unmount.
+    // Clear the target first so that a later detach from an outliving canvas
+    // does not notify a disposed ChangeNotifier.
     _target = null;
     _probe = null;
     for (final slot in _slots) {
@@ -308,13 +240,9 @@ class PlateController extends ChangeNotifier {
 
   bool _computeCompleted() => _values.isNotEmpty && !_values.any((v) => v == null || v.isEmpty);
 
-  /// [value] as this slot will store it: null for a cleared slot, and null as
-  /// well for a character the slot's alphabet refuses.
-  ///
-  /// A national-numeral slot accepts either the storage character or the display
-  /// glyph the user typed on that script's keyboard, so the accepted value is
-  /// folded to canonical (storage) form here — the plate stores `'5'` whether
-  /// `'5'` or `'۵'` was entered. See [PlateAlphabet.canonical].
+  /// [value] as the slot will store it — null for cleared or refused characters.
+  /// A national-numeral slot accepts either form (storage `'5'` or glyph `'۵'`)
+  /// and stores the canonical one.
   static String? _sanitize(PlateSpec spec, int index, String? value) {
     if (value == null || value.isEmpty) return null;
     final slot = spec.slotAt(index);
@@ -322,9 +250,8 @@ class PlateController extends ChangeNotifier {
     return slot.alphabet.canonical(value);
   }
 
-  /// The fixed character of the slot at [index], for a slot whose alphabet
-  /// holds exactly one character — printed on every plate of this design, not
-  /// typed. Null for an ordinary slot.
+  /// The fixed character of a slot whose alphabet holds exactly one — printed on
+  /// every plate, not typed. Null for an ordinary slot.
   static String? _printedCharacter(PlateSpec spec, int index) {
     final characters = spec.slots[index].alphabet.characters;
     return characters.length == 1 ? characters.single : null;
@@ -339,7 +266,7 @@ class PlateController extends ChangeNotifier {
 
   static bool _hasKeyedGroups(PlateSpec spec) => spec.effectiveTextGroups.any((g) => g.key != null);
 
-  /// [values], read against [from], rewritten as a value list for [to].
+  /// Migrate [values] from [from] spec to [to] spec as [preserve] directs.
   static List<String?> _migrate(PlateSpec from, PlateSpec to, List<String?> values, PlateValuePreservation preserve) {
     if (preserve == PlateValuePreservation.none) {
       return List<String?>.filled(to.slotCount, null);
@@ -352,9 +279,7 @@ class PlateController extends ChangeNotifier {
 
     final result = List<String?>.filled(to.slotCount, null);
 
-    // A slot whose alphabet holds exactly one character is printed on every
-    // plate of this design, not typed: fill it from the alphabet. Done first
-    // so a matched group covering the same slot still wins.
+    // Fill printed slots first so a matched group still wins.
     for (var i = 0; i < to.slotCount; i++) {
       result[i] = _printedCharacter(to, i);
     }
@@ -365,8 +290,8 @@ class PlateController extends ChangeNotifier {
       final source = _groupNamed(from, key);
       if (source == null) continue;
 
-      // The source group's characters in order, unset slots skipped rather
-      // than carried as gaps — a half-typed register carries as far as it got.
+      // The source group's non-empty characters, skipped rather than carried as
+      // gaps — a half-typed register carries as far as it got.
       final characters = <String>[
         for (final i in source.indices)
           if (i < values.length && (values[i] ?? '').isNotEmpty) values[i]!,
@@ -383,8 +308,8 @@ class PlateController extends ChangeNotifier {
   }
 }
 
-/// A listenable that is null forever and never notifies, so nothing has to
-/// hold a nullable listenable to describe "no such slot".
+/// A null listenable, so a widget outliving a shrinking spec does not hold
+/// a nullable listenable.
 @immutable
 class _AlwaysNull<T> implements ValueListenable<T?> {
   const _AlwaysNull();
@@ -400,8 +325,7 @@ class _AlwaysNull<T> implements ValueListenable<T?> {
 }
 
 extension on String {
-  /// The string as single characters. Plate alphabets are single-character
-  /// sets, so splitting on code units would be wrong for any script outside
-  /// the BMP; [runes] is the honest unit here.
+  /// Single characters. Plate alphabets are single-character sets, so [runes]
+  /// is the right unit — code units break scripts outside the BMP.
   List<String> get characters => [for (final rune in runes) String.fromCharCode(rune)];
 }
