@@ -20,6 +20,18 @@
 
 **Total cleaned: ~585 lines removed, all tests passing.**
 
+### germany_plate (1 commit, ~386 lines removed)
+1. **lib/germany_plate.dart** — Removed tutorial examples.
+2. **lib/src/german_plate_validator.dart** — Removed verbose class docs explaining obvious logic.
+3. **lib/src/germany_alphabets.dart** — Trimmed to essentials.
+4. **lib/src/germany_country.dart** — Shortened Bundeswehr plate description.
+5. **lib/src/germany_identifier_group.dart** — Removed enum documentation repetition.
+6. **lib/src/germany_plates.dart** — Removed method docs repeating what the signature shows.
+
+**Result: 49 functional tests green, analyzer clean.**
+
+**Cumulative total: ~971 lines removed across all packages.**
+
 ## Remaining work (not yet touched)
 
 ### core_plate (high-effort, foundational)
@@ -30,7 +42,7 @@
 ### Country packages
 - **iran_plate** (994 lines), **yemen_plate** (2223), **palestine_plate** (1750), **lebanon_plate** (1205) — Plate specs and validators. Architecture documentation is good; specs themselves have verbose inline coordinate comments.
 - **plate_keypad/** (726 lines) — Custom keypad widget.
-- **germany_plate**, **iranshahr_plate** — On feature branches.
+- **iranshahr_plate** — On feature branch.
 
 ### Gallery and examples
 - **plate_number_holder/** (16,380 lines) — Gallery app with six screens. Likely contains boilerplate example code and repetitive widget docs.
