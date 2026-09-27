@@ -7,18 +7,11 @@ import '../model/plate_spec.dart';
 import '../model/slot_behavior.dart';
 import 'plate_input_controller.dart';
 
-/// Owns focus and navigation for one plate. Knows the spec and the focus
-/// nodes; knows nothing about pixels, and nothing about bloc.
-///
-/// Values reach it through [readValues] and leave through [commit], so the
-/// machine is independent of how the host stores plate state. That is what
-/// makes it exercisable on its own, and it is why swapping `PlateCardBloc` for
-/// something else later would not touch this file.
-///
-/// A machine belongs to exactly one [spec]: its focus nodes and controllers are
-/// built from that spec's slot list, and a slot index means nothing outside it.
-/// A canvas whose spec changes therefore disposes its machine and builds a new
-/// one, rather than reindexing the old plate's nodes against the new plate.
+/// Owns focus and navigation for one plate: the focus nodes and text
+/// controllers. Takes values through [readValues] and writes them through
+/// [commit], so it is independent of how the host stores state. Tied to its
+/// [spec]: a spec change disposes it and builds a new one rather than
+/// reindexing.
 class PlateInputMachine implements PlateInputTarget {
   PlateInputMachine({
     required this.spec,
@@ -31,12 +24,10 @@ class PlateInputMachine implements PlateInputTarget {
       _focusNodes.add(FocusNode()..addListener(_handleFocusChange));
       _controllers.add(spec.slots[i].alphabet.input == AlphabetInput.typed ? TextEditingController() : null);
     }
-    // An editable mirror is a second field over one of the slots — a paired
-    // input row in another script — so it gets its own focus node and text
-    // controller, but it is NOT a slot: it never enters _focusNodes/_controllers
-    // and so adds nothing to the plate's slot count, focus grammar or
-    // completion. Its focus is reported as its source slot's, so a keypad or the
-    // active-index report reads the same alphabet whichever row is being typed.
+    // An editable mirror is a second field over one slot, but it is not a slot
+    // itself: it adds nothing to the plate's count, grammar or completion. Its
+    // focus reports as its source's, so a keypad reads the same alphabet
+    // whichever row is being typed.
     for (var i = 0; i < spec.mirrors.length; i++) {
       final mirror = spec.mirrors[i];
       final alphabet = mirror.alphabet ?? spec.slots[mirror.source].alphabet;
@@ -48,62 +39,41 @@ class PlateInputMachine implements PlateInputTarget {
         _mirrorControllers.add(null);
       }
     }
-    // Seed the active slot to the first one before any focus lands, so a host
-    // that renders its own keypad off [activeIndex] (e.g. picking a digit vs.
-    // letters pad from the slot's alphabet) starts on the alphabet the first
-    // slot actually takes — instead of defaulting to one type and visibly
-    // switching the instant focus reaches slot 0. The seed is deliberately not
-    // announced from here: see the post-frame report in PlateCanvas.
+    // Seed the active slot to the first one before focus lands. A host that
+    // renders its keypad off [activeIndex] starts on the first slot's alphabet
+    // rather than defaulting to a type. The seed is not announced from here.
     _activeIndex = spec.slots.isNotEmpty ? 0 : null;
   }
 
-  /// The plate this machine drives. Fixed for the machine's lifetime.
   final PlateSpec spec;
-
-  /// The plate's characters in slot order, read on demand so the machine never
-  /// caches a value the host has since changed.
   final List<String?> Function() readValues;
 
-  /// Writes one slot's character back to the host; '' clears the slot.
+  /// Write one slot's character; '' clears it.
   final void Function(int index, String value) commit;
 
-  /// Where characters come from. Mutable because the canvas re-resolves it per
-  /// build — [PlateMode.display] forces [PlateInputSource.system].
+  /// Where characters come from. Re-resolved per build; [PlateMode.display]
+  /// forces [PlateInputSource.system].
   PlateInputSource inputSource;
 
-  /// Fired when the focused slot changes, with its position, or null when focus
-  /// leaves the plate.
+  /// Fired when the focused slot changes or focus leaves the plate.
   final ValueChanged<int?>? onActiveIndexChanged;
 
-  /// Fired when a chosen slot under [SlotBehavior.sheet] is reached by
-  /// [advanceFrom]. The canvas sets this; the machine never presents UI.
+  /// Fired when a chosen slot under [SlotBehavior.sheet] is reached.
   ValueChanged<int>? onSheetRequested;
 
-  // Indexed by slot position: slot identity *is* list order, so a dense list
-  // says that in the type instead of leaving it to convention. Null controller
-  // entries are chosen-alphabet slots, which have no text field.
+  // Dense list by slot position. Null controllers are chosen-alphabet slots.
   final List<FocusNode> _focusNodes = [];
   final List<TextEditingController?> _controllers = [];
 
-  // Parallel to [PlateSpec.mirrors]. Null entries are read-only mirrors (and
-  // editable mirrors over a chosen alphabet, which have no text field); a
-  // non-null entry is an editable mirror's own field over its source slot.
+  // Parallel to mirrors. Null entries are read-only or chosen-alphabet mirrors.
   final List<FocusNode?> _mirrorFocusNodes = [];
   final List<TextEditingController?> _mirrorControllers = [];
 
   int? _activeIndex;
 
   FocusNode focusNodeAt(int index) => _focusNodes[index];
-
-  /// Null for chosen slots, which have no text field.
   TextEditingController? controllerAt(int index) => _controllers[index];
-
-  /// The focus node of the editable mirror at [mirrorIndex], or null when that
-  /// mirror is read-only (or chosen-alphabet and so has no field).
   FocusNode? mirrorFocusNodeAt(int mirrorIndex) => _mirrorFocusNodes[mirrorIndex];
-
-  /// The text controller of the editable mirror at [mirrorIndex], or null as
-  /// [mirrorFocusNodeAt].
   TextEditingController? mirrorControllerAt(int mirrorIndex) => _mirrorControllers[mirrorIndex];
 
   @override
@@ -117,9 +87,7 @@ class PlateInputMachine implements PlateInputTarget {
         break;
       }
     }
-    // An editable mirror reports focus as its source slot's: the two share one
-    // value, so the active alphabet a keypad reads is the same whichever row
-    // holds the caret.
+    // An editable mirror reports focus as its source's — the two share one value.
     if (active == null) {
       for (var i = 0; i < _mirrorFocusNodes.length; i++) {
         if (_mirrorFocusNodes[i]?.hasFocus ?? false) {
@@ -134,9 +102,8 @@ class PlateInputMachine implements PlateInputTarget {
     }
   }
 
-  /// Moves focus off [index] to wherever the plate says input continues:
-  /// the next slot, the picker for a chosen slot, or nowhere at the end of the
-  /// plate — where focus is dropped rather than wrapped around.
+  /// Advance focus off [index] to the next slot, the sheet for a chosen slot,
+  /// or nowhere at the end of the plate.
   void advanceFrom(int index) {
     final next = spec.nextIndex(index);
     if (next == null) {
@@ -155,20 +122,16 @@ class PlateInputMachine implements PlateInputTarget {
     }
   }
 
-  /// Keeps ONE slot's field in step with the host's value for it.
+  /// Sync one slot's field with the host's value for it. Per-slot, not bulk:
+  /// the canvas's slot bindings each subscribe to their own character, so a
+  /// keystroke rebuilds one slot.
   ///
-  /// Deliberately per-slot, not a walk over the whole plate: the canvas's slot
-  /// bindings each subscribe to their own character, so a keystroke rebuilds
-  /// (and syncs) one slot. A bulk sync here would put the whole-plate rebuild
-  /// back.
+  /// The field shows the alphabet's display form (national numerals) while the
+  /// host stores the canonical value. This lets a national-numeral slot type in
+  /// its own script.
   void syncController(int index, String? value) {
     final field = _controllers[index];
     if (field == null) return;
-    // The field shows the alphabet's display form (national numerals where the
-    // slot renders them), while the host stores the canonical value. Rendering
-    // here — and canonicalising back in the field's onChanged — is what lets a
-    // national-numeral slot type in its own script instead of ASCII, closing
-    // core's old TODO(national-numerals).
     final stored = value ?? '';
     final text = stored.isEmpty ? '' : spec.slots[index].alphabet.render(stored);
     if (field.text == text) return;
@@ -178,11 +141,9 @@ class PlateInputMachine implements PlateInputTarget {
     );
   }
 
-  /// Keeps an editable mirror's field in step with its source slot's value,
-  /// rendered through the mirror's own alphabet — the Latin row shows `5` where
-  /// the iranian row shows `٥` for the one value they share. [alphabet] is the
-  /// mirror's resolved alphabet, passed in because the machine does not resolve
-  /// the mirror-or-source fallback itself.
+  /// Sync an editable mirror's field with its source slot's value, rendered
+  /// through the mirror's alphabet — the Latin row shows `5` where the Iranian
+  /// row shows `٥`.
   void syncMirrorController(int mirrorIndex, PlateAlphabet alphabet, String? value) {
     final field = _mirrorControllers[mirrorIndex];
     if (field == null) return;
