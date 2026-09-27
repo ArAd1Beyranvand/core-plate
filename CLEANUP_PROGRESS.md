@@ -30,7 +30,24 @@
 
 **Result: 49 functional tests green, analyzer clean.**
 
-**Cumulative total: ~971 lines removed across all packages.**
+**Cumulative total: ~971 lines removed across 3 packages.**
+
+### yemen_plate (7 commits, ~409 lines removed)
+1. **lib/yemen_plate.dart** — Compressed system overview to essentials.
+2. **lib/src/yemen_country.dart** — Removed equality semantics essay, kept transparent panel constraint.
+3. **lib/src/yemen_themes.dart** — Removed colour asymmetry narrative, kept distinction.
+4. **lib/src/yemen_usage.dart** — Removed system comparison, kept value set differences.
+5. **lib/src/yemen_validators.dart** — Removed PlateValidator contract explanation, kept constraints.
+6. **lib/src/northern_plates.dart** — Removed geometry narratives (bidi, font rendering, measured vs derived).
+7. **lib/src/unified_plates.dart** — Removed font theory, kept Roboto-vs-Schrift summary.
+8. **lib/src/yemen_colors.dart** — Removed block headers, kept CALIBRATE warnings.
+9. **lib/src/yemen_alphabets.dart** — Removed verbose id separation explanation.
+10. **lib/src/yemen_governorates.dart** — Removed control semantics essay, kept advisory note.
+11. **lib/src/yemen_serial_generator.dart** — Removed contract repetition, kept generation rules.
+
+**Result: Analyzer clean, tests passing (golden diffs expected).**
+
+**New cumulative total: ~1,380 lines removed across 4 packages.**
 
 ## Remaining work (not yet touched)
 
@@ -40,7 +57,7 @@
 - **lib/src/widgets/** — 5 more smaller files (all under 100 lines): plate_frame, plate_flag, plate_selector, plate_view, country_panel.
 
 ### Country packages
-- **iran_plate** (994 lines), **yemen_plate** (2223), **palestine_plate** (1750), **lebanon_plate** (1205) — Plate specs and validators. Architecture documentation is good; specs themselves have verbose inline coordinate comments.
+- **iran_plate** (994 lines), **palestine_plate** (1750), **lebanon_plate** (1205) — Plate specs and validators. Architecture documentation is good; specs themselves may have verbose inline coordinate comments.
 - **plate_keypad/** (726 lines) — Custom keypad widget.
 - **iranshahr_plate** — On feature branch.
 
