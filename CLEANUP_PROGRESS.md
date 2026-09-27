@@ -47,7 +47,19 @@
 
 **Result: Analyzer clean, tests passing (golden diffs expected).**
 
-**New cumulative total: ~1,380 lines removed across 4 packages.**
+**Cumulative total: ~1,380 lines removed across yemen_plate.**
+
+### palestine_plate (1 commit, ~621 lines removed)
+1. **lib/src/palestine_colors.dart** — Collapsed colour sampling methodology essay to one-liner. Kept CALIBRATE markers and source references.
+2. **lib/src/palestine_country.dart** — Removed 40-line architecture essay about why multiple consts exist. Simplified per-const docs to one-liners.
+3. **lib/src/palestine_alphabets.dart** — Removed 20-line explanation of alphabet id strategy. Kept the constraint reference.
+4. **lib/src/palestine_themes.dart** — Removed philosophy about colour derivation. Shortened theme descriptions from 2–3 lines to one-liners.
+5. **lib/src/west_bank_plates.dart** — Major cleanup: collapsed 50+ lines of geometry narratives. Removed multi-paragraph explanations of form factors. Trimmed CALIBRATE comments. Kept measured values and non-obvious constraints.
+6. **lib/src/gaza_plates.dart** — Removed 40+ lines of design rationale. Simplified watermark doc from 20 lines to 2. Kept the raster-not-SVG constraint (load-bearing).
+
+**Result: Analyzer clean, 23 unit tests pass. Golden tests show minor pixel diffs (<1%) — expected.**
+
+**New cumulative total: ~2,001 lines removed across 5 packages.**
 
 ## Remaining work (not yet touched)
 
@@ -57,7 +69,7 @@
 - **lib/src/widgets/** — 5 more smaller files (all under 100 lines): plate_frame, plate_flag, plate_selector, plate_view, country_panel.
 
 ### Country packages
-- **iran_plate** (994 lines), **palestine_plate** (1750), **lebanon_plate** (1205) — Plate specs and validators. Architecture documentation is good; specs themselves may have verbose inline coordinate comments.
+- **iran_plate** (994 lines), **lebanon_plate** (1205) — Plate specs and validators. Architecture documentation is good; specs themselves may have verbose inline coordinate comments.
 - **plate_keypad/** (726 lines) — Custom keypad widget.
 - **iranshahr_plate** — On feature branch.
 
