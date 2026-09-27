@@ -2,23 +2,9 @@ import 'package:core_plate/core_plate.dart';
 
 import 'yemen_governorates.dart';
 
-/// Judges a **System A** (2026 unified) plate value.
-///
-/// Like every [PlateValidator] it never prevents a keystroke and never throws;
-/// it reports, and the host decides what to do with the report. A slot's
-/// alphabet is what restricts input, and it does so silently.
-///
-/// It stays quiet until the side code has something in it. The side code is the
-/// last register a user reaches — its two cells are the last slots on every
-/// unified spec — so by the time it is non-empty the vehicle number has been
-/// typed and there is something to judge. With nothing barring input, the red
-/// state is the only feedback there is, and a plate that flashes red at its
-/// first keystroke is worse than no validation at all.
-///
-/// ### What it does not check
-///
-/// The side code's two digits are checked for shape and nothing else. See
-/// [reasonSideCodeLength] and the TODO in [validateFields].
+/// Judges a System A (2026 unified) plate value. Gated on the side code
+/// (the last register) so validation starts only after the vehicle number is entered.
+/// Checks only the side code's shape, not its semantics (see TODO in [validateFields]).
 class YemenUnifiedValidator extends GatedPlateValidator {
   /// A stateless rule; hold one as a `const`.
   const YemenUnifiedValidator();
@@ -46,19 +32,9 @@ class YemenUnifiedValidator extends GatedPlateValidator {
   PlateValidation judge(PlateEntry entry) =>
       validateFields(number: entry.group('number'), sideCode: entry.group('sideCode'));
 
-  /// The rule without a spec: pass the two registers in directly.
-  ///
-  /// [number] is the vehicle number in the plate's main zone, four to six
-  /// digits. [sideCode] is the two-digit code stacked in the blue side panel.
-  ///
-  /// The side code is checked for shape only, and that is a gap rather than a
-  /// decision.
-  // TODO(side-code): the two digits are widely described as encoding the
-  // governorate and the year of issue, but no source pins down which digit is
-  // which, whether the governorate half uses the 1..22 numbering
-  // `YemenGovernorate` carries, or how a year is compressed into one digit.
-  // Until one does, a range check here would be a guess wearing the clothes of
-  // a rule, so the code stays opaque: two digits, any two digits.
+  /// [number] is 4–6 digits; [sideCode] is the two-digit code in the blue panel.
+  /// Side code is checked for shape only (see TODO in [validateFields]).
+  // TODO(side-code): no source pins down which digit encodes what; stay opaque.
   static PlateValidation validateFields({required String number, required String sideCode}) {
     if (number.isNotEmpty && !isDigits(number)) {
       return const PlateValidation.invalid(reasonNumberNotNumeric);
@@ -78,16 +54,9 @@ class YemenUnifiedValidator extends GatedPlateValidator {
   }
 }
 
-/// Judges a **System B** (1993 northern) plate value.
-///
-/// Quiet until the serial has something in it, for the reason
-/// [YemenUnifiedValidator] is quiet until the side code does: the serial is the
-/// lower register and the last one reached, so by then the governorate code
-/// above it has been entered.
-///
-/// This validator checks more than its unified counterpart, because System B's
-/// grammar is documented where System A's side code is not: the governorate
-/// code is a real number in a real range, and the serial is never zero-padded.
+/// Judges a System B (1993 northern) plate value. Gated on the serial (the last
+/// register). Checks more than [YemenUnifiedValidator] because System B's grammar
+/// is documented: governorate code 1..22, serial never zero-padded.
 class YemenNorthernValidator extends GatedPlateValidator {
   /// A stateless rule; hold one as a `const`.
   const YemenNorthernValidator();
@@ -122,15 +91,8 @@ class YemenNorthernValidator extends GatedPlateValidator {
   PlateValidation judge(PlateEntry entry) =>
       validateFields(governorate: entry.group('governorate'), serial: entry.group('serial'));
 
-  /// The rule without a spec: pass the two registers in directly.
-  ///
-  /// [governorate] is the upper register — one or two digits, and `'05'` and
-  /// `'5'` are the same code, because a two-cell register pads a single-digit
-  /// code to fill itself. [serial] is the lower register.
-  ///
-  /// The serial's leading-zero rule runs the other way: the serial register is
-  /// sized to the serial, so a plate showing `04213` is showing a five-digit
-  /// serial that begins with a zero, which this system does not issue.
+  /// [governorate] is the upper register (1–2 digits); [serial] is the lower.
+  /// Governorate: `'05'` and `'5'` are the same (two-cell padding). Serial: no leading zeros.
   static PlateValidation validateFields({required String governorate, required String serial}) {
     if (governorate.isEmpty || governorate.length > 2) {
       return const PlateValidation.invalid(reasonGovernorateLength);
