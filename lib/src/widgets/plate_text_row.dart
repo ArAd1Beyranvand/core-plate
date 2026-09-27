@@ -3,16 +3,10 @@ import 'package:flutter/widgets.dart';
 import '../model/plate_alphabet.dart';
 import '../model/plate_spec.dart';
 
-/// A character chooser that never chooses: for `PlateMode.display`, where
-/// `PlateCanvas.onChooseCharacter` is required but is never called.
+/// No-op character chooser for display mode.
 Future<String?> noCharacterChooser(PlateAlphabet alphabet) async => null;
 
-/// Plain-text rendering of a plate: each effective text group rendered through
-/// its slots' alphabets, in the plate's reading direction. The shared body of
-/// [PlateTextView] and `PlateText` from `core_plate_bloc`.
-///
-/// Groups with no non-empty value are omitted. Indices past the end of [values]
-/// are skipped, so a spec swap cannot crash a frame built against the longer one.
+/// Text rendering of a plate: groups rendered through their alphabets.
 class PlateTextRow extends StatelessWidget {
   const PlateTextRow({super.key, required this.spec, required this.values, this.textStyle});
 
