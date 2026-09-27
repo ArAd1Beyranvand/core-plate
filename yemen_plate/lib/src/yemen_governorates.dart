@@ -41,37 +41,16 @@ enum YemenGovernorate {
   final String englishName;
   final String arabicName;
 
-  /// Whether this governorate sits in the territory the 1993 northern format
-  /// is genuinely current in.
-  ///
-  /// **Advisory, coarse, and never enforced.** Three things about it:
-  ///
-  /// 1. It is a per-governorate boolean over a front line that does not
-  ///    respect governorate boundaries. Taiz, Al Jawf, Hadhramaut and Marib
-  ///    are all split in practice, and this field flattens each of them to one
-  ///    bit — the bit for where the registration authority sits.
-  /// 2. Northern plates are on the road outside the north and southern
-  ///    governorate codes appear on northern plates, because vehicles move and
-  ///    registrations predate the split.
-  /// 3. A validator that rejected a southern governorate code on a northern
-  ///    plate would therefore be wrong on the facts as well as making a
-  ///    political claim the data does not support. `YemenNorthernValidator`
-  ///    checks the 1..22 range and stops there.
-  ///
-  /// Use it to sort a picker, to caption a list, or to warn. Do not use it to
-  /// refuse a plate.
-  // TODO(control-map): this snapshot is coarse and dates from the brief this
-  // package was written against. A consumer who needs current control lines
-  // should carry their own map rather than trusting an enum baked into a
-  // published package.
+  /// Whether this governorate sits where the 1993 northern format is genuinely
+  /// current. Advisory, coarse, never enforced. Taiz/Al Jawf/Hadhramaut/Marib are
+  /// split; this field uses the registration authority's location. Northern plates
+  /// appear outside the north. Validator checks 1..22 range, not control status.
+  /// Use to sort, caption, warn. Do not use to refuse a plate.
+  // TODO(control-map): consumer who needs current control should carry their own map.
   final bool underHouthiControl;
 
-  /// The governorate with [code], or null when [code] is outside 1..22.
-  ///
-  /// The lookup a host reaches for after reading the upper register off a
-  /// plate. Returning null rather than throwing keeps it usable on a
-  /// half-entered plate, where `0` and `2` are both ordinary intermediate
-  /// states of typing `20`.
+  /// The governorate with [code], or null if outside 1..22. Lookup for the upper
+  /// register. Null on half-entered plates (e.g., `0` or `2` as state of typing `20`).
   static YemenGovernorate? fromCode(int code) {
     for (final g in values) {
       if (g.code == code) return g;
@@ -79,12 +58,8 @@ enum YemenGovernorate {
     return null;
   }
 
-  /// The governorate the upper register [digits] name, or null when [digits]
-  /// is empty, not a number, or outside 1..22.
-  ///
-  /// Accepts a zero-padded two-digit register (`'07'`) as well as a bare one
-  /// (`'7'`): the plate has two cells and a code below ten may be printed in
-  /// either.
+  /// The governorate the upper register [digits] name, or null if empty, non-numeric, or outside 1..22.
+  /// Accepts zero-padded (`'07'`) and bare (`'7'`) two-digit registers.
   static YemenGovernorate? fromDigits(String digits) {
     final parsed = int.tryParse(digits);
     return parsed == null ? null : fromCode(parsed);
