@@ -3,37 +3,11 @@ import 'package:core_plate/core_plate.dart';
 import 'yemen_colors.dart';
 import 'yemen_usage.dart';
 
-/// The `PlateTheme`s a Yemeni plate is printed in.
+/// The PlateThemes a Yemeni plate is printed in.
 ///
-/// Colour never lives on a [PlateSpec] — a spec is geometry, a theme is
-/// colour, and `core_plate` keeps them apart — so the host passes one:
-///
-/// ```dart
-/// PlateCanvas(
-///   spec: YemenNorthernPlates.carGov2Serial5,
-///   country: YemenCountry.northernFor(YemenUsage.private),
-///   theme: YemenThemes.forNorthernUsage(YemenUsage.private),
-///   ...
-/// )
-/// ```
-///
-/// The two systems use colour in opposite ways, and that asymmetry is the
-/// whole reason there is one theme on one side of this file and six on the
-/// other:
-///
-/// - **System A (2026 unified)** does not colour-code by usage at all. The
-///   field is white for a private car, a taxi, a truck, a government car and a
-///   police car alike; the usage is the text in the blue side panel. There is
-///   therefore exactly one unified theme, and adding usage colours to it would
-///   be inventing a system that does not exist.
-/// - **System B (1993 northern)** colour-codes by usage as its *primary*
-///   signal — the field colour is what a traffic officer reads first, and the
-///   Arabic word beside اليمن only confirms it. So there is one theme per
-///   scheme, and [forNorthernUsage] is how a host gets the right one without
-///   ever naming a colour.
-///
-/// Every colour comes from `YemenColors`, and every one of those is
-/// `// CALIBRATE`. The ratios below are calibration targets too.
+/// System A (2026 unified) does not colour-code by usage — one theme, field white for all.
+/// System B (1993 northern) colour-codes by usage as the primary signal — one theme per
+/// colour scheme, picked by [forNorthernUsage]. Every colour is marked `// CALIBRATE`.
 abstract final class YemenThemes {
   /// Border thickness as a fraction of plate height. Both systems use a thick
   /// frame; this is roughly 10 units on the 288-unit canvas.
@@ -42,12 +16,7 @@ abstract final class YemenThemes {
   /// Both systems use a rounded rectangle frame.
   static const double _unifiedRadiusRatio = 0.055; // CALIBRATE
 
-  /// The one System A theme: black on white, rounded frame, for all five
-  /// usages.
-  ///
-  /// [PlateTheme.dividerColor] is what the stippled separator strip in
-  /// `YemenUnifiedPlates` is painted in — that strip is a column of
-  /// [PlateRule]s, and core paints every rule in the divider colour.
+  /// System A: black on white, rounded frame. Divider colour paints the stipple strip.
   static const PlateTheme unified = PlateTheme.monochrome(
     field: YemenColors.unifiedField,
     ink: YemenColors.unifiedInk,
@@ -110,18 +79,8 @@ abstract final class YemenThemes {
     plateRadiusRatio: _unifiedRadiusRatio,
   );
 
-  /// The northern theme for [usage] — the lookup a host calls instead of
-  /// picking a colour.
-  ///
-  /// [style] is read only when [usage] is [YemenUsage.military]; it is the one
-  /// place where the same usage has two printings, and it is a style rather
-  /// than a sixth usage because both forms mean "military" and differ in
-  /// nothing but the two colours.
-  ///
-  /// [YemenUsage.police] is not a northern class (see [YemenUsage.onNorthern]);
-  /// it resolves to [northernGovernment] rather than throwing, so a usage
-  /// picker shared between the two systems keeps working when the system
-  /// switch flips.
+  /// The northern theme for [usage]. [style] is used only for [YemenUsage.military].
+  /// Police resolves to [northernGovernment].
   static PlateTheme forNorthernUsage(YemenUsage usage, {YemenMilitaryStyle style = YemenMilitaryStyle.classic}) =>
       switch (usage) {
         YemenUsage.private => northernPrivate,
@@ -135,10 +94,6 @@ abstract final class YemenThemes {
         },
       };
 
-  /// The unified theme, whatever the usage.
-  ///
-  /// A one-armed lookup, and it earns its place: it makes the "System A does
-  /// not recolour by usage" rule explicit at the call site instead of leaving
-  /// a reader to wonder whether the host forgot to pass a usage through.
+  /// The unified theme, whatever the usage. System A never recolours by usage.
   static PlateTheme forUnifiedUsage(YemenUsage usage) => unified;
 }
