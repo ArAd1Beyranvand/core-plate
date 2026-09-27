@@ -6,18 +6,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'plate_card_bloc.dart';
 
-/// Provides a [PlateCardBloc] to [child] and keeps it holding the same
-/// characters as [controller], in both directions.
+/// Provides a [PlateCardBloc] mirrored onto [controller] in both directions.
+/// Pass [bloc] to mirror onto a bloc you already hold; leave it null to create
+/// one for [controller]'s spec.
 ///
-/// This is the migration seam for hosts built on the bloc. A [PlateCanvas] no
-/// longer needs one: it owns its characters in a [PlateController], and a host
-/// that wants them reads that controller. But a host with bloc-shaped code
-/// around the plate — a `BlocBuilder` over the value, a `ShowPlate`, its own
-/// `ValueIsChanged` dispatches — can keep every line of it by wrapping the
-/// subtree in this widget instead of a `BlocProvider`.
-///
-/// Pass [bloc] to mirror onto a bloc the host already holds; leave it null and
-/// this widget creates one for [controller]'s spec and disposes it with itself.
+/// The seam for hosts with bloc-shaped code around the plate. A [PlateCanvas]
+/// no longer needs this; it owns a controller directly.
 class PlateCardBinding extends StatefulWidget {
   const PlateCardBinding({super.key, required this.controller, this.bloc, required this.child});
 
@@ -36,7 +30,6 @@ class PlateCardBinding extends StatefulWidget {
 class _PlateCardBindingState extends State<PlateCardBinding> {
   late PlateCardBloc _bloc;
 
-  /// Whether [_bloc] is ours to close. False when the host passed one in.
   bool _ownsBloc = false;
 
   late PlateBlocBridge _bridge;
@@ -54,8 +47,7 @@ class _PlateCardBindingState extends State<PlateCardBinding> {
     if (identical(widget.controller, oldWidget.controller) && identical(widget.bloc, oldWidget.bloc)) {
       return;
     }
-    // Down before the swap, up after: the bridge holds a listener on the
-    // controller being stood down, and a subscription to the bloc being closed.
+    // Dispose the bridge before swapping so it releases its listeners/subscriptions.
     _bridge.dispose();
     if (!identical(widget.bloc, oldWidget.bloc)) {
       final stoodDown = _ownsBloc ? _bloc : null;

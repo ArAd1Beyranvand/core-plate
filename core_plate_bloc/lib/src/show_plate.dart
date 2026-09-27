@@ -4,23 +4,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'plate_card_bloc.dart';
 
-/// Read-only plate view. Renders the real graphical plate (pixel-identical to
-/// the input widget) driven straight off [PlateCardBloc] state, in
-/// [PlateMode.display].
-///
-/// For a bare text rendering of the plate string, use [PlateText] instead.
+/// Read-only graphical plate rendering from [PlateCardBloc] state. For a bare
+/// text rendering, use [PlateText] instead.
 class ShowPlate extends StatelessWidget {
   const ShowPlate({super.key, this.emptyPlate, this.theme, this.country});
 
   final Widget? emptyPlate;
 
-  /// The livery to paint, or null to inherit from an ancestor `PlateThemeScope`.
-  /// `PlateView` has taken one since 0.4.0; a bloc-shaped host needs it just as
-  /// much — without it every plate renders in `PlateTheme.standard()`, which is
-  /// wrong for any country whose plate is not black on white.
+  /// The livery to paint, or null to inherit from `PlateThemeScope`. Without it
+  /// every plate renders in [PlateTheme.standard()], which is wrong for most
+  /// countries.
   final PlateTheme? theme;
 
-  /// The country block to paint, overriding the state spec's own. See
+  /// The country block to paint, overriding the state spec's. See
   /// [PlateCanvas.country].
   final PlateCountry? country;
 
@@ -43,8 +39,7 @@ class ShowPlate extends StatelessWidget {
   }
 }
 
-/// Plain-text rendering of the plate string, for callers who want just the
-/// characters rather than the graphical plate. The bloc-driven counterpart of
+/// Plain-text plate rendering from [PlateCardBloc], the bloc counterpart of
 /// `PlateTextView`.
 class PlateText extends StatelessWidget {
   const PlateText({super.key, this.emptyPlate, this.textStyle});
