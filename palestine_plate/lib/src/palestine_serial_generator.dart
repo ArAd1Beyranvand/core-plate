@@ -5,31 +5,14 @@ import 'package:core_plate/core_plate.dart';
 import 'palestine_governorates.dart';
 import 'palestine_usage.dart';
 
-/// Synthetic Palestinian plate serials, for demos and reproducible test data.
-///
-/// Pure Dart — no Flutter import beyond what a plain `dart:math` `Random`
-/// needs — so it runs in a unit test without a widget binding.
-///
-/// One generator per scheme, each seeded so a given seed always produces the
-/// same sequence. Every value returned is drawn from the same legal set the
-/// matching validator's `validateFields` accepts: [modernWestBank] never
-/// emits `I`, `O` or a reserved Gaza letter; [legacyWestBank] never emits
-/// district `0`/`2` or a usage code outside [PSLegacyUsage.codes]; [gaza]
-/// never emits a prefix other than `3`. That is asserted, not just claimed —
-/// see `test/palestine_serial_generator_test.dart`, which round-trips 10 000
-/// of each through its validator.
-///
-/// Returns `List<String?>`, the same shape [PlateSpec.slots] and every
-/// validator already speak, so a generated value drops straight into a
-/// `PlateEntry` or a `PlateCardBloc`'s initial state.
+/// Synthetic Palestinian plate serials for demos and reproducible tests.
+/// Pure Dart (no Flutter beyond `dart:math.Random`) — runs in unit tests.
+/// One generator per scheme, seeded for reproducibility. Values drawn from
+/// same legal set validators accept (asserted in test/palestine_serial_generator_test.dart:
+/// 10,000 round-trips per scheme). Returns `List<String?>` (PlateSpec.slots shape).
 abstract final class PSSerialGenerator {
-  /// A value for [spec], a modern West Bank plate.
-  ///
-  /// Positions come from the spec's own `region` / `serial` / `governorate`
-  /// text groups, so a new layout with the same registers in different slots
-  /// generates correctly without touching this file.
-  ///
-  /// Throws [ArgumentError] if [spec] carries no such groups.
+  /// Value for modern West Bank [spec]. Positions from spec's text groups.
+  /// Throws ArgumentError if spec lacks required groups.
   static List<String?> modernWestBank(PlateSpec spec, {Random? random}) {
     final rng = random ?? Random();
     final values = List<String?>.filled(spec.slots.length, null);
@@ -50,14 +33,8 @@ abstract final class PSSerialGenerator {
     return values;
   }
 
-  /// A value for [spec], a legacy West Bank plate.
-  ///
-  /// Positions come from the spec's own `district` / `serial` / `usage` text
-  /// groups. The two-character usage code is written across the two slots of
-  /// the `usage` group — identical to the old fixed layout for every existing
-  /// spec, correct for one where those cells are not adjacent.
-  ///
-  /// Throws [ArgumentError] if [spec] carries no such groups.
+  /// Value for legacy West Bank [spec]. Usage code spans two slots.
+  /// Throws ArgumentError if spec lacks required groups.
   static List<String?> legacyWestBank(PlateSpec spec, {Random? random}) {
     final rng = random ?? Random();
     final values = List<String?>.filled(spec.slots.length, null);
@@ -76,12 +53,7 @@ abstract final class PSSerialGenerator {
     return values;
   }
 
-  /// A value for [spec], a Gaza plate.
-  ///
-  /// Positions come from the spec's own `prefix` / `serial` / `usage` text
-  /// groups. The prefix is the literal `'3'`.
-  ///
-  /// Throws [ArgumentError] if [spec] carries no such groups.
+  /// Value for Gaza [spec]. Prefix literal '3'. Throws ArgumentError if missing groups.
   static List<String?> gaza(PlateSpec spec, {Random? random}) {
     final rng = random ?? Random();
     final values = List<String?>.filled(spec.slots.length, null);
@@ -115,9 +87,7 @@ abstract final class PSSerialGenerator {
     return indices;
   }
 
-  /// [values] joined with no separator — the shape a filename or a synthetic
-  /// dataset row wants, as opposed to [PlateSpec.renderGroup]'s grouped,
-  /// dotted rendering.
+  /// Values joined with no separator (filename/dataset row shape, vs renderGroup's dotted).
   static String toFilename(List<String?> values) => values.map((v) => v ?? '').join();
 
   static String _digit(Random rng) => rng.nextInt(10).toString();

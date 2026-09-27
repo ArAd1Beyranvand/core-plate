@@ -1,28 +1,6 @@
-/// The governorate a modern (post-July-2018) West Bank plate's trailing letter
-/// stands for.
-///
-/// The set is **closed**. Thirteen letters were allocated and thirteen are
-/// issued; a letter outside this enum is not a governorate this package has not
-/// heard of, it is a plate that does not exist.
-///
-/// **There is no `I` and no `O`.** The sequence runs `... G H J K ...`: `H`
-/// (Ramallah) is followed by `J` (Jerusalem), and `N` (Yatta) is the last
-/// letter. `I` and `O` are omitted for the reason every plate scheme omits
-/// them — at plate scale, in the condensed face these are printed in, `I` is
-/// indistinguishable from `1` and from a sans-serif `J`, and `O` from `0`. Two
-/// consequences worth writing down:
-///
-/// - **Never emit them.** [PSSerialGenerator] cannot, and
-///   `PSWestBankModernValidator` rejects them by name.
-/// - **In an OCR confusion matrix they are guaranteed misreads, not
-///   candidates.** A recogniser that returns `I` has read a `1` or a `J`; one
-///   that returns `O` has read a `0`. Map them, do not score them.
-///
-/// `P`, `Q`, `R`, `S` and `T` are a separate case: they *were* allocated, to
-/// Gaza's governorates, and were never issued — Gaza left the Palestinian
-/// Authority's numbering in 2012 and has run its own design since. They are
-/// listed in [reservedGazaLetters] and rejected by the validator, because a
-/// West Bank plate ending in `P` is not a Gaza plate, it is nothing.
+/// Governorates on modern West Bank plates (post-July-2018). Thirteen issued letters;
+/// closed set. Missing `I` and `O` (OCR confusion with digits). `P`–`T` reserved
+/// for pre-2012 Gaza (never issued West Bank). See [letters], [confusableLetters], [reservedGazaLetters].
 enum PSGovernorate {
   jenin('A', 'جنين', 'Jenin'),
   tulkarm('B', 'طولكرم', 'Tulkarm'),
@@ -47,23 +25,16 @@ enum PSGovernorate {
   final String arabicName;
   final String englishName;
 
-  /// Every issued letter, in allocation order — which is also the order
-  /// `PSAlphabets.governorateLetters` presents them in, so a picker's wheel
-  /// reads `A B C D E F G H J K L M N`.
+  /// Issued letters in allocation order (same as PSAlphabets.governorateLetters).
   static const List<String> letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N'];
 
-  /// The two letters that are never issued anywhere in the scheme, and are
-  /// misreads rather than values. See the enum doc.
+  /// Never issued; OCR misreads (I↔1/J, O↔0). See enum doc.
   static const List<String> confusableLetters = ['I', 'O'];
 
-  /// Allocated to Gaza's governorates under the pre-2012 Palestinian Authority
-  /// scheme and never issued. Rejected on a West Bank plate; a real Gaza plate
-  /// carries no letter at all.
+  /// Allocated to pre-2012 Gaza (never issued West Bank). Rejected by validator.
   static const List<String> reservedGazaLetters = ['P', 'Q', 'R', 'S', 'T'];
 
-  /// The governorate [letter] stands for, or null when it is not an issued
-  /// letter. Null covers `I`, `O`, the reserved Gaza letters and everything
-  /// else — the caller decides which of those it wants to say something about.
+  /// Governorate for [letter], or null if not issued.
   static PSGovernorate? byLetter(String letter) {
     for (final g in PSGovernorate.values) {
       if (g.letter == letter) return g;

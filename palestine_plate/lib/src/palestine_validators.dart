@@ -3,19 +3,9 @@ import 'package:core_plate/core_plate.dart';
 import 'palestine_governorates.dart';
 import 'palestine_usage.dart';
 
-/// Judges a modern (post-July-2018) West Bank plate: `D · DDDD · L`.
-///
-/// Modern and legacy are different specs with different last groups — a letter
-/// versus two digits — so they get different validators rather than one that
-/// sniffs which scheme it is looking at. A host picks the validator the same
-/// way it picks the spec.
-///
-/// Like every [PlateValidator] it never bars input. It stays quiet
-/// ([PlateValidation.valid]) until the governorate group actually has
-/// something in it: with nothing barring a keystroke, the red state is the
-/// only feedback there is, and a plate that flashes red before the user has
-/// reached the last slot is worse than no validation at all — the rule
-/// `PalestinePlateValidator` and `GermanPlateValidator` already follow.
+/// Modern West Bank plate validator (D·DDDD·L, post-July-2018).
+/// Different last group (letter vs digits) requires separate validator. Stays quiet
+/// until governorate group filled (avoid flashing red on incomplete entry).
 class PSWestBankModernValidator extends GatedPlateValidator {
   const PSWestBankModernValidator();
 
@@ -25,12 +15,10 @@ class PSWestBankModernValidator extends GatedPlateValidator {
   static const String invalidRegion = 'Region code must be one digit.';
   static const String invalidSerial = 'Serial must be four digits.';
 
-  /// `H` is followed by `J`; `I` and `O` are never issued at all. See
-  /// [PSGovernorate] for why.
+  /// H→J gap; I,O never issued. See PSGovernorate.
   static const String illegalLetterIO = 'The letters I and O are never issued; H is followed by J.';
 
-  /// `P`–`T` were allocated to Gaza's governorates under the pre-2012 scheme
-  /// and never printed on a West Bank plate.
+  /// P–T allocated to pre-2012 Gaza; never issued West Bank.
   static const String reservedGazaLetter = 'P, Q, R, S and T were allocated to Gaza and never issued.';
 
   static const String invalidGovernorate = 'Governorate letter must be one of A-N (I and O excluded).';
@@ -42,8 +30,7 @@ class PSWestBankModernValidator extends GatedPlateValidator {
     governorate: entry.group('governorate'),
   );
 
-  /// The country rule without a spec: pass the plate's own slot values in.
-  /// Used directly by [PSSerialGenerator] and by the boundary-case tests.
+  /// Validation without spec (used by PSSerialGenerator and tests).
   static PlateValidation validateFields({required String region, required String serial, required String governorate}) {
     if (!isDigitsOfLength(region, 1)) {
       return const PlateValidation.invalid(invalidRegion);
@@ -64,17 +51,15 @@ class PSWestBankModernValidator extends GatedPlateValidator {
   }
 }
 
-/// Judges a legacy (1994 – July 2018) West Bank plate: `D · DDDD · DD`.
-///
-/// Stays quiet until the usage group has something in it — see
-/// [PSWestBankModernValidator]'s doc for why.
+/// Legacy West Bank plate validator (D·DDDD·DD, 1994–July-2018).
+/// Stays quiet until usage group filled (see PSWestBankModernValidator).
 class PSWestBankLegacyValidator extends GatedPlateValidator {
   const PSWestBankLegacyValidator();
 
   @override
   String get gateGroup => 'usage';
 
-  /// `0` and `2` are not legal district codes — see [PSLegacyUsage.districts].
+  /// 0,2 not legal (see PSLegacyUsage.districts).
   static const String invalidDistrictCode = 'District code must be 1 or 3-9 (0 and 2 are never issued).';
 
   static const String invalidSerial = 'Serial must be four digits.';
@@ -99,10 +84,8 @@ class PSWestBankLegacyValidator extends GatedPlateValidator {
   }
 }
 
-/// Judges a Gaza plate: `3 · DDDD · DD`.
-///
-/// Stays quiet until the usage group has something in it, for the same reason
-/// as the West Bank validators.
+/// Gaza plate validator (3·DDDD·DD).
+/// Stays quiet until usage group filled (see PSWestBankModernValidator).
 class PSGazaValidator extends GatedPlateValidator {
   const PSGazaValidator();
 
