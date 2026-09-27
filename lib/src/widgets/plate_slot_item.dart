@@ -6,18 +6,8 @@ import '../model/plate_spec.dart';
 import '../model/slot_behavior.dart';
 import '../theme/plate_theme.dart';
 
-/// One plate position, driven entirely by its [PlateSlot] and a resolved
-/// [SlotBehavior].
-///
-/// This replaces the old `IntegerPlateItem`/`StringPlateItem` pair: those two
-/// differed only in which characters they accepted and how the character
-/// arrived, which is a property of the slot's [PlateAlphabet], not a reason for
-/// two widgets. The behaviour is a straight port of both.
-///
-/// The widget never reads the bloc. Its [value] arrives as a parameter — the
-/// plate is the only thing that talks to the bloc. It also never re-derives
-/// what kind of input it is: [behavior] is resolved once by the canvas and
-/// every arm below is a `switch` on it.
+/// One plate position, driven by [PlateSlot] and [SlotBehavior]. Never reads
+/// the bloc; [behavior] is resolved once and switched on, not re-derived.
 class PlateSlotItem extends StatelessWidget {
   const PlateSlotItem({
     super.key,
@@ -34,33 +24,14 @@ class PlateSlotItem extends StatelessWidget {
   });
 
   final PlateSlot slot;
-
-  /// What this slot does about input, resolved once by [PlateCanvas].
   final SlotBehavior behavior;
-
-  /// The current canonical (storage-form) value, or null/empty when unset.
   final String? value;
-
-  /// Backs the [TextField] for typed slots. Null for chosen slots.
   final TextEditingController? controller;
-
   final FocusNode focusNode;
-
-  /// Commits a canonical character, or '' to clear.
   final ValueChanged<String> onChanged;
-
-  /// Fires after a non-empty commit.
   final VoidCallback? onCompleted;
-
-  /// The plate-level backspace, fired only when this slot is ALREADY empty:
-  /// the first press clears the slot and stays put, the second one steps back.
-  /// A press on a filled slot never reaches here — the field (or the `Focus`
-  /// below) clears it in place through [onChanged].
   final VoidCallback? onBackspace;
-
   final PlateTheme? theme;
-
-  /// Opens the picker; [SlotBehavior.sheet] only.
   final VoidCallback? onPressed;
 
   @override
@@ -84,9 +55,6 @@ class PlateSlotItem extends StatelessWidget {
           theme: effectiveTheme,
         );
 
-      // A typed slot under a hardware keyboard stays a TextField with the IME
-      // suppressed; a chosen slot becomes a Focus that consumes raw key
-      // events. Not the same thing — do not collapse them.
       case SlotBehavior.hardwareField:
         if (isTyped) {
           return _TypedField(
@@ -150,8 +118,7 @@ class PlateSlotItem extends StatelessWidget {
   }
 }
 
-/// [SlotBehavior.glyph]: a bare rendered character on the white face, or
-/// nothing when the slot is unset. No focus node, no gestures.
+/// Bare rendered character (glyph slot).
 class _GlyphSlot extends StatelessWidget {
   const _GlyphSlot({required this.slot, required this.value, required this.theme});
 
@@ -184,12 +151,7 @@ class _GlyphSlot extends StatelessWidget {
   }
 }
 
-/// The former [_buildTypedField] / `IntegerPlateItem`: a real [TextField]
-/// restyled to a bare glyph with a thin underline.
-///
-/// [behavior] is [SlotBehavior.imeField], [SlotBehavior.hardwareField] or
-/// [SlotBehavior.externalField] — it picks `readOnly`, `showCursor` and
-/// `keyboardType` directly, with no reference to [PlateInputSource].
+/// TextField restyled to a bare glyph with thin underline.
 class _TypedField extends StatelessWidget {
   const _TypedField({
     required this.slot,
@@ -213,34 +175,20 @@ class _TypedField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // National numerals: the field's controller carries the alphabet's DISPLAY
-    // form (the machine renders it in `syncController`), and `onChanged` folds
-    // whatever was typed back to the canonical character before it reaches the
-    // host — so the bloc stays ASCII while the slot both shows and accepts its
-    // own script. `alphabet.accepts` takes either form, and `alphabet.canonical`
-    // does the fold. Latin slots have no glyphs, so both are the identity.
     final isEmpty = controller.text.isEmpty;
     final underlineColor = isEmpty ? theme.inactiveColor : theme.activeColor;
 
-    // externalField: the host feeds every character through the bloc, so the
-    // field takes no keystrokes of its own and only shows a cursor when focused.
     final readOnly = behavior == SlotBehavior.externalField;
 
     return SizedBox(
       width: slot.box.width,
       height: slot.box.height,
-      // Sits ABOVE the field's own focus node, so the field still deletes its
-      // own character first and only an unhandled backspace — one pressed on an
-      // empty slot — reaches the plate. That is the two-press rule: clear here,
-      // then step back.
       child: Focus(
         canRequestFocus: false,
         skipTraversal: true,
         onKeyEvent: (node, event) {
           if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
           if (event.logicalKey != LogicalKeyboardKey.backspace) return KeyEventResult.ignored;
-          // A read-only field (externalField) cannot delete anything itself, so
-          // every backspace on it is the plate's to handle.
           if (!readOnly && controller.text.isNotEmpty) return KeyEventResult.ignored;
           onBackspace?.call();
           return KeyEventResult.handled;
@@ -251,11 +199,6 @@ class _TypedField extends StatelessWidget {
             controller: controller,
             focusNode: focusNode,
             readOnly: readOnly,
-            // A slot fed from outside keeps its focus when something outside it
-            // is tapped, because that something is usually the very keypad
-            // feeding it. TextField's default drops focus on desktop
-            // (linux/macOS/windows) at pointer-down, which would disarm the pad
-            // one press before it could submit anything.
             onTapOutside: readOnly ? (PointerDownEvent _) {} : null,
             showCursor: readOnly ? focusNode.hasFocus : null,
             textAlign: TextAlign.center,
@@ -274,8 +217,6 @@ class _TypedField extends StatelessWidget {
             ),
             onChanged: (typed) {
               if (slot.alphabet.accepts(typed)) {
-                // Store the canonical character, not the glyph the user typed:
-                // a national-numeral slot accepts `'۵'` but the host keeps `'5'`.
                 onChanged(slot.alphabet.canonical(typed));
                 if (typed != '') {
                   if (onCompleted != null) onCompleted!();
@@ -286,8 +227,6 @@ class _TypedField extends StatelessWidget {
               }
             },
             maxLength: 1,
-            // hardwareField keeps a TextField but suppresses the IME; the other
-            // two show it, numeric where the alphabet is digits-only.
             keyboardType: behavior == SlotBehavior.hardwareField
                 ? TextInputType.none
                 : slot.alphabet.isNumeric
@@ -300,12 +239,7 @@ class _TypedField extends StatelessWidget {
   }
 }
 
-/// The former [_buildChosenSlot] / `StringPlateItem`: a focusable slot with an
-/// underline and the alphabet's placeholder glyph when empty.
-///
-/// [behavior] is [SlotBehavior.sheet] (tap opens the picker),
-/// [SlotBehavior.hardwareField] (Focus consuming key events) or
-/// [SlotBehavior.externalField] (Focus, tap only claims focus).
+/// Focusable slot with underline; placeholder glyph when empty.
 class _ChosenSlot extends StatelessWidget {
   const _ChosenSlot({
     required this.slot,
@@ -368,10 +302,6 @@ class _ChosenSlot extends StatelessWidget {
       return InkWell(onTap: onPressed, child: slotBox(restingColor));
     }
 
-    // hardwareField and externalField both make the slot focusable and drive
-    // the underline off focus rather than opening a sheet. Only hardwareField
-    // consumes key events; externalField receives its letter from the host's
-    // on-screen pad via the bloc, so it just claims focus on tap.
     final consumesKeys = behavior == SlotBehavior.hardwareField;
     return Focus(
       focusNode: focusNode,
@@ -379,9 +309,6 @@ class _ChosenSlot extends StatelessWidget {
           ? (node, event) {
               if (event is! KeyDownEvent) return KeyEventResult.ignored;
               if (event.logicalKey == LogicalKeyboardKey.backspace) {
-                // Same two-press rule as the typed field: the first press
-                // clears this slot and stays, and a press on an already-empty
-                // slot is the plate's, which steps back to the previous one.
                 if (isEmpty) {
                   onBackspace?.call();
                 } else {
@@ -394,7 +321,6 @@ class _ChosenSlot extends StatelessWidget {
                 onChanged(slot.alphabet.canonical(ch));
                 return KeyEventResult.handled;
               }
-              // Everything else (digits, arrows, ...) reaches the next field.
               return KeyEventResult.ignored;
             }
           : null,

@@ -16,22 +16,10 @@ import 'plate_frame.dart';
 import 'plate_selector.dart';
 import 'plate_slot_item.dart';
 
-/// The editable plate for a [PlateSpec].
-///
-/// **Needs nothing above it.** The canvas holds the plate's characters in a
-/// [PlateController] — its own, or the one you pass as [controller] if you want
-/// to read or write them. A bare `PlateCanvas(spec: …)` is a complete,
-/// working plate. If you change [spec] on a live canvas, the characters already
-/// entered are carried across to the new spec as [onSpecChange] directs.
-///
-/// **Needs no state management.** The canvas reads and writes one thing, its
-/// controller. It does not look for a provider above it. A host with
-/// bloc-shaped code around the plate wraps the subtree in `PlateCardBinding`
-/// from the `core_plate_bloc` package, which provides a `PlateCardBloc`
-/// mirrored onto that same controller.
-///
-/// `PlateCanvas` provides its own [Material], so it renders correctly without a
-/// [Scaffold] ancestor.
+/// The editable plate for a [PlateSpec], holding characters in a
+/// [PlateController] (its own or passed via [controller]). Provides its own
+/// [Material], needs no state management, and preserves characters when [spec]
+/// changes per [onSpecChange].
 class PlateCanvas extends StatefulWidget {
   const PlateCanvas({
     super.key,
@@ -52,46 +40,28 @@ class PlateCanvas extends StatefulWidget {
   final PlateMode mode;
   final PlateTheme? theme;
 
-  /// The country block to paint, overriding [PlateSpec.country].
-  ///
-  /// A spec is geometry; which country block sits in the panel is a render-time
-  /// choice, exactly as [theme] is. A design whose panel text or ink varies with
-  /// something the spec does not encode — a vehicle's usage class, say — passes
-  /// the block here instead of minting a second spec that differs in one field.
-  ///
-  /// Null keeps [PlateSpec.country], so every existing call site is unaffected.
+  /// Override [PlateSpec.country] at render time, like [theme]. Null keeps
+  /// [PlateSpec.country].
   final PlateCountry? country;
 
   final PlateInputSource? inputSource;
 
-  /// Presents a character chooser for a `chosen`-alphabet slot and returns the
-  /// picked character, or null if dismissed. Required: core ships no built-in
-  /// chooser — the `plate_keypad` package's `PlateCharacterPicker.show` is the
-  /// usual value, but any modal that resolves to a `String?` works.
+  /// Shows a character chooser for a chosen slot; required.
   final Future<String?> Function(PlateAlphabet alphabet) onChooseCharacter;
   final ValueChanged<int?>? onActiveIndexChanged;
 
-  /// The handle that owns this plate's characters and drives its focus. Pass
-  /// one to read or write the value, track the active slot, or feed characters
-  /// from your own keypad. Omit it and the canvas makes a private one.
+  /// Owns the plate's characters and focus. Omit to use a private controller.
   final PlateController? controller;
 
-  /// The rule this plate is judged against. Never prevents input; see
-  /// [autoValidate] for when it is consulted.
+  /// Rule to judge the plate. Never prevents input.
   final PlateValidator? validator;
 
-  /// When true, the canvas validates after every committed value and paints
-  /// the invalid state itself. When false (the default), [validator] is
-  /// consulted only when the host asks — read [PlateController.validation] and
-  /// decide your own timing.
+  /// When true, canvas validates after every commit. When false (default), read
+  /// [PlateController.validation] and validate on your timing.
   final bool autoValidate;
 
-  /// What becomes of the characters already entered when [spec] is swapped on a
-  /// live canvas. Defaults to [PlateValuePreservation.byGroupKey] as of 0.4.0
-  /// (it was [PlateValuePreservation.none] before): a change of scheme or
-  /// serial length keeps the registers that still fit, matched by group key,
-  /// and truncates only what no longer does. Pass
-  /// [PlateValuePreservation.none] for the old behaviour of clearing the plate.
+  /// What becomes of entered characters when [spec] is swapped. Defaults to
+  /// [PlateValuePreservation.byGroupKey] (keeps matching registers).
   final PlateValuePreservation onSpecChange;
 
   @override
@@ -99,38 +69,21 @@ class PlateCanvas extends StatefulWidget {
 }
 
 class _PlateCanvasState extends State<PlateCanvas> {
-  /// Focus, active-slot tracking and navigation for [PlateCanvas.spec]. Rebuilt
-  /// whenever that spec changes; see [_installMachine].
+  /// Focus and slot navigation; rebuilt when spec changes.
   late PlateInputMachine _machine;
 
-  /// The plate's characters, and the canvas's writer of record: every commit
-  /// the machine makes, and every character the picker returns, lands here.
-  ///
-  /// This is what takes [BuildContext] out of the long-lived closures the
-  /// machine holds. They used to read the bloc off `context` on every commit —
-  /// a context captured by the build that installed the machine and then kept
-  /// for the machine's whole life.
+  /// The canvas's writer of record; takes [BuildContext] out of long-lived
+  /// closures the machine holds.
   late PlateController _controller;
 
-  /// Whether [_controller] is ours to dispose. False when the host passed one
-  /// as [PlateCanvas.controller]: that one outlives us.
+  /// Whether [_controller] is ours to dispose.
   bool _ownsController = false;
 
-  /// The light Material theme the slots' selection colours are pinned to, and
-  /// the one colour it is derived from.
-  ///
-  /// [ThemeData.light] builds a colour scheme, a full text theme and some
-  /// thirty component sub-themes. It used to run on every [build], which under
-  /// `autoValidate` meant once per keystroke and, on a host that rebuilds the
-  /// canvas from an animation, once per frame. It depends on exactly one value,
-  /// so it is cached against that value: a verdict flip (which swaps
-  /// `activeColor` for `alertColor`) rebuilds it once, and nothing else does.
+  /// Cached selection theme, rebuilt only when verdict flips.
   ThemeData? _selectionTheme;
   Color? _selectionThemeColor;
 
-  /// The face clip, cached for the same reason: [_PlateFaceClipper.shouldReclip]
-  /// already stops the clip being recomputed, but a fresh clipper was still
-  /// allocated on every build.
+  /// Cached face clip.
   _PlateFaceClipper? _faceClipper;
 
   ThemeData _selectionThemeFor(Color active) {
@@ -218,18 +171,12 @@ class _PlateCanvasState extends State<PlateCanvas> {
     stoodDown?.dispose();
   }
 
-  /// Builds the machine for the current spec, hands the host's controller to
-  /// it, and reports the seeded active slot. Everything a fresh mount does —
-  /// which is exactly what a spec change needs too.
+  /// Builds the machine for the current spec and seeded active slot.
   void _installMachine() {
     assert(debugValidateSpec(widget.spec));
     final machine = PlateInputMachine(
       spec: widget.spec,
       inputSource: _resolveInputSource(),
-      // Read through the field, not a tear-off of the controller we hold right
-      // now: these closures live as long as the machine, and a host swapping
-      // `controller:` replaces `_controller` underneath them without the
-      // machine being rebuilt.
       readValues: () => _controller.values,
       commit: (index, value) => _controller.setAt(index, value),
       onActiveIndexChanged: _reportActiveIndex,
@@ -238,10 +185,6 @@ class _PlateCanvasState extends State<PlateCanvas> {
     widget.controller?.attach(machine);
     widget.controller?.installValidation(_probeValidation);
     if (machine.activeIndex != null) {
-      // The machine's seeded slot (see its constructor) is announced from here,
-      // after the frame, so listeners are attached; a later focus change
-      // overrides it. Guarded on the machine still being the current one, since
-      // another spec change can land before the callback runs.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !identical(_machine, machine)) return;
         _reportActiveIndex(machine.activeIndex);
@@ -254,23 +197,16 @@ class _PlateCanvasState extends State<PlateCanvas> {
     widget.controller?.notifyActiveSlotChanged();
   }
 
-  /// The plate as it stands, for a validator to judge. [values] is passed in
-  /// rather than read here so the auto-validating path can take it from the
-  /// value it is already subscribed to.
   PlateEntry _entryFor(List<String?> values) =>
       PlateEntry(spec: widget.spec, values: values, activeIndex: _machine.activeIndex);
 
-  /// Backs [PlateController.validation]. Null when there is no validator,
-  /// which is what makes that getter null for a host that set none.
   PlateValidation? _probeValidation() {
     final validator = widget.validator;
     if (validator == null) return null;
     return validator.validate(_entryFor(_controller.values));
   }
 
-  /// Publishes an auto-validated verdict to the host's controller. Deferred to
-  /// after the frame because it runs from a build (see [_ValidationBinding])
-  /// and notifying a listener that calls `setState` mid-build is an error.
+  /// Publishes verdict after the frame (called from build).
   void _publishVerdict(PlateValidation verdict) {
     final controller = widget.controller;
     if (controller == null) return;
@@ -283,9 +219,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     return widget.inputSource ?? defaultInputSource();
   }
 
-  /// Presents the character picker for a chosen slot. Stays here rather than in
-  /// the machine: it needs a [BuildContext] and a modal route, and the machine
-  /// never presents UI.
+  /// Presents the character picker for a chosen slot.
   Future<void> _openPicker(int index) async {
     final slot = widget.spec.slots[index];
     final chosen = await widget.onChooseCharacter(slot.alphabet);
@@ -446,20 +380,11 @@ class _PlateCanvasState extends State<PlateCanvas> {
   }
 }
 
-/// The plate's printed furniture: the frame, the country panel and its flag,
-/// the rules, the labels and the decals. Everything that is painted on a plate
-/// rather than typed into one.
+/// Painted furniture (frame, country panel, rules, labels, decals).
 ///
-/// **No TextField may ever appear in this subtree**, and that is a load-bearing
-/// property, not a tidiness one. Nothing here composites, so this layer's
-/// [FittedBox] keeps its scale on the canvas and the whole subtree — most of
-/// all the flag, whose emblem is a handful of device pixels wide — is drawn as
-/// vector at device resolution instead of being rasterised in plate
-/// coordinates and resampled. See the note in [_PlateCanvasState.build].
-///
-/// It is also entirely static between spec changes: no binding in it watches a
-/// character, so typing cannot repaint it. The one exception is the frame,
-/// which follows a single bool through [_FrameBinding].
+/// **No TextField may ever appear in this subtree** — nothing here composites,
+/// so the flag is drawn at device resolution, not rasterised and resampled.
+/// Static between spec changes except the frame, which follows [_FrameBinding].
 class _PlateArtwork extends StatelessWidget {
   const _PlateArtwork({
     required this.spec,
@@ -474,8 +399,7 @@ class _PlateArtwork extends StatelessWidget {
   final PlateCountry country;
   final PlateController controller;
 
-  /// The white face's rounded-rect clip, built once by the canvas and shared
-  /// with [_PlateInputs] so both layers clip to exactly the same geometry.
+  /// Shared clip geometry with [_PlateInputs].
   final _PlateFaceClipper clipper;
 
   @override
@@ -540,13 +464,8 @@ class _PlateArtwork extends StatelessWidget {
   }
 }
 
-/// The plate's live characters: the typed slots and the mirrors that echo
-/// them. Drawn over [_PlateArtwork], in its own [FittedBox], clipped to the
-/// same white face.
-///
-/// This is the layer the TextFields composite, and the layer a keystroke
-/// repaints. Keeping it to just the glyphs is what stops a keystroke reaching
-/// the flag.
+/// Live characters: typed slots and mirrors. TextFields composite here; a
+/// keystroke repaints only this layer, not the flag above.
 class _PlateInputs extends StatelessWidget {
   const _PlateInputs({
     required this.spec,
@@ -561,17 +480,11 @@ class _PlateInputs extends StatelessWidget {
 
   final PlateSpec spec;
   final PlateTheme theme;
-
-  /// One per slot, resolved by the canvas from mode, alphabet and input source.
   final List<SlotBehavior> behaviors;
   final PlateInputMachine machine;
   final PlateController controller;
   final PlateMode mode;
-
-  /// Opens the character picker for a `sheet`-behaviour slot.
   final void Function(int index) onPick;
-
-  /// Shared with [_PlateArtwork]; see its field of the same name.
   final _PlateFaceClipper clipper;
 
   @override
@@ -637,13 +550,7 @@ class _PlateInputs extends StatelessWidget {
   }
 }
 
-/// The plate's face, subscribed to the verdict on the typed value rather than
-/// to the value itself.
-///
-/// The [PlateSelector] folds the controller's value down to a [PlateValidation],
-/// which compares by reason, so the subtree rebuilds when the plate crosses
-/// between valid and invalid and not once per keystroke — the property the
-/// showcase used to maintain by hand.
+/// Subscribed to verdict, not value, so rebuilds only on valid/invalid flip.
 class _ValidationBinding extends StatelessWidget {
   const _ValidationBinding({
     required this.controller,
@@ -659,14 +566,6 @@ class _ValidationBinding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A `PlateSelector` folds the controller's value down to the verdict;
-    // because `PlateValidation` compares by reason, the builder runs only when
-    // the plate crosses between valid and invalid, not once per keystroke.
-    //
-    // The verdict is handed to `_VerdictListener`, which publishes it from its
-    // own lifecycle callbacks (`initState` / `didUpdateWidget`) rather than
-    // from `build`. `build` here no longer notifies anyone, and a rebuild that
-    // leaves the verdict unchanged publishes nothing.
     return PlateSelector<PlateValidation>(
       controller: controller,
       selector: (c) => validate(c.values),
@@ -675,8 +574,7 @@ class _ValidationBinding extends StatelessWidget {
   }
 }
 
-/// Publishes [verdict] to [onVerdict] from lifecycle callbacks — never from
-/// `build` — so the side effect fires exactly once per verdict flip.
+/// Publishes verdict from lifecycle callbacks (not build).
 class _VerdictListener extends StatefulWidget {
   const _VerdictListener({required this.verdict, required this.onVerdict, required this.child});
 
@@ -707,8 +605,7 @@ class _VerdictListenerState extends State<_VerdictListener> {
   Widget build(BuildContext context) => widget.child;
 }
 
-/// Positions a child in plate-space from a [PlateBox]. The one place the four
-/// `left/top/width/height` literals turn into a [Positioned].
+/// Positions a child from a [PlateBox].
 class _Placed extends StatelessWidget {
   const _Placed({required this.box, required this.child});
 
@@ -720,12 +617,7 @@ class _Placed extends StatelessWidget {
       Positioned(left: box.left, top: box.top, width: box.width, height: box.height, child: child);
 }
 
-/// The plate's border and white face, subscribed only to whether the plate is
-/// complete.
-///
-/// [PlateFrame] repaints for exactly one reason — the border shifts ~2% when
-/// the last slot fills — so watching a bool means a keystroke that does not
-/// complete the plate leaves the frame entirely alone.
+/// Border and face, subscribed to completion (repaints only when last slot fills).
 class _FrameBinding extends StatelessWidget {
   const _FrameBinding({required this.theme, required this.controller});
 
@@ -741,12 +633,7 @@ class _FrameBinding extends StatelessWidget {
   }
 }
 
-/// One slot, subscribed to its OWN character rather than to the whole plate.
-///
-/// This is what keeps a keystroke local: the [ValueListenableBuilder] watches
-/// `controller.slot(index)`, a `ValueListenable<String?>`, so only the slot
-/// whose character actually changed rebuilds. The other seven, the country
-/// panel, the rules, the labels and the decals are untouched.
+/// One slot, subscribed only to its own character (keeps keystrokes local).
 class _SlotBinding extends StatelessWidget {
   const _SlotBinding({
     required this.index,
@@ -763,13 +650,7 @@ class _SlotBinding extends StatelessWidget {
   final PlateSlot slot;
   final SlotBehavior behavior;
   final PlateTheme theme;
-
-  /// Owns this slot's focus node and text controller. Read here rather than
-  /// passed in, so a new machine (after a spec change) reaches every slot.
   final PlateInputMachine machine;
-
-  /// The canvas's writer of record. This slot subscribes to its own position
-  /// through [PlateController.slot], and commits through [PlateController.setAt].
   final PlateController controller;
   final VoidCallback? onCompleted;
   final VoidCallback? onPressed;
@@ -779,12 +660,7 @@ class _SlotBinding extends StatelessWidget {
     return ValueListenableBuilder<String?>(
       valueListenable: controller.slot(index),
       builder: (context, value, _) {
-        // Keep the field's text in step with the controller, as the canvas used
-        // to do for every slot at once. This runs before this slot's own
-        // TextField builds in the same frame, so notifying its controller here
-        // is safe.
         machine.syncController(index, value);
-
         return PlateSlotItem(
           slot: slot,
           behavior: behavior,
@@ -794,8 +670,6 @@ class _SlotBinding extends StatelessWidget {
           focusNode: machine.focusNodeAt(index),
           onChanged: (v) => controller.setAt(index, v),
           onCompleted: onCompleted,
-          // A backspace the slot could not use itself goes to the machine,
-          // which clears the previous slot and focuses it.
           onBackspace: machine.backspaceCharacter,
           onPressed: onPressed,
         );
@@ -804,23 +678,13 @@ class _SlotBinding extends StatelessWidget {
   }
 }
 
-/// One mirror: a read-only echo of a slot's character, subscribed to that ONE
-/// character exactly as [_SlotBinding] is.
-///
-/// It owns no focus node and no controller — a mirror is a presentation of a
-/// value, not a place to type — so it never touches the input machine and has
-/// no `syncController` call.
+/// Read-only echo of a slot's character (no focus, no controller).
 class _MirrorBinding extends StatelessWidget {
   const _MirrorBinding({required this.mirror, required this.alphabet, required this.theme, required this.controller});
 
   final PlateMirror mirror;
-
-  /// Resolved by the canvas: the mirror's own alphabet, or the source slot's.
   final PlateAlphabet alphabet;
   final PlateTheme theme;
-
-  /// The canvas's writer of record; the mirror watches its source position
-  /// through [PlateController.slot].
   final PlateController controller;
 
   @override
@@ -838,16 +702,7 @@ class _MirrorBinding extends StatelessWidget {
   }
 }
 
-/// An editable mirror: a second input field bound to a slot's value, in another
-/// script. It is [_SlotBinding]'s counterpart for a paired row — the iranian
-/// figures above, the Latin figures below — but it commits to and reads from the
-/// SOURCE slot's position, so the two registers are one value, one focus grammar
-/// and one entry in every validator. Typing in either updates both.
-///
-/// Its field, focus node and per-value sync come from the machine's mirror
-/// arrays (see [PlateInputMachine.mirrorControllerAt]), not the slot arrays, so
-/// it adds no slot. It renders through [PlateSlotItem] exactly as a slot does,
-/// over a synthetic [PlateSlot] carrying the mirror's alphabet and echo size.
+/// Editable mirror: a second input field bound to the source slot's value.
 class _EditableMirrorBinding extends StatelessWidget {
   const _EditableMirrorBinding({
     required this.mirrorIndex,
@@ -862,12 +717,7 @@ class _EditableMirrorBinding extends StatelessWidget {
 
   final int mirrorIndex;
   final PlateMirror mirror;
-
-  /// The mirror's own alphabet, or the source slot's — resolved by the canvas.
   final PlateAlphabet alphabet;
-
-  /// The source slot's resolved behaviour: the paired field takes input the same
-  /// way the primary row does (IME, hardware or external).
   final SlotBehavior behavior;
   final PlateTheme theme;
   final PlateInputMachine machine;
@@ -896,9 +746,7 @@ class _EditableMirrorBinding extends StatelessWidget {
   }
 }
 
-/// Clips plate content to the white face's rounded rectangle: the plate rect
-/// inset by the border thickness, rounded by the inner corner radius. Geometry
-/// mirrors [PlateFrame]'s painter so the clip and the painted face stay aligned.
+/// Clips to white face's rounded rect; geometry mirrors [PlateFrame].
 class _PlateFaceClipper extends CustomClipper<RRect> {
   const _PlateFaceClipper({required this.border, required this.radius});
 
