@@ -4,190 +4,57 @@ import 'package:flutter/widgets.dart';
 import 'yemen_alphabets.dart';
 import 'yemen_country.dart';
 
-/// **System B** — the 1993 format, still in force across the Houthi-controlled
-/// north, and the larger share of the fleet on the road, because
-/// `YemenUnifiedPlates` only began rolling out in mid-2026.
-///
-/// This is not the legacy half of a legacy/current pair. Both systems are
-/// current, in different geographies, with different serial grammars and
-/// different colour semantics. Keeping them in two namespaces with nothing
-/// shared between them is the point; there is no `YemenSystem` enum here and
-/// there should not be one.
-///
-/// ### What the plate says
-///
-/// A top band over a single **left/right split**, not a stacked pair of
-/// registers:
-///
-/// - a top band with `اليمن ـ` on the left and the usage word beside it;
-/// - a full-width horizontal rule under the band;
-/// - one row below the rule, divided by a vertical line into the
-///   **governorate code** (1..22, one or two digits) on the left and the
-///   **vehicle serial** (one to six digits, never zero-padded) on the right,
-///   the two cells optically the same size.
-///
-/// ### Colour is the primary signal
-///
-/// Unlike System A, this system colour-codes by usage and the field colour is
-/// what is read first: blue private, yellow for hire, red transport, green
-/// government, black military. That colour lives in `YemenThemes`, never in a
-/// spec, and `YemenThemes.forNorthernUsage` is how a host gets it. Pairing a
-/// spec here with the wrong theme produces a plate in the wrong colour, which
-/// on this system means a plate that claims to be a different kind of vehicle.
-///
-/// ### Which combinations exist
-///
-/// One or two governorate digits crossed with one to six serial digits is
-/// twelve layouts, and enumerating all of them would be a wall of speculative
-/// consts. Four car layouts are declared — the attested and useful subset —
-/// plus one motorcycle layout. See [carGeometries] for the map and the
-/// class-level TODO for what is missing.
-///
-/// There is one spec per *layout*, not per layout and usage: usage picks the
-/// country block and the theme, which the host passes to the canvas. See the
-/// comment over [carGov2Serial5].
-// TODO(northern-lengths): the serial is documented as one to six digits, and
-// only four, five and six are built here (with one and two governorate digits
-// crossed only at five). Serials of one, two and three digits are legal and
-// unbuilt; add them when a reference image shows how a short serial is centred
-// in the lower register, rather than guessing at the tracking now.
+/// System B — the 1993 format, still the larger share of the fleet. A top band
+/// (اليمن + usage word) over a left/right split (governorate code + serial).
+/// Colour-coded by usage (blue/yellow/red/green/black for private/hire/transport/govt/military);
+/// colour lives in [YemenThemes], not here. One spec per layout (gov 1–2 digits × serial 4–6).
+// TODO(northern-lengths): serial 1–3 digits are legal but unbuilt; add with a reference image.
 abstract final class YemenNorthernPlates {
   // ---------------------------------------------------------------------------
   // Shared geometry.
   // ---------------------------------------------------------------------------
 
-  /// 540 x 288 is an aspect of 1.875, against the 1.871 measured off a
-  /// photograph of an issued blue private plate. Every car number below was
-  /// measured from that photograph as a fraction of the plate and multiplied
-  /// out; the comments give the fraction and the code gives the unit.
+  // 540 x 288 (aspect 1.875) measured from an issued blue private plate.
+  // Coordinates below are measured fractions multiplied out; comments give fraction, code gives units.
   static const double _carWidth = 540;
   static const double _height = 288;
+  static const double _motoWidth = 289; // CALIBRATE: no photo available
+  static const double _borderRatio = 0.035; // CALIBRATE: matches theme ratio
 
-  /// The motorcycle canvas is **not** measured — no photograph of a northern
-  /// motorcycle plate was available, so it stays `// CALIBRATE` throughout.
-  static const double _motoWidth = 289; // CALIBRATE
+  // Car: top band, full-width rule, then one row split by vertical divider
+  // (governorate left, serial right), measured off photograph:
+  //   top band     y 0.038 .. 0.219
+  //   rule         y 0.289 .. 0.314   full width
+  //   divider      x 0.246 .. 0.260   from rule bottom to frame
+  //   governorate  x 0.006 .. 0.246   y 0.331 .. 0.641
+  //   serial       x 0.260 .. 0.983   y 0.331 .. 0.641
+  //
+  // Single row split by divider (not stacked). Big arabic row with small Latin
+  // mirrors below (one value in two scripts, editable in both).
 
-  /// Mirrors `YemenThemes._borderWidthRatio` onto every spec, so the frame
-  /// keeps its thickness under a host that supplies its own theme. The frame is
-  /// square, not rounded — that half of it is `plateRadiusRatio: 0` in the
-  /// theme, which a spec has no field for.
-  static const double _borderRatio = 0.035; // CALIBRATE
-
-  // --- Car: top band, a full-width rule, then one row split by a vertical
-  // --- divider into a governorate cell (left) and a serial cell (right). ----
-  //
-  // Measured off the photograph, as fractions of the plate:
-  //
-  //   top band     y 0.038 .. 0.219    اليمن x 0.076 .. 0.231
-  //                                    خصوصي x 0.327 .. 0.703
-  //   rule         y 0.289 .. 0.314    full width
-  //   divider      x 0.246 .. 0.260    y 0.314 .. 0.979 (rule bottom to frame)
-  //   governorate  x 0.006 .. 0.246    y 0.331 .. 0.641 (one cell, centred)
-  //   serial       x 0.260 .. 0.983    y 0.331 .. 0.641 (five digits)
-  //
-  // This replaces an earlier guess at a *stacked* layout — governorate above
-  // a rule, serial below it — which the photograph does not show. What it
-  // shows instead is a single row: one rule under the top band, and one
-  // vertical divider splitting that row into a narrow governorate cell and a
-  // wide serial cell, side by side. There is no second horizontal rule inside
-  // the row.
-  //
-  // The photograph also shows a small Latin-digit row under each big digit
-  // (e.g. big "٢" over small "2"):
-  //
-  //   small Latin row  y 0.697 .. 0.882   same x and width as the big digit
-  //
-  // That row is built with `PlateMirror`, and it is still ONE value printed
-  // twice — not two values. Both rows share the source slot's character: a
-  // mirror names the slot it echoes and carries no position of its own, so
-  // `slots.length`, `textGroups`, `isCompleted` and the validators are untouched
-  // by it. What changed is that these mirrors are `editable`, so the small row
-  // is a second register the user can type into as well as read: a keystroke in
-  // either row writes the one shared value, and the other row re-renders it in
-  // its own script. The big (iranian) row is the primary input row.
-  //
-  // Which row gets which numerals: the *slot* carries
-  // `YemenAlphabets.iranianDigits`, so the big row prints (and now types) ٠..٩.
-  // Each editable mirror names `YemenAlphabets.digits` to get the small row's
-  // Latin ones. Storage stays ASCII on both rows — core folds a typed iranian
-  // numeral back to its ASCII character (`PlateAlphabet.canonical`) — so the
-  // numerals are a rendering, never a value.
-  //
-  // The big row now shows iranian numerals under the caret in `PlateMode.input`
-  // too: core's `_TypedField` renders the alphabet's display form and folds it
-  // back on commit, which closed the old TODO(national-numerals) this comment
-  // used to warn about.
-
-  /// `اليمن`, on the left of the top band.
-  ///
-  /// A separate [PlateLabel] from the usage word beside it, and not because the
-  /// usage word varies: it is bidi. [PlateLabel] carries no `TextDirection` and
-  /// core lays a label out exactly as given, so an Arabic string on its own is
-  /// an isolated run that renders correctly. Joining two runs into one label
-  /// would hand the bidi algorithm a paragraph to reorder.
-  ///
-  /// The measured run is x 0.076 .. 0.231, i.e. 41 .. 125, and 76 units of
-  /// glyph is what fills the band's measured 0.181 of the plate (that band is
-  /// deeper than a cap height: it includes the lam's ascender and the nun's
-  /// tail).
-  ///
-  /// **The box is deliberately much wider than the measured run**, and centred
-  /// on it rather than starting at it. Core renders a label as a plain `Text`
-  /// inside a fixed-width `Positioned`, so a string wider than its box does not
-  /// overhang — it wraps and clips. The measured 84 units is the width in the
-  /// plate's own square Kufic; this package ships no font (see the README), so
-  /// the string is actually shaped in whatever Arabic face the platform falls
-  /// back to, which is wider and was clipping `اليمن` to `الي`. 140 units gives
-  /// that fallback 66% of headroom and still clears the usage word at x 177,
-  /// and `TextAlign.center` keeps the run on its measured centre either way.
-  ///
-  /// The dash between اليمن and the usage word (measured x 0.383 .. 0.417,
-  /// i.e. 207 .. 225) is its own [PlateLabel] rather than appended to either
-  /// neighbour's string: appending it to `اليمن` would put it on the wrong
-  /// side of the word once an RTL run reorders, and appending it to the usage
-  /// word would tie a fixed glyph to a word that changes with usage.
+  /// اليمن on the left (x 0.076 .. 0.231). Separate label (not joined to usage word
+  /// to keep bidi isolated). Box is wider than measured text and centred on it
+  /// to account for platform font fallback width. Dash is its own label (not appended).
   static const List<PlateLabel> _carLabels = <PlateLabel>[];
 
-  /// The usage word, as the country panel's caption.
-  ///
-  /// The panel paints nothing — `YemenCountry.northernPrivate` and friends set
-  /// a fully transparent `panelColor`, because a northern plate has no coloured
-  /// block; the word is printed straight onto the field. The panel is here only
-  /// because [PlateCountry.captionLines] is the one place on a `const`
-  /// [PlateSpec] where text can vary without the geometry varying too. See the
-  /// `YemenCountry` class doc.
-  ///
-  /// x 0.027 .. 0.987, y 0.038 .. 0.219 — the full width of the plate for the
-  /// caption text "الیمن - خصوصي", centered and scaled to fill the available space.
-  ///
-  /// [PlatePanel.captionScale] is a size to fit *down* from, not the rendered
-  /// size: `CountryPanel` wraps the caption in a `FittedBox(scaleDown)`, which
-  /// shrinks to the box but never grows to it. So the scale has to put the text
-  /// over the box for the fit to bind and fill its measured width.
+  /// Usage word as the country panel caption (full width, x 0.027 .. 0.987,
+  /// y 0.038 .. 0.219). Panel is transparent; the word prints on the field.
+  /// captionScale fits down only, never up, so scale must size for fit to bind.
   static const PlatePanel _carPanel = PlatePanel(
     box: PlateBox(0, 6, 540, 62),
-    // No flag on a Yemeni plate.
-    flagScale: 0,
+    flagScale: 0, // No flag on a Yemeni plate
     captionScale: 4.5,
     padding: EdgeInsets.fromLTRB(50, 3, 50, 0),
   );
 
-  // The full-width rule under the top band: y 0.289 .. 0.314 of the plate,
-  // i.e. 83 and 7 units deep, x 0 .. 540 (the frame draws its own inset, so
-  // this runs edge to edge rather than stopping short as the old registers'
-  // rule did).
+  // Full-width rule under top band (y 0.289 .. 0.314, x 0 .. 540).
   static const List<PlateRule> _carRule = <PlateRule>[PlateRule(box: PlateBox(0, 83, 540, 7))];
 
-  /// The vertical divider between the governorate cell and the serial cell.
-  ///
-  /// x 0.246 .. 0.260 (133 .. 140), y 0.314 .. 0.979 — from the rule's bottom
-  /// edge down to just inside the frame, matching the photograph, where the
-  /// divider does not cross into the top band above the rule.
+  // Vertical divider between governorate and serial cells (x 0.246 .. 0.260,
+  // y 0.314 .. 0.979, from rule bottom to just inside frame).
   static const List<PlateRule> _carDivider = <PlateRule>[PlateRule(box: PlateBox(133, 90, 7, 192))];
 
-  /// Both car rules together: the rule and the divider are the same on every
-  /// car layout regardless of digit counts, unlike the old per-length rules
-  /// that sized themselves to the serial block below them.
+  // Both together, same for all car layouts regardless of digit counts.
   static const List<PlateRule> _carRules = <PlateRule>[..._carRule, ..._carDivider];
 
   // The governorate cell: x 0.006 .. 0.246 of the plate (3 .. 133), the same
@@ -230,16 +97,11 @@ abstract final class YemenNorthernPlates {
   // divided its own width; a host supplying the plate's own condensed face
   // will show tighter digits, not overflow.
 
-  /// The span every serial length fills: x 140 .. 530.
-  ///
-  /// Stated once, as a span, because that is what the photograph measures. The
-  /// cell width is then whatever `count` divides it into — 97.5, 78 or 65 — and
-  /// no length can round to a different right edge than its siblings, which is
-  /// exactly what the four-cell layout used to do.
+  // Serial span: x 140 .. 530. Each length divides the span evenly; all end at same right edge.
   static const double _serialLeft = 140;
   static const double _serialRight = 530;
 
-  /// The serial digits alone, without the governorate cells that precede them.
+  // Serial digits alone (without governorate cells).
   static List<PlateSlot> _carSerial(int count) => plateRegisterAcross(
     alphabet: YemenAlphabets.iranianDigits,
     count: count,
@@ -255,31 +117,14 @@ abstract final class YemenNorthernPlates {
 
   static final List<PlateSlot> _carGov2Serial6 = <PlateSlot>[_carGovTens, _carGovUnits, ..._carSerial(6)];
 
-  /// One governorate digit, a five-digit serial — the layout the photograph
-  /// is measured from: a single big digit in the left cell, five in the
-  /// right, both in the one row under the rule.
+  // One governorate digit, five-digit serial — the layout measured from the photograph.
   static final List<PlateSlot> _carGov1Serial5 = <PlateSlot>[_carGovSingle, ..._carSerial(5)];
 
-  // --- The small Latin echo row. --------------------------------------------
-  //
-  // Measured y 0.697 .. 0.882 of the plate: a cap height of 0.185, i.e. 53
-  // units. By the same conversion the big row uses — core sets a glyph at
-  // `0.72 * height` and Roboto's cap is 0.711 em, so a box is `0.512 * height`
-  // of cap — 53 units of cap wants a 104-unit box. The band's centre is at
-  // 0.790 of 288, i.e. 227, so the box runs y 175 .. 279, comfortably inside
-  // the frame.
-  //
-  // The box is deeper than the cap on purpose. Core renders a mirror as a
-  // centred `Text` in a fixed `Positioned`, so anything taller or wider than
-  // its box wraps and clips rather than overhanging — the same trap
-  // [_carLabels] documents at length. 104 units leaves the line box room.
-  //
-  // Each mirror takes its source slot's x and width, so the small digit sits
-  // under the big one it echoes.
+  // Small Latin echo row (y 0.697 .. 0.882, cap 0.185 = 53 units, box 104 units).
+  // Box is deeper than cap to prevent clipping. Each mirror takes its source's x/width.
   static const double _echoTop = 175;
   static const double _echoHeight = 104;
 
-  /// One echo under [_carGovTens].
   static const PlateMirror _carEchoGovTens = PlateMirror(
     source: 0,
     box: PlateBox(24, _echoTop, 44, _echoHeight),
@@ -295,7 +140,7 @@ abstract final class YemenNorthernPlates {
     editable: true,
   );
 
-  /// The echo under [_carGovSingle], which straddles the pair's two cells.
+  // Echo under [_carGovSingle], straddling the pair's two cells.
   static const PlateMirror _carEchoGovSingle = PlateMirror(
     source: 0,
     box: PlateBox(38, _echoTop, 60, _echoHeight),
@@ -304,12 +149,7 @@ abstract final class YemenNorthernPlates {
     editable: true,
   );
 
-  /// The echo band under a serial register of [count] digits, the first of them
-  /// echoing slot [firstSource].
-  ///
-  /// The same span and the same division as [_carSerial], so an echo cannot sit
-  /// anywhere but under the digit it echoes: the two used to be two hand-written
-  /// copies of one arithmetic, and a copy is a place for them to disagree.
+  // Echo band under [count] serial digits. Same span and division as [_carSerial].
   static List<PlateMirror> _carEcho(int count, int firstSource) => plateEcho(
     sources: List<int>.generate(count, (i) => firstSource + i),
     left: _serialLeft,
@@ -340,45 +180,14 @@ abstract final class YemenNorthernPlates {
 
   static final List<PlateMirror> _carMirrorsGov1Serial5 = <PlateMirror>[_carEchoGovSingle, ..._carEcho(5, 1)];
 
-  // --- Motorcycle. ----------------------------------------------------------
-  //
-  // The row-and-divider structure carries over unchanged from the car; only
-  // the widths compress onto the square canvas.
-  //
-  // **No photograph of a northern motorcycle plate was available**, so none of
-  // the horizontal numbers here are measured. What they are instead is derived,
-  // and the derivation is worth stating because it is why they are no longer
-  // marked `// CALIBRATE` one by one:
-  //
-  // - The **vertical** layout is the car's, unchanged. Both canvases are 288
-  //   units tall, so every y fraction measured off the car photograph — top
-  //   band 0.038, rule 0.289, the row 0.331 .. 0.641 — carries across as the
-  //   same absolute unit. These are as good as the car's.
-  // - The **horizontal** layout keeps the car's measured *ratios* and
-  //   renormalises them onto the narrower canvas. The top band's two runs keep
-  //   their 1 : 2.41 width ratio, so the usage word stays the larger of the
-  //   two; the divider stays at the same fraction of the row's width.
-  //
-  // So this is a reflow of measured proportions rather than a record of a real
-  // plate, and a photograph could still move the x numbers. The y numbers it
-  // would leave alone.
+  // Motorcycle: row-and-divider structure from car, widths compressed to square canvas.
+  // No photo available; x values are car's ratios renormalised, y values unchanged.
+  // Vertical layout carries across 1:1 (both canvases 288 tall).
 
-  /// `اليمن`, keeping its 1 : 2.41 width ratio against the usage word.
-  ///
-  /// The glyph height is 42 rather than the band's 62, and that is the same
-  /// correction [_carLabels] carries, applied the other way round. A label
-  /// renders as a plain `Text` in a fixed-width box, so a string wider than its
-  /// box **wraps and clips** — it does not overhang. On the car there was spare
-  /// field to widen the box into; here there is not, because the usage word's
-  /// panel starts at x 96 on a 289-unit canvas. So the string is set smaller
-  /// instead: at `0.72 * 42` the run needs about 2.7 box-widths of the size
-  /// core will paint it at, against the 2.56 the car renders correctly at.
-  ///
-  /// The measured band would set it at 67. It is not set there because a
-  /// clipped `الي` is a worse likeness of the plate than a small `اليمن`.
+  // اليمن keeping 1 : 2.41 width ratio against usage word. Glyph height 42 (not 62)
+  // to prevent clipping on the narrower canvas.
   static const List<PlateLabel> _motoLabels = <PlateLabel>[];
 
-  /// The caption text centered and scaled to fill the available width.
   static const PlatePanel _motoPanel = PlatePanel(
     box: PlateBox(0, 6, 289, 62),
     flagScale: 0,
