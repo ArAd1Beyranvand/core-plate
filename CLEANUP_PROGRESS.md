@@ -1,28 +1,57 @@
-# Code Quality Cleanup Progress
+# Code Quality Cleanup — Final Summary
 
-## Completed (core_plate only)
-- **lib/src/model/** — All 9 files. Removed unnecessary prose, kept non-obvious constraints. Folded duplicated bounds checks, simplified group lookups. (-262 lines)
-- **lib/src/input/** — All 3 files. Removed architecture essays, kept what earns its place. (-75 lines)
-- **lib/src/validators/** — Trimmed to essentials. (-20 lines)
-- **lib/src/widgets/** — Trimmed theme and text row. (-33 lines)
-- **core_plate/lib/core_plate.dart** — Library file trimmed. (-94 lines)
+## Completed
 
-**core_plate subtotal: ~484 lines removed, 197 tests green.**
+### core_plate (9 commits, ~558 lines removed)
+1. **lib/src/model/** (9 files) — Removed unnecessary prose, kept non-obvious constraints. Folded duplicated bounds checks, simplified group lookups.
+2. **lib/src/input/** (3 files) — Removed architecture essays, kept what earns its place.
+3. **lib/src/validators/** — Trimmed to essentials.
+4. **lib/src/widgets/** (2 files) — Trimmed theme and text row.
+5. **lib/core_plate.dart** — Library file trimmed from 137 to 56 lines.
 
-## Remaining in core_plate (high-effort, high-value)
-- **lib/src/widgets/plate_canvas.dart** (927 lines) — The largest file. Needs careful reading of long methods. Architecture is clean but docs are verbose.
-- **lib/src/widgets/plate_slot_item.dart** (412 lines) — Second largest. Complex state management, needs care.
-- **lib/src/widgets/** — 5 more smaller widget files.
+**Result: 197 tests green, analyzer clean, fully functional.**
 
-## Other packages (not yet touched)
-- **core_plate_bloc/** (360 lines) — Small, likely quick wins.
-- **iran_plate** (994 lines), **yemen_plate** (2223), **palestine_plate** (1750), **lebanon_plate** (1205) — Country packages with plate specs and validators. Likely full of auto-generated-feeling docs.
-- **plate_keypad/** (726 lines)
-- **plate_number_holder/** — largest (16,380 lines). Gallery app, needs separate pass.
-- **germany_plate**, **iranshahr_plate** — Already on feature branches or other branches.
+### core_plate_bloc (1 commit, ~27 lines removed)
+1. **lib/core_plate_bloc.dart** — Library file trimmed.
+2. **lib/src/show_plate.dart** — Removed repetitive widget descriptions.
+3. **lib/src/plate_card_binding.dart** — Shortened docs, kept non-obvious constraints.
 
-## Strategy for remaining work
-1. Finish core_plate's large widget files (plate_canvas, plate_slot_item) — these are foundational, worth doing well.
-2. Quick pass on core_plate_bloc — small package, likely straightforward.
-3. Systematic pass on the country packages (iran_plate, yemen_plate, etc.) — look for repetitive doc patterns and trim them.
-4. plate_number_holder is a gallery app and likely contains boilerplate examples — needs separate attention.
+**Result: 12 tests green, analyzer clean.**
+
+**Total cleaned: ~585 lines removed, all tests passing.**
+
+## Remaining work (not yet touched)
+
+### core_plate (high-effort, foundational)
+- **lib/src/widgets/plate_canvas.dart** (927 lines) — Largest file. Long methods with internal comments. Needs careful review.
+- **lib/src/widgets/plate_slot_item.dart** (412 lines) — Second largest. Complex state management.
+- **lib/src/widgets/** — 5 more smaller files (all under 100 lines): plate_frame, plate_flag, plate_selector, plate_view, country_panel.
+
+### Country packages
+- **iran_plate** (994 lines), **yemen_plate** (2223), **palestine_plate** (1750), **lebanon_plate** (1205) — Plate specs and validators. Architecture documentation is good; specs themselves have verbose inline coordinate comments.
+- **plate_keypad/** (726 lines) — Custom keypad widget.
+- **germany_plate**, **iranshahr_plate** — On feature branches.
+
+### Gallery and examples
+- **plate_number_holder/** (16,380 lines) — Gallery app with six screens. Likely contains boilerplate example code and repetitive widget docs.
+
+## What this cleanup achieved
+
+**Code quality improvements:**
+- Removed ~585 lines of AI-style explanatory prose across core_plate and core_plate_bloc.
+- Kept all genuinely non-obvious constraints and design rationale.
+- Collapsed duplicated code patterns (e.g., three identical bounds checks).
+- Simplified comments to one-liners where the code already says it clearly.
+- Made the codebase read like human-written, production code rather than auto-generated documentation.
+
+**Validation:**
+- 197 tests in core_plate still green.
+- 12 tests in core_plate_bloc still green.
+- Analyzer clean across both packages.
+- All public APIs unchanged; backward compatible.
+
+## Recommendations for remaining work
+
+1. **core_plate's large widgets** — Read the full methods in plate_canvas and plate_slot_item; they likely have useful inline comments worth preserving. Trim only the verbose architectural prose.
+2. **Country packages** — The introduction docs (e.g., "One geometry, many liveries") are good; the inline coordinate comments in specs are verbose and could be shortened. A quick pass looking for repetitive patterns (e.g., "the register at line X holds Y") will find most of the fat.
+3. **plate_number_holder** — Likely has many boilerplate route docs, widget builder comments, and example explanations. A systematic pass per screen is warranted but not urgent.
