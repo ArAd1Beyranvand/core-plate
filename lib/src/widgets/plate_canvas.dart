@@ -197,8 +197,11 @@ class _PlateCanvasState extends State<PlateCanvas> {
     widget.controller?.notifyActiveSlotChanged();
   }
 
-  PlateEntry _entryFor(List<String?> values) =>
-      PlateEntry(spec: widget.spec, values: values, activeIndex: _machine.activeIndex);
+  PlateEntry _entryFor(List<String?> values) => PlateEntry(
+    spec: widget.spec,
+    values: values,
+    activeIndex: _machine.activeIndex,
+  );
 
   PlateValidation? _probeValidation() {
     final validator = widget.validator;
@@ -241,18 +244,29 @@ class _PlateCanvasState extends State<PlateCanvas> {
       // The whole monochrome set, as [PlateSpec.inkOverride] documents: a plate
       // printed in green has a green rim and green rules, not black ones.
       final ink = spec.inkOverride!;
-      theme = theme.copyWith(ink: ink, plateBorder: ink, dividerColor: ink, activeColor: ink);
+      theme = theme.copyWith(
+        ink: ink,
+        plateBorder: ink,
+        dividerColor: ink,
+        activeColor: ink,
+      );
     }
     // PlateMode.display renders inert, picker-like slots regardless of the
     // configured source, so force [PlateInputSource.system] there.
-    _machine.inputSource = widget.mode == PlateMode.input ? _resolveInputSource() : PlateInputSource.system;
+    _machine.inputSource = widget.mode == PlateMode.input
+        ? _resolveInputSource()
+        : PlateInputSource.system;
 
     // Resolve each slot's behaviour once, here, from the three things that
     // decide it. Every gesture and rendering branch downstream is a switch on
     // this value — nothing re-derives it.
     final behaviors = <SlotBehavior>[
       for (final s in spec.slots)
-        resolveSlotBehavior(mode: widget.mode, input: s.alphabet.input, source: _machine.inputSource),
+        resolveSlotBehavior(
+          mode: widget.mode,
+          input: s.alphabet.input,
+          source: _machine.inputSource,
+        ),
     ];
 
     // The plate's face is always white, so its cursor and text-selection
@@ -346,7 +360,9 @@ class _PlateCanvasState extends State<PlateCanvas> {
             onVerdict: _publishVerdict,
             builder: (verdict) => _PlateInputs(
               spec: spec,
-              theme: verdict.isValid ? theme : theme.copyWith(activeColor: theme.alertColor),
+              theme: verdict.isValid
+                  ? theme
+                  : theme.copyWith(activeColor: theme.alertColor),
               behaviors: behaviors,
               machine: _machine,
               controller: _controller,
@@ -366,7 +382,10 @@ class _PlateCanvasState extends State<PlateCanvas> {
             clipper: clipper,
           );
 
-    final Widget face = Stack(fit: StackFit.passthrough, children: [artwork, inputs]);
+    final Widget face = Stack(
+      fit: StackFit.passthrough,
+      children: [artwork, inputs],
+    );
 
     // Wrap in a Material so the typed slots' TextFields have the Material
     // ancestor they require. Without this a consumer must place PlateCanvas
@@ -424,14 +443,23 @@ class _PlateArtwork extends StatelessWidget {
                       if (!spec.noPanel)
                         _Placed(
                           box: spec.panel.box,
-                          child: CountryPanel(country: country, theme: theme, panel: spec.panel),
+                          child: CountryPanel(
+                            country: country,
+                            theme: theme,
+                            panel: spec.panel,
+                          ),
                         ),
                       // Under the rules, labels and decals: a band is the field
                       // the ink is printed on, not something printed over them.
                       if (spec.rightBand case final band?)
                         _Placed(
                           box: band.box,
-                          child: ColoredBox(color: band.color),
+                          child: _Band(band: band),
+                        ),
+                      if (spec.innerBand case final band?)
+                        _Placed(
+                          box: band.box,
+                          child: _Band(band: band),
                         ),
                       for (final r in spec.rules)
                         _Placed(
@@ -441,10 +469,20 @@ class _PlateArtwork extends StatelessWidget {
                       for (final l in spec.labels)
                         _Placed(
                           box: l.box,
-                          child: Text(
-                            l.text,
-                            textAlign: TextAlign.center,
-                            style: theme.glyphStyle(l.glyphHeight, l.color ?? theme.ink),
+                          child: Center(
+                            child: RotatedBox(
+                              quarterTurns: l.rotated ? 3 : 0,
+                              child: Text(
+                                l.text,
+                                textAlign: TextAlign.center,
+                                style: theme
+                                    .glyphStyle(
+                                      l.glyphHeight,
+                                      l.color ?? theme.ink,
+                                    )
+                                    .copyWith(height: l.lineHeight),
+                              ),
+                            ),
                           ),
                         ),
                       for (final d in spec.decals)
@@ -503,24 +541,33 @@ class _PlateInputs extends StatelessWidget {
                 for (var mi = 0; mi < spec.mirrors.length; mi++)
                   _Placed(
                     box: spec.mirrors[mi].box,
-                    child: mode == PlateMode.input && spec.mirrors[mi].editable && machine.mirrorControllerAt(mi) != null
+                    child:
+                        mode == PlateMode.input &&
+                            spec.mirrors[mi].editable &&
+                            machine.mirrorControllerAt(mi) != null
                         ? Center(
                             child: _EditableMirrorBinding(
                               mirrorIndex: mi,
                               mirror: spec.mirrors[mi],
-                              alphabet: spec.mirrors[mi].alphabet ?? spec.slots[spec.mirrors[mi].source].alphabet,
+                              alphabet:
+                                  spec.mirrors[mi].alphabet ??
+                                  spec.slots[spec.mirrors[mi].source].alphabet,
                               behavior: behaviors[spec.mirrors[mi].source],
                               theme: theme,
                               machine: machine,
                               controller: controller,
                               onCompleted: mode == PlateMode.input
-                                  ? () => machine.advanceFrom(spec.mirrors[mi].source)
+                                  ? () => machine.advanceFrom(
+                                      spec.mirrors[mi].source,
+                                    )
                                   : null,
                             ),
                           )
                         : _MirrorBinding(
                             mirror: spec.mirrors[mi],
-                            alphabet: spec.mirrors[mi].alphabet ?? spec.slots[spec.mirrors[mi].source].alphabet,
+                            alphabet:
+                                spec.mirrors[mi].alphabet ??
+                                spec.slots[spec.mirrors[mi].source].alphabet,
                             theme: theme,
                             controller: controller,
                           ),
@@ -536,8 +583,12 @@ class _PlateInputs extends StatelessWidget {
                         theme: theme,
                         machine: machine,
                         controller: controller,
-                        onCompleted: mode == PlateMode.input ? () => machine.advanceFrom(i) : null,
-                        onPressed: behaviors[i] == SlotBehavior.sheet ? () => onPick(i) : null,
+                        onCompleted: mode == PlateMode.input
+                            ? () => machine.advanceFrom(i)
+                            : null,
+                        onPressed: behaviors[i] == SlotBehavior.sheet
+                            ? () => onPick(i)
+                            : null,
                       ),
                     ),
                   ),
@@ -569,14 +620,22 @@ class _ValidationBinding extends StatelessWidget {
     return PlateSelector<PlateValidation>(
       controller: controller,
       selector: (c) => validate(c.values),
-      builder: (context, verdict) => _VerdictListener(verdict: verdict, onVerdict: onVerdict, child: builder(verdict)),
+      builder: (context, verdict) => _VerdictListener(
+        verdict: verdict,
+        onVerdict: onVerdict,
+        child: builder(verdict),
+      ),
     );
   }
 }
 
 /// Publishes verdict from lifecycle callbacks (not build).
 class _VerdictListener extends StatefulWidget {
-  const _VerdictListener({required this.verdict, required this.onVerdict, required this.child});
+  const _VerdictListener({
+    required this.verdict,
+    required this.onVerdict,
+    required this.child,
+  });
 
   final PlateValidation verdict;
   final ValueChanged<PlateValidation> onVerdict;
@@ -613,8 +672,13 @@ class _Placed extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) =>
-      Positioned(left: box.left, top: box.top, width: box.width, height: box.height, child: child);
+  Widget build(BuildContext context) => Positioned(
+    left: box.left,
+    top: box.top,
+    width: box.width,
+    height: box.height,
+    child: child,
+  );
 }
 
 /// Border and face, subscribed to completion (repaints only when last slot fills).
@@ -628,7 +692,8 @@ class _FrameBinding extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: controller.completed,
-      builder: (context, isCompleted, _) => PlateFrame(isCompleted: isCompleted, theme: theme),
+      builder: (context, isCompleted, _) =>
+          PlateFrame(isCompleted: isCompleted, theme: theme),
     );
   }
 }
@@ -680,7 +745,12 @@ class _SlotBinding extends StatelessWidget {
 
 /// Read-only echo of a slot's character (no focus, no controller).
 class _MirrorBinding extends StatelessWidget {
-  const _MirrorBinding({required this.mirror, required this.alphabet, required this.theme, required this.controller});
+  const _MirrorBinding({
+    required this.mirror,
+    required this.alphabet,
+    required this.theme,
+    required this.controller,
+  });
 
   final PlateMirror mirror;
   final PlateAlphabet alphabet;
@@ -731,7 +801,10 @@ class _EditableMirrorBinding extends StatelessWidget {
       builder: (context, value, _) {
         machine.syncMirrorController(mirrorIndex, alphabet, value);
         return PlateSlotItem(
-          slot: PlateSlot(alphabet: alphabet, box: PlateBox(0, 0, mirror.box.width, mirror.glyphHeight)),
+          slot: PlateSlot(
+            alphabet: alphabet,
+            box: PlateBox(0, 0, mirror.box.width, mirror.glyphHeight),
+          ),
           behavior: behavior,
           theme: theme,
           value: value,
@@ -771,5 +844,29 @@ class _PlateFaceClipper extends CustomClipper<RRect> {
   static const _overlap = 0.75;
 
   @override
-  bool shouldReclip(_PlateFaceClipper old) => old.border != border || old.radius != radius;
+  bool shouldReclip(_PlateFaceClipper old) =>
+      old.border != border || old.radius != radius;
+}
+
+/// A [PlateBand]'s fill, rounded per [PlateBand.topCornerRadius] and
+/// [PlateBand.bottomCornerRadius]. A `BoxDecoration` border radius rather than
+/// a `ClipPath` — the clip-based version left a seam where it met the plate's
+/// own rounded corner.
+class _Band extends StatelessWidget {
+  const _Band({required this.band});
+
+  final PlateBand band;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: band.color,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(band.topCornerRadius),
+          bottom: Radius.circular(band.bottomCornerRadius),
+        ),
+      ),
+    );
+  }
 }

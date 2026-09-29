@@ -62,10 +62,24 @@ class PlateRule {
 /// a band is the field the ink is printed *on*, so it carries its own [color].
 @immutable
 class PlateBand {
-  const PlateBand({required this.box, required this.color});
+  const PlateBand({
+    required this.box,
+    required this.color,
+    this.topCornerRadius = 0,
+    this.bottomCornerRadius = 0,
+  });
 
   final PlateBox box;
   final Color color;
+
+  /// Rounds the band's top-left and top-right corners by this radius; the
+  /// bottom corners stay square since they sit on the plate's own edge.
+  final double topCornerRadius;
+
+  /// Rounds the bottom-left and bottom-right corners too — set alongside
+  /// [topCornerRadius] to make a small band a full capsule, e.g. a white
+  /// pill sitting inside a larger coloured band.
+  final double bottomCornerRadius;
 }
 
 /// A fixed image on the plate face — a sticker or badge that sits between
@@ -83,7 +97,14 @@ class PlateDecal {
 /// Fixed text printed on the plate face (e.g. "ایران").
 @immutable
 class PlateLabel {
-  const PlateLabel({required this.text, required this.box, required this.glyphHeight, this.color});
+  const PlateLabel({
+    required this.text,
+    required this.box,
+    required this.glyphHeight,
+    this.color,
+    this.rotated = false,
+    this.lineHeight,
+  });
 
   final String text;
   final PlateBox box;
@@ -93,6 +114,15 @@ class PlateLabel {
   /// [PlateBand], where the field's ink would be illegible — the theme carries
   /// one ink, and overriding that would recolour the digits too.
   final Color? color;
+
+  /// True to turn the text 90° counter-clockwise to fill a narrow column with
+  /// one horizontal word, rather than stacking its letters upright.
+  final bool rotated;
+
+  /// [TextStyle.height] override for [glyphStyle], or null for its default.
+  /// Set it on a stacked-letter label (one line per character) to open up the
+  /// gaps between the lines so the stack fills a tall box.
+  final double? lineHeight;
 }
 
 /// The coloured country block on the plate face: where it sits, and how the
@@ -147,6 +177,7 @@ class PlateSpec {
     required this.slots,
     this.noPanel = false,
     this.rightBand,
+    this.innerBand,
     this.rules = const <PlateRule>[],
     this.labels = const <PlateLabel>[],
     this.decals = const <PlateDecal>[],
@@ -178,6 +209,10 @@ class PlateSpec {
   /// second position is the signal to generalise into a list.
   final PlateBand? rightBand;
 
+  /// A small band layered on top of [rightBand] — a white capsule behind a
+  /// short code (e.g. Kuwait's "C.D") sitting inside the coloured band.
+  final PlateBand? innerBand;
+
   final List<PlateSlot> slots;
   final List<PlateRule> rules;
   final List<PlateLabel> labels;
@@ -206,7 +241,8 @@ class PlateSpec {
   int get slotCount => slots.length;
 
   /// The slot at [index], or null when [index] is outside the plate.
-  PlateSlot? slotAt(int index) => index >= 0 && index < slots.length ? slots[index] : null;
+  PlateSlot? slotAt(int index) =>
+      index >= 0 && index < slots.length ? slots[index] : null;
 
   /// [textGroups], or the one-group-per-slot fallback. Read this rather than
   /// reimplementing the fallback.
@@ -237,10 +273,12 @@ class PlateSpec {
   }
 
   /// The slot focus advances to from [index], or null at the end of the plate.
-  int? nextIndex(int index) => index >= 0 && index + 1 < slots.length ? index + 1 : null;
+  int? nextIndex(int index) =>
+      index >= 0 && index + 1 < slots.length ? index + 1 : null;
 
   /// The slot focus steps back to from [index], or null at the start.
-  int? previousIndex(int index) => index > 0 && index < slots.length ? index - 1 : null;
+  int? previousIndex(int index) =>
+      index > 0 && index < slots.length ? index - 1 : null;
 
   PlateTextGroup? _groupNamed(String key) {
     for (final g in effectiveTextGroups) {
@@ -263,7 +301,8 @@ class PlateSpec {
 
   /// The slot indices of the group named [key] — what a caller that *writes* a
   /// register needs. Empty for an unknown key.
-  List<int> indicesOfGroup(String key) => _groupNamed(key)?.indices ?? const <int>[];
+  List<int> indicesOfGroup(String key) =>
+      _groupNamed(key)?.indices ?? const <int>[];
 
   @override
   bool operator ==(Object other) => other is PlateSpec && other.id == id;
@@ -279,7 +318,10 @@ class PlateSpec {
 bool debugValidateSpec(PlateSpec spec) {
   void checkInCanvas(PlateBox b, String what) {
     assert(
-      b.left >= 0 && b.top >= 0 && b.right <= spec.canvasWidth && b.bottom <= spec.canvasHeight,
+      b.left >= 0 &&
+          b.top >= 0 &&
+          b.right <= spec.canvasWidth &&
+          b.bottom <= spec.canvasHeight,
       '$what in spec "${spec.id}" has a rect outside the '
       'canvas (${spec.canvasWidth}x${spec.canvasHeight}).',
     );
@@ -301,6 +343,8 @@ bool debugValidateSpec(PlateSpec spec) {
 
   final band = spec.rightBand;
   if (band != null) checkInCanvas(band.box, 'The right band');
+  final inner = spec.innerBand;
+  if (inner != null) checkInCanvas(inner.box, 'The inner band');
 
   // One rounded coordinate in a hand-written run of cells is invisible until
   // someone measures the plate. Only keyed groups of three or more cells on one
@@ -313,7 +357,9 @@ bool debugValidateSpec(PlateSpec spec) {
         if (spec.slotAt(i) != null) spec.slots[i].box,
     ];
     if (boxes.length != g.indices.length) continue;
-    final sameRow = boxes.every((b) => b.top == boxes.first.top && b.height == boxes.first.height);
+    final sameRow = boxes.every(
+      (b) => b.top == boxes.first.top && b.height == boxes.first.height,
+    );
     if (!sameRow) continue;
     final pitch = boxes[1].left - boxes[0].left;
     for (var n = 1; n < boxes.length; n++) {
@@ -359,4 +405,5 @@ bool debugValidateSpec(PlateSpec spec) {
 }
 
 /// What an alphabet accepts, paired with how each accepted character renders.
-String _contentKey(PlateAlphabet a) => a.characters.map((c) => '$c=${a.render(c)}').join(' ');
+String _contentKey(PlateAlphabet a) =>
+    a.characters.map((c) => '$c=${a.render(c)}').join(' ');
