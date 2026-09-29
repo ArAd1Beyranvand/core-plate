@@ -135,6 +135,7 @@ class PlatePanel {
     this.captionScale = 1.0,
     this.padding,
     this.direction = Axis.vertical,
+    this.shape,
   });
 
   final PlateBox box;
@@ -147,6 +148,18 @@ class PlatePanel {
 
   /// [Axis.vertical] puts the flag above the caption, horizontal beside it.
   final Axis direction;
+
+  /// Clips the panel to something other than [box]'s rectangle.
+  ///
+  /// The block a country prints is not always a rectangle. Qatar's is the
+  /// hoist end of its own flag: a maroon column whose inboard edge is the
+  /// flag's nine-point serration, so the panel has to be cut to that zigzag
+  /// before anything is painted in it. The clipper is handed [box]'s size in
+  /// plate coordinates and returns the shape to keep.
+  ///
+  /// Null — the default, and every country but Qatar — leaves the panel the
+  /// full rectangle, with no clip in the tree at all.
+  final CustomClipper<Path>? shape;
 }
 
 /// One visual group in the plain-text rendering of a plate (e.g. a digit

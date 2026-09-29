@@ -16,6 +16,27 @@ class CountryPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Outside the ColoredBox, so the shape cuts the block's own colour and not
+    // just what is laid out on it. Absent for every country whose block is the
+    // plain rectangle of `panel.box` — see [PlatePanel.shape].
+    final shape = panel.shape;
+    if (shape != null) {
+      return ClipPath(clipper: shape, child: _Block(panel: panel, theme: theme, country: country));
+    }
+    return _Block(panel: panel, theme: theme, country: country);
+  }
+}
+
+/// The block itself: the country's colour, and the flag and wording on it.
+class _Block extends StatelessWidget {
+  const _Block({required this.panel, required this.theme, required this.country});
+
+  final PlateTheme? theme;
+  final PlateCountry country;
+  final PlatePanel panel;
+
+  @override
+  Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: ColoredBox(

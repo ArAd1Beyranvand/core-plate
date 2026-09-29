@@ -475,6 +475,12 @@ class _PlateArtwork extends StatelessWidget {
                               child: Text(
                                 l.text,
                                 textAlign: TextAlign.center,
+                                // A label is placed by its box, not laid out
+                                // by it: a caption too long for its box must
+                                // overflow, never reflow onto a second line.
+                                maxLines: '\n'.allMatches(l.text).length + 1,
+                                softWrap: false,
+                                overflow: TextOverflow.visible,
                                 style: theme
                                     .glyphStyle(
                                       l.glyphHeight,
