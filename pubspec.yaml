@@ -9,6 +9,7 @@ workspace:
   - core_plate/example
   - core_plate_bloc
   - core_plate_bloc/example
+  - plate_alphabet
   - plate_keypad
   - plate_keypad/example
   - iran_plate
