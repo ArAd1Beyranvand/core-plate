@@ -15,7 +15,7 @@ dependencies:
   # The country-neutral engine. The only dependency, and deliberately so: not
   # any other country's package. The gallery app wires the keypad to this
   # package's plates; the dependency points that way and never back.
-  core_plate: ^0.9.0
+  core_plate: ^0.10.0
   # Shared alphabet definitions.
   plate_alphabet:
     path: ../plate_alphabet
