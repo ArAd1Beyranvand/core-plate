@@ -13,8 +13,11 @@ dependencies:
   flutter:
     sdk: flutter
   # The country-neutral engine. The only dependency, and deliberately so: not
-  # the on-screen keypad package, not any other country's package.
+  # any other country's package.
   core_plate: ^0.9.0
+  # Shared alphabet definitions.
+  plate_alphabet:
+    path: ../plate_alphabet
 
 dev_dependencies:
   flutter_test:

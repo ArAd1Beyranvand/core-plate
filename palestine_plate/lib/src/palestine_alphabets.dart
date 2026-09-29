@@ -1,16 +1,15 @@
 import 'package:core_plate/core_plate.dart';
+import 'package:plate_alphabet/plate_alphabet.dart';
 
 /// Character sets for Palestinian plate slots. Each alphabet has a unique id
 /// (required by `debugValidateSpec`) despite overlap, so the slot-to-set mapping
 /// is explicit and visible. LTR throughout: serials are Latin, read left to right.
+///
+/// Digits come from [PlateAlphabetDigits.english] (shared across all packages).
 abstract final class PSAlphabets {
   /// `0`–`9`: the serial, and both digits of a legacy or Gaza usage class.
-  static const PlateAlphabet digits = PlateAlphabet(
-    id: 'ps.digits',
-    characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-    input: AlphabetInput.typed,
-    isNumeric: true,
-  );
+  /// Use [PlateAlphabetDigits.english] instead of defining locally.
+  static const PlateAlphabet digits = PlateAlphabetDigits.english;
 
   /// Legacy West Bank district codes: `1`, `3`–`9`. `0` and `2` are illegal
   /// and barred at alphabet level, not just by validator.

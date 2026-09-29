@@ -13,6 +13,9 @@ dependencies:
   flutter:
     sdk: flutter
   core_plate: ^0.9.0
+  # Shared alphabet definitions.
+  plate_alphabet:
+    path: ../plate_alphabet
 
 dev_dependencies:
   flutter_test:
