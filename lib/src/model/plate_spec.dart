@@ -189,6 +189,7 @@ class PlateSpec {
     required this.panel,
     required this.slots,
     this.noPanel = false,
+    this.leftBand,
     this.rightBand,
     this.innerBand,
     this.rules = const <PlateRule>[],
@@ -216,6 +217,10 @@ class PlateSpec {
   /// unconditionally, so a suppressed panel still declares its geometry and the
   /// face simply does not paint it.
   final bool noPanel;
+
+  /// A solid block of colour at the left-hand end of the plate — used by plates
+  /// like Iraq where a coloured band on the left encodes the vehicle type.
+  final PlateBand? leftBand;
 
   /// A solid block of colour at the right-hand end of the plate. Named for its
   /// position because that is the only place the formats using one put it — a
@@ -354,6 +359,8 @@ bool debugValidateSpec(PlateSpec spec) {
     );
   }
 
+  final left = spec.leftBand;
+  if (left != null) checkInCanvas(left.box, 'The left band');
   final band = spec.rightBand;
   if (band != null) checkInCanvas(band.box, 'The right band');
   final inner = spec.innerBand;

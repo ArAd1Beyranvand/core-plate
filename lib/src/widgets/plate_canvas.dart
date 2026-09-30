@@ -451,6 +451,11 @@ class _PlateArtwork extends StatelessWidget {
                         ),
                       // Under the rules, labels and decals: a band is the field
                       // the ink is printed on, not something printed over them.
+                      if (spec.leftBand case final band?)
+                        _Placed(
+                          box: band.box,
+                          child: _Band(band: band),
+                        ),
                       if (spec.rightBand case final band?)
                         _Placed(
                           box: band.box,
