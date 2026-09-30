@@ -98,6 +98,13 @@ Read the whole article. Note the physical dimensions in mm, the format strings, 
 and every historical series (you generally implement only the current one — say so explicitly
 rather than silently ignoring the old ones).
 
+**CRITICAL: Extract all tables on the page.** Tables contain the authoritative category list, 
+colours, format examples, and plate images per row. Do not rely on prose alone. Extract table data 
+(colour names, category names, format patterns) and open **every image in every table row** with 
+the Read tool — many pages show one plate image per category and you need all of them, including 
+unexpected ones. This is where you discover if there are 6 categories or 10, and which colours 
+are actually used vs. what the text says.
+
 ### Getting the images
 
 Scrape the file names, then resolve them in **one batched API call**. Fetching them one at a time
