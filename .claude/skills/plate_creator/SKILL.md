@@ -1,6 +1,6 @@
 ---
-name: plate-country
-description: "Implement or rebuild a country's licence plates end to end — Wikipedia research, reference-image measurement, architecture, spec, validators, Flutter implementation, golden verification. Invoke with /plate-country <country>."
+name: plate_creator
+description: "Implement or rebuild a country's licence plates end to end — Wikipedia research, reference-image measurement, architecture, spec, validators, Flutter implementation, golden verification. Invoke with /plate_creator <country>."
 ---
 
 > **Run in a fresh session.** **Model:** Opus 5 · **extended thinking:** on.
@@ -143,7 +143,7 @@ project the ink onto each axis to get row bands and column runs.
 with, and it takes the same arguments for a reference and for a golden:
 
 ```bash
-M=.claude/skills/plate-country/scripts/measure.py
+M=.claude/skills/plate_creator/scripts/measure.py
 python3 $M .plateref/kw/Public_Taxis.png       "REF taxi"  FFEC00 1D1D1B 335 155
 python3 $M iranshahr_plate/test/goldens/kw_transport.png \
                                                "MINE"      FFEC00 1D1D1B 335 155 --crop
