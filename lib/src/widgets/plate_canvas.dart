@@ -433,7 +433,12 @@ class _PlateArtwork extends StatelessWidget {
           child: Stack(
             children: [
               Positioned.fill(
-                child: _FrameBinding(theme: theme, controller: controller),
+                child: _FrameBinding(
+                  theme: theme,
+                  controller: controller,
+                  background: spec.background,
+                  panelColor: country.panelColor,
+                ),
               ),
               Positioned.fill(
                 child: ClipRRect(
@@ -447,21 +452,12 @@ class _PlateArtwork extends StatelessWidget {
                             country: country,
                             theme: theme,
                             panel: spec.panel,
+                            paintBlock: !spec.background.paintsPanel,
                           ),
                         ),
                       // Under the rules, labels and decals: a band is the field
                       // the ink is printed on, not something printed over them.
-                      if (spec.leftBand case final band?)
-                        _Placed(
-                          box: band.box,
-                          child: _Band(band: band),
-                        ),
-                      if (spec.rightBand case final band?)
-                        _Placed(
-                          box: band.box,
-                          child: _Band(band: band),
-                        ),
-                      if (spec.innerBand case final band?)
+                      for (final band in spec.bands)
                         _Placed(
                           box: band.box,
                           child: _Band(band: band),
@@ -694,17 +690,29 @@ class _Placed extends StatelessWidget {
 
 /// Border and face, subscribed to completion (repaints only when last slot fills).
 class _FrameBinding extends StatelessWidget {
-  const _FrameBinding({required this.theme, required this.controller});
+  const _FrameBinding({
+    required this.theme,
+    required this.controller,
+    required this.background,
+    required this.panelColor,
+  });
 
   final PlateTheme theme;
   final PlateController controller;
+  final PlateSection background;
+  final Color panelColor;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: controller.completed,
       builder: (context, isCompleted, _) =>
-          PlateFrame(isCompleted: isCompleted, theme: theme),
+          PlateFrame(
+            isCompleted: isCompleted,
+            theme: theme,
+            background: background,
+            panelColor: panelColor,
+          ),
     );
   }
 }

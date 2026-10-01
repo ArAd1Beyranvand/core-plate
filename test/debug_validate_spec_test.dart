@@ -22,7 +22,11 @@ const _iranianDigits = PlateAlphabet(
   glyphs: {'0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤', '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩'},
 );
 
-PlateSpec _spec({List<PlateSlot> slots = const [], List<PlateMirror> mirrors = const []}) => PlateSpec(
+PlateSpec _spec({
+  List<PlateSlot> slots = const [],
+  List<PlateMirror> mirrors = const [],
+  PlateSection background = PlateSection.plain,
+}) => PlateSpec(
   id: 'zz.test',
   country: _country,
   canvasWidth: 400,
@@ -35,6 +39,7 @@ PlateSpec _spec({List<PlateSlot> slots = const [], List<PlateMirror> mirrors = c
         ]
       : slots,
   mirrors: mirrors,
+  background: background,
 );
 
 PlateSlot _slotAt(PlateBox box) => PlateSlot(alphabet: _digits, box: box);
@@ -166,6 +171,57 @@ void main() {
     test('a mirror rendering through a different numeral system is legal', () {
       final spec = _spec(mirrors: [_mirrorAt(alphabet: _iranianDigits)]);
       expect(debugValidateSpec(spec), isTrue);
+    });
+  });
+
+  group('background sections', () {
+    const strip = PlateSection.fill(PlateFill.panel);
+
+    test('a left strip with a divider is well formed', () {
+      final spec = _spec(
+        background: const PlateSection.columns([
+          PlatePart(strip, end: 40, divider: 3),
+          PlatePart(PlateSection.plain),
+        ]),
+      );
+      expect(debugValidateSpec(spec), isTrue);
+      expect(spec.background.paintsPanel, isTrue);
+      expect(PlateSection.plain.paintsPanel, isFalse);
+    });
+
+    test('an end past the parent throws', () {
+      final spec = _spec(
+        background: const PlateSection.columns([
+          PlatePart(strip, end: 400),
+          PlatePart(PlateSection.plain),
+        ]),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
+    });
+
+    test('a nested end outside its own region throws', () {
+      final spec = _spec(
+        background: const PlateSection.rows([
+          PlatePart(PlateSection.plain, end: 50),
+          PlatePart(
+            PlateSection.rows([
+              PlatePart(strip, end: 40),
+              PlatePart(PlateSection.plain),
+            ]),
+          ),
+        ]),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
+    });
+
+    test('an end on the last part throws', () {
+      final spec = _spec(
+        background: const PlateSection.columns([
+          PlatePart(strip, end: 40),
+          PlatePart(PlateSection.plain, end: 400),
+        ]),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
     });
   });
 }

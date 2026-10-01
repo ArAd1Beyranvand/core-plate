@@ -8,11 +8,22 @@ import 'plate_flag.dart';
 /// Coloured block on left of plate: flag and country caption, laid out LTR
 /// regardless of plate direction. Everything country-specific is a [PlateCountry].
 class CountryPanel extends StatelessWidget {
-  const CountryPanel({super.key, required this.panel, this.theme, required this.country});
+  const CountryPanel({
+    super.key,
+    required this.panel,
+    this.theme,
+    required this.country,
+    this.paintBlock = true,
+  });
 
   final PlateTheme? theme;
   final PlateCountry country;
   final PlatePanel panel;
+
+  /// False when the plate's background already paints the block as a
+  /// [PlateFill.panel] region — the panel then lays out only the flag and
+  /// wording, so no box edge of its own sits against the border.
+  final bool paintBlock;
 
   @override
   Widget build(BuildContext context) {
@@ -21,16 +32,17 @@ class CountryPanel extends StatelessWidget {
     // plain rectangle of `panel.box` — see [PlatePanel.shape].
     final shape = panel.shape;
     if (shape != null) {
-      return ClipPath(clipper: shape, child: _Block(panel: panel, theme: theme, country: country));
+      return ClipPath(clipper: shape, child: _Block(panel: panel, theme: theme, country: country, paintBlock: paintBlock));
     }
-    return _Block(panel: panel, theme: theme, country: country);
+    return _Block(panel: panel, theme: theme, country: country, paintBlock: paintBlock);
   }
 }
 
 /// The block itself: the country's colour, and the flag and wording on it.
 class _Block extends StatelessWidget {
-  const _Block({required this.panel, required this.theme, required this.country});
+  const _Block({required this.panel, required this.theme, required this.country, required this.paintBlock});
 
+  final bool paintBlock;
   final PlateTheme? theme;
   final PlateCountry country;
   final PlatePanel panel;
@@ -40,7 +52,7 @@ class _Block extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: ColoredBox(
-        color: country.panelColor,
+        color: paintBlock ? country.panelColor : const Color(0x00000000),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final uniformPad = constraints.maxHeight * 0.10;

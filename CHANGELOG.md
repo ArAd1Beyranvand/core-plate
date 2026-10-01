@@ -1,3 +1,25 @@
+## 0.11.0
+
+**Breaking: the plate background is sectioned.** `PlateSpec.background` is a
+tree of `PlateSection`s — columns and rows whose leaves are a `PlateFill`
+(the theme's field, the country's panel colour, the divider colour for a
+strip that runs to the edge, or a colour of the design's own) — with `PlatePart.divider` rules between regions. The frame paints the
+regions, then the dividers, then the border over all of it, in one painter.
+
+A coloured strip used to be a box on the white face, inset to the border's
+inner edge. Two anti-aliased edges met there and the face showed through as a
+light seam; and because the box was positioned against the border, any theme
+with a different border width moved it. A region now runs out under the
+border, and its edges are plate coordinates that ignore the border entirely.
+
+- `PlateSpec.leftBand`, `rightBand` and `innerBand` are removed. A strip that
+  divides the plate is a section; a block floating on the face is an entry in
+  the new `PlateSpec.bands` list.
+- `CountryPanel.paintBlock`: when the background paints a `PlateFill.panel`
+  region the panel lays out only its flag and wording.
+- `PlateRule` is for marks that do not divide the plate; an edge-to-edge line
+  is a divider.
+
 ## 0.9.1
 
 **`PlateLabel.color`.** A label may now name the ink it is printed in; null

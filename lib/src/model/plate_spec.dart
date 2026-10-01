@@ -53,8 +53,101 @@ class PlateRule {
   final PlateBox box;
 }
 
-/// A solid block of colour on the plate face — the band a validity date is
-/// printed over at the end of a short-term or export plate.
+/// What a [PlateSection] leaf is painted in.
+///
+/// [field], [panel] and [divider] are resolved at render time — the theme's
+/// `plateBackground`, the rendered country's `panelColor` and the theme's
+/// `dividerColor` — so one spec follows a host's livery and a usage-varying
+/// country.
+@immutable
+class PlateFill {
+  /// A colour of the design's own, e.g. a validity-date band.
+  const PlateFill.color(Color this.color) : _role = null;
+  const PlateFill._(this._role) : color = null;
+
+  static const PlateFill field = PlateFill._(_FillRole.field);
+  static const PlateFill panel = PlateFill._(_FillRole.panel);
+
+  /// The divider colour, for a strip that runs out to the plate's edge — a
+  /// divider with field on one side only.
+  static const PlateFill divider = PlateFill._(_FillRole.divider);
+
+  final Color? color;
+  final _FillRole? _role;
+
+  bool get isField => _role == _FillRole.field;
+  bool get isPanel => _role == _FillRole.panel;
+
+  /// The paint colour, given the render-time [field] and [panel] colours.
+  Color resolve({required Color field, required Color panel, required Color divider}) => switch (_role) {
+    _FillRole.field => field,
+    _FillRole.panel => panel,
+    _FillRole.divider => divider,
+    null => color!,
+  };
+}
+
+enum _FillRole { field, panel, divider }
+
+/// The plate face divided into regions: a guillotine tree of columns and rows
+/// whose leaves are [PlateFill]s.
+///
+/// The background is painted in one pass under the border, so a coloured
+/// strip runs to the plate's edge and the border is drawn over it — there is
+/// no box edge for the face to show through. Positions are plate
+/// coordinates along the parent's axis, never offsets from the frame, so the
+/// layout does not move when a theme changes the border width.
+@immutable
+class PlateSection {
+  /// A leaf. [shape] cuts it to something other than its rectangle (Qatar's
+  /// serrated hoist); the clipper gets the leaf's size and returns the region
+  /// to fill, and the field shows through the rest.
+  const PlateSection.fill(PlateFill this.fill, {this.shape})
+    : axis = null,
+      parts = const <PlatePart>[];
+
+  /// Side-by-side regions, split along x.
+  const PlateSection.columns(this.parts) : axis = Axis.horizontal, fill = null, shape = null;
+
+  /// Stacked regions, split along y.
+  const PlateSection.rows(this.parts) : axis = Axis.vertical, fill = null, shape = null;
+
+  /// The plain face: one region in the theme's field colour.
+  static const PlateSection plain = PlateSection.fill(PlateFill.field);
+
+  final PlateFill? fill;
+  final CustomClipper<Path>? shape;
+  final Axis? axis;
+  final List<PlatePart> parts;
+
+  bool get isLeaf => axis == null;
+
+  /// Whether any leaf is filled with the country's panel colour — in which
+  /// case the background owns the panel block and [CountryPanel] lays out only
+  /// the flag and caption on it.
+  bool get paintsPanel => isLeaf ? fill!.isPanel : parts.any((p) => p.section.paintsPanel);
+}
+
+/// One region of a split [PlateSection].
+@immutable
+class PlatePart {
+  /// [end] is the region's far edge in plate coordinates along the parent's
+  /// axis; null on the last part, which runs to the parent's end.
+  ///
+  /// [divider] is the thickness of a rule painted centred on [end], across the
+  /// parent's full extent, in the theme's divider colour. It belongs here and
+  /// not in [PlateSpec.rules] because it separates two regions: a rule
+  /// positioned as a box would have its own edges to show the field through.
+  const PlatePart(this.section, {this.end, this.divider = 0});
+
+  final PlateSection section;
+  final double? end;
+  final double divider;
+}
+
+/// A solid block of colour laid over the background — Kuwait's capsule
+/// behind "C.D". A region of the background that divides the plate is a
+/// [PlateSection]; a band is for a shape that floats on one.
 ///
 /// Paints only the rectangle; the characters over it are ordinary slots and
 /// [PlateLabel]s positioned inside [box]. Not a fat [PlateRule], because a rule
@@ -189,9 +282,8 @@ class PlateSpec {
     required this.panel,
     required this.slots,
     this.noPanel = false,
-    this.leftBand,
-    this.rightBand,
-    this.innerBand,
+    this.background = PlateSection.plain,
+    this.bands = const <PlateBand>[],
     this.rules = const <PlateRule>[],
     this.labels = const <PlateLabel>[],
     this.decals = const <PlateDecal>[],
@@ -218,20 +310,18 @@ class PlateSpec {
   /// face simply does not paint it.
   final bool noPanel;
 
-  /// A solid block of colour at the left-hand end of the plate — used by plates
-  /// like Iraq where a coloured band on the left encodes the vehicle type.
-  final PlateBand? leftBand;
+  /// The face's regions and the dividers between them, painted under the
+  /// border. A panel that runs edge to edge belongs here as a
+  /// [PlateFill.panel] region rather than as a coloured box on the face.
+  final PlateSection background;
 
-  /// A solid block of colour at the right-hand end of the plate. Named for its
-  /// position because that is the only place the formats using one put it — a
-  /// second position is the signal to generalise into a list.
-  final PlateBand? rightBand;
-
-  /// A small band layered on top of [rightBand] — a white capsule behind a
-  /// short code (e.g. Kuwait's "C.D") sitting inside the coloured band.
-  final PlateBand? innerBand;
+  /// Blocks of colour floating on [background], under the rules and labels.
+  final List<PlateBand> bands;
 
   final List<PlateSlot> slots;
+
+  /// Printed marks that do not divide the plate — a short tick, a perforation
+  /// dash. A line from edge to edge is a [PlatePart.divider].
   final List<PlateRule> rules;
   final List<PlateLabel> labels;
   final List<PlateDecal> decals;
@@ -359,12 +449,33 @@ bool debugValidateSpec(PlateSpec spec) {
     );
   }
 
-  final left = spec.leftBand;
-  if (left != null) checkInCanvas(left.box, 'The left band');
-  final band = spec.rightBand;
-  if (band != null) checkInCanvas(band.box, 'The right band');
-  final inner = spec.innerBand;
-  if (inner != null) checkInCanvas(inner.box, 'The inner band');
+  for (var i = 0; i < spec.bands.length; i++) {
+    checkInCanvas(spec.bands[i].box, 'PlateBand $i');
+  }
+
+  void checkSection(PlateSection s, Rect r, String path) {
+    if (s.isLeaf) return;
+    final across = s.axis == Axis.horizontal;
+    var previous = across ? r.left : r.top;
+    final end = across ? r.right : r.bottom;
+    for (var i = 0; i < s.parts.length; i++) {
+      final part = s.parts[i];
+      final last = i == s.parts.length - 1;
+      assert(
+        last ? part.end == null : part.end != null && part.end! > previous && part.end! < end,
+        'Background part $path.$i in spec "${spec.id}" ends at ${part.end}; '
+        '${last ? "the last part runs to its parent's end, so leave it null" : 'expected a value in ($previous, $end)'}.',
+      );
+      final partEnd = part.end ?? end;
+      final child = across
+          ? Rect.fromLTRB(previous, r.top, partEnd, r.bottom)
+          : Rect.fromLTRB(r.left, previous, r.right, partEnd);
+      checkSection(part.section, child, '$path.$i');
+      previous = partEnd;
+    }
+  }
+
+  checkSection(spec.background, Rect.fromLTWH(0, 0, spec.canvasWidth, spec.canvasHeight), 'background');
 
   // One rounded coordinate in a hand-written run of cells is invisible until
   // someone measures the plate. Only keyed groups of three or more cells on one
