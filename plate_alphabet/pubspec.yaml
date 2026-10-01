@@ -13,7 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
   # The country-neutral alphabet and slot definitions.
-  core_plate: ^0.10.0
+  core_plate: ^0.11.0
 
 dev_dependencies:
   flutter_test:

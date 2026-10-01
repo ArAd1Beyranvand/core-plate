@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   # The country-neutral engine. The only dependency, and deliberately so: not
   # any other country's package.
-  core_plate: ^0.10.0
+  core_plate: ^0.11.0
   # Shared alphabet definitions.
   plate_alphabet:
     path: ../plate_alphabet

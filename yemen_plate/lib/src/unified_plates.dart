@@ -39,6 +39,12 @@ abstract final class YemenUnifiedPlates {
     padding: EdgeInsets.fromLTRB(22, 172, 16, 66), // Top 172 = 0.590 * 292
   );
 
+  // Zone C2 as the plate's last column, so the frame is drawn over its edge.
+  static const PlateSection _carBackground = PlateSection.columns(<PlatePart>[
+    PlatePart(PlateSection.plain, end: 847),
+    PlatePart(PlateSection.fill(PlateFill.panel)),
+  ]);
+
   // Zone A: اليمن (x 0.027 .. 0.276) and YEMEN, separate labels (not joined via newline).
   // Separate to keep bidi isolated. اليمن's height is larger (includes ascender/tail).
   static const List<PlateLabel> _carLabels = <PlateLabel>[
@@ -95,6 +101,11 @@ abstract final class YemenUnifiedPlates {
     captionScale: 2.0, // CALIBRATE
     padding: EdgeInsets.fromLTRB(96, 12, 12, 12), // CALIBRATE: big left inset aligns caption right
   );
+
+  static const PlateSection _motoBackground = PlateSection.rows(<PlatePart>[
+    PlatePart(PlateSection.plain, end: 206),
+    PlatePart(PlateSection.fill(PlateFill.panel)),
+  ]);
 
   static const List<PlateLabel> _motoLabels = <PlateLabel>[
     PlateLabel(text: 'اليمن', box: PlateBox(16, 14, 110, 42), glyphHeight: 42),
@@ -173,6 +184,7 @@ abstract final class YemenUnifiedPlates {
     canvasWidth: _carWidth,
     canvasHeight: _carHeight,
     panel: _carPanel,
+    background: _carBackground,
     slots: _car5Slots,
     rules: _carStipple,
     labels: _carLabels,
@@ -187,6 +199,7 @@ abstract final class YemenUnifiedPlates {
     canvasWidth: _carWidth,
     canvasHeight: _carHeight,
     panel: _carPanel,
+    background: _carBackground,
     slots: _car4Slots,
     rules: _carStipple,
     labels: _carLabels,
@@ -201,6 +214,7 @@ abstract final class YemenUnifiedPlates {
     canvasWidth: _carWidth,
     canvasHeight: _carHeight,
     panel: _carPanel,
+    background: _carBackground,
     slots: _car6Slots,
     rules: _carStipple,
     labels: _carLabels,
@@ -215,6 +229,7 @@ abstract final class YemenUnifiedPlates {
     canvasWidth: _motoWidth,
     canvasHeight: _motoHeight,
     panel: _motoPanel,
+    background: _motoBackground,
     slots: _moto5Slots,
     rules: _motoStipple,
     labels: _motoLabels,
@@ -229,6 +244,7 @@ abstract final class YemenUnifiedPlates {
     canvasWidth: _motoWidth,
     canvasHeight: _motoHeight,
     panel: _motoPanel,
+    background: _motoBackground,
     slots: _moto4Slots,
     rules: _motoStipple,
     labels: _motoLabels,
@@ -243,6 +259,7 @@ abstract final class YemenUnifiedPlates {
     canvasWidth: _motoWidth,
     canvasHeight: _motoHeight,
     panel: _motoPanel,
+    background: _motoBackground,
     slots: _moto6Slots,
     rules: _motoStipple,
     labels: _motoLabels,

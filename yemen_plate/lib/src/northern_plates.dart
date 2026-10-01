@@ -47,15 +47,19 @@ abstract final class YemenNorthernPlates {
     padding: EdgeInsets.fromLTRB(50, 3, 50, 0),
   );
 
-  // Full-width rule under top band (y 0.289 .. 0.314, x 0 .. 540).
-  static const List<PlateRule> _carRule = <PlateRule>[PlateRule(box: PlateBox(0, 83, 540, 7))];
-
-  // Vertical divider between governorate and serial cells (x 0.246 .. 0.260,
-  // y 0.314 .. 0.979, from rule bottom to just inside frame).
-  static const List<PlateRule> _carDivider = <PlateRule>[PlateRule(box: PlateBox(133, 90, 7, 192))];
-
-  // Both together, same for all car layouts regardless of digit counts.
-  static const List<PlateRule> _carRules = <PlateRule>[..._carRule, ..._carDivider];
+  // Full-width divider under the top band (y 0.289 .. 0.314: 83 .. 90), then a
+  // vertical one between governorate and serial cells (x 0.246 .. 0.260:
+  // 133 .. 140) from that divider down to the frame. Same for every car
+  // layout regardless of digit counts.
+  static const PlateSection _carBackground = PlateSection.rows(<PlatePart>[
+    PlatePart(PlateSection.plain, end: 86.5, divider: 7),
+    PlatePart(
+      PlateSection.columns(<PlatePart>[
+        PlatePart(PlateSection.plain, end: 136.5, divider: 7),
+        PlatePart(PlateSection.plain),
+      ]),
+    ),
+  ]);
 
   // The governorate cell: x 0.006 .. 0.246 of the plate (3 .. 133), the same
   // 89-unit cap height as the serial cell beside it — unlike the old stacked
@@ -199,9 +203,15 @@ abstract final class YemenNorthernPlates {
   // narrower canvas: full-width rule under the top band, then one vertical
   // divider splitting a governorate cell (left) from a five-digit serial
   // cell (right) — no second horizontal rule inside the row.
-  static const List<PlateRule> _motoRule = <PlateRule>[PlateRule(box: PlateBox(0, 83, 289, 7))];
-  static const List<PlateRule> _motoDivider = <PlateRule>[PlateRule(box: PlateBox(71, 90, 4, 192))];
-  static const List<PlateRule> _motoRules = <PlateRule>[..._motoRule, ..._motoDivider];
+  static const PlateSection _motoBackground = PlateSection.rows(<PlatePart>[
+    PlatePart(PlateSection.plain, end: 86.5, divider: 7),
+    PlatePart(
+      PlateSection.columns(<PlatePart>[
+        PlatePart(PlateSection.plain, end: 73, divider: 4),
+        PlatePart(PlateSection.plain),
+      ]),
+    ),
+  ]);
 
   /// The motorcycle serial's own span and pitch: five cells from x 75, stepping
   /// by 41.8. The cells are 42 wide, a fifth of a unit more than the stride, so
@@ -320,7 +330,7 @@ abstract final class YemenNorthernPlates {
     panel: _carPanel,
     slots: _carGov2Serial5,
     mirrors: _carMirrorsGov2Serial5,
-    rules: _carRules,
+    background: _carBackground,
     labels: _carLabels,
     textGroups: _groupsGov2Serial5,
     borderWidthRatioOverride: _borderRatio,
@@ -335,7 +345,7 @@ abstract final class YemenNorthernPlates {
     panel: _carPanel,
     slots: _carGov1Serial5,
     mirrors: _carMirrorsGov1Serial5,
-    rules: _carRules,
+    background: _carBackground,
     labels: _carLabels,
     textGroups: _groupsGov1Serial5,
     borderWidthRatioOverride: _borderRatio,
@@ -350,7 +360,7 @@ abstract final class YemenNorthernPlates {
     panel: _carPanel,
     slots: _carGov2Serial4,
     mirrors: _carMirrorsGov2Serial4,
-    rules: _carRules,
+    background: _carBackground,
     labels: _carLabels,
     textGroups: _groupsGov2Serial4,
     borderWidthRatioOverride: _borderRatio,
@@ -365,7 +375,7 @@ abstract final class YemenNorthernPlates {
     panel: _carPanel,
     slots: _carGov2Serial6,
     mirrors: _carMirrorsGov2Serial6,
-    rules: _carRules,
+    background: _carBackground,
     labels: _carLabels,
     textGroups: _groupsGov2Serial6,
     borderWidthRatioOverride: _borderRatio,
@@ -397,7 +407,7 @@ abstract final class YemenNorthernPlates {
     panel: _motoPanel,
     slots: _motoGov2Serial5,
     mirrors: _motoMirrorsGov2Serial5,
-    rules: _motoRules,
+    background: _motoBackground,
     labels: _motoLabels,
     textGroups: _groupsGov2Serial5,
     borderWidthRatioOverride: _borderRatio,

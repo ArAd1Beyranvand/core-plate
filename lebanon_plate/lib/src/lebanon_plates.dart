@@ -29,6 +29,12 @@ abstract final class LebanonPlates {
     padding: EdgeInsets.fromLTRB(10, 86, 8, 10), // CALIBRATE
   );
 
+  /// The band as the plate's first column, run out under the frame.
+  static const PlateSection _oneLineBackground = PlateSection.columns(<PlatePart>[
+    PlatePart(PlateSection.fill(PlateFill.panel), end: 126),
+    PlatePart(PlateSection.plain),
+  ]);
+
   static const List<PlateLabel> _oneLineLabels = <PlateLabel>[
     PlateLabel(text: 'لبنان', box: PlateBox(10, 14, 106, 56), glyphHeight: 50, color: LebanonColors.bandInk),
   ];
@@ -50,6 +56,12 @@ abstract final class LebanonPlates {
     padding: EdgeInsets.fromLTRB(236, 16, 16, 16), // CALIBRATE
     direction: Axis.horizontal,
   );
+
+  /// The band as the plate's top row.
+  static const PlateSection _twoLineBackground = PlateSection.rows(<PlatePart>[
+    PlatePart(PlateSection.fill(PlateFill.panel), end: 88),
+    PlatePart(PlateSection.plain),
+  ]);
 
   static const List<PlateLabel> _twoLineLabels = <PlateLabel>[
     PlateLabel(text: 'لبنان', box: PlateBox(16, 18, 130, 52), glyphHeight: 46, color: LebanonColors.bandInk),
@@ -101,6 +113,7 @@ abstract final class LebanonPlates {
     canvasWidth: _oneLineWidth,
     canvasHeight: _oneLineHeight,
     panel: _oneLinePanel,
+    background: _oneLineBackground,
     slots: _oneLineSlots(digits),
     labels: _oneLineLabels,
     textGroups: _groups(digits),
@@ -113,6 +126,7 @@ abstract final class LebanonPlates {
     canvasWidth: _twoLineWidth,
     canvasHeight: _twoLineHeight,
     panel: _twoLinePanel,
+    background: _twoLineBackground,
     slots: _twoLineSlots(digits),
     labels: _twoLineLabels,
     textGroups: _groups(digits),
