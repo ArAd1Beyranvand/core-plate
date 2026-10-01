@@ -1,4 +1,5 @@
 import 'package:core_plate/core_plate.dart';
+import 'package:flutter/painting.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
 
 const _digits = PlateAlphabet.latinDigits;
@@ -25,6 +26,18 @@ void main() {
       final gapped = plateRegister(alphabet: _digits, count: 3, left: 0, top: 0, width: 40, height: 10, pitch: 55);
       expect(_lefts(gapped), [0, 55, 110]);
       expect(gapped.every((c) => c.box.width == 40), isTrue);
+    });
+
+    test('color reaches every cell, and defaults to the theme ink', () {
+      const white = Color(0xFFFFFFFF);
+      final coloured = plateRegister(alphabet: _digits, count: 3, left: 0, top: 0, width: 10, height: 10, color: white);
+      expect(coloured.every((c) => c.color == white), isTrue);
+
+      final across = plateRegisterAcross(alphabet: _digits, count: 2, left: 0, right: 20, top: 0, height: 10, color: white);
+      expect(across.every((c) => c.color == white), isTrue);
+
+      final plain = plateRegister(alphabet: _digits, count: 2, left: 0, top: 0, width: 10, height: 10);
+      expect(plain.every((c) => c.color == null), isTrue);
     });
 
     test('degenerate counts', () {

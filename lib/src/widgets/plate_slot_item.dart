@@ -143,7 +143,7 @@ class _GlyphSlot extends StatelessWidget {
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.clip,
-                  style: theme.glyphStyle(slot.box.height, theme.ink),
+                  style: theme.glyphStyle(slot.box.height, slot.color ?? theme.ink),
                 ),
               ),
             ),
@@ -202,7 +202,7 @@ class _TypedField extends StatelessWidget {
             onTapOutside: readOnly ? (PointerDownEvent _) {} : null,
             showCursor: readOnly ? focusNode.hasFocus : null,
             textAlign: TextAlign.center,
-            style: theme.glyphStyle(slot.box.height, theme.ink),
+            style: theme.glyphStyle(slot.box.height, slot.color ?? theme.ink),
             cursorColor: theme.activeColor,
             decoration: InputDecoration(
               isDense: true,
@@ -280,7 +280,7 @@ class _ChosenSlot extends StatelessWidget {
             maxLines: 1,
             softWrap: false,
             overflow: TextOverflow.clip,
-            style: theme.glyphStyle(slot.box.height, theme.ink),
+            style: theme.glyphStyle(slot.box.height, slot.color ?? theme.ink),
           );
 
     Widget slotBox(Color underlineColor) => SizedBox(

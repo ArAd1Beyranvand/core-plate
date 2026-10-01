@@ -8,10 +8,16 @@ import 'plate_country.dart';
 /// so there is deliberately no separate field for it.
 @immutable
 class PlateSlot {
-  const PlateSlot({required this.alphabet, required this.box});
+  const PlateSlot({required this.alphabet, required this.box, this.color});
 
   final PlateAlphabet alphabet;
   final PlateBox box;
+
+  /// Ink for this slot, or null for the theme's. Set it only for a slot on a
+  /// coloured [PlateSection] region where the field's ink would be illegible —
+  /// Abu Dhabi's white code on its red column — the same case as
+  /// [PlateLabel.color], for a character the user types.
+  final Color? color;
 }
 
 /// An echo of a slot's value, painted elsewhere on the plate — the same number

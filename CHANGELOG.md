@@ -1,3 +1,12 @@
+## 0.11.1
+
+**`PlateSlot.color`.** A slot may name the ink its character is printed in;
+null keeps `PlateTheme.ink`, so every existing slot is unchanged. The case is
+`PlateLabel.color`'s, for a character the user types: Abu Dhabi prints its
+emirate code white on a red column of the background, and the theme carries one
+ink. `plateRegister` and `plateRegisterAcross` take a `color` for all their
+cells.
+
 ## 0.11.0
 
 **Breaking: the plate background is sectioned.** `PlateSpec.background` is a

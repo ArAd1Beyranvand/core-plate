@@ -12,6 +12,8 @@
 /// Harmless: it initialises lazily and [PlateSpec] equality is over `id` alone.
 library;
 
+import 'dart:ui' show Color;
+
 import 'plate_alphabet.dart';
 import 'plate_box.dart';
 import 'plate_spec.dart';
@@ -21,7 +23,7 @@ import 'plate_spec.dart';
 /// i.e. flush cells with no gap between them.
 ///
 /// Pass an explicit [pitch] for a gapped register, where the cells are narrower
-/// than their stride.
+/// than their stride. [color] is every cell's [PlateSlot.color].
 List<PlateSlot> plateRegister({
   required PlateAlphabet alphabet,
   required int count,
@@ -30,11 +32,12 @@ List<PlateSlot> plateRegister({
   required double width,
   required double height,
   double? pitch,
+  Color? color,
 }) {
   _checkCount(count, 'plateRegister');
   final step = pitch ?? width;
   return List<PlateSlot>.unmodifiable(<PlateSlot>[
-    for (var i = 0; i < count; i++) PlateSlot(alphabet: alphabet, box: PlateBox(left + i * step, top, width, height)),
+    for (var i = 0; i < count; i++) PlateSlot(alphabet: alphabet, box: PlateBox(left + i * step, top, width, height), color: color),
   ]);
 }
 
@@ -50,11 +53,12 @@ List<PlateSlot> plateRegisterAcross({
   required double right,
   required double top,
   required double height,
+  Color? color,
 }) {
   _checkCount(count, 'plateRegisterAcross');
   if (count == 0) return const <PlateSlot>[];
   final width = (right - left) / count;
-  return plateRegister(alphabet: alphabet, count: count, left: left, top: top, width: width, height: height);
+  return plateRegister(alphabet: alphabet, count: count, left: left, top: top, width: width, height: height, color: color);
 }
 
 /// One [PlateMirror] per entry of [sources], laid out as a register: the echo
