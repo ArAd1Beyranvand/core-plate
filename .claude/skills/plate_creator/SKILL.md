@@ -61,6 +61,37 @@ is **not** such a case: it is a `PlateBand` with both corner radii set to exactl
 Adding a painter to satisfy the letter of a prompt is how you get the poorly designed drawing
 structure the prompt was complaining about in the first place.
 
+### Design rule: strips and dividers are the background, never boxes on it
+
+**Any vertical strip, horizontal band or divider that runs to the plate's edge is painted as
+part of the background — `PlateSpec.background`, a `PlateSection` tree — never as a box
+(`PlateBand`, `PlateRule`, `PlateBox`-positioned anything) laid on top of the face.** This is not a
+style preference; it is the rule since core_plate 0.11, and a spec that breaks it is wrong even if
+the golden looks right.
+
+- A coloured strip down the left/right side → `PlateSection.columns` with a
+  `PlateSection.fill(PlateFill.panel)` (or `PlateFill.color(...)`) part ending at its x.
+- A coloured band across the top/bottom → `PlateSection.rows` the same way.
+- A line separating two regions, edge to edge → `PlatePart(..., divider: <thickness>)` on the
+  part whose `end` it sits on. Not a `PlateRule`.
+- A strip that is just the divider colour running out to the edge → `PlateFill.divider`.
+- Nest `columns`/`rows` for compound layouts (a side strip plus a top band in the remaining area).
+- Positions are plate coordinates (`end:`), **never offsets from the border**. Do not inset a strip
+  to the frame's inner edge — the frame paints its border over the background, so the strip runs
+  underneath it to the outer edge.
+- `PlateBand` is reserved for a shape that **floats** inside a region and does not touch the plate
+  edge (Kuwait's "C.D" capsule). `PlateRule` is for a short rule that does not split the plate.
+
+Why: a box on the face has its own anti-aliased edges, so the white face shows through as a light
+seam where it meets the border; and a box positioned against the border moves whenever a theme
+changes the border width. The section tree has neither problem. See `lebanon_plates.dart`
+(`_oneLineBackground`, `_twoLineBackground`) and `yemen_plate` for working examples, and
+`PlateSection`/`PlatePart` in `plate_spec.dart` for the vocabulary.
+
+Decide **in Phase 3** which section tree each strip is, and write the tree into the Phase 4 spec.
+If you catch yourself writing `PlateBand(box: PlateBox(0, ...` or a `PlateRule` whose box spans
+the full width or height, stop: it is a section.
+
 ### Two core_plate behaviours that will bite you
 
 **1. Glyph size is not ink size.** `PlateTheme.glyphStyle` sets
@@ -245,8 +276,11 @@ Before implementing, write the spec down — in the doc comments of the files yo
 create, not in a separate document that will rot. Per unique design:
 
 - **Geometry** — canvas w×h in mm, corner radius ratio, border width ratio, aspect ratio.
+- **Background sections** — the `PlateSection` tree: every strip, band and region with its `end`
+  in plate coordinates and its fill (see the design rule in Phase 0).
 - **Dividers** — position, thickness, and *whether they run edge to edge*. This detail is wrong in
-  AI-generated plates more often than any other.
+  AI-generated plates more often than any other. Edge-to-edge dividers are `PlatePart.divider` in
+  the section tree, not `PlateRule`s.
 - **Text areas** — box, script, orientation (upright-stacked vs `rotated`), `glyphHeight`,
   alignment, and the measured ink extent it is meant to reproduce.
 - **Number areas** — box, digit count, alphabet, pitch.
@@ -361,6 +395,9 @@ Every line here is one an earlier pass would have failed.
       it is a guess — go and measure it.
 - [ ] Shared designs are one parameterised builder. Digit-count and colour differences are
       parameters. No category is a copy of another.
+- [ ] Every strip, band and edge-to-edge divider is painted by `PlateSpec.background` (a
+      `PlateSection` tree with `PlatePart.divider`s), not by a `PlateBand`/`PlateRule` box on the
+      face. `PlateBand` only for shapes that float clear of the plate edge.
 - [ ] Constants live in one `_Layout`-style class, each with the measurement behind it.
 - [ ] A golden exists for **every** category, rendered with real fonts.
 - [ ] You have measured each golden against its reference and the numbers agree, or you have
