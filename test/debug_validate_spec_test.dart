@@ -223,5 +223,37 @@ void main() {
       );
       expect(() => debugValidateSpec(spec), throwsAssertionError);
     });
+
+    test('stripes with one stop between each pair are well formed', () {
+      final spec = _spec(
+        background: const PlateSection.fill(
+          PlateFill.stripes(
+            [PlateFill.field, PlateFill.color(Color(0xFFFFCC00)), PlateFill.panel],
+            stops: [40, 70],
+            angle: 0.1,
+          ),
+        ),
+      );
+      expect(debugValidateSpec(spec), isTrue);
+      expect(spec.background.paintsPanel, isTrue);
+    });
+
+    test('stripes without a stop between each pair throw', () {
+      final spec = _spec(
+        background: const PlateSection.fill(
+          PlateFill.stripes([PlateFill.field, PlateFill.panel], stops: [40, 70]),
+        ),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
+    });
+
+    test('stripes with stops out of order throw', () {
+      final spec = _spec(
+        background: const PlateSection.fill(
+          PlateFill.stripes([PlateFill.field, PlateFill.panel, PlateFill.divider], stops: [70, 40]),
+        ),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
+    });
   });
 }

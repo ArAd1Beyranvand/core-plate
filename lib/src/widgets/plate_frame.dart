@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
 import '../model/plate_spec.dart';
@@ -86,6 +88,10 @@ class _PlateFramePainter extends CustomPainter {
       // The field is already down; painting it again would only add a second
       // anti-aliased edge along each neighbour's boundary.
       if (fill.isField) return;
+      if (fill.isStripes) {
+        _paintStripes(canvas, fill, r, section.shape);
+        return;
+      }
       final paint = Paint()
         ..color = fill.resolve(field: theme.plateBackground, panel: panelColor, divider: theme.dividerColor);
       final shape = section.shape;
@@ -117,6 +123,36 @@ class _PlateFramePainter extends CustomPainter {
       }
       start = end;
     }
+  }
+
+  /// Each stripe is a rect in a frame turned about [r]'s centre, long enough
+  /// to cover [r] at any angle, and clipped back to [r] (or its [shape]).
+  void _paintStripes(Canvas canvas, PlateFill fill, Rect r, CustomClipper<Path>? shape) {
+    final stripes = fill.stripes!;
+    final c = r.center;
+    final reach = r.longestSide;
+    final cos = math.cos(fill.angle);
+    canvas.save();
+    if (shape == null) {
+      canvas.clipRect(r);
+    } else {
+      canvas.clipPath(shape.getClip(r.size).shift(r.topLeft));
+    }
+    canvas.translate(c.dx, c.dy);
+    canvas.rotate(-fill.angle);
+    var top = -reach;
+    for (var i = 0; i < stripes.length; i++) {
+      // A stop is where the boundary meets the centreline; in the turned frame
+      // that is its perpendicular distance from the centre.
+      final bottom = i < fill.stops.length ? (fill.stops[i] - c.dy) * cos : reach;
+      final stripe = stripes[i];
+      if (!stripe.isField) {
+        final color = stripe.resolve(field: theme.plateBackground, panel: panelColor, divider: theme.dividerColor);
+        canvas.drawRect(Rect.fromLTRB(-reach, top, reach, bottom), Paint()..color = color);
+      }
+      top = bottom;
+    }
+    canvas.restore();
   }
 
   Color _borderColor() {

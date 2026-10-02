@@ -1,3 +1,12 @@
+## 0.11.2
+
+**`PlateFill.stripes`.** A background leaf can be parallel bands tilted by an
+angle, each band itself a fill — the flag Venezuela prints under its
+characters. Stops are where each boundary crosses the leaf's vertical
+centreline, so a band's thickness reads straight off a photograph. Purely
+additive: no existing fill or spec changes. `debugValidateSpec` checks there is
+one stop between each pair of stripes and that stops ascend.
+
 ## 0.11.1
 
 **`PlateSlot.color`.** A slot may name the ink its character is printed in;

@@ -68,8 +68,23 @@ class PlateRule {
 @immutable
 class PlateFill {
   /// A colour of the design's own, e.g. a validity-date band.
-  const PlateFill.color(Color this.color) : _role = null;
-  const PlateFill._(this._role) : color = null;
+  const PlateFill.color(Color this.color) : _role = null, stripes = null, stops = const <double>[], angle = 0;
+  const PlateFill._(this._role) : color = null, stripes = null, stops = const <double>[], angle = 0;
+
+  /// Parallel bands across the leaf, tilted by [angle] — a flag printed
+  /// under the characters, as on Venezuela's plates.
+  ///
+  /// [stops] are the boundaries between consecutive [stripes], as the y at
+  /// which each crosses the leaf's vertical centreline, in plate coordinates.
+  /// There is one fewer stop than stripes; the first stripe runs out to the
+  /// leaf's top and the last to its bottom. [angle] is in radians, positive
+  /// rising to the right, and turns every boundary about the leaf's centre.
+  ///
+  /// The stripes are fills themselves, so the top one can be [field] and
+  /// follow the theme. They may not be stripes again.
+  const PlateFill.stripes(List<PlateFill> this.stripes, {required this.stops, this.angle = 0})
+    : color = null,
+      _role = null;
 
   static const PlateFill field = PlateFill._(_FillRole.field);
   static const PlateFill panel = PlateFill._(_FillRole.panel);
@@ -80,11 +95,19 @@ class PlateFill {
 
   final Color? color;
   final _FillRole? _role;
+  final List<PlateFill>? stripes;
+  final List<double> stops;
+  final double angle;
 
   bool get isField => _role == _FillRole.field;
   bool get isPanel => _role == _FillRole.panel;
+  bool get isStripes => stripes != null;
+
+  /// Whether this fill, or any of its [stripes], is the panel colour.
+  bool get paintsPanel => isPanel || (stripes?.any((s) => s.isPanel) ?? false);
 
   /// The paint colour, given the render-time [field] and [panel] colours.
+  /// Not meaningful for [isStripes]; paint each of [stripes] instead.
   Color resolve({required Color field, required Color panel, required Color divider}) => switch (_role) {
     _FillRole.field => field,
     _FillRole.panel => panel,
@@ -131,7 +154,7 @@ class PlateSection {
   /// Whether any leaf is filled with the country's panel colour — in which
   /// case the background owns the panel block and [CountryPanel] lays out only
   /// the flag and caption on it.
-  bool get paintsPanel => isLeaf ? fill!.isPanel : parts.any((p) => p.section.paintsPanel);
+  bool get paintsPanel => isLeaf ? fill!.paintsPanel : parts.any((p) => p.section.paintsPanel);
 }
 
 /// One region of a split [PlateSection].
@@ -460,7 +483,25 @@ bool debugValidateSpec(PlateSpec spec) {
   }
 
   void checkSection(PlateSection s, Rect r, String path) {
-    if (s.isLeaf) return;
+    if (s.isLeaf) {
+      final stripes = s.fill!.stripes;
+      if (stripes == null) return;
+      final stops = s.fill!.stops;
+      assert(
+        stripes.length == stops.length + 1 && stripes.every((f) => !f.isStripes),
+        'Background leaf $path in spec "${spec.id}" has ${stripes.length} stripes '
+        'and ${stops.length} stops; give one stop between each pair, and do not '
+        'nest stripes.',
+      );
+      for (var i = 1; i < stops.length; i++) {
+        assert(
+          stops[i] > stops[i - 1],
+          'Background leaf $path in spec "${spec.id}" has stops out of order: '
+          '${stops[i]} after ${stops[i - 1]}.',
+        );
+      }
+      return;
+    }
     final across = s.axis == Axis.horizontal;
     var previous = across ? r.left : r.top;
     final end = across ? r.right : r.bottom;
