@@ -43,15 +43,18 @@ class PlateAlphabet {
 
   /// [value] folded back to storage form (`'۵' -> '5'`); the inverse of [render]
   /// over [glyphs]. Anything that is not a glyph of this alphabet is returned
-  /// unchanged.
+  /// unchanged, except that a lowercase letter whose uppercase form is legal
+  /// folds to that uppercase form (`'a' -> 'A'`).
   String canonical(String value) {
-    if (glyphs.isEmpty) return value;
+    if (characters.contains(value)) return value;
     for (final entry in glyphs.entries) {
       // A glyph shared by two storage chars (e.g. Afghan `P`/`D` both printing
       // `ش`) folds to the one declared first, matching the order [characters]
       // lists them in.
       if (entry.value == value) return entry.key;
     }
+    final upper = value.toUpperCase();
+    if (upper != value && characters.contains(upper)) return upper;
     return value;
   }
 

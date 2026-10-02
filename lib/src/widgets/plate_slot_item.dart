@@ -217,7 +217,14 @@ class _TypedField extends StatelessWidget {
             ),
             onChanged: (typed) {
               if (slot.alphabet.accepts(typed)) {
-                onChanged(slot.alphabet.canonical(typed));
+                final canonical = slot.alphabet.canonical(typed);
+                if (slot.alphabet.glyphs.isEmpty && canonical != typed) {
+                  controller.value = TextEditingValue(
+                    text: canonical,
+                    selection: TextSelection.collapsed(offset: canonical.length),
+                  );
+                }
+                onChanged(canonical);
                 if (typed != '') {
                   if (onCompleted != null) onCompleted!();
                 }
