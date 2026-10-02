@@ -24,3 +24,5 @@ workspace:
   - yemen_plate/example
   - lebanon_plate
   - lebanon_plate/example
+  - cuba_plate
+  - cuba_plate/example
