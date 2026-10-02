@@ -1,0 +1,24 @@
+name: venezuela_plate
+description: "Venezuela's licence plate for the core_plate library — the 2008 car plate with the flag background, the state-code alphabets and the advisory category validator."
+version: 0.1.0
+homepage: https://github.com/ArAd1Beyranvand/plate-venezuela
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # 0.11.2 for PlateFill.stripes.
+  core_plate: ^0.11.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+# No assets. The flag is painted as background stripes; the stars and the
+# microprint on the characters are not approximated.
