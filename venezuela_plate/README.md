@@ -37,4 +37,4 @@ Trujillo, AE328KG Carabobo), each perspective-corrected to 300 × 150.
 
 Not implemented: the pre-2008 series; the motorcycle plate (smaller, size not
 documented); the yellow provisional and Free Port plates; the eight stars, the
-microprint and the airbrushed fade at the plate's ends.
+microprint.
