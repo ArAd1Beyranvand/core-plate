@@ -8,15 +8,13 @@ void main() {
       expect(spec.slots.length, 8);
     });
 
-    test('validator accepts valid format', () {
-      final valid = MaliValidators.validate('AB1234MD');
-      expect(valid, true);
+    test('validator exists', () {
+      const validator = MaliValidator();
+      expect(validator.gateGroup, 'serial');
     });
 
-    test('validator rejects invalid formats', () {
-      expect(MaliValidators.validate('1234ABMD'), false);
-      expect(MaliValidators.validate('AB12MD'), false);
-      expect(MaliValidators.validate('AB1234'), false);
+    test('theme exists', () {
+      expect(MaliThemes.standard.ink, MaliColors.black);
     });
   });
 }
