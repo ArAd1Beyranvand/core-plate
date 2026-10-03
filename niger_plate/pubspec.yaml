@@ -25,3 +25,4 @@ flutter:
   assets:
     - assets/maps/niger_map.svg
     - assets/maps/niger_map_flag.svg
+    - assets/maps/niger_flag.svg

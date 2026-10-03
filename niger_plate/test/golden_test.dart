@@ -36,6 +36,31 @@ void main() {
       NigerUsage.commercial,
       ['1', 'E', '2', '3', '4', '5'],
     ),
+    // The four below have no reference image; these goldens pin the layout.
+    (
+      'ne_state',
+      NigerOtherPlates.state,
+      NigerUsage.stateTransport,
+      ['1', '2', '3', '4', '5', '6'],
+    ),
+    (
+      'ne_military',
+      NigerOtherPlates.military,
+      NigerUsage.military,
+      ['1', '2', '3', '4', '5'],
+    ),
+    (
+      'ne_diplomatic_cmd',
+      NigerOtherPlates.diplomaticChief,
+      NigerUsage.diplomaticChief,
+      ['1', '2', '3'],
+    ),
+    (
+      'ne_diplomatic_cd',
+      NigerOtherPlates.diplomaticStaff,
+      NigerUsage.diplomaticStaff,
+      ['1', '2', '3', '4'],
+    ),
   ];
   for (final (name, spec, usage, values) in cases) {
     testWidgets('$name ${values.join(' ')}', (tester) async {
@@ -80,6 +105,10 @@ void main() {
   test('every spec passes debugValidateSpec', () {
     expect(debugValidateSpec(NigerPlates.privateSpec), isTrue);
     expect(debugValidateSpec(NigerPlates.commercialSpec), isTrue);
+    expect(debugValidateSpec(NigerOtherPlates.state), isTrue);
+    expect(debugValidateSpec(NigerOtherPlates.military), isTrue);
+    expect(debugValidateSpec(NigerOtherPlates.diplomaticChief), isTrue);
+    expect(debugValidateSpec(NigerOtherPlates.diplomaticStaff), isTrue);
   });
 
   test('validator', () {

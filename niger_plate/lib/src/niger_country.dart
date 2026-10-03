@@ -27,4 +27,22 @@ abstract final class NigerCountry {
       package: 'niger_plate',
     ),
   );
+
+  /// For the plates that print no map: the panel is switched off by the spec.
+  static const PlateCountry plain = PlateCountry(
+    code: 'ne',
+    captionLines: <String>[],
+    panelColor: NigerColors.privateWhite,
+    panelTextColor: NigerColors.black,
+  );
+
+  /// The military plate prints the flag itself at the left.
+  static const PlateCountry military = PlateCountry(
+    code: 'ne',
+    captionLines: <String>[],
+    panelColor: NigerColors.militaryBlack,
+    panelTextColor: NigerColors.militaryWhite,
+    flagAspectRatio: 7 / 6,
+    flag: SvgPlateAsset('assets/maps/niger_flag.svg', package: 'niger_plate'),
+  );
 }
