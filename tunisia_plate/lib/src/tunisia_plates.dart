@@ -114,15 +114,21 @@ abstract final class _Layout {
 
   static const double labelSlack = 40;
 
+  /// Amiri Bold: the stamped تونس is a Naskh hand, ت raised over و.
+  static const String tunisFont = 'TunisiaAmiri';
+
   /// Label glyph heights, fitted on the goldens so each word's ink matches
   /// the measured width above (see `test/golden_test.dart`).
-  static const double tunisGlyph = 56;
+  static const double tunisGlyph = 92;
+
+  /// Smaller on the square, where a three-digit series leaves no room.
+  static const double squareTunisGlyph = 76;
   static const double tmpCaptionGlyph = 80;
 
   /// Label box centres, fitted so the ink centres land on the measured ones:
   /// تونس 56 (one-line) and 144 (two-line), `CD` 54.4, `س د` 55, `ن ت` 64.8.
-  static const double tunisY = 45;
-  static const double squareTunisY = 133;
+  static const double tunisY = 50;
+  static const double squareTunisY = 138;
   static const double dipLatinY = 55.4;
   static const double dipArabicY = 41;
   static const double tmpCaptionY = 53;
@@ -133,6 +139,7 @@ abstract final class _Layout {
 final class _Run {
   const _Run.digits(String this.key, this.count)
     : text = null,
+      font = null,
       width = 0,
       glyph = 0,
       thickness = 0,
@@ -140,7 +147,8 @@ final class _Run {
 
   /// A word boxed [width] wide whose box is centred at plate y [y]. The box
   /// is not the ink: Arabic sits low in its line, so [y] is fitted.
-  const _Run.text(String this.text, this.width, this.glyph, this.y)
+  /// [font] is a family bundled by this package, or null for the theme's.
+  const _Run.text(String this.text, this.width, this.glyph, this.y, {this.font})
     : key = null,
       count = 0,
       thickness = 0;
@@ -148,12 +156,14 @@ final class _Run {
   /// A dash [width] long and [thickness] thick, centred at plate y [y].
   const _Run.dash(this.width, this.thickness, this.y)
     : key = null,
+      font = null,
       text = null,
       count = 0,
       glyph = 0;
 
   const _Run.gap(this.width)
     : key = null,
+      font = null,
       text = null,
       count = 0,
       glyph = 0,
@@ -163,6 +173,7 @@ final class _Run {
   final String? key;
   final int count;
   final String? text;
+  final String? font;
   final double width;
   final double glyph;
   final double thickness;
@@ -366,6 +377,8 @@ abstract final class TunisiaPlates {
             text: r.text!,
             box: PlateBox(x - slack, r.y - half, r.width + 2 * slack, 2 * half),
             glyphHeight: r.glyph,
+            fontFamily: r.font,
+            fontPackage: r.font == null ? null : 'tunisia_plate',
           ),
         );
       } else if (r.thickness > 0) {
@@ -413,6 +426,7 @@ abstract final class TunisiaPlates {
           _Layout.tunisWidth,
           _Layout.tunisGlyph,
           _Layout.tunisY,
+          font: _Layout.tunisFont,
         ),
         const _Run.gap(_Layout.tunisGapAfter),
         const _Run.digits('number', 4),
@@ -442,8 +456,9 @@ abstract final class TunisiaPlates {
         const _Run.text(
           'تونس',
           _Layout.tunisWidth,
-          _Layout.tunisGlyph,
+          _Layout.squareTunisGlyph,
           _Layout.squareTunisY,
+          font: _Layout.tunisFont,
         ),
       ],
       pitch: _Layout.squarePitch,

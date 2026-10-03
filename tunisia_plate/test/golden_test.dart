@@ -8,7 +8,7 @@ import 'package:tunisia_plate/tunisia_plate.dart';
 
 /// One golden per category, drawn with real bold faces — DejaVu for digits
 /// and Latin, Noto Sans Arabic for تونس and the suffixes, in one family so
-/// glyphs fall back per character — at 2 px per millimetre, so the ink can be
+/// glyphs fall back per character; Amiri for تونس — at 2 px per millimetre, so the ink can be
 /// measured against the photos (see `_Layout` in `tunisia_plates.dart`).
 ///
 /// Regenerate with `flutter test --update-goldens` after a deliberate change.
@@ -25,6 +25,14 @@ void main() {
       }
     }
     await loader.load();
+    // تونس's own face, under the name a package font resolves to.
+    final FontLoader amiri = FontLoader('packages/tunisia_plate/TunisiaAmiri')
+      ..addFont(
+        File(
+          'assets/fonts/Amiri-Bold-tunis.ttf',
+        ).readAsBytes().then((b) => ByteData.view(b.buffer)),
+      );
+    await amiri.load();
   });
 
   Future<void> render(
