@@ -37,7 +37,12 @@ List<PlateSlot> plateRegister({
   _checkCount(count, 'plateRegister');
   final step = pitch ?? width;
   return List<PlateSlot>.unmodifiable(<PlateSlot>[
-    for (var i = 0; i < count; i++) PlateSlot(alphabet: alphabet, box: PlateBox(left + i * step, top, width, height), color: color),
+    for (var i = 0; i < count; i++)
+      PlateSlot(
+        alphabet: alphabet,
+        box: PlateBox(left + i * step, top, width, height),
+        color: color,
+      ),
   ]);
 }
 
@@ -58,7 +63,15 @@ List<PlateSlot> plateRegisterAcross({
   _checkCount(count, 'plateRegisterAcross');
   if (count == 0) return const <PlateSlot>[];
   final width = (right - left) / count;
-  return plateRegister(alphabet: alphabet, count: count, left: left, top: top, width: width, height: height, color: color);
+  return plateRegister(
+    alphabet: alphabet,
+    count: count,
+    left: left,
+    top: top,
+    width: width,
+    height: height,
+    color: color,
+  );
 }
 
 /// One [PlateMirror] per entry of [sources], laid out as a register: the echo
@@ -105,7 +118,10 @@ List<PlateRule> plateStipple({
 }) {
   _checkCount(count, 'plateStipple');
   return List<PlateRule>.unmodifiable(<PlateRule>[
-    for (var i = 0; i < count; i++) PlateRule(box: PlateBox(left + i * stepX, top + i * stepY, width, height)),
+    for (var i = 0; i < count; i++)
+      PlateRule(
+        box: PlateBox(left + i * stepX, top + i * stepY, width, height),
+      ),
   ]);
 }
 

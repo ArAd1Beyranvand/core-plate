@@ -61,8 +61,14 @@ class _PlateFramePainter extends CustomPainter {
     final innerRadius = (outerRadius - border).clamp(0.0, outerRadius);
 
     final outerRect = Offset.zero & size;
-    final outer = RRect.fromRectAndRadius(outerRect, Radius.circular(outerRadius));
-    final inner = RRect.fromRectAndRadius(outerRect.deflate(border), Radius.circular(innerRadius));
+    final outer = RRect.fromRectAndRadius(
+      outerRect,
+      Radius.circular(outerRadius),
+    );
+    final inner = RRect.fromRectAndRadius(
+      outerRect.deflate(border),
+      Radius.circular(innerRadius),
+    );
 
     // Halfway into the border: far enough out that the border's inner edge
     // lies over a region, not past one; far enough in that a region's edge
@@ -82,7 +88,12 @@ class _PlateFramePainter extends CustomPainter {
     canvas.drawDRRect(outer, inner, Paint()..color = _borderColor());
   }
 
-  void _paintSection(Canvas canvas, PlateSection section, Rect r, List<Rect> dividers) {
+  void _paintSection(
+    Canvas canvas,
+    PlateSection section,
+    Rect r,
+    List<Rect> dividers,
+  ) {
     if (section.isLeaf) {
       final fill = section.fill!;
       // The field is already down; painting it again would only add a second
@@ -93,7 +104,11 @@ class _PlateFramePainter extends CustomPainter {
         return;
       }
       final paint = Paint()
-        ..color = fill.resolve(field: theme.plateBackground, panel: panelColor, divider: theme.dividerColor);
+        ..color = fill.resolve(
+          field: theme.plateBackground,
+          panel: panelColor,
+          divider: theme.dividerColor,
+        );
       final shape = section.shape;
       if (shape == null) {
         canvas.drawRect(r, paint);
@@ -111,7 +126,9 @@ class _PlateFramePainter extends CustomPainter {
     for (var i = 0; i <= last; i++) {
       final part = section.parts[i];
       final end = i == last ? (across ? r.right : r.bottom) : part.end!;
-      final child = across ? Rect.fromLTRB(start, r.top, end, r.bottom) : Rect.fromLTRB(r.left, start, r.right, end);
+      final child = across
+          ? Rect.fromLTRB(start, r.top, end, r.bottom)
+          : Rect.fromLTRB(r.left, start, r.right, end);
       _paintSection(canvas, part.section, child, dividers);
       if (part.divider > 0 && i != last) {
         final half = part.divider / 2;
@@ -127,7 +144,12 @@ class _PlateFramePainter extends CustomPainter {
 
   /// Each stripe is a rect in a frame turned about [r]'s centre, long enough
   /// to cover [r] at any angle, and clipped back to [r] (or its [shape]).
-  void _paintStripes(Canvas canvas, PlateFill fill, Rect r, CustomClipper<Path>? shape) {
+  void _paintStripes(
+    Canvas canvas,
+    PlateFill fill,
+    Rect r,
+    CustomClipper<Path>? shape,
+  ) {
     final stripes = fill.stripes!;
     final c = r.center;
     final reach = r.longestSide;
@@ -144,11 +166,20 @@ class _PlateFramePainter extends CustomPainter {
     for (var i = 0; i < stripes.length; i++) {
       // A stop is where the boundary meets the centreline; in the turned frame
       // that is its perpendicular distance from the centre.
-      final bottom = i < fill.stops.length ? (fill.stops[i] - c.dy) * cos : reach;
+      final bottom = i < fill.stops.length
+          ? (fill.stops[i] - c.dy) * cos
+          : reach;
       final stripe = stripes[i];
       if (!stripe.isField) {
-        final color = stripe.resolve(field: theme.plateBackground, panel: panelColor, divider: theme.dividerColor);
-        canvas.drawRect(Rect.fromLTRB(-reach, top, reach, bottom), Paint()..color = color);
+        final color = stripe.resolve(
+          field: theme.plateBackground,
+          panel: panelColor,
+          divider: theme.dividerColor,
+        );
+        canvas.drawRect(
+          Rect.fromLTRB(-reach, top, reach, bottom),
+          Paint()..color = color,
+        );
       }
       top = bottom;
     }
@@ -179,7 +210,8 @@ class _PlateFramePainter extends CustomPainter {
 
   Color _borderColor() {
     if (!isCompleted) return theme.plateBorder;
-    return Color.lerp(theme.plateBorder, theme.plateBackground, 0.02) ?? theme.plateBorder;
+    return Color.lerp(theme.plateBorder, theme.plateBackground, 0.02) ??
+        theme.plateBorder;
   }
 
   @override

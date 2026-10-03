@@ -120,7 +120,11 @@ class PlateSlotItem extends StatelessWidget {
 
 /// Bare rendered character (glyph slot).
 class _GlyphSlot extends StatelessWidget {
-  const _GlyphSlot({required this.slot, required this.value, required this.theme});
+  const _GlyphSlot({
+    required this.slot,
+    required this.value,
+    required this.theme,
+  });
 
   final PlateSlot slot;
   final String? value;
@@ -143,7 +147,10 @@ class _GlyphSlot extends StatelessWidget {
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.clip,
-                  style: theme.glyphStyle(slot.box.height, slot.color ?? theme.ink),
+                  style: theme.glyphStyle(
+                    slot.box.height,
+                    slot.color ?? theme.ink,
+                  ),
                 ),
               ),
             ),
@@ -187,9 +194,12 @@ class _TypedField extends StatelessWidget {
         canRequestFocus: false,
         skipTraversal: true,
         onKeyEvent: (node, event) {
-          if (event is! KeyDownEvent && event is! KeyRepeatEvent) return KeyEventResult.ignored;
-          if (event.logicalKey != LogicalKeyboardKey.backspace) return KeyEventResult.ignored;
-          if (!readOnly && controller.text.isNotEmpty) return KeyEventResult.ignored;
+          if (event is! KeyDownEvent && event is! KeyRepeatEvent)
+            return KeyEventResult.ignored;
+          if (event.logicalKey != LogicalKeyboardKey.backspace)
+            return KeyEventResult.ignored;
+          if (!readOnly && controller.text.isNotEmpty)
+            return KeyEventResult.ignored;
           onBackspace?.call();
           return KeyEventResult.handled;
         },
@@ -206,14 +216,22 @@ class _TypedField extends StatelessWidget {
             cursorColor: theme.activeColor,
             decoration: InputDecoration(
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(vertical: slot.box.height * 0.12),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: slot.box.height * 0.12,
+              ),
               filled: false,
               counterText: '',
               hintText: slot.alphabet.placeholder,
               hintStyle: theme.glyphStyle(slot.box.height, theme.inactiveColor),
-              border: UnderlineInputBorder(borderSide: BorderSide(color: theme.inactiveColor)),
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: underlineColor)),
-              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: theme.activeColor)),
+              border: UnderlineInputBorder(
+                borderSide: BorderSide(color: theme.inactiveColor),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: underlineColor),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: theme.activeColor),
+              ),
             ),
             onChanged: (typed) {
               if (slot.alphabet.accepts(typed)) {
@@ -221,7 +239,9 @@ class _TypedField extends StatelessWidget {
                 if (slot.alphabet.glyphs.isEmpty && canonical != typed) {
                   controller.value = TextEditingValue(
                     text: canonical,
-                    selection: TextSelection.collapsed(offset: canonical.length),
+                    selection: TextSelection.collapsed(
+                      offset: canonical.length,
+                    ),
                   );
                 }
                 onChanged(canonical);

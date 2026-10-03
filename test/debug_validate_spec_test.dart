@@ -19,7 +19,18 @@ const _iranianDigits = PlateAlphabet(
   characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
   input: AlphabetInput.typed,
   isNumeric: false,
-  glyphs: {'0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤', '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩'},
+  glyphs: {
+    '0': '٠',
+    '1': '١',
+    '2': '٢',
+    '3': '٣',
+    '4': '٤',
+    '5': '٥',
+    '6': '٦',
+    '7': '٧',
+    '8': '٨',
+    '9': '٩',
+  },
 );
 
 PlateSpec _spec({
@@ -44,7 +55,11 @@ PlateSpec _spec({
 
 PlateSlot _slotAt(PlateBox box) => PlateSlot(alphabet: _digits, box: box);
 
-PlateMirror _mirrorAt({int source = 0, PlateBox box = const PlateBox(20, 50, 20, 30), PlateAlphabet? alphabet}) =>
+PlateMirror _mirrorAt({
+  int source = 0,
+  PlateBox box = const PlateBox(20, 50, 20, 30),
+  PlateAlphabet? alphabet,
+}) =>
     PlateMirror(source: source, box: box, glyphHeight: 30, alphabet: alphabet);
 
 void main() {
@@ -54,7 +69,11 @@ void main() {
       enabled = true;
       return true;
     }());
-    expect(enabled, isTrue, reason: 'debugValidateSpec only checks anything with asserts on');
+    expect(
+      enabled,
+      isTrue,
+      reason: 'debugValidateSpec only checks anything with asserts on',
+    );
   });
 
   test('a well-formed spec returns true', () {
@@ -94,24 +113,42 @@ void main() {
     });
 
     test('a box outside the canvas throws', () {
-      final spec = _spec(mirrors: [_mirrorAt(box: const PlateBox(390, 50, 20, 30))]);
+      final spec = _spec(
+        mirrors: [_mirrorAt(box: const PlateBox(390, 50, 20, 30))],
+      );
       expect(() => debugValidateSpec(spec), throwsAssertionError);
     });
 
     test('a negative source throws', () {
-      expect(() => debugValidateSpec(_spec(mirrors: [_mirrorAt(source: -1)])), throwsAssertionError);
+      expect(
+        () => debugValidateSpec(_spec(mirrors: [_mirrorAt(source: -1)])),
+        throwsAssertionError,
+      );
     });
 
     test('a source at or past slots.length throws', () {
       // _spec()'s default plate has two slots, so 2 is one past the end.
-      expect(() => debugValidateSpec(_spec(mirrors: [_mirrorAt(source: 2)])), throwsAssertionError);
+      expect(
+        () => debugValidateSpec(_spec(mirrors: [_mirrorAt(source: 2)])),
+        throwsAssertionError,
+      );
     });
   });
 
   group('alphabet ids key content one-to-one', () {
     test('one id with two different character/glyph pairs throws', () {
-      const a = PlateAlphabet(id: 'zz.dup', characters: ['0', '1'], input: AlphabetInput.typed, isNumeric: true);
-      const b = PlateAlphabet(id: 'zz.dup', characters: ['A', 'B'], input: AlphabetInput.typed, isNumeric: false);
+      const a = PlateAlphabet(
+        id: 'zz.dup',
+        characters: ['0', '1'],
+        input: AlphabetInput.typed,
+        isNumeric: true,
+      );
+      const b = PlateAlphabet(
+        id: 'zz.dup',
+        characters: ['A', 'B'],
+        input: AlphabetInput.typed,
+        isNumeric: false,
+      );
       final spec = _spec(
         slots: const [
           PlateSlot(alphabet: a, box: PlateBox(20, 5, 20, 30)),
@@ -122,8 +159,18 @@ void main() {
     });
 
     test('two distinct ids sharing one character/glyph pair throws', () {
-      const a = PlateAlphabet(id: 'zz.a', characters: ['0', '1'], input: AlphabetInput.typed, isNumeric: true);
-      const b = PlateAlphabet(id: 'zz.b', characters: ['0', '1'], input: AlphabetInput.typed, isNumeric: true);
+      const a = PlateAlphabet(
+        id: 'zz.a',
+        characters: ['0', '1'],
+        input: AlphabetInput.typed,
+        isNumeric: true,
+      );
+      const b = PlateAlphabet(
+        id: 'zz.b',
+        characters: ['0', '1'],
+        input: AlphabetInput.typed,
+        isNumeric: true,
+      );
       final spec = _spec(
         slots: const [
           PlateSlot(alphabet: a, box: PlateBox(20, 5, 20, 30)),
@@ -155,18 +202,21 @@ void main() {
       expect(debugValidateSpec(spec), isTrue);
     });
 
-    test('a mirror\'s alphabet is walked too — it renders on the same face', () {
-      // A mirror alphabet colliding with a slot alphabet's content under a
-      // different id is the same violation as two slots doing it.
-      const clash = PlateAlphabet(
-        id: 'zz.clash',
-        characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
-        input: AlphabetInput.typed,
-        isNumeric: true,
-      );
-      final spec = _spec(mirrors: [_mirrorAt(alphabet: clash)]);
-      expect(() => debugValidateSpec(spec), throwsAssertionError);
-    });
+    test(
+      'a mirror\'s alphabet is walked too — it renders on the same face',
+      () {
+        // A mirror alphabet colliding with a slot alphabet's content under a
+        // different id is the same violation as two slots doing it.
+        const clash = PlateAlphabet(
+          id: 'zz.clash',
+          characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+          input: AlphabetInput.typed,
+          isNumeric: true,
+        );
+        final spec = _spec(mirrors: [_mirrorAt(alphabet: clash)]);
+        expect(() => debugValidateSpec(spec), throwsAssertionError);
+      },
+    );
 
     test('a mirror rendering through a different numeral system is legal', () {
       final spec = _spec(mirrors: [_mirrorAt(alphabet: _iranianDigits)]);
@@ -228,7 +278,11 @@ void main() {
       final spec = _spec(
         background: const PlateSection.fill(
           PlateFill.stripes(
-            [PlateFill.field, PlateFill.color(Color(0xFFFFCC00)), PlateFill.panel],
+            [
+              PlateFill.field,
+              PlateFill.color(Color(0xFFFFCC00)),
+              PlateFill.panel,
+            ],
             stops: [40, 70],
             angle: 0.1,
           ),
@@ -241,7 +295,10 @@ void main() {
     test('stripes without a stop between each pair throw', () {
       final spec = _spec(
         background: const PlateSection.fill(
-          PlateFill.stripes([PlateFill.field, PlateFill.panel], stops: [40, 70]),
+          PlateFill.stripes(
+            [PlateFill.field, PlateFill.panel],
+            stops: [40, 70],
+          ),
         ),
       );
       expect(() => debugValidateSpec(spec), throwsAssertionError);
@@ -250,7 +307,10 @@ void main() {
     test('stripes with stops out of order throw', () {
       final spec = _spec(
         background: const PlateSection.fill(
-          PlateFill.stripes([PlateFill.field, PlateFill.panel, PlateFill.divider], stops: [70, 40]),
+          PlateFill.stripes(
+            [PlateFill.field, PlateFill.panel, PlateFill.divider],
+            stops: [70, 40],
+          ),
         ),
       );
       expect(() => debugValidateSpec(spec), throwsAssertionError);

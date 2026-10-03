@@ -32,15 +32,33 @@ class CountryPanel extends StatelessWidget {
     // plain rectangle of `panel.box` — see [PlatePanel.shape].
     final shape = panel.shape;
     if (shape != null) {
-      return ClipPath(clipper: shape, child: _Block(panel: panel, theme: theme, country: country, paintBlock: paintBlock));
+      return ClipPath(
+        clipper: shape,
+        child: _Block(
+          panel: panel,
+          theme: theme,
+          country: country,
+          paintBlock: paintBlock,
+        ),
+      );
     }
-    return _Block(panel: panel, theme: theme, country: country, paintBlock: paintBlock);
+    return _Block(
+      panel: panel,
+      theme: theme,
+      country: country,
+      paintBlock: paintBlock,
+    );
   }
 }
 
 /// The block itself: the country's colour, and the flag and wording on it.
 class _Block extends StatelessWidget {
-  const _Block({required this.panel, required this.theme, required this.country, required this.paintBlock});
+  const _Block({
+    required this.panel,
+    required this.theme,
+    required this.country,
+    required this.paintBlock,
+  });
 
   final bool paintBlock;
   final PlateTheme? theme;
@@ -59,18 +77,31 @@ class _Block extends StatelessWidget {
             final resolvedPadding = panel.padding ?? EdgeInsets.all(uniformPad);
             final innerW = constraints.maxWidth - resolvedPadding.horizontal;
             final innerH = constraints.maxHeight - resolvedPadding.vertical;
-            final flag = _flagSize(panel: panel, country: country, innerW: innerW, innerH: innerH);
+            final flag = _flagSize(
+              panel: panel,
+              country: country,
+              innerW: innerW,
+              innerH: innerH,
+            );
             final horizontal = panel.direction == Axis.horizontal;
             // The room the flag leaves, and how many pieces of wording have to
             // share it. A heading and a caption split it evenly; either one
             // alone takes the lot, which is the layout this widget has always
             // had.
             final hasHeading = country.headingLines.isNotEmpty;
-            final slackW = horizontal ? (innerW - flag.width).clamp(0.0, innerW) : null;
-            final slackH = horizontal ? null : (innerH - flag.height).clamp(0.0, innerH);
+            final slackW = horizontal
+                ? (innerW - flag.width).clamp(0.0, innerW)
+                : null;
+            final slackH = horizontal
+                ? null
+                : (innerH - flag.height).clamp(0.0, innerH);
             final share = hasHeading ? 0.5 : 1.0;
 
-            final flagBox = SizedBox(width: flag.width, height: flag.height, child: PlateFlag(country: country));
+            final flagBox = SizedBox(
+              width: flag.width,
+              height: flag.height,
+              child: PlateFlag(country: country),
+            );
             final children = <Widget>[
               if (hasHeading)
                 _PanelWording(
@@ -86,7 +117,9 @@ class _Block extends StatelessWidget {
                 lines: country.captionLines,
                 color: country.panelTextColor,
                 scale: panel.captionScale,
-                alignment: horizontal ? Alignment.centerRight : Alignment.centerLeft,
+                alignment: horizontal
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
                 width: slackW == null ? null : slackW * share,
                 height: slackH == null ? null : slackH * share,
               ),
@@ -94,7 +127,10 @@ class _Block extends StatelessWidget {
             return Padding(
               padding: resolvedPadding,
               child: horizontal
-                  ? Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: children)
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: children,
+                    )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -108,7 +144,12 @@ class _Block extends StatelessWidget {
   }
 }
 
-Size _flagSize({required PlatePanel panel, required PlateCountry country, required double innerW, required double innerH}) {
+Size _flagSize({
+  required PlatePanel panel,
+  required PlateCountry country,
+  required double innerW,
+  required double innerH,
+}) {
   if (panel.direction == Axis.horizontal) {
     var flagH = innerH * panel.flagScale;
     var flagW = flagH * country.flagAspectRatio;
@@ -169,7 +210,12 @@ class _Caption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(color: color, fontWeight: FontWeight.w800, height: 1.0, fontSize: _baseFontSize * scale);
+    final style = TextStyle(
+      color: color,
+      fontWeight: FontWeight.w800,
+      height: 1.0,
+      fontSize: _baseFontSize * scale,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,

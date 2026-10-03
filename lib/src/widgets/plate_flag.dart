@@ -18,18 +18,31 @@ class PlateFlag extends StatelessWidget {
     if (asset == null) return const SizedBox.shrink();
 
     Widget flag = switch (asset) {
-      SvgPlateAsset() => SvgPicture.asset(asset.path, package: asset.package, fit: BoxFit.fill),
-      RasterPlateAsset() => Image.asset(asset.path, package: asset.package, fit: BoxFit.fill),
+      SvgPlateAsset() => SvgPicture.asset(
+        asset.path,
+        package: asset.package,
+        fit: BoxFit.fill,
+      ),
+      RasterPlateAsset() => Image.asset(
+        asset.path,
+        package: asset.package,
+        fit: BoxFit.fill,
+      ),
     };
 
     if (borderRadius != null) {
-      flag = ClipRRect(borderRadius: BorderRadius.circular(borderRadius!), child: flag);
+      flag = ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius!),
+        child: flag,
+      );
     }
 
     final borderColor = country.flagBorderColor;
     if (borderColor == null) return flag;
     return Container(
-      foregroundDecoration: BoxDecoration(border: Border.all(color: borderColor, width: 1)),
+      foregroundDecoration: BoxDecoration(
+        border: Border.all(color: borderColor, width: 1),
+      ),
       child: flag,
     );
   }

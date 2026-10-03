@@ -28,7 +28,11 @@ final PlateSpec _spec = PlateSpec(
   canvasHeight: 100,
   panel: const PlatePanel(box: PlateBox(0, 0, 10, 40)),
   slots: <PlateSlot>[
-    for (int i = 0; i < 3; i++) PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(20 + i * 25.0, 5, 20, 30)),
+    for (int i = 0; i < 3; i++)
+      PlateSlot(
+        alphabet: PlateAlphabet.latinDigits,
+        box: PlateBox(20 + i * 25.0, 5, 20, 30),
+      ),
   ],
 );
 
@@ -44,12 +48,20 @@ Widget _host(PlateController controller, {PlateTheme? theme}) => MaterialApp(
 );
 
 /// The [CountryPanel] instance currently in the tree.
-CountryPanel _panelOf(WidgetTester tester) => tester.widget<CountryPanel>(find.byType(CountryPanel));
+CountryPanel _panelOf(WidgetTester tester) =>
+    tester.widget<CountryPanel>(find.byType(CountryPanel));
 
 /// The [ThemeData] the canvas scopes its slots' selection colours with: the
 /// outermost [Theme] the canvas itself builds.
-ThemeData _selectionThemeOf(WidgetTester tester) =>
-    tester.widgetList<Theme>(find.descendant(of: find.byType(PlateCanvas), matching: find.byType(Theme))).first.data;
+ThemeData _selectionThemeOf(WidgetTester tester) => tester
+    .widgetList<Theme>(
+      find.descendant(
+        of: find.byType(PlateCanvas),
+        matching: find.byType(Theme),
+      ),
+    )
+    .first
+    .data;
 
 void main() {
   testWidgets('a keystroke does not rebuild the canvas', (tester) async {
@@ -115,7 +127,9 @@ void main() {
     );
   });
 
-  testWidgets('the selection theme is rebuilt when the active colour changes', (tester) async {
+  testWidgets('the selection theme is rebuilt when the active colour changes', (
+    tester,
+  ) async {
     final PlateController controller = PlateController(spec: _spec);
     addTearDown(controller.dispose);
 
@@ -123,9 +137,17 @@ void main() {
     await tester.pumpWidget(_host(controller, theme: base));
     final ThemeData before = _selectionThemeOf(tester);
 
-    await tester.pumpWidget(_host(controller, theme: base.copyWith(activeColor: const Color(0xFFFF0000))));
+    await tester.pumpWidget(
+      _host(
+        controller,
+        theme: base.copyWith(activeColor: const Color(0xFFFF0000)),
+      ),
+    );
 
     expect(identical(_selectionThemeOf(tester), before), isFalse);
-    expect(_selectionThemeOf(tester).textSelectionTheme.cursorColor, const Color(0xFFFF0000));
+    expect(
+      _selectionThemeOf(tester).textSelectionTheme.cursorColor,
+      const Color(0xFFFF0000),
+    );
   });
 }

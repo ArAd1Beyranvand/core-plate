@@ -22,10 +22,22 @@ const _iranianDigits = PlateAlphabet(
   characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
   input: AlphabetInput.typed,
   isNumeric: false,
-  glyphs: {'0': '٠', '1': '١', '2': '٢', '3': '٣', '4': '٤', '5': '٥', '6': '٦', '7': '٧', '8': '٨', '9': '٩'},
+  glyphs: {
+    '0': '٠',
+    '1': '١',
+    '2': '٢',
+    '3': '٣',
+    '4': '٤',
+    '5': '٥',
+    '6': '٦',
+    '7': '٧',
+    '8': '٨',
+    '9': '٩',
+  },
 );
 
-PlateSlot _slot(PlateAlphabet alphabet, double left) => PlateSlot(alphabet: alphabet, box: PlateBox(left, 5, 20, 30));
+PlateSlot _slot(PlateAlphabet alphabet, double left) =>
+    PlateSlot(alphabet: alphabet, box: PlateBox(left, 5, 20, 30));
 
 PlateSpec _spec({
   String id = 'zz.test',
@@ -37,7 +49,10 @@ PlateSpec _spec({
   canvasWidth: 400,
   canvasHeight: 100,
   panel: _panel,
-  slots: [for (var i = 0; i < alphabets.length; i++) _slot(alphabets[i], 20 + i * 25.0)],
+  slots: [
+    for (var i = 0; i < alphabets.length; i++)
+      _slot(alphabets[i], 20 + i * 25.0),
+  ],
   textGroups: textGroups,
 );
 
@@ -117,23 +132,38 @@ void main() {
           PlateTextGroup([0, 1, 2], prefix: 'ZZ-'),
         ],
       );
-      expect(spec.renderGroup(spec.effectiveTextGroups.single, ['1', '2', '3']), 'ZZ-1٢3');
+      expect(
+        spec.renderGroup(spec.effectiveTextGroups.single, ['1', '2', '3']),
+        'ZZ-1٢3',
+      );
     });
 
     test('unset slots render as the empty string', () {
       final spec = _spec();
-      expect(spec.renderGroup(const PlateTextGroup([0, 1, 2]), ['1', null, '3']), '13');
+      expect(
+        spec.renderGroup(const PlateTextGroup([0, 1, 2]), ['1', null, '3']),
+        '13',
+      );
     });
 
-    test('an index past values.length renders as empty rather than throwing', () {
-      final spec = _spec();
-      expect(spec.renderGroup(const PlateTextGroup([0, 1, 2]), ['1']), '1');
-    });
+    test(
+      'an index past values.length renders as empty rather than throwing',
+      () {
+        final spec = _spec();
+        expect(spec.renderGroup(const PlateTextGroup([0, 1, 2]), ['1']), '1');
+      },
+    );
 
-    test('an index outside the plate renders as empty rather than throwing', () {
-      final spec = _spec();
-      expect(spec.renderGroup(const PlateTextGroup([0, 9]), ['1', '2', '3']), '1');
-    });
+    test(
+      'an index outside the plate renders as empty rather than throwing',
+      () {
+        final spec = _spec();
+        expect(
+          spec.renderGroup(const PlateTextGroup([0, 9]), ['1', '2', '3']),
+          '1',
+        );
+      },
+    );
   });
 
   group('valueOfGroup', () {
@@ -231,7 +261,12 @@ void main() {
 
       // Ids are the identity: same id, different content, still equal — which
       // is exactly why debugValidateSpec polices ids against content.
-      const twin = PlateAlphabet(id: 'latin.digits', characters: ['7'], input: AlphabetInput.chosen, isNumeric: true);
+      const twin = PlateAlphabet(
+        id: 'latin.digits',
+        characters: ['7'],
+        input: AlphabetInput.chosen,
+        isNumeric: true,
+      );
       expect(_digits, equals(twin));
       expect(_digits.hashCode, twin.hashCode);
       expect(_digits, isNot(equals(_iranianDigits)));
@@ -288,7 +323,11 @@ void main() {
 
     test('chrome elements are plate-space geometry plus content', () {
       const rule = PlateRule(box: PlateBox(0, 0, 2, 40));
-      const label = PlateLabel(text: 'ZZ', box: PlateBox(5, 5, 20, 10), glyphHeight: 10);
+      const label = PlateLabel(
+        text: 'ZZ',
+        box: PlateBox(5, 5, 20, 10),
+        glyphHeight: 10,
+      );
       const decal = PlateDecal(
         image: AssetImage('badges/zz.png', package: 'zz_plate'),
         box: PlateBox(5, 20, 10, 10),

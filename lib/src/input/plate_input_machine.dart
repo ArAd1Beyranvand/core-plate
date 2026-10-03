@@ -22,7 +22,11 @@ class PlateInputMachine implements PlateInputTarget {
   }) {
     for (var i = 0; i < spec.slots.length; i++) {
       _focusNodes.add(FocusNode()..addListener(_handleFocusChange));
-      _controllers.add(spec.slots[i].alphabet.input == AlphabetInput.typed ? TextEditingController() : null);
+      _controllers.add(
+        spec.slots[i].alphabet.input == AlphabetInput.typed
+            ? TextEditingController()
+            : null,
+      );
     }
     // An editable mirror is a second field over one slot, but it is not a slot
     // itself: it adds nothing to the plate's count, grammar or completion. Its
@@ -73,8 +77,10 @@ class PlateInputMachine implements PlateInputTarget {
 
   FocusNode focusNodeAt(int index) => _focusNodes[index];
   TextEditingController? controllerAt(int index) => _controllers[index];
-  FocusNode? mirrorFocusNodeAt(int mirrorIndex) => _mirrorFocusNodes[mirrorIndex];
-  TextEditingController? mirrorControllerAt(int mirrorIndex) => _mirrorControllers[mirrorIndex];
+  FocusNode? mirrorFocusNodeAt(int mirrorIndex) =>
+      _mirrorFocusNodes[mirrorIndex];
+  TextEditingController? mirrorControllerAt(int mirrorIndex) =>
+      _mirrorControllers[mirrorIndex];
 
   @override
   int? get activeIndex => _activeIndex;
@@ -133,7 +139,9 @@ class PlateInputMachine implements PlateInputTarget {
     final field = _controllers[index];
     if (field == null) return;
     final stored = value ?? '';
-    final text = stored.isEmpty ? '' : spec.slots[index].alphabet.render(stored);
+    final text = stored.isEmpty
+        ? ''
+        : spec.slots[index].alphabet.render(stored);
     if (field.text == text) return;
     field.value = TextEditingValue(
       text: text,
@@ -144,7 +152,11 @@ class PlateInputMachine implements PlateInputTarget {
   /// Sync an editable mirror's field with its source slot's value, rendered
   /// through the mirror's alphabet — the Latin row shows `5` where the Iranian
   /// row shows `٥`.
-  void syncMirrorController(int mirrorIndex, PlateAlphabet alphabet, String? value) {
+  void syncMirrorController(
+    int mirrorIndex,
+    PlateAlphabet alphabet,
+    String? value,
+  ) {
     final field = _mirrorControllers[mirrorIndex];
     if (field == null) return;
     final stored = value ?? '';
@@ -187,7 +199,9 @@ class PlateInputMachine implements PlateInputTarget {
     if (index == null) return;
     final values = readValues();
     final current = values[index];
-    final target = (current == null || current.isEmpty) ? spec.previousIndex(index) : index;
+    final target = (current == null || current.isEmpty)
+        ? spec.previousIndex(index)
+        : index;
     if (target == null) return;
     commit(target, '');
     _focusNodes[target].requestFocus();

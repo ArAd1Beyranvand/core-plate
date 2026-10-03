@@ -50,7 +50,8 @@ class PlateCountry {
   final Color? flagBorderColor;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || (other is PlateCountry && other.code == code);
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is PlateCountry && other.code == code);
 
   @override
   int get hashCode => code.hashCode;

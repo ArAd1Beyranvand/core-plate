@@ -12,7 +12,13 @@ import 'plate_text_row.dart';
 /// Read-only plate view driven by a [PlateController], with optional theme
 /// and country overrides. For text-only rendering, use [PlateTextView].
 class PlateView extends StatelessWidget {
-  const PlateView({super.key, required this.controller, this.theme, this.country, this.emptyPlate});
+  const PlateView({
+    super.key,
+    required this.controller,
+    this.theme,
+    this.country,
+    this.emptyPlate,
+  });
 
   final PlateController controller;
   final PlateTheme? theme;
@@ -43,7 +49,12 @@ class PlateView extends StatelessWidget {
 
 /// Text-only rendering of a [PlateController]'s plate characters.
 class PlateTextView extends StatelessWidget {
-  const PlateTextView({super.key, required this.controller, this.emptyPlate, this.textStyle});
+  const PlateTextView({
+    super.key,
+    required this.controller,
+    this.emptyPlate,
+    this.textStyle,
+  });
 
   final PlateController controller;
   final Widget? emptyPlate;
@@ -55,7 +66,11 @@ class PlateTextView extends StatelessWidget {
       listenable: controller,
       builder: (context, _) => controller.isEmpty
           ? (emptyPlate ?? const SizedBox.shrink())
-          : PlateTextRow(spec: controller.spec, values: controller.values, textStyle: textStyle),
+          : PlateTextRow(
+              spec: controller.spec,
+              values: controller.values,
+              textStyle: textStyle,
+            ),
     );
   }
 }

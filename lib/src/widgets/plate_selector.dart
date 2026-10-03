@@ -4,7 +4,12 @@ import '../input/plate_controller.dart';
 
 /// Rebuilds [builder] only when [selector]'s result changes.
 class PlateSelector<T> extends StatefulWidget {
-  const PlateSelector({super.key, required this.controller, required this.selector, required this.builder});
+  const PlateSelector({
+    super.key,
+    required this.controller,
+    required this.selector,
+    required this.builder,
+  });
 
   final PlateController controller;
   final T Function(PlateController) selector;
@@ -31,7 +36,8 @@ class _PlateSelectorState<T> extends State<PlateSelector<T>> {
       oldWidget.controller.removeListener(_handleChange);
       widget.controller.addListener(_handleChange);
     }
-    if (!identical(oldWidget.controller, widget.controller) || !identical(oldWidget.selector, widget.selector)) {
+    if (!identical(oldWidget.controller, widget.controller) ||
+        !identical(oldWidget.selector, widget.selector)) {
       _value = widget.selector(widget.controller);
     }
   }

@@ -19,7 +19,10 @@ PlateSpec _spec(List<String> keys) => PlateSpec(
   panel: _panel,
   slots: [
     for (var i = 0; i < keys.length; i++)
-      PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(20 + i * 25.0, 5, 20, 30)),
+      PlateSlot(
+        alphabet: PlateAlphabet.latinDigits,
+        box: PlateBox(20 + i * 25.0, 5, 20, 30),
+      ),
   ],
   textGroups: [
     for (var i = 0; i < keys.length; i++) PlateTextGroup([i], key: keys[i]),
@@ -87,20 +90,33 @@ void main() {
       expect(_StubGated.judgeCalls, 1);
     });
 
-    test('a gate key no group carries leaves the validator permanently quiet', () {
-      final spec = _spec(['a', 'b']);
-      final entry = PlateEntry(spec: spec, values: ['1', '2']);
-      final v = const _StubGated('nonesuch').validate(entry);
-      expect(v.isValid, isTrue);
-      expect(_StubGated.judgeCalls, 0);
-    });
+    test(
+      'a gate key no group carries leaves the validator permanently quiet',
+      () {
+        final spec = _spec(['a', 'b']);
+        final entry = PlateEntry(spec: spec, values: ['1', '2']);
+        final v = const _StubGated('nonesuch').validate(entry);
+        expect(v.isValid, isTrue);
+        expect(_StubGated.judgeCalls, 0);
+      },
+    );
   });
 
   group('PlateValidation equality', () {
     test('equal over reason', () {
-      expect(const PlateValidation.invalid('x'), const PlateValidation.invalid('x'));
-      expect(const PlateValidation.invalid('x') == const PlateValidation.invalid('y'), isFalse);
-      expect(const PlateValidation.valid() == const PlateValidation.valid(), isTrue);
+      expect(
+        const PlateValidation.invalid('x'),
+        const PlateValidation.invalid('x'),
+      );
+      expect(
+        const PlateValidation.invalid('x') ==
+            const PlateValidation.invalid('y'),
+        isFalse,
+      );
+      expect(
+        const PlateValidation.valid() == const PlateValidation.valid(),
+        isTrue,
+      );
     });
   });
 }

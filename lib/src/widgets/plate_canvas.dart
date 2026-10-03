@@ -706,13 +706,12 @@ class _FrameBinding extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: controller.completed,
-      builder: (context, isCompleted, _) =>
-          PlateFrame(
-            isCompleted: isCompleted,
-            theme: theme,
-            background: background,
-            panelColor: panelColor,
-          ),
+      builder: (context, isCompleted, _) => PlateFrame(
+        isCompleted: isCompleted,
+        theme: theme,
+        background: background,
+        panelColor: panelColor,
+      ),
     );
   }
 }

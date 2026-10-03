@@ -74,7 +74,12 @@ class PlateFill {
       stops = const <double>[],
       angle = 0,
       fog = null;
-  const PlateFill._(this._role) : color = null, stripes = null, stops = const <double>[], angle = 0, fog = null;
+  const PlateFill._(this._role)
+    : color = null,
+      stripes = null,
+      stops = const <double>[],
+      angle = 0,
+      fog = null;
 
   /// Parallel bands across the leaf, tilted by [angle] — a flag printed
   /// under the characters, as on Venezuela's plates.
@@ -89,9 +94,13 @@ class PlateFill {
   /// follow the theme. They may not be stripes again.
   ///
   /// [fog] washes the field colour over the middle of the stripes.
-  const PlateFill.stripes(List<PlateFill> this.stripes, {required this.stops, this.angle = 0, this.fog})
-    : color = null,
-      _role = null;
+  const PlateFill.stripes(
+    List<PlateFill> this.stripes, {
+    required this.stops,
+    this.angle = 0,
+    this.fog,
+  }) : color = null,
+       _role = null;
 
   static const PlateFill field = PlateFill._(_FillRole.field);
   static const PlateFill panel = PlateFill._(_FillRole.panel);
@@ -116,7 +125,11 @@ class PlateFill {
 
   /// The paint colour, given the render-time [field] and [panel] colours.
   /// Not meaningful for [isStripes]; paint each of [stripes] instead.
-  Color resolve({required Color field, required Color panel, required Color divider}) => switch (_role) {
+  Color resolve({
+    required Color field,
+    required Color panel,
+    required Color divider,
+  }) => switch (_role) {
     _FillRole.field => field,
     _FillRole.panel => panel,
     _FillRole.divider => divider,
@@ -132,7 +145,12 @@ enum _FillRole { field, panel, divider }
 /// only at the plate's ends.
 @immutable
 class PlateFog {
-  const PlateFog({required this.center, required this.radii, this.opacity = 1, this.plateau = 0.5});
+  const PlateFog({
+    required this.center,
+    required this.radii,
+    this.opacity = 1,
+    this.plateau = 0.5,
+  });
 
   /// In plate coordinates.
   final Offset center;
@@ -164,10 +182,16 @@ class PlateSection {
       parts = const <PlatePart>[];
 
   /// Side-by-side regions, split along x.
-  const PlateSection.columns(this.parts) : axis = Axis.horizontal, fill = null, shape = null;
+  const PlateSection.columns(this.parts)
+    : axis = Axis.horizontal,
+      fill = null,
+      shape = null;
 
   /// Stacked regions, split along y.
-  const PlateSection.rows(this.parts) : axis = Axis.vertical, fill = null, shape = null;
+  const PlateSection.rows(this.parts)
+    : axis = Axis.vertical,
+      fill = null,
+      shape = null;
 
   /// The plain face: one region in the theme's field colour.
   static const PlateSection plain = PlateSection.fill(PlateFill.field);
@@ -182,7 +206,8 @@ class PlateSection {
   /// Whether any leaf is filled with the country's panel colour — in which
   /// case the background owns the panel block and [CountryPanel] lays out only
   /// the flag and caption on it.
-  bool get paintsPanel => isLeaf ? fill!.paintsPanel : parts.any((p) => p.section.paintsPanel);
+  bool get paintsPanel =>
+      isLeaf ? fill!.paintsPanel : parts.any((p) => p.section.paintsPanel);
 }
 
 /// One region of a split [PlateSection].
@@ -516,7 +541,8 @@ bool debugValidateSpec(PlateSpec spec) {
       if (stripes == null) return;
       final stops = s.fill!.stops;
       assert(
-        stripes.length == stops.length + 1 && stripes.every((f) => !f.isStripes),
+        stripes.length == stops.length + 1 &&
+            stripes.every((f) => !f.isStripes),
         'Background leaf $path in spec "${spec.id}" has ${stripes.length} stripes '
         'and ${stops.length} stops; give one stop between each pair, and do not '
         'nest stripes.',
@@ -537,7 +563,9 @@ bool debugValidateSpec(PlateSpec spec) {
       final part = s.parts[i];
       final last = i == s.parts.length - 1;
       assert(
-        last ? part.end == null : part.end != null && part.end! > previous && part.end! < end,
+        last
+            ? part.end == null
+            : part.end != null && part.end! > previous && part.end! < end,
         'Background part $path.$i in spec "${spec.id}" ends at ${part.end}; '
         '${last ? "the last part runs to its parent's end, so leave it null" : 'expected a value in ($previous, $end)'}.',
       );
@@ -550,7 +578,11 @@ bool debugValidateSpec(PlateSpec spec) {
     }
   }
 
-  checkSection(spec.background, Rect.fromLTWH(0, 0, spec.canvasWidth, spec.canvasHeight), 'background');
+  checkSection(
+    spec.background,
+    Rect.fromLTWH(0, 0, spec.canvasWidth, spec.canvasHeight),
+    'background',
+  );
 
   // One rounded coordinate in a hand-written run of cells is invisible until
   // someone measures the plate. Only keyed groups of three or more cells on one

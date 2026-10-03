@@ -13,16 +13,33 @@ void main() => runApp(const ExampleApp());
 /// package may depend on the other.
 const _spec = PlateSpec(
   id: 'example.plate',
-  country: PlateCountry(code: 'zz', captionLines: [], panelColor: Color(0xFF003399), panelTextColor: Color(0xFFFFFFFF)),
+  country: PlateCountry(
+    code: 'zz',
+    captionLines: [],
+    panelColor: Color(0xFF003399),
+    panelTextColor: Color(0xFFFFFFFF),
+  ),
   canvasWidth: 400,
   canvasHeight: 110,
   panel: PlatePanel(box: PlateBox(0, 0, 40, 110)),
   textDirection: TextDirection.ltr,
   slots: [
-    PlateSlot(alphabet: PlateAlphabet.latinUppercase, box: PlateBox(70, 17, 60, 76)),
-    PlateSlot(alphabet: PlateAlphabet.latinUppercase, box: PlateBox(136, 17, 60, 76)),
-    PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(212, 17, 60, 76)),
-    PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(278, 17, 60, 76)),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinUppercase,
+      box: PlateBox(70, 17, 60, 76),
+    ),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinUppercase,
+      box: PlateBox(136, 17, 60, 76),
+    ),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinDigits,
+      box: PlateBox(212, 17, 60, 76),
+    ),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinDigits,
+      box: PlateBox(278, 17, 60, 76),
+    ),
   ],
 );
 
@@ -36,7 +53,10 @@ class ExampleApp extends StatelessWidget {
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: PlateCanvas(spec: _spec, onChooseCharacter: (alphabet) async => null),
+            child: PlateCanvas(
+              spec: _spec,
+              onChooseCharacter: (alphabet) async => null,
+            ),
           ),
         ),
       ),
