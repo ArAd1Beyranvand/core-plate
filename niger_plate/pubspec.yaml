@@ -1,0 +1,27 @@
+name: niger_plate
+description: "Niger's licence plates for the core_plate library — the 2005 series (region digit, series letter, four-digit serial, country map and RN) in its private and commercial liveries, with themes, alphabets and advisory validators."
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core_plate: ^0.11.0
+  plate_alphabet:
+    path: ../plate_alphabet
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  assets:
+    - assets/maps/niger_map.svg
+    - assets/maps/niger_map_flag.svg
