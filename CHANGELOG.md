@@ -5,7 +5,10 @@ angle, each band itself a fill — the flag Venezuela prints under its
 characters. Stops are where each boundary crosses the leaf's vertical
 centreline, so a band's thickness reads straight off a photograph. Purely
 additive: no existing fill or spec changes. `debugValidateSpec` checks there is
-one stop between each pair of stripes and that stops ascend.
+one stop between each pair of stripes and that stops ascend. An optional
+`PlateFog` airbrushes the theme's field over the stripes — an ellipse held at
+an opacity to a plateau and fading to its edge — for a flag that is printed
+pale behind the characters and full colour only at the ends.
 
 ## 0.11.1
 

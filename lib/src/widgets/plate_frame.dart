@@ -153,6 +153,28 @@ class _PlateFramePainter extends CustomPainter {
       top = bottom;
     }
     canvas.restore();
+    final fog = fill.fog;
+    if (fog != null) {
+      final field = theme.plateBackground;
+      canvas.save();
+      canvas.clipRect(r);
+      canvas.translate(fog.center.dx, fog.center.dy);
+      canvas.scale(fog.radii.width, fog.radii.height);
+      canvas.drawCircle(
+        Offset.zero,
+        1,
+        Paint()
+          ..shader = RadialGradient(
+            colors: <Color>[
+              field.withValues(alpha: fog.opacity),
+              field.withValues(alpha: fog.opacity),
+              field.withValues(alpha: 0),
+            ],
+            stops: <double>[0, fog.plateau, 1],
+          ).createShader(Rect.fromCircle(center: Offset.zero, radius: 1)),
+      );
+      canvas.restore();
+    }
   }
 
   Color _borderColor() {

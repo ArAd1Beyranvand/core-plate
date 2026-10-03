@@ -68,8 +68,13 @@ class PlateRule {
 @immutable
 class PlateFill {
   /// A colour of the design's own, e.g. a validity-date band.
-  const PlateFill.color(Color this.color) : _role = null, stripes = null, stops = const <double>[], angle = 0;
-  const PlateFill._(this._role) : color = null, stripes = null, stops = const <double>[], angle = 0;
+  const PlateFill.color(Color this.color)
+    : _role = null,
+      stripes = null,
+      stops = const <double>[],
+      angle = 0,
+      fog = null;
+  const PlateFill._(this._role) : color = null, stripes = null, stops = const <double>[], angle = 0, fog = null;
 
   /// Parallel bands across the leaf, tilted by [angle] — a flag printed
   /// under the characters, as on Venezuela's plates.
@@ -82,7 +87,9 @@ class PlateFill {
   ///
   /// The stripes are fills themselves, so the top one can be [field] and
   /// follow the theme. They may not be stripes again.
-  const PlateFill.stripes(List<PlateFill> this.stripes, {required this.stops, this.angle = 0})
+  ///
+  /// [fog] washes the field colour over the middle of the stripes.
+  const PlateFill.stripes(List<PlateFill> this.stripes, {required this.stops, this.angle = 0, this.fog})
     : color = null,
       _role = null;
 
@@ -98,6 +105,7 @@ class PlateFill {
   final List<PlateFill>? stripes;
   final List<double> stops;
   final double angle;
+  final PlateFog? fog;
 
   bool get isField => _role == _FillRole.field;
   bool get isPanel => _role == _FillRole.panel;
@@ -117,6 +125,26 @@ class PlateFill {
 }
 
 enum _FillRole { field, panel, divider }
+
+/// The theme's field colour airbrushed over a [PlateFill.stripes] leaf: an
+/// ellipse at [opacity] out to [plateau] of its radii, fading to nothing at
+/// its edge — Venezuela's flag, pale behind the characters and full colour
+/// only at the plate's ends.
+@immutable
+class PlateFog {
+  const PlateFog({required this.center, required this.radii, this.opacity = 1, this.plateau = 0.5});
+
+  /// In plate coordinates.
+  final Offset center;
+
+  /// Half-width and half-height of the ellipse.
+  final Size radii;
+
+  final double opacity;
+
+  /// The fraction of [radii] the fog holds full [opacity] to.
+  final double plateau;
+}
 
 /// The plate face divided into regions: a guillotine tree of columns and rows
 /// whose leaves are [PlateFill]s.
