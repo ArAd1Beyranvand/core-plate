@@ -81,18 +81,20 @@ abstract final class YemenThemes {
 
   /// The northern theme for [usage]. [style] is used only for [YemenUsage.military].
   /// Police resolves to [northernGovernment].
-  static PlateTheme forNorthernUsage(YemenUsage usage, {YemenMilitaryStyle style = YemenMilitaryStyle.classic}) =>
-      switch (usage) {
-        YemenUsage.private => northernPrivate,
-        YemenUsage.forHire => northernForHire,
-        YemenUsage.transport => northernTransport,
-        YemenUsage.government => northernGovernment,
-        YemenUsage.police => northernGovernment,
-        YemenUsage.military => switch (style) {
-          YemenMilitaryStyle.classic => northernMilitaryClassic,
-          YemenMilitaryStyle.modern => northernMilitaryModern,
-        },
-      };
+  static PlateTheme forNorthernUsage(
+    YemenUsage usage, {
+    YemenMilitaryStyle style = YemenMilitaryStyle.classic,
+  }) => switch (usage) {
+    YemenUsage.private => northernPrivate,
+    YemenUsage.forHire => northernForHire,
+    YemenUsage.transport => northernTransport,
+    YemenUsage.government => northernGovernment,
+    YemenUsage.police => northernGovernment,
+    YemenUsage.military => switch (style) {
+      YemenMilitaryStyle.classic => northernMilitaryClassic,
+      YemenMilitaryStyle.modern => northernMilitaryModern,
+    },
+  };
 
   /// The unified theme, whatever the usage. System A never recolours by usage.
   static PlateTheme forUnifiedUsage(YemenUsage usage) => unified;

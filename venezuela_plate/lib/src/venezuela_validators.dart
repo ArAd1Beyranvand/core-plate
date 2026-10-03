@@ -24,7 +24,8 @@ class VenezuelaCategory {
     return true;
   }
 
-  static bool isLetter(String c) => c.length == 1 && c.codeUnitAt(0) >= 0x41 && c.codeUnitAt(0) <= 0x5A;
+  static bool isLetter(String c) =>
+      c.length == 1 && c.codeUnitAt(0) >= 0x41 && c.codeUnitAt(0) <= 0x5A;
 }
 
 /// Judges a 2008 Venezuelan plate value. Reports, never throws, never bars a
@@ -73,17 +74,20 @@ class VenezuelaValidator extends GatedPlateValidator {
   }
 
   static const String reasonSerialLength = 'The serial fills every cell.';
-  static const String reasonNoCategory = 'The letters and digits are in no category\'s order.';
+  static const String reasonNoCategory =
+      'The letters and digits are in no category\'s order.';
   static const String reasonState = 'The last letter names no state.';
 
   @override
   PlateValidation judge(PlateEntry entry) {
     final String serial = entry.group('serial');
-    if (serial.length != 6) return const PlateValidation.invalid(reasonSerialLength);
+    if (serial.length != 6)
+      return const PlateValidation.invalid(reasonSerialLength);
     if (!VenezuelaAlphabets.stateNames.containsKey(entry.group('state'))) {
       return const PlateValidation.invalid(reasonState);
     }
-    if (categoryOf(serial) == null) return const PlateValidation.invalid(reasonNoCategory);
+    if (categoryOf(serial) == null)
+      return const PlateValidation.invalid(reasonNoCategory);
     return const PlateValidation.valid();
   }
 }

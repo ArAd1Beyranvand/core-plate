@@ -25,8 +25,9 @@ Iterable<PlateSpec> get _northernSpecs sync* {
 }
 
 /// The slot indices of [spec]'s group named [key].
-List<int> _indices(PlateSpec spec, String key) =>
-    spec.effectiveTextGroups.firstWhere((PlateTextGroup g) => g.key == key).indices;
+List<int> _indices(PlateSpec spec, String key) => spec.effectiveTextGroups
+    .firstWhere((PlateTextGroup g) => g.key == key)
+    .indices;
 
 void main() {
   group('debugValidateSpec', () {
@@ -38,7 +39,11 @@ void main() {
         // register.
         var ok = false;
         assert(ok = debugValidateSpec(spec));
-        expect(ok, isTrue, reason: 'assertions must be enabled to run this test');
+        expect(
+          ok,
+          isTrue,
+          reason: 'assertions must be enabled to run this test',
+        );
       });
     }
   });
@@ -60,7 +65,11 @@ void main() {
       // The whole phase, as an assertion: a spec is a geometry, so its id
       // names one. `ye.northern.car.g2s5`, never `....private`.
       for (final PlateSpec spec in _allSpecs) {
-        expect(YemenUsage.values.any((YemenUsage u) => spec.id.contains(u.name)), isFalse, reason: spec.id);
+        expect(
+          YemenUsage.values.any((YemenUsage u) => spec.id.contains(u.name)),
+          isFalse,
+          reason: spec.id,
+        );
       }
     });
 
@@ -77,22 +86,37 @@ void main() {
   group('text groups carry the keys the validators read', () {
     test('System A: number + sideCode', () {
       for (final PlateSpec spec in _unifiedSpecs) {
-        final Set<String?> keys = <String?>{for (final PlateTextGroup g in spec.effectiveTextGroups) g.key};
-        expect(keys, containsAll(<String>['number', 'sideCode']), reason: spec.id);
+        final Set<String?> keys = <String?>{
+          for (final PlateTextGroup g in spec.effectiveTextGroups) g.key,
+        };
+        expect(
+          keys,
+          containsAll(<String>['number', 'sideCode']),
+          reason: spec.id,
+        );
       }
     });
 
     test('System B: governorate + serial', () {
       for (final PlateSpec spec in _northernSpecs) {
-        final Set<String?> keys = <String?>{for (final PlateTextGroup g in spec.effectiveTextGroups) g.key};
-        expect(keys, containsAll(<String>['governorate', 'serial']), reason: spec.id);
+        final Set<String?> keys = <String?>{
+          for (final PlateTextGroup g in spec.effectiveTextGroups) g.key,
+        };
+        expect(
+          keys,
+          containsAll(<String>['governorate', 'serial']),
+          reason: spec.id,
+        );
       }
     });
   });
 
   group('slot counts match the geometry the name and the key claim', () {
     test('System B cars', () {
-      YemenNorthernPlates.carGeometries.forEach(((int, int) shape, PlateSpec spec) {
+      YemenNorthernPlates.carGeometries.forEach((
+        (int, int) shape,
+        PlateSpec spec,
+      ) {
         final (int gov, int serial) = shape;
         expect(spec.slots.length, gov + serial, reason: spec.id);
         expect(_indices(spec, 'governorate').length, gov, reason: spec.id);
@@ -103,7 +127,10 @@ void main() {
     });
 
     test('System B motorcycles', () {
-      YemenNorthernPlates.motoGeometries.forEach(((int, int) shape, PlateSpec spec) {
+      YemenNorthernPlates.motoGeometries.forEach((
+        (int, int) shape,
+        PlateSpec spec,
+      ) {
         expect(spec.slots.length, shape.$1 + shape.$2, reason: spec.id);
       });
     });
@@ -133,10 +160,15 @@ void main() {
       const YemenNorthernValidator validator = YemenNorthernValidator();
       for (final PlateSpec spec in _northernSpecs) {
         for (int i = 0; i < draws; i++) {
-          final List<String?> values = YemenNorthernSerialGenerator.generate(spec, random: rng);
+          final List<String?> values = YemenNorthernSerialGenerator.generate(
+            spec,
+            random: rng,
+          );
           expect(values.length, spec.slots.length, reason: spec.id);
           expect(values, isNot(contains(null)), reason: spec.id);
-          final PlateValidation v = validator.validate(PlateEntry(spec: spec, values: values));
+          final PlateValidation v = validator.validate(
+            PlateEntry(spec: spec, values: values),
+          );
           expect(v.isValid, isTrue, reason: '${spec.id} $values: ${v.reason}');
         }
       }
@@ -147,10 +179,15 @@ void main() {
       const YemenUnifiedValidator validator = YemenUnifiedValidator();
       for (final PlateSpec spec in _unifiedSpecs) {
         for (int i = 0; i < draws; i++) {
-          final List<String?> values = YemenUnifiedSerialGenerator.generate(spec, random: rng);
+          final List<String?> values = YemenUnifiedSerialGenerator.generate(
+            spec,
+            random: rng,
+          );
           expect(values.length, spec.slots.length, reason: spec.id);
           expect(values, isNot(contains(null)), reason: spec.id);
-          final PlateValidation v = validator.validate(PlateEntry(spec: spec, values: values));
+          final PlateValidation v = validator.validate(
+            PlateEntry(spec: spec, values: values),
+          );
           expect(v.isValid, isTrue, reason: '${spec.id} $values: ${v.reason}');
         }
       }
@@ -162,7 +199,9 @@ void main() {
     // no length can run past its siblings. The four-cell layout used to end at
     // 531.
     for (final PlateSpec spec in YemenNorthernPlates.carGeometries.values) {
-      final List<PlateBox> boxes = <PlateBox>[for (final int i in _indices(spec, 'serial')) spec.slots[i].box];
+      final List<PlateBox> boxes = <PlateBox>[
+        for (final int i in _indices(spec, 'serial')) spec.slots[i].box,
+      ];
       expect(boxes.first.left, 140, reason: spec.id);
       expect(boxes.last.left + boxes.last.width, 530, reason: spec.id);
     }
@@ -170,12 +209,27 @@ void main() {
 
   group('the geometry lookups', () {
     test('car() and moto() return the geometry maps', () {
-      expect(YemenNorthernPlates.car(governorateDigits: 2, serialDigits: 5), same(YemenNorthernPlates.carGov2Serial5));
-      expect(YemenNorthernPlates.car(governorateDigits: 1, serialDigits: 4), isNull);
-      expect(YemenNorthernPlates.moto(governorateDigits: 2, serialDigits: 5), isNotNull);
-      expect(YemenUnifiedPlates.car(numberDigits: 5), same(YemenUnifiedPlates.car5));
+      expect(
+        YemenNorthernPlates.car(governorateDigits: 2, serialDigits: 5),
+        same(YemenNorthernPlates.carGov2Serial5),
+      );
+      expect(
+        YemenNorthernPlates.car(governorateDigits: 1, serialDigits: 4),
+        isNull,
+      );
+      expect(
+        YemenNorthernPlates.moto(governorateDigits: 2, serialDigits: 5),
+        isNotNull,
+      );
+      expect(
+        YemenUnifiedPlates.car(numberDigits: 5),
+        same(YemenUnifiedPlates.car5),
+      );
       expect(YemenUnifiedPlates.car(numberDigits: 7), isNull);
-      expect(YemenUnifiedPlates.moto(numberDigits: 4), same(YemenUnifiedPlates.moto4));
+      expect(
+        YemenUnifiedPlates.moto(numberDigits: 4),
+        same(YemenUnifiedPlates.moto4),
+      );
     });
   });
 
@@ -199,10 +253,18 @@ void main() {
 
     test('a spec defaults to private, so an un-overridden canvas is sane', () {
       for (final PlateSpec spec in _unifiedSpecs) {
-        expect(spec.country, same(YemenCountry.unifiedPrivate), reason: spec.id);
+        expect(
+          spec.country,
+          same(YemenCountry.unifiedPrivate),
+          reason: spec.id,
+        );
       }
       for (final PlateSpec spec in _northernSpecs) {
-        expect(spec.country, same(YemenCountry.northernPrivate), reason: spec.id);
+        expect(
+          spec.country,
+          same(YemenCountry.northernPrivate),
+          reason: spec.id,
+        );
       }
     });
   });

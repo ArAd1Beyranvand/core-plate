@@ -25,7 +25,21 @@ abstract final class PSAlphabets {
   /// and reserved Gaza letters `P`–`T`. See [PSGovernorate] for the sequence.
   static const PlateAlphabet governorateLetters = PlateAlphabet(
     id: 'ps.governorateLetters',
-    characters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N'],
+    characters: [
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'H',
+      'J',
+      'K',
+      'L',
+      'M',
+      'N',
+    ],
     input: AlphabetInput.chosen,
     isNumeric: false,
   );

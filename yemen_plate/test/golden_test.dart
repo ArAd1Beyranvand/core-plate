@@ -38,7 +38,11 @@ void main() {
               height: 520 * spec.canvasHeight / spec.canvasWidth,
               child: PlateThemeScope(
                 theme: theme,
-                child: PlateView(controller: controller, theme: theme, country: country),
+                child: PlateView(
+                  controller: controller,
+                  theme: theme,
+                  country: country,
+                ),
               ),
             ),
           ),
@@ -47,7 +51,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(PlateView), matchesGoldenFile('goldens/$name.png'));
+    await expectLater(
+      find.byType(PlateView),
+      matchesGoldenFile('goldens/$name.png'),
+    );
 
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
@@ -55,7 +62,10 @@ void main() {
 
   group('northern car g2s5: one spec, two usages', () {
     // 2 governorate digits + 5 serial digits = 7 slots.
-    final spec = YemenNorthernPlates.car(governorateDigits: 2, serialDigits: 5)!;
+    final spec = YemenNorthernPlates.car(
+      governorateDigits: 2,
+      serialDigits: 5,
+    )!;
 
     testWidgets('private (blue)', (tester) async {
       await renderGolden(
@@ -81,7 +91,9 @@ void main() {
   });
 
   group('P3B pitch corrections, pinned', () {
-    testWidgets('carGov2Serial4: register now ends flush at 530', (tester) async {
+    testWidgets('carGov2Serial4: register now ends flush at 530', (
+      tester,
+    ) async {
       await renderGolden(
         tester,
         spec: YemenNorthernPlates.carGov2Serial4,

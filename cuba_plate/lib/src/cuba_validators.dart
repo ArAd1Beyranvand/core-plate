@@ -15,14 +15,16 @@ class CubaValidator extends GatedPlateValidator {
   String get gateGroup => 'serial';
 
   static const String reasonLetterMissing = 'A plate starts with a letter.';
-  static const String reasonLetterUnissued = 'I, O, Q, S, W and Z are not issued.';
+  static const String reasonLetterUnissued =
+      'I, O, Q, S, W and Z are not issued.';
   static const String reasonSerialNotNumeric = 'The number is digits only.';
   static const String reasonSerialLength = 'The number fills every cell.';
 
   @override
   PlateValidation judge(PlateEntry entry) {
     final String letter = entry.group('letter');
-    if (letter.isEmpty) return const PlateValidation.invalid(reasonLetterMissing);
+    if (letter.isEmpty)
+      return const PlateValidation.invalid(reasonLetterMissing);
     if (!CubaAlphabets.letters.accepts(letter)) {
       return const PlateValidation.invalid(reasonLetterUnissued);
     }
@@ -30,7 +32,8 @@ class CubaValidator extends GatedPlateValidator {
     if (serial.length != entry.spec.slotCount - 1) {
       return const PlateValidation.invalid(reasonSerialLength);
     }
-    if (!isDigits(serial)) return const PlateValidation.invalid(reasonSerialNotNumeric);
+    if (!isDigits(serial))
+      return const PlateValidation.invalid(reasonSerialNotNumeric);
     return const PlateValidation.valid();
   }
 }

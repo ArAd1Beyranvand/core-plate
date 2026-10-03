@@ -21,8 +21,15 @@ void main() {
     await loader.load();
   });
 
-  Future<void> renderGolden(WidgetTester tester, PlateSpec spec, String value, String name) async {
-    final controller = PlateController.fromValues(spec, <String?>[for (final c in value.split('')) c]);
+  Future<void> renderGolden(
+    WidgetTester tester,
+    PlateSpec spec,
+    String value,
+    String name,
+  ) async {
+    final controller = PlateController.fromValues(spec, <String?>[
+      for (final c in value.split('')) c,
+    ]);
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -32,7 +39,11 @@ void main() {
               height: 520 * spec.canvasHeight / spec.canvasWidth,
               child: PlateThemeScope(
                 theme: VenezuelaPlates.theme,
-                child: PlateView(controller: controller, theme: VenezuelaPlates.theme, country: VenezuelaCountry.venezuela),
+                child: PlateView(
+                  controller: controller,
+                  theme: VenezuelaPlates.theme,
+                  country: VenezuelaCountry.venezuela,
+                ),
               ),
             ),
           ),
@@ -40,11 +51,25 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await expectLater(find.byType(PlateView), matchesGoldenFile('goldens/$name.png'));
+    await expectLater(
+      find.byType(PlateView),
+      matchesGoldenFile('goldens/$name.png'),
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   }
 
-  testWidgets('car, Lara', (t) => renderGolden(t, VenezuelaPlates.car, 'AB174SK', 've_car_lara'));
-  testWidgets('car, Distrito Capital', (t) => renderGolden(t, VenezuelaPlates.car, 'AA848YA', 've_car_distrito_capital'));
+  testWidgets(
+    'car, Lara',
+    (t) => renderGolden(t, VenezuelaPlates.car, 'AB174SK', 've_car_lara'),
+  );
+  testWidgets(
+    'car, Distrito Capital',
+    (t) => renderGolden(
+      t,
+      VenezuelaPlates.car,
+      'AA848YA',
+      've_car_distrito_capital',
+    ),
+  );
 }

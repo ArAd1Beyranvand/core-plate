@@ -18,9 +18,16 @@ abstract final class LebanonSerialGenerator {
   /// others have uniform width, non-zero leading digit.
   ///
   /// Throws if spec has no `letter` and `serial` groups (not a Lebanon spec).
-  static List<String?> generate(PlateSpec spec, {Random? random, LebanonLetter? letter, LebanonUsage? usage}) {
+  static List<String?> generate(
+    PlateSpec spec, {
+    Random? random,
+    LebanonLetter? letter,
+    LebanonUsage? usage,
+  }) {
     if (letter != null && usage?.letter != null) {
-      throw ArgumentError('Pass letter: or usage:, not both — they would disagree.');
+      throw ArgumentError(
+        'Pass letter: or usage:, not both — they would disagree.',
+      );
     }
     final Random rnd = random ?? Random();
     final List<String?> values = List<String?>.filled(spec.slots.length, null);
@@ -30,17 +37,18 @@ abstract final class LebanonSerialGenerator {
 
     final LebanonLetter chosen =
         letter ??
-        (usage?.letter != null ? LebanonLetter.fromCharacter(usage!.letter!)! : _issued[rnd.nextInt(_issued.length)]);
+        (usage?.letter != null
+            ? LebanonLetter.fromCharacter(usage!.letter!)!
+            : _issued[rnd.nextInt(_issued.length)]);
 
     for (int i = 0; i < letterSlots.length; i++) {
       values[letterSlots[i]] = i == 0 ? chosen.character : '';
     }
 
     final String serial = chosen == LebanonLetter.mp
-        ? (1 + rnd.nextInt(LebanonValidator.maxParliamentNumber)).toString().padLeft(
-            serialSlots.length.clamp(1, 3),
-            '0',
-          )
+        ? (1 + rnd.nextInt(LebanonValidator.maxParliamentNumber))
+              .toString()
+              .padLeft(serialSlots.length.clamp(1, 3), '0')
         : _number(serialSlots.length, rnd);
 
     for (int i = 0; i < serialSlots.length; i++) {
@@ -82,7 +90,11 @@ abstract final class LebanonSerialGenerator {
 List<int> _require(PlateSpec spec, String key) {
   final List<int> indices = spec.indicesOfGroup(key);
   if (indices.isEmpty) {
-    throw ArgumentError.value(spec.id, 'spec', 'has no text group named "$key"');
+    throw ArgumentError.value(
+      spec.id,
+      'spec',
+      'has no text group named "$key"',
+    );
   }
   return indices;
 }

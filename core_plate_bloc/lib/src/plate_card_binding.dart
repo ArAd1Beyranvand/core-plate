@@ -13,7 +13,12 @@ import 'plate_card_bloc.dart';
 /// The seam for hosts with bloc-shaped code around the plate. A [PlateCanvas]
 /// no longer needs this; it owns a controller directly.
 class PlateCardBinding extends StatefulWidget {
-  const PlateCardBinding({super.key, required this.controller, this.bloc, required this.child});
+  const PlateCardBinding({
+    super.key,
+    required this.controller,
+    this.bloc,
+    required this.child,
+  });
 
   /// The value-owning side. Never disposed here — the host owns it.
   final PlateController controller;
@@ -44,7 +49,8 @@ class _PlateCardBindingState extends State<PlateCardBinding> {
   @override
   void didUpdateWidget(PlateCardBinding oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (identical(widget.controller, oldWidget.controller) && identical(widget.bloc, oldWidget.bloc)) {
+    if (identical(widget.controller, oldWidget.controller) &&
+        identical(widget.bloc, oldWidget.bloc)) {
       return;
     }
     // Dispose the bridge before swapping so it releases its listeners/subscriptions.
@@ -81,7 +87,8 @@ class _PlateCardBindingState extends State<PlateCardBinding> {
   }
 
   @override
-  Widget build(BuildContext context) => BlocProvider<PlateCardBloc>.value(value: _bloc, child: widget.child);
+  Widget build(BuildContext context) =>
+      BlocProvider<PlateCardBloc>.value(value: _bloc, child: widget.child);
 }
 
 /// Keeps one [PlateController] and one [PlateCardBloc] holding the same

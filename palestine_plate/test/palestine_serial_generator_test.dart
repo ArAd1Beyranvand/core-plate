@@ -9,7 +9,10 @@ void main() {
   test('10000 generated modern West Bank serials all validate', () {
     final rng = Random(1);
     for (var i = 0; i < iterations; i++) {
-      final values = PSSerialGenerator.modernWestBank(PSWestBankPlates.modernCar, random: rng);
+      final values = PSSerialGenerator.modernWestBank(
+        PSWestBankPlates.modernCar,
+        random: rng,
+      );
       final v = PSWestBankModernValidator.validateFields(
         region: values[0]!,
         serial: values.sublist(1, 5).join(),
@@ -22,7 +25,10 @@ void main() {
   test('10000 generated legacy West Bank serials all validate', () {
     final rng = Random(2);
     for (var i = 0; i < iterations; i++) {
-      final values = PSSerialGenerator.legacyWestBank(PSWestBankPlates.legacyCar, random: rng);
+      final values = PSSerialGenerator.legacyWestBank(
+        PSWestBankPlates.legacyCar,
+        random: rng,
+      );
       final v = PSWestBankLegacyValidator.validateFields(
         district: values[0]!,
         serial: values.sublist(1, 5).join(),
@@ -48,7 +54,10 @@ void main() {
   test('the generator never emits I, O or a reserved Gaza letter', () {
     final rng = Random(4);
     for (var i = 0; i < iterations; i++) {
-      final letter = PSSerialGenerator.modernWestBank(PSWestBankPlates.modernCar, random: rng)[5];
+      final letter = PSSerialGenerator.modernWestBank(
+        PSWestBankPlates.modernCar,
+        random: rng,
+      )[5];
       expect(PSGovernorate.confusableLetters, isNot(contains(letter)));
       expect(PSGovernorate.reservedGazaLetters, isNot(contains(letter)));
     }
@@ -76,7 +85,10 @@ void main() {
   });
 
   test('throws a clear ArgumentError when handed the wrong spec', () {
-    expect(() => PSSerialGenerator.modernWestBank(PSGazaPlates.car2012), throwsArgumentError);
+    expect(
+      () => PSSerialGenerator.modernWestBank(PSGazaPlates.car2012),
+      throwsArgumentError,
+    );
   });
 
   test('toFilename concatenates with no separator', () {

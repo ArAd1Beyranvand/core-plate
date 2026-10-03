@@ -26,7 +26,21 @@ enum PSGovernorate {
   final String englishName;
 
   /// Issued letters in allocation order (same as PSAlphabets.governorateLetters).
-  static const List<String> letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N'];
+  static const List<String> letters = [
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'H',
+    'J',
+    'K',
+    'L',
+    'M',
+    'N',
+  ];
 
   /// Never issued; OCR misreads (I↔1/J, O↔0). See enum doc.
   static const List<String> confusableLetters = ['I', 'O'];

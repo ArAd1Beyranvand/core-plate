@@ -18,7 +18,11 @@ abstract final class LebanonThemes {
   /// barely rounded.
   static const double _plateRadiusRatio = 0.045; // CALIBRATE
 
-  static PlateTheme _field({required Color field, required Color ink, required Color inactive}) => PlateTheme(
+  static PlateTheme _field({
+    required Color field,
+    required Color ink,
+    required Color inactive,
+  }) => PlateTheme(
     plateBackground: field,
     plateBorder: LebanonColors.frame,
     ink: ink,

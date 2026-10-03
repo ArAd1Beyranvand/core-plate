@@ -71,7 +71,16 @@ abstract final class PSLegacyUsage {
   };
 
   /// Legal district digits, in alphabet order.
-  static const List<String> districtCodes = ['1', '3', '4', '5', '6', '7', '8', '9'];
+  static const List<String> districtCodes = [
+    '1',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+  ];
 }
 
 /// Gaza usage classes, keyed by trailing digits. Drive glyph colour only

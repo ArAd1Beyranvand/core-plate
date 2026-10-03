@@ -29,9 +29,17 @@ abstract final class YemenUnifiedSerialGenerator {
   }
 
   /// [count] values for [spec], each one independently generated.
-  static List<List<String?>> generateMany(PlateSpec spec, int count, {Random? random}) {
+  static List<List<String?>> generateMany(
+    PlateSpec spec,
+    int count, {
+    Random? random,
+  }) {
     final Random rnd = random ?? Random();
-    return List<List<String?>>.generate(count, (_) => generate(spec, random: rnd), growable: false);
+    return List<List<String?>>.generate(
+      count,
+      (_) => generate(spec, random: rnd),
+      growable: false,
+    );
   }
 }
 
@@ -51,25 +59,36 @@ abstract final class YemenNorthernSerialGenerator {
     final List<int> serial = _require(spec, 'serial');
 
     final int maxCode = governorate.length >= 2 ? YemenGovernorate.maxCode : 9;
-    final String code = (YemenGovernorate.minCode + rnd.nextInt(maxCode - YemenGovernorate.minCode + 1))
-        .toString()
-        .padLeft(governorate.length, '0');
+    final String code =
+        (YemenGovernorate.minCode +
+                rnd.nextInt(maxCode - YemenGovernorate.minCode + 1))
+            .toString()
+            .padLeft(governorate.length, '0');
     for (int i = 0; i < governorate.length; i++) {
       values[governorate[i]] = code[i];
     }
 
     for (int i = 0; i < serial.length; i++) {
       // No leading zero: the first digit runs 1..9.
-      values[serial[i]] = (i == 0 ? 1 + rnd.nextInt(9) : rnd.nextInt(10)).toString();
+      values[serial[i]] = (i == 0 ? 1 + rnd.nextInt(9) : rnd.nextInt(10))
+          .toString();
     }
 
     return values;
   }
 
   /// [count] values for [spec], each one independently generated.
-  static List<List<String?>> generateMany(PlateSpec spec, int count, {Random? random}) {
+  static List<List<String?>> generateMany(
+    PlateSpec spec,
+    int count, {
+    Random? random,
+  }) {
     final Random rnd = random ?? Random();
-    return List<List<String?>>.generate(count, (_) => generate(spec, random: rnd), growable: false);
+    return List<List<String?>>.generate(
+      count,
+      (_) => generate(spec, random: rnd),
+      growable: false,
+    );
   }
 }
 
@@ -77,7 +96,11 @@ abstract final class YemenNorthernSerialGenerator {
 List<int> _require(PlateSpec spec, String key) {
   final List<int> indices = spec.indicesOfGroup(key);
   if (indices.isEmpty) {
-    throw ArgumentError.value(spec.id, 'spec', 'has no text group named "$key"');
+    throw ArgumentError.value(
+      spec.id,
+      'spec',
+      'has no text group named "$key"',
+    );
   }
   return indices;
 }

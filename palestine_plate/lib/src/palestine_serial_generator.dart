@@ -49,7 +49,11 @@ abstract final class PSSerialGenerator {
     for (final i in serial) {
       values[i] = _digit(rng);
     }
-    _writeUsage(values, usage, PSLegacyUsage.codes[rng.nextInt(PSLegacyUsage.codes.length)]);
+    _writeUsage(
+      values,
+      usage,
+      PSLegacyUsage.codes[rng.nextInt(PSLegacyUsage.codes.length)],
+    );
     return values;
   }
 
@@ -67,12 +71,20 @@ abstract final class PSSerialGenerator {
     for (final i in serial) {
       values[i] = _digit(rng);
     }
-    _writeUsage(values, usage, PSGazaUsage.codes[rng.nextInt(PSGazaUsage.codes.length)]);
+    _writeUsage(
+      values,
+      usage,
+      PSGazaUsage.codes[rng.nextInt(PSGazaUsage.codes.length)],
+    );
     return values;
   }
 
   /// Writes each character of [code] into the successive slots of [indices].
-  static void _writeUsage(List<String?> values, List<int> indices, String code) {
+  static void _writeUsage(
+    List<String?> values,
+    List<int> indices,
+    String code,
+  ) {
     final chars = code.split('');
     for (var n = 0; n < indices.length && n < chars.length; n++) {
       values[indices[n]] = chars[n];
@@ -82,13 +94,18 @@ abstract final class PSSerialGenerator {
   static List<int> _require(PlateSpec spec, String key) {
     final indices = spec.indicesOfGroup(key);
     if (indices.isEmpty) {
-      throw ArgumentError.value(spec.id, 'spec', 'has no text group named "$key"');
+      throw ArgumentError.value(
+        spec.id,
+        'spec',
+        'has no text group named "$key"',
+      );
     }
     return indices;
   }
 
   /// Values joined with no separator (filename/dataset row shape, vs renderGroup's dotted).
-  static String toFilename(List<String?> values) => values.map((v) => v ?? '').join();
+  static String toFilename(List<String?> values) =>
+      values.map((v) => v ?? '').join();
 
   static String _digit(Random rng) => rng.nextInt(10).toString();
 }

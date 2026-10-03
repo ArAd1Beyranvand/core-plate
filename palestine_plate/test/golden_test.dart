@@ -30,7 +30,11 @@ void main() {
               height: 520 * spec.canvasHeight / spec.canvasWidth,
               child: PlateThemeScope(
                 theme: theme,
-                child: PlateView(controller: controller, theme: theme, country: country),
+                child: PlateView(
+                  controller: controller,
+                  theme: theme,
+                  country: country,
+                ),
               ),
             ),
           ),
@@ -39,7 +43,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(PlateView), matchesGoldenFile('goldens/$name.png'));
+    await expectLater(
+      find.byType(PlateView),
+      matchesGoldenFile('goldens/$name.png'),
+    );
 
     // Unmount the tree before disposing: _PlateCanvasState.dispose() calls
     // controller.detach(), which notifies listeners, so the controller must
@@ -69,12 +76,16 @@ void main() {
       );
     });
 
-    testWidgets('legacy car, public transport (white on green)', (tester) async {
+    testWidgets('legacy car, public transport (white on green)', (
+      tester,
+    ) async {
       await renderGolden(
         tester,
         spec: PSWestBankPlates.legacyCar,
         theme: PSThemes.forUsage(PSUsage.publicTransport),
-        country: PSWestBankPlates.legacyCountryForUsage(PSUsage.publicTransport),
+        country: PSWestBankPlates.legacyCountryForUsage(
+          PSUsage.publicTransport,
+        ),
         values: const ['4', '0', '2', '3', '4', '3', '0'],
         name: 'wb_legacy_car_publicTransport_whiteOnGreen',
       );
@@ -157,7 +168,9 @@ void main() {
       );
     });
 
-    testWidgets('motorcycle, public transport (blue) + watermark', (tester) async {
+    testWidgets('motorcycle, public transport (blue) + watermark', (
+      tester,
+    ) async {
       await renderGolden(
         tester,
         spec: PSGazaPlates.moto,
@@ -177,7 +190,9 @@ void main() {
       );
     });
 
-    testWidgets('style2021 two-line, government (red) + watermark', (tester) async {
+    testWidgets('style2021 two-line, government (red) + watermark', (
+      tester,
+    ) async {
       await renderGolden(
         tester,
         spec: PSGazaPlates.car2021TwoLine,

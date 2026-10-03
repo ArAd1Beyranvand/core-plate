@@ -21,8 +21,15 @@ void main() {
     await loader.load();
   });
 
-  Future<void> renderGolden(WidgetTester tester, PlateSpec spec, String value, String name) async {
-    final controller = PlateController.fromValues(spec, <String?>[for (final c in value.split('')) c]);
+  Future<void> renderGolden(
+    WidgetTester tester,
+    PlateSpec spec,
+    String value,
+    String name,
+  ) async {
+    final controller = PlateController.fromValues(spec, <String?>[
+      for (final c in value.split('')) c,
+    ]);
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -32,7 +39,11 @@ void main() {
               height: 520 * spec.canvasHeight / spec.canvasWidth,
               child: PlateThemeScope(
                 theme: CubaPlates.theme,
-                child: PlateView(controller: controller, theme: CubaPlates.theme, country: CubaCountry.cuba),
+                child: PlateView(
+                  controller: controller,
+                  theme: CubaPlates.theme,
+                  country: CubaCountry.cuba,
+                ),
               ),
             ),
           ),
@@ -40,12 +51,29 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await expectLater(find.byType(PlateView), matchesGoldenFile('goldens/$name.png'));
+    await expectLater(
+      find.byType(PlateView),
+      matchesGoldenFile('goldens/$name.png'),
+    );
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
   }
 
-  testWidgets('car, natural person', (t) => renderGolden(t, CubaPlates.car, 'D004027', 'cu_car'));
-  testWidgets('car, legal entity', (t) => renderGolden(t, CubaPlates.carLegalEntity, 'K000807', 'cu_car_legal_entity'));
-  testWidgets('motorcycle', (t) => renderGolden(t, CubaPlates.motorcycle, 'P28588', 'cu_motorcycle'));
+  testWidgets(
+    'car, natural person',
+    (t) => renderGolden(t, CubaPlates.car, 'D004027', 'cu_car'),
+  );
+  testWidgets(
+    'car, legal entity',
+    (t) => renderGolden(
+      t,
+      CubaPlates.carLegalEntity,
+      'K000807',
+      'cu_car_legal_entity',
+    ),
+  );
+  testWidgets(
+    'motorcycle',
+    (t) => renderGolden(t, CubaPlates.motorcycle, 'P28588', 'cu_motorcycle'),
+  );
 }

@@ -64,7 +64,10 @@ abstract final class PSCountries {
     panelColor: Color(0x00000000),
     panelTextColor: PSColors.black,
     flagAspectRatio: 1 / 2,
-    flag: SvgPlateAsset('assets/flags/Flag_of_Palestine_vertical.svg', package: 'palestine_plate'),
+    flag: SvgPlateAsset(
+      'assets/flags/Flag_of_Palestine_vertical.svg',
+      package: 'palestine_plate',
+    ),
   );
 
   /// Gaza, 2021 onward: the flag the right way up, at its official 2:1 ratio.
@@ -74,6 +77,9 @@ abstract final class PSCountries {
     panelColor: Color(0x00000000),
     panelTextColor: PSColors.black,
     flagAspectRatio: 2 / 1,
-    flag: SvgPlateAsset('assets/flags/Flag_of_Palestine.svg', package: 'palestine_plate'),
+    flag: SvgPlateAsset(
+      'assets/flags/Flag_of_Palestine.svg',
+      package: 'palestine_plate',
+    ),
   );
 }

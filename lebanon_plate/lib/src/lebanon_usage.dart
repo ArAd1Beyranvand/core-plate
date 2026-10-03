@@ -38,7 +38,11 @@ enum LebanonUsage {
   /// Tourism vehicles, pink field.
   tourism(arabic: null, latin: 'TOURISM', letter: null);
 
-  const LebanonUsage({required this.arabic, required this.latin, required this.letter});
+  const LebanonUsage({
+    required this.arabic,
+    required this.latin,
+    required this.letter,
+  });
 
   /// The Arabic word printed in the band under لبنان, or null when no source
   /// names one for this class. Null means "not attested", not "blank by rule" —

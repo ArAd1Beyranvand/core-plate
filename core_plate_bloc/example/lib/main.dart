@@ -10,16 +10,33 @@ void main() => runApp(const ExampleApp());
 /// panel. What is on the plate is not the point — where its characters live is.
 const _spec = PlateSpec(
   id: 'example.plate',
-  country: PlateCountry(code: 'zz', captionLines: [], panelColor: Color(0xFF003399), panelTextColor: Color(0xFFFFFFFF)),
+  country: PlateCountry(
+    code: 'zz',
+    captionLines: [],
+    panelColor: Color(0xFF003399),
+    panelTextColor: Color(0xFFFFFFFF),
+  ),
   canvasWidth: 400,
   canvasHeight: 110,
   panel: PlatePanel(box: PlateBox(0, 0, 40, 110)),
   textDirection: TextDirection.ltr,
   slots: [
-    PlateSlot(alphabet: PlateAlphabet.latinUppercase, box: PlateBox(70, 17, 60, 76)),
-    PlateSlot(alphabet: PlateAlphabet.latinUppercase, box: PlateBox(136, 17, 60, 76)),
-    PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(212, 17, 60, 76)),
-    PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(278, 17, 60, 76)),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinUppercase,
+      box: PlateBox(70, 17, 60, 76),
+    ),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinUppercase,
+      box: PlateBox(136, 17, 60, 76),
+    ),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinDigits,
+      box: PlateBox(212, 17, 60, 76),
+    ),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinDigits,
+      box: PlateBox(278, 17, 60, 76),
+    ),
   ],
 );
 
@@ -56,13 +73,19 @@ class _ExampleAppState extends State<ExampleApp> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: PlateCanvas(spec: _spec, controller: _controller, onChooseCharacter: (alphabet) async => null),
+                  child: PlateCanvas(
+                    spec: _spec,
+                    controller: _controller,
+                    onChooseCharacter: (alphabet) async => null,
+                  ),
                 ),
                 // The proof: this reads the bloc, not the controller, and
                 // updates on every keystroke the canvas commits.
                 BlocBuilder<PlateCardBloc, PlateCardState>(
                   builder: (context, state) => Text(
-                    state.plateNumber.values.map((v) => (v ?? '').isEmpty ? '_' : v!).join(' '),
+                    state.plateNumber.values
+                        .map((v) => (v ?? '').isEmpty ? '_' : v!)
+                        .join(' '),
                     style: const TextStyle(fontSize: 24, letterSpacing: 2),
                   ),
                 ),
@@ -73,10 +96,15 @@ class _ExampleAppState extends State<ExampleApp> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextButton(
-                      onPressed: () => context.read<PlateCardBloc>().add(ValueIsChanged(index: 0, value: 'A')),
+                      onPressed: () => context.read<PlateCardBloc>().add(
+                        ValueIsChanged(index: 0, value: 'A'),
+                      ),
                       child: const Text('bloc: set slot 0 to A'),
                     ),
-                    TextButton(onPressed: _controller.clear, child: const Text('controller: clear')),
+                    TextButton(
+                      onPressed: _controller.clear,
+                      child: const Text('controller: clear'),
+                    ),
                   ],
                 ),
                 // The bloc-reading read-only view, for comparison with

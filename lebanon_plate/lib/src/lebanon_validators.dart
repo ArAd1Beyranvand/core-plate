@@ -17,20 +17,27 @@ class LebanonValidator extends GatedPlateValidator {
   String get gateGroup => 'serial';
 
   static const String reasonLetterMissing = 'A plate starts with a letter.';
-  static const String reasonLetterUnknown = 'That is not a Lebanese plate letter.';
+  static const String reasonLetterUnknown =
+      'That is not a Lebanese plate letter.';
   static const String reasonSerialNotNumeric = 'The number is digits only.';
   static const String reasonSerialLength = 'The number is one to six digits.';
-  static const String reasonParliamentRange = 'A parliament plate is numbered 1 to 128.';
+  static const String reasonParliamentRange =
+      'A parliament plate is numbered 1 to 128.';
 
   static const int minSerialLength = 1;
   static const int maxSerialLength = 6;
   static const int maxParliamentNumber = 128;
 
   @override
-  PlateValidation judge(PlateEntry entry) =>
-      validateFields(letter: entry.group('letter'), serial: entry.group('serial'));
+  PlateValidation judge(PlateEntry entry) => validateFields(
+    letter: entry.group('letter'),
+    serial: entry.group('serial'),
+  );
 
-  static PlateValidation validateFields({required String letter, required String serial}) {
+  static PlateValidation validateFields({
+    required String letter,
+    required String serial,
+  }) {
     if (letter.isEmpty) {
       return const PlateValidation.invalid(reasonLetterMissing);
     }

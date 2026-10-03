@@ -30,13 +30,19 @@ abstract final class LebanonPlates {
   );
 
   /// The band as the plate's first column, run out under the frame.
-  static const PlateSection _oneLineBackground = PlateSection.columns(<PlatePart>[
-    PlatePart(PlateSection.fill(PlateFill.panel), end: 126),
-    PlatePart(PlateSection.plain),
-  ]);
+  static const PlateSection _oneLineBackground =
+      PlateSection.columns(<PlatePart>[
+        PlatePart(PlateSection.fill(PlateFill.panel), end: 126),
+        PlatePart(PlateSection.plain),
+      ]);
 
   static const List<PlateLabel> _oneLineLabels = <PlateLabel>[
-    PlateLabel(text: 'لبنان', box: PlateBox(10, 14, 106, 56), glyphHeight: 50, color: LebanonColors.bandInk),
+    PlateLabel(
+      text: 'لبنان',
+      box: PlateBox(10, 14, 106, 56),
+      glyphHeight: 50,
+      color: LebanonColors.bandInk,
+    ),
   ];
 
   /// Letter cell, wider to accommodate `MP` (two glyphs).
@@ -64,7 +70,12 @@ abstract final class LebanonPlates {
   ]);
 
   static const List<PlateLabel> _twoLineLabels = <PlateLabel>[
-    PlateLabel(text: 'لبنان', box: PlateBox(16, 18, 130, 52), glyphHeight: 46, color: LebanonColors.bandInk),
+    PlateLabel(
+      text: 'لبنان',
+      box: PlateBox(16, 18, 130, 52),
+      glyphHeight: 46,
+      color: LebanonColors.bandInk,
+    ),
   ];
 
   static const PlateSlot _twoLineLetter = PlateSlot(
@@ -135,15 +146,19 @@ abstract final class LebanonPlates {
 
   /// One-line and two-line geometries by digit count, built once.
   static final Map<int, PlateSpec> oneLineGeometries = <int, PlateSpec>{
-    for (final int d in digitLengths) d: d == standardDigits ? oneLine : _oneLineSpec(d),
+    for (final int d in digitLengths)
+      d: d == standardDigits ? oneLine : _oneLineSpec(d),
   };
 
   static final Map<int, PlateSpec> twoLineGeometries = <int, PlateSpec>{
-    for (final int d in digitLengths) d: d == standardDigits ? twoLine : _twoLineSpec(d),
+    for (final int d in digitLengths)
+      d: d == standardDigits ? twoLine : _twoLineSpec(d),
   };
 
-  static PlateSpec? oneLineOf({required int digits}) => oneLineGeometries[digits];
-  static PlateSpec? twoLineOf({required int digits}) => twoLineGeometries[digits];
+  static PlateSpec? oneLineOf({required int digits}) =>
+      oneLineGeometries[digits];
+  static PlateSpec? twoLineOf({required int digits}) =>
+      twoLineGeometries[digits];
 
   static List<PlateSpec> get all => <PlateSpec>[oneLine, twoLine];
 }

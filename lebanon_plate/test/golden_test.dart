@@ -32,7 +32,11 @@ void main() {
               height: 520 * spec.canvasHeight / spec.canvasWidth,
               child: PlateThemeScope(
                 theme: theme,
-                child: PlateView(controller: controller, theme: theme, country: LebanonCountry.forUsage(usage)),
+                child: PlateView(
+                  controller: controller,
+                  theme: theme,
+                  country: LebanonCountry.forUsage(usage),
+                ),
               ),
             ),
           ),
@@ -41,7 +45,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await expectLater(find.byType(PlateView), matchesGoldenFile('goldens/$name.png'));
+    await expectLater(
+      find.byType(PlateView),
+      matchesGoldenFile('goldens/$name.png'),
+    );
 
     await tester.pumpWidget(const SizedBox.shrink());
     controller.dispose();
@@ -92,7 +99,9 @@ void main() {
       );
     });
 
-    testWidgets('two-line public institution (red, مؤسسات on the band)', (tester) async {
+    testWidgets('two-line public institution (red, مؤسسات on the band)', (
+      tester,
+    ) async {
       await renderGolden(
         tester,
         spec: LebanonPlates.twoLine,
@@ -104,7 +113,9 @@ void main() {
   });
 
   group('short numbers keep the six-digit pitch', () {
-    testWidgets('a parliament plate, three digits on a full-size face', (tester) async {
+    testWidgets('a parliament plate, three digits on a full-size face', (
+      tester,
+    ) async {
       await renderGolden(
         tester,
         spec: LebanonPlates.oneLineOf(digits: 3)!,

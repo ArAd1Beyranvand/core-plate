@@ -25,7 +25,8 @@ class ExampleApp extends StatelessWidget {
               country: LebanonCountry.forUsage(usage),
               theme: LebanonThemes.forUsage(usage),
               validator: const LebanonValidator(),
-              autoValidate: true, // paints red on an invalid plate; never blocks input
+              autoValidate:
+                  true, // paints red on an invalid plate; never blocks input
               // The letter is a `chosen` alphabet — a closed list of seventeen,
               // one of them two glyphs wide. A real host shows a picker here;
               // `plate_keypad`'s `PlateCharacterPicker.show` is one.

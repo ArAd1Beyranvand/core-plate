@@ -115,14 +115,29 @@ abstract final class YemenNorthernPlates {
     height: 89,
   );
 
-  static final List<PlateSlot> _carGov2Serial4 = <PlateSlot>[_carGovTens, _carGovUnits, ..._carSerial(4)];
+  static final List<PlateSlot> _carGov2Serial4 = <PlateSlot>[
+    _carGovTens,
+    _carGovUnits,
+    ..._carSerial(4),
+  ];
 
-  static final List<PlateSlot> _carGov2Serial5 = <PlateSlot>[_carGovTens, _carGovUnits, ..._carSerial(5)];
+  static final List<PlateSlot> _carGov2Serial5 = <PlateSlot>[
+    _carGovTens,
+    _carGovUnits,
+    ..._carSerial(5),
+  ];
 
-  static final List<PlateSlot> _carGov2Serial6 = <PlateSlot>[_carGovTens, _carGovUnits, ..._carSerial(6)];
+  static final List<PlateSlot> _carGov2Serial6 = <PlateSlot>[
+    _carGovTens,
+    _carGovUnits,
+    ..._carSerial(6),
+  ];
 
   // One governorate digit, five-digit serial — the layout measured from the photograph.
-  static final List<PlateSlot> _carGov1Serial5 = <PlateSlot>[_carGovSingle, ..._carSerial(5)];
+  static final List<PlateSlot> _carGov1Serial5 = <PlateSlot>[
+    _carGovSingle,
+    ..._carSerial(5),
+  ];
 
   // Small Latin echo row (y 0.697 .. 0.882, cap 0.185 = 53 units, box 104 units).
   // Box is deeper than cap to prevent clipping. Each mirror takes its source's x/width.
@@ -182,7 +197,10 @@ abstract final class YemenNorthernPlates {
     ..._carEcho(6, 2),
   ];
 
-  static final List<PlateMirror> _carMirrorsGov1Serial5 = <PlateMirror>[_carEchoGovSingle, ..._carEcho(5, 1)];
+  static final List<PlateMirror> _carMirrorsGov1Serial5 = <PlateMirror>[
+    _carEchoGovSingle,
+    ..._carEcho(5, 1),
+  ];
 
   // Motorcycle: row-and-divider structure from car, widths compressed to square canvas.
   // No photo available; x values are car's ratios renormalised, y values unchanged.
@@ -220,8 +238,14 @@ abstract final class YemenNorthernPlates {
   static const double _motoSerialPitch = 41.8;
 
   static final List<PlateSlot> _motoGov2Serial5 = <PlateSlot>[
-    const PlateSlot(alphabet: YemenAlphabets.iranianGovernorateTens, box: PlateBox(13, 95, 24, 89)),
-    const PlateSlot(alphabet: YemenAlphabets.iranianDigits, box: PlateBox(37, 95, 24, 89)),
+    const PlateSlot(
+      alphabet: YemenAlphabets.iranianGovernorateTens,
+      box: PlateBox(13, 95, 24, 89),
+    ),
+    const PlateSlot(
+      alphabet: YemenAlphabets.iranianDigits,
+      box: PlateBox(37, 95, 24, 89),
+    ),
     ...plateRegister(
       alphabet: YemenAlphabets.iranianDigits,
       count: 5,
@@ -420,18 +444,20 @@ abstract final class YemenNorthernPlates {
   /// The car geometries this package builds, keyed by
   /// `(governorate digits, serial digits)`. A combination that is missing is
   /// missing on purpose; see the class-level TODO.
-  static final Map<(int, int), PlateSpec> carGeometries = <(int, int), PlateSpec>{
-    (2, 5): carGov2Serial5,
-    (1, 5): carGov1Serial5,
-    (2, 4): carGov2Serial4,
-    (2, 6): carGov2Serial6,
-  };
+  static final Map<(int, int), PlateSpec> carGeometries =
+      <(int, int), PlateSpec>{
+        (2, 5): carGov2Serial5,
+        (1, 5): carGov1Serial5,
+        (2, 4): carGov2Serial4,
+        (2, 6): carGov2Serial6,
+      };
 
   /// The motorcycle geometries this package builds — one, and unverified.
-  static final Map<(int, int), PlateSpec> motoGeometries = <(int, int), PlateSpec>{
-    // ignore: deprecated_member_use_from_same_package
-    (2, 5): motoGov2Serial5,
-  };
+  static final Map<(int, int), PlateSpec> motoGeometries =
+      <(int, int), PlateSpec>{
+        // ignore: deprecated_member_use_from_same_package
+        (2, 5): motoGov2Serial5,
+      };
 
   /// The northern car plate with this register shape, or null when the
   /// combination is not one this package builds.
@@ -445,11 +471,15 @@ abstract final class YemenNorthernPlates {
   /// value across per `PlateCanvas.onSpecChange`. With `byGroupKey` a change of
   /// serial length keeps the serial and the governorate, truncating only the
   /// digits that no longer fit.
-  static PlateSpec? car({required int governorateDigits, required int serialDigits}) =>
-      carGeometries[(governorateDigits, serialDigits)];
+  static PlateSpec? car({
+    required int governorateDigits,
+    required int serialDigits,
+  }) => carGeometries[(governorateDigits, serialDigits)];
 
   /// The northern motorcycle plate with this register shape, or null. Its
   /// geometry is unverified — see the section comment above [motoGov2Serial5].
-  static PlateSpec? moto({required int governorateDigits, required int serialDigits}) =>
-      motoGeometries[(governorateDigits, serialDigits)];
+  static PlateSpec? moto({
+    required int governorateDigits,
+    required int serialDigits,
+  }) => motoGeometries[(governorateDigits, serialDigits)];
 }

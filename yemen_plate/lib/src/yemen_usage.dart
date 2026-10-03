@@ -4,17 +4,29 @@
 /// note that [forHire] spells its Arabic word differently on each system.
 enum YemenUsage {
   /// Privately owned vehicles.
-  private(unifiedArabic: 'خصوصي', unifiedLatin: 'PRIV.', northernArabic: 'خصوصي'),
+  private(
+    unifiedArabic: 'خصوصي',
+    unifiedLatin: 'PRIV.',
+    northernArabic: 'خصوصي',
+  ),
 
   /// Taxis and buses — vehicles carrying people for a fare.
   forHire(unifiedArabic: 'أجرة', unifiedLatin: 'TAXI', northernArabic: 'اجرة'),
 
   /// Goods vehicles: pick-ups, trucks and trailers.
-  transport(unifiedArabic: 'نقل', unifiedLatin: 'TRANS.', northernArabic: 'نقل'),
+  transport(
+    unifiedArabic: 'نقل',
+    unifiedLatin: 'TRANS.',
+    northernArabic: 'نقل',
+  ),
 
   /// State-owned vehicles. Northern: no source names the Arabic word.
   // TODO(northern-labels): source the Arabic usage word on northern green plate.
-  government(unifiedArabic: 'حكومي', unifiedLatin: 'GOV.', northernArabic: null),
+  government(
+    unifiedArabic: 'حكومي',
+    unifiedLatin: 'GOV.',
+    northernArabic: null,
+  ),
 
   /// Police vehicles. System A only.
   police(unifiedArabic: 'شرطة', unifiedLatin: 'POLICE', northernArabic: null),
@@ -24,7 +36,11 @@ enum YemenUsage {
   // TODO(northern-labels): source the Arabic usage word on northern military plate.
   military(unifiedArabic: null, unifiedLatin: null, northernArabic: null);
 
-  const YemenUsage({required this.unifiedArabic, required this.unifiedLatin, required this.northernArabic});
+  const YemenUsage({
+    required this.unifiedArabic,
+    required this.unifiedLatin,
+    required this.northernArabic,
+  });
 
   /// Arabic line on System A plate (null if System A doesn't issue this usage).
   final String? unifiedArabic;
@@ -43,15 +59,24 @@ enum YemenUsage {
   bool get onNorthern => this != YemenUsage.police;
 
   /// The usages a System A plate can carry.
-  static const Set<YemenUsage> unified = <YemenUsage>{private, forHire, transport, government, police};
+  static const Set<YemenUsage> unified = <YemenUsage>{
+    private,
+    forHire,
+    transport,
+    government,
+    police,
+  };
 
   /// The usages a System B plate can carry.
-  static const Set<YemenUsage> northern = <YemenUsage>{private, forHire, transport, government, military};
+  static const Set<YemenUsage> northern = <YemenUsage>{
+    private,
+    forHire,
+    transport,
+    government,
+    military,
+  };
 }
 
 /// The two military plate printings. Not a sixth [YemenUsage] — both mean "military",
 /// differ only in colours, and are selected by [YemenThemes.forNorthernUsage] style param.
-enum YemenMilitaryStyle {
-  classic,
-  modern,
-}
+enum YemenMilitaryStyle { classic, modern }

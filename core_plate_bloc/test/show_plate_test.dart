@@ -15,8 +15,14 @@ const _spec = PlateSpec(
   canvasHeight: 110,
   panel: PlatePanel(box: PlateBox(0, 0, 40, 110)),
   slots: [
-    PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(70, 17, 60, 76)),
-    PlateSlot(alphabet: PlateAlphabet.latinDigits, box: PlateBox(136, 17, 60, 76)),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinDigits,
+      box: PlateBox(70, 17, 60, 76),
+    ),
+    PlateSlot(
+      alphabet: PlateAlphabet.latinDigits,
+      box: PlateBox(136, 17, 60, 76),
+    ),
   ],
 );
 
@@ -45,7 +51,9 @@ Future<PlateController> _filled(WidgetTester tester, Widget child) async {
 
 void main() {
   testWidgets('ShowPlate forwards theme: to PlateCanvas', (tester) async {
-    final theme = PlateTheme.standard().copyWith(plateBackground: const Color(0xFF112233));
+    final theme = PlateTheme.standard().copyWith(
+      plateBackground: const Color(0xFF112233),
+    );
     await _filled(tester, ShowPlate(theme: theme));
     final canvas = tester.widget<PlateCanvas>(find.byType(PlateCanvas));
     expect(canvas.theme?.plateBackground, const Color(0xFF112233));
@@ -57,7 +65,9 @@ void main() {
     expect(canvas.country, same(_otherCountry));
   });
 
-  testWidgets('PlateText and PlateTextView render the same text', (tester) async {
+  testWidgets('PlateText and PlateTextView render the same text', (
+    tester,
+  ) async {
     final controller = PlateController(spec: _spec)..setValues(['1', '2']);
     addTearDown(controller.dispose);
     await tester.pumpWidget(

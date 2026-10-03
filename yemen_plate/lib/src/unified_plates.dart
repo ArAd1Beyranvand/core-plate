@@ -49,7 +49,11 @@ abstract final class YemenUnifiedPlates {
   // Separate to keep bidi isolated. اليمن's height is larger (includes ascender/tail).
   static const List<PlateLabel> _carLabels = <PlateLabel>[
     PlateLabel(text: 'اليمن', box: PlateBox(28, 60, 255, 96), glyphHeight: 118),
-    PlateLabel(text: 'YEMEN', box: PlateBox(28, 156, 255, 76), glyphHeight: 100),
+    PlateLabel(
+      text: 'YEMEN',
+      box: PlateBox(28, 156, 255, 76),
+      glyphHeight: 100,
+    ),
   ];
 
   // Zone C1 — stippled strip left of blue panel (x 0.818 .. 0.827). Not a primitive
@@ -68,25 +72,52 @@ abstract final class YemenUnifiedPlates {
 
   // Side code cells: measured x 0.876 .. 0.947, 40-unit pitch. Widened to 52 units
   // to fit Roboto digits (40 would clip). Kept measured centre (x 933).
-  static const PlateSlot _carSideCodeHigh = PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(881, 14, 52, 124));
-  static const PlateSlot _carSideCodeLow = PlateSlot(alphabet: YemenAlphabets.digits, box: PlateBox(933, 14, 52, 124));
+  static const PlateSlot _carSideCodeHigh = PlateSlot(
+    alphabet: YemenAlphabets.digits,
+    box: PlateBox(881, 14, 52, 124),
+  );
+  static const PlateSlot _carSideCodeLow = PlateSlot(
+    alphabet: YemenAlphabets.digits,
+    box: PlateBox(933, 14, 52, 124),
+  );
 
   // 4/5/6 number cells (x 292 .. 832) plus side-code cells. All lengths end flush at right edge;
   // only top/height differ per length. Tops centre cap on measured band (y 0.197 .. 0.754).
   static final List<PlateSlot> _car4Slots = <PlateSlot>[
-    ...plateRegisterAcross(alphabet: YemenAlphabets.digits, count: 4, left: 292, right: 832, top: 14, height: 264),
+    ...plateRegisterAcross(
+      alphabet: YemenAlphabets.digits,
+      count: 4,
+      left: 292,
+      right: 832,
+      top: 14,
+      height: 264,
+    ),
     _carSideCodeHigh,
     _carSideCodeLow,
   ];
 
   static final List<PlateSlot> _car5Slots = <PlateSlot>[
-    ...plateRegisterAcross(alphabet: YemenAlphabets.digits, count: 5, left: 292, right: 832, top: 15, height: 258),
+    ...plateRegisterAcross(
+      alphabet: YemenAlphabets.digits,
+      count: 5,
+      left: 292,
+      right: 832,
+      top: 15,
+      height: 258,
+    ),
     _carSideCodeHigh,
     _carSideCodeLow,
   ];
 
   static final List<PlateSlot> _car6Slots = <PlateSlot>[
-    ...plateRegisterAcross(alphabet: YemenAlphabets.digits, count: 6, left: 292, right: 832, top: 31, height: 215),
+    ...plateRegisterAcross(
+      alphabet: YemenAlphabets.digits,
+      count: 6,
+      left: 292,
+      right: 832,
+      top: 31,
+      height: 215,
+    ),
     _carSideCodeHigh,
     _carSideCodeLow,
   ];
@@ -99,7 +130,12 @@ abstract final class YemenUnifiedPlates {
     box: PlateBox(0, 206, 289, 82),
     flagScale: 0,
     captionScale: 2.0, // CALIBRATE
-    padding: EdgeInsets.fromLTRB(96, 12, 12, 12), // CALIBRATE: big left inset aligns caption right
+    padding: EdgeInsets.fromLTRB(
+      96,
+      12,
+      12,
+      12,
+    ), // CALIBRATE: big left inset aligns caption right
   );
 
   static const PlateSection _motoBackground = PlateSection.rows(<PlatePart>[
@@ -133,19 +169,43 @@ abstract final class YemenUnifiedPlates {
 
   // Motorcycle registers are gapped (cells narrower than stride); each states pitch.
   static final List<PlateSlot> _moto4Slots = <PlateSlot>[
-    ...plateRegister(alphabet: YemenAlphabets.digits, count: 4, left: 21, top: 63, width: 57, height: 130, pitch: 63),
+    ...plateRegister(
+      alphabet: YemenAlphabets.digits,
+      count: 4,
+      left: 21,
+      top: 63,
+      width: 57,
+      height: 130,
+      pitch: 63,
+    ),
     _motoSideCodeHigh,
     _motoSideCodeLow,
   ];
 
   static final List<PlateSlot> _moto5Slots = <PlateSlot>[
-    ...plateRegister(alphabet: YemenAlphabets.digits, count: 5, left: 16, top: 73, width: 48, height: 110, pitch: 52),
+    ...plateRegister(
+      alphabet: YemenAlphabets.digits,
+      count: 5,
+      left: 16,
+      top: 73,
+      width: 48,
+      height: 110,
+      pitch: 52,
+    ),
     _motoSideCodeHigh,
     _motoSideCodeLow,
   ];
 
   static final List<PlateSlot> _moto6Slots = <PlateSlot>[
-    ...plateRegister(alphabet: YemenAlphabets.digits, count: 6, left: 17, top: 82, width: 40, height: 92, pitch: 43),
+    ...plateRegister(
+      alphabet: YemenAlphabets.digits,
+      count: 6,
+      left: 17,
+      top: 82,
+      width: 40,
+      height: 92,
+      pitch: 43,
+    ),
     _motoSideCodeHigh,
     _motoSideCodeLow,
   ];
@@ -274,12 +334,20 @@ abstract final class YemenUnifiedPlates {
 
   /// The car geometries this package builds, keyed by how many digits the
   /// vehicle number has.
-  static final Map<int, PlateSpec> carGeometries = <int, PlateSpec>{4: car4, 5: car5, 6: car6};
+  static final Map<int, PlateSpec> carGeometries = <int, PlateSpec>{
+    4: car4,
+    5: car5,
+    6: car6,
+  };
 
   /// The motorcycle geometries, keyed by how many digits the vehicle number
   /// has. Unverified — no photograph of a unified motorcycle plate was
   /// available.
-  static final Map<int, PlateSpec> motoGeometries = <int, PlateSpec>{4: moto4, 5: moto5, 6: moto6};
+  static final Map<int, PlateSpec> motoGeometries = <int, PlateSpec>{
+    4: moto4,
+    5: moto5,
+    6: moto6,
+  };
 
   /// The unified car plate whose vehicle number has [numberDigits] digits, or
   /// null when that is not a length this package builds.
@@ -291,11 +359,13 @@ abstract final class YemenUnifiedPlates {
   /// Handing a live `PlateCanvas` a spec with a different id carries the value
   /// across per `PlateCanvas.onSpecChange`; with `byGroupKey` a change of
   /// length keeps the digits that still fit. See the class doc.
-  static PlateSpec? car({required int numberDigits}) => carGeometries[numberDigits];
+  static PlateSpec? car({required int numberDigits}) =>
+      carGeometries[numberDigits];
 
   /// The unified motorcycle plate whose vehicle number has [numberDigits]
   /// digits, or null.
-  static PlateSpec? moto({required int numberDigits}) => motoGeometries[numberDigits];
+  static PlateSpec? moto({required int numberDigits}) =>
+      motoGeometries[numberDigits];
 
   /// The number lengths a unified plate can have, shortest first.
   static const List<int> numberLengths = <int>[4, 5, 6];
