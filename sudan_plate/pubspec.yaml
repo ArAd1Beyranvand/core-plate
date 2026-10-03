@@ -1,0 +1,22 @@
+name: sudan_plate
+description: "Sudan's licence plates for the core_plate library — the bilingual 2009 plate (class digit, state code, serial in Arabic over a Latin echo) in its private, bus-and-taxi and commercial liveries, with themes, alphabets and advisory validators."
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core_plate: ^0.11.0
+  plate_alphabet:
+    path: ../plate_alphabet
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
