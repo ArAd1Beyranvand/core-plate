@@ -36,7 +36,7 @@ import 'bolivia_country.dart';
 /// the measured ink *width* for the same reason. `core_plate` is unchanged.
 ///
 /// **Not drawn.** The wiphala printed beside the diplomatic plate's
-/// `BOLIVIA`, the coat of arms on the PTA flag (2 mm in the photo), the
+/// `BOLIVIA`, the
 /// six-digit control number under the department letter, and the Mercosur
 /// emblem.
 abstract final class _Layout {
@@ -49,7 +49,16 @@ abstract final class _Layout {
   static const double captionGlyph = 34;
 
   // PTA.
-  static const PlateBox flag = PlateBox(12.3, 18.1, 38.2, 24.7);
+  /// The state flag, coat of arms and all, drawn by the country panel from
+  /// `Flag_of_Bolivia_state.svg`. Measured x 12.3..50.5, y 18.1..42.8; the
+  /// box keeps the SVG's 22:15 at the measured height, centred on the
+  /// measured x, so the flag covers it and no panel colour shows.
+  static const PlateBox flag = PlateBox(
+    31.4 - 24.7 * 22 / 15 / 2,
+    18.1,
+    24.7 * 22 / 15,
+    24.7,
+  );
   static const PlateBox departmentBox = PlateBox(248, 14.4, 41.7, 30.9);
 
   /// Centred on the `L`'s ink (y 27.9); 19.9 mm of ink / 0.55.
@@ -213,10 +222,8 @@ abstract final class BoliviaPlates {
       country: BoliviaCountry.bolivia,
       canvasWidth: _Layout.width,
       canvasHeight: _Layout.height,
-      noPanel: true,
-      panel: const PlatePanel(box: _Layout.flag),
+      panel: const PlatePanel(box: _Layout.flag, padding: EdgeInsets.zero),
       bands: <PlateBand>[
-        ..._flag(_Layout.flag),
         PlateBand(box: _Layout.departmentBox, color: service.fill),
       ],
       labels: const <PlateLabel>[

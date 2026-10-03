@@ -22,7 +22,7 @@ abstract final class BoliviaColors {
   static const Color mercosurBlack = Color(0xFF111111);
   static const Color mercosurWhite = Color(0xFFFCFCFC);
 
-  /// The flag's stripes, from the Wikimedia SVG (`Flag_of_Bolivia.svg`). The
+  /// The flag's stripes, from the Wikimedia SVGs (`Flag_of_Bolivia.svg`, `…_(state).svg`). The
   /// plates print the flag; the photo's are the same hues, over-exposed.
   static const Color flagRed = Color(0xFFD52B1E);
   static const Color flagYellow = Color(0xFFF9E300);
