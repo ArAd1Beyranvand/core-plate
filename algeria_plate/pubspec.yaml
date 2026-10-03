@@ -1,0 +1,27 @@
+name: algeria_plate
+description: "Algeria's licence plates for the core_plate library — the all-digit single-line and two-line plates (white front, yellow rear), the diplomatic and army plates, with their themes, alphabets and advisory validator."
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core_plate: ^0.11.0
+  plate_alphabet:
+    path: ../plate_alphabet
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  assets:
+    - assets/flags/Flag_of_Algeria.svg
+    - assets/dz_roundel.png
