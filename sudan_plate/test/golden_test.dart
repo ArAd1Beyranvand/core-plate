@@ -7,21 +7,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sudan_plate/sudan_plate.dart';
 
 /// One golden per livery, each the value of its reference photograph, drawn
-/// with DejaVu Sans Bold and Noto Sans Arabic Bold at 2 px per millimetre so
+/// in Vazirmatn, the gallery app's face, at 2 px per millimetre so
 /// the ink can be measured against `_Layout` in `sudan_plates.dart`.
 ///
 /// Regenerate with `flutter test --update-goldens` after a deliberate change.
 void main() {
   setUpAll(() async {
-    final FontLoader loader = FontLoader('Roboto');
-    for (final String path in const <String>[
-      '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-      '/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf',
-    ]) {
-      final File face = File(path);
-      if (!face.existsSync()) continue;
-      loader.addFont(face.readAsBytes().then((b) => ByteData.view(b.buffer)));
-    }
+    // The app's Vazirmatn Latin and Arabic subsets, instanced at weight 700
+    // and merged into one face: the test engine never falls back between
+    // fonts, so one file has to hold both scripts.
+    final FontLoader loader = FontLoader('Roboto')
+      ..addFont(
+        File(
+          'test/fonts/Vazirmatn-Bold-merged.ttf',
+        ).readAsBytes().then((b) => ByteData.view(b.buffer)),
+      );
     await loader.load();
   });
 
@@ -32,10 +32,7 @@ void main() {
     required List<String> values,
     required String name,
   }) async {
-    final PlateController controller = PlateController.fromValues(
-      spec,
-      values,
-    );
+    final PlateController controller = PlateController.fromValues(spec, values);
     tester.view.physicalSize = const Size(800, 400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);

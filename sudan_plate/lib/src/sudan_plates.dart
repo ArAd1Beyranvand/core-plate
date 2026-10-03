@@ -25,8 +25,8 @@ import 'sudan_country.dart';
 ///   Latin serial     centres 149..292, y 122.4..141.2 (cap 18.2)
 ///
 /// core sets a glyph at `0.72 * box height`, so ink is roughly half of the
-/// number written here; the heights below were tuned until the golden's ink
-/// matched the figures above.
+/// number written here. Heights are tuned for Vazirmatn, the face the gallery
+/// app draws in, and capped so no input box reaches into the row below.
 abstract final class _Layout {
   static const double width = 320;
   static const double height = 160;
@@ -42,19 +42,23 @@ abstract final class _Layout {
   static const double latinNameGlyph = 32.4;
   static const double arabicNameGlyph = 34;
 
-  // The Arabic row of the left cell. The artwork centres the class digit on
-  // x 25.2 and the state code on 73.6; each is 1.5 further out here, because
-  // ٨ and the two-letter ب ح are both wider than ٧ and خ and would touch.
-  static const double codeTop = 24.2;
-  static const double codeHeight = 84;
+  // Every input box is its own band: a field draws its outline along its
+  // bottom edge, so a box reaching into the row below strikes through it.
+  // Left cell: Arabic y 45..105, Latin 105..157. Serial: Arabic 45..117,
+  // Latin 118..152.
+
+  // The artwork centres the class digit on x 25.2 and the state code on
+  // 73.6; each is 1.5 further out here, because ٨ and the two-letter ب ح are
+  // both wider than ٧ and خ and would touch.
+  static const double codeTop = 45;
+  static const double codeHeight = 60;
   static const PlateBox classBox = PlateBox(5.5, codeTop, 36, codeHeight);
   static const PlateBox stateBox = PlateBox(44.5, codeTop, 61, codeHeight);
 
-  // The Latin row under it, centred on y 127.5. 64 rather than the 66 the
-  // cap calls for: 66 would run the box off the bottom of the canvas. `KH` and `RS` are wider than
-  // their Arabic letter, so the state echo overhangs its column on both sides.
-  static const double codeEchoTop = 95.5;
-  static const double codeEchoGlyph = 64;
+  // `KH` and `RS` are wider than their Arabic letter, so the state echo
+  // overhangs its column on both sides.
+  static const double codeEchoTop = 105;
+  static const double codeEchoGlyph = 52;
   static const PlateBox classEchoBox = PlateBox(
     7,
     codeEchoTop,
@@ -69,21 +73,13 @@ abstract final class _Layout {
   );
 
   // Five cells centred 149.4 .. 288.6 at 34.8 pitch; four share the span.
-  //
-  // Digit ink is ~37 against the reference's 51.5 (72%). The plate's face
-  // is tall and condensed; Noto's Eastern Arabic digits are short and wide,
-  // so any taller and ٣ ٤ ٦ touch their neighbours at 34.8 pitch.
-  // A host font closer to the plate's own face can take a taller box.
-  // Cells are [serialMinCell] wide even when the pitch is narrower, so a
-  // wide glyph is not clipped by its own field.
   static const double serialLeft = 132;
   static const double serialRight = 306;
-  static const double serialTop = 27.7;
-  static const double serialHeight = 106;
-  static const double serialMinCell = 36;
+  static const double serialTop = 45;
+  static const double serialHeight = 72;
 
-  static const double serialEchoTop = 114;
-  static const double serialEchoGlyph = 35;
+  static const double serialEchoTop = 118;
+  static const double serialEchoGlyph = 34;
 }
 
 /// The 2009 bilingual plate, built for 2009 onward. Every photographed
@@ -132,9 +128,6 @@ abstract final class SudanPlates {
   static PlateSpec _build({required String id, required int serialDigits}) {
     final double pitch =
         (_Layout.serialRight - _Layout.serialLeft) / serialDigits;
-    final double cell = pitch > _Layout.serialMinCell
-        ? pitch
-        : _Layout.serialMinCell;
     return PlateSpec(
       id: id,
       country: SudanCountry.sudan,
@@ -156,9 +149,9 @@ abstract final class SudanPlates {
         ...plateRegister(
           alphabet: SudanAlphabets.arabicDigits,
           count: serialDigits,
-          left: _Layout.serialLeft + (pitch - cell) / 2,
+          left: _Layout.serialLeft,
           top: _Layout.serialTop,
-          width: cell,
+          width: pitch,
           height: _Layout.serialHeight,
           pitch: pitch,
         ),
