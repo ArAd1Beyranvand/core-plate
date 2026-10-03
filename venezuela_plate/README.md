@@ -29,6 +29,9 @@ Trujillo, AE328KG Carabobo), each perspective-corrected to 300 × 150.
   cell. The caption is ~60% for the same reason. A condensed font in the theme
   would fix both; core_plate has no per-theme font today.
 - The real bands fan and wave slightly; one angle is the fit.
+- The white airbrushing is a `PlateFog`: saturated colours at the ends, pale
+  in the middle. The photographs' fade is sharper at the red band's ends than
+  one ellipse can be.
 - Colours marked `// CALIBRATE` are from photographs, white-balanced on the
   field.
 

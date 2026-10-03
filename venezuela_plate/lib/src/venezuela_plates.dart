@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:core_plate/core_plate.dart';
+import 'package:flutter/widgets.dart';
 
 import 'venezuela_alphabets.dart';
 import 'venezuela_colors.dart';
@@ -26,16 +27,29 @@ abstract final class _Layout {
   /// slightly and wave; a stripes fill has one angle for all of them.
   static final double flagAngle = math.atan(27.7 / 276);
 
+  /// The white airbrushed over the flag. Saturation along each band is
+  /// full only at the ends — red at x <= 70 and x >= 230, yellow and blue
+  /// within ~20 of the edge — so the ellipse is centred high, where it is
+  /// widest across the upper bands. Pale over saturated gives 0.50, 0.48
+  /// and 0.50 for the three bands; against the goldens 0.6 matches the
+  /// middle better (red saturation 62 in the photographs).
+  static const PlateFog flagFog = PlateFog(
+    center: Offset(150, 40),
+    radii: Size(150, 130),
+    opacity: 0.6,
+    plateau: 0.8,
+  );
+
   /// Serial ink is 74 tall (73.8, 74.5) at y 37..111, cells at a 38.9 stride
-  /// (38.8, 39.4, 38.6) centred on x 150. The slot height is the ink over the
-  /// 0.525 cap ratio, so the font asks for full height; the plate's face is far
-  /// narrower than any fallback, so the cell width is what limits it: ink
-  /// renders 40–42 tall (~55%) at y 53..93, x 14.5..287 (reference 19..292).
-  /// See README.
+  /// (38.8, 39.4, 38.6) centred on x 150. Reaching 74 would need a 141 slot,
+  /// but the plate's face is far narrower than any fallback, so the cell
+  /// width is what limits the glyph. An editable cell does not scale its text
+  /// down, so the slot is the height whose bold cap fits the 38.9 cell —
+  /// 0.72 x 80 = 57.6 font, ~37 wide. Ink lands ~41 tall (~55%). See README.
   static const double pitch = 38.9;
   static const double serialLeft = 150 - 3.5 * pitch;
   static const double slotTop = 74.2 - slotHeight / 2;
-  static const double slotHeight = 141;
+  static const double slotHeight = 80;
 
   /// REPUBLICA BOLIVARIANA DE VENEZUELA: caps 11.8 (Lara) and 13.8
   /// (Trujillo) tall at y 16.8..28.5, x 31.2..272.8 — centred (151.5, 22.6),
@@ -64,8 +78,8 @@ abstract final class _Layout {
 ///
 /// Not implemented: the 1955–2008 series; the motorcycle plate (smaller, and
 /// the article gives no size); the yellow provisional plate and the Free Port
-/// plate, which are different designs; the eight stars on the blue band, the
-/// VENEZUELA microprint on the characters and the airbrushed fade at the ends.
+/// plate, which are different designs; the eight stars on the blue band and
+/// the VENEZUELA microprint on the characters.
 abstract final class VenezuelaPlates {
   static final PlateSpec car = PlateSpec(
     id: 've.car',
@@ -84,6 +98,7 @@ abstract final class VenezuelaPlates {
         ],
         stops: _Layout.flagStops,
         angle: _Layout.flagAngle,
+        fog: _Layout.flagFog,
       ),
     ),
     labels: const <PlateLabel>[

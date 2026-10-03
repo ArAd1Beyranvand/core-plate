@@ -16,14 +16,13 @@ abstract final class VenezuelaColors {
   /// balanced; the median. Brighter than the ink.
   static const Color caption = Color(0xFF3974EE); // CALIBRATE
 
-  /// The flag. Each is the median of every pixel classed as that band across
-  /// the plate (40k–130k pixels per band per photograph), which is the pale
-  /// print most of the band is. The saturated tone at the plate's ends
-  /// (`E93A3C` red, `FFFC66` yellow) is an airbrushed fade the stripes fill
-  /// does not reproduce.
-  static const Color yellow = Color(0xFFFFF1B7); // CALIBRATE
-  static const Color blue = Color(0xFF92B4F8); // CALIBRATE
-  static const Color red = Color(0xFFEE999F); // CALIBRATE
+  /// The flag at full strength: the median of each band sampled at the
+  /// plate's ends, where the white fog does not reach (six samples per band
+  /// across the three photographs). The pale print over the middle —
+  /// `FFF1B7`, `92B4F8`, `EE999F` — is roughly these under the spec's fog.
+  static const Color yellow = Color(0xFFFFE96B); // CALIBRATE
+  static const Color blue = Color(0xFF2C88F9); // CALIBRATE
+  static const Color red = Color(0xFFE0353A); // CALIBRATE
 
   /// Unfocused slot outline.
   static const Color inactive = Color(0x66666666);
