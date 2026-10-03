@@ -487,7 +487,11 @@ class _PlateArtwork extends StatelessWidget {
                                       l.glyphHeight,
                                       l.color ?? theme.ink,
                                     )
-                                    .copyWith(height: l.lineHeight),
+                                    .copyWith(
+                                      height: l.lineHeight,
+                                      fontFamily: l.fontFamily,
+                                      package: l.fontPackage,
+                                    ),
                               ),
                             ),
                           ),

@@ -279,6 +279,8 @@ class PlateLabel {
     this.color,
     this.rotated = false,
     this.lineHeight,
+    this.fontFamily,
+    this.fontPackage,
   });
 
   final String text;
@@ -298,6 +300,13 @@ class PlateLabel {
   /// Set it on a stacked-letter label (one line per character) to open up the
   /// gaps between the lines so the stack fills a tall box.
   final double? lineHeight;
+
+  /// Face for this label, or null for the theme's. Set it when the plate
+  /// letters a fixed word in a hand the digits' face cannot imitate.
+  final String? fontFamily;
+
+  /// Package that bundles [fontFamily], e.g. the country package itself.
+  final String? fontPackage;
 }
 
 /// The coloured country block on the plate face: where it sits, and how the

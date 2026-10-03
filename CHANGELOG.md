@@ -1,3 +1,10 @@
+## 0.11.3
+
+**`PlateLabel.fontFamily`.** A label may name its own face, with
+`fontPackage` for a font bundled by the country package; null keeps the
+theme's, so every existing label is unchanged. The case is Tunisia's تونس,
+stamped in a Naskh hand the digits' sans-serif cannot imitate.
+
 ## 0.11.2
 
 **`PlateFill.stripes`.** A background leaf can be parallel bands tilted by an
