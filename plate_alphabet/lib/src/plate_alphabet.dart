@@ -148,3 +148,93 @@ abstract final class PlateAlphabetLetters {
     placeholder: '?',
   );
 }
+
+/// A–Z typed straight from the keyboard, for plates whose letter slots take
+/// any Latin letter. [PlateAlphabetLetters.latinAll] is the picker variant.
+abstract final class PlateAlphabetLatin {
+  static const PlateAlphabet typed = PlateAlphabet(
+    id: 'alphabet.latin.typed',
+    characters: <String>[
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', //
+      'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    ],
+    input: AlphabetInput.typed,
+    isNumeric: false,
+  );
+}
+
+/// Belarus: the Latin letters that share a shape with a Cyrillic one, so a
+/// plate reads the same in either script, and the fixed-letter slots.
+abstract final class PlateAlphabetBelarus {
+  static const PlateAlphabet letters = PlateAlphabet(
+    id: 'by.letters',
+    characters: <String>[
+      'A',
+      'B',
+      'E',
+      'I',
+      'K',
+      'M',
+      'H',
+      'O',
+      'P',
+      'C',
+      'T',
+      'X',
+    ],
+    input: AlphabetInput.typed,
+    isNumeric: false,
+  );
+
+  /// The region digit after the dash: 1–7 for the regions and Minsk city,
+  /// 8 for the 2020s overflow series, 0 for the Ministry of Defence.
+  static const PlateAlphabet region = PlateAlphabet(
+    id: 'by.region',
+    characters: <String>['0', '1', '2', '3', '4', '5', '6', '7', '8'],
+    input: AlphabetInput.typed,
+    isNumeric: true,
+  );
+
+  /// The leading `E` of an electric vehicle's number.
+  static const PlateAlphabet electric = PlateAlphabet(
+    id: 'by.electric',
+    characters: <String>['E'],
+    input: AlphabetInput.typed,
+    isNumeric: false,
+  );
+
+  /// First letter of a diplomatic plate: always `C`.
+  static const PlateAlphabet diplomaticFirst = PlateAlphabet(
+    id: 'by.diplomatic.first',
+    characters: <String>['C'],
+    input: AlphabetInput.typed,
+    isNumeric: false,
+  );
+
+  /// Second letter: `D` for diplomatic corps, `C` for consular.
+  static const PlateAlphabet diplomaticSecond = PlateAlphabet(
+    id: 'by.diplomatic.second',
+    characters: <String>['C', 'D'],
+    input: AlphabetInput.typed,
+    isNumeric: false,
+  );
+}
+
+/// North Korea: the two-syllable Hangul region abbreviation, one value per
+/// slot. The thirteen controlled regions listed on Wikipedia, then the seven
+/// South Korean provinces the state still issues codes for. 링김 appears on a
+/// 1990s government plate on the reference sheet but in no list, so it is kept
+/// as an observed historical code.
+abstract final class PlateAlphabetKorea {
+  static const PlateAlphabet northRegions = PlateAlphabet(
+    id: 'kp.region',
+    characters: <String>[
+      '평양', '라선', '평남', '평북', '자강', '황남', '황북', //
+      '강원', '함남', '함북', '량강', '남포', '개성',
+      '충남', '충북', '경기', '경남', '경북', '전남', '전북',
+      '링김',
+    ],
+    input: AlphabetInput.chosen,
+    isNumeric: false,
+  );
+}

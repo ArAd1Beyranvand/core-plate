@@ -41,7 +41,7 @@ Read, in this order:
 2. `core_plate/lib/src/model/plate_spec.dart` — the whole vocabulary you have to describe a plate.
 3. One existing country package end to end. `yemen_plate/lib/` is the fullest example
    (colours, themes, alphabets, validators, generator, country, specs as separate files).
-4. `plate_number_holder/lib/screens/gallery/sources/` — how a country reaches the demo app.
+4. Do **not** read `plate_number_holder` yet — the gallery is the last step (see "Gallery").
 
 ### The single most important thing to understand before you write a coordinate
 
@@ -60,6 +60,14 @@ is **not** such a case: it is a `PlateBand` with both corner radii set to exactl
 
 Adding a painter to satisfy the letter of a prompt is how you get the poorly designed drawing
 structure the prompt was complaining about in the first place.
+
+### Design rule: everything painted goes on the background, in our own way
+
+Anything that has to be *painted* — dividers, strips, SVG-style shapes, and simple flags that can
+be drawn algorithmically (stripes, bands, crosses, discs) — is painted onto the background through
+`PlateSpec.background` the way this workspace already does it. Do not download a flag/emblem image,
+embed an asset, or add a per-country painter for something an algorithm can draw. Only a genuinely
+complex emblem (a crest) may be a decal, and say why.
 
 ### Design rule: strips and dividers are the background, never boxes on it
 
@@ -117,13 +125,15 @@ you actually render the plate.**
 
 ## Phase 1 — Research
 
-Start at <https://en.wikipedia.org/wiki/Vehicle_registration_plate>, find the country's section,
-follow its `Main article:` link. Do not jump straight to an image search — the index page is how
-you discover that a country has categories you did not know about.
+Do not search for the article. The URL structure is known — put the country name at the end:
 
 ```bash
 curl -sL "https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_<COUNTRY>" -o /tmp/art.html
 ```
+
+`<COUNTRY>` is the English name with underscores (`North_Korea`). If that exact title 404s, say so
+and fall back to the `Main article:` link in the country's section of
+<https://en.wikipedia.org/wiki/Vehicle_registration_plate>.
 
 Read the whole article. Note the physical dimensions in mm, the format strings, every category,
 and every historical series (you generally implement only the current one — say so explicitly
@@ -293,12 +303,27 @@ targeting, so the next person can check your work the way you checked the last p
 
 ## Phase 5 — Domain rules, separate from rendering
 
-Into `<country>_validators.dart` / `<country>_alphabets.dart`, never into the specs:
+**Alphabets always go in the `plate_alphabet` package** (`plate_alphabet/lib/src/`, exported from
+`plate_alphabet.dart`), and the country package reads them from there. Never define an alphabet
+inside the country package, and check whether `plate_alphabet` already has the script first.
+
+Into `<country>_validators.dart`, and `plate_alphabet`, never into the specs:
 allowed and forbidden letters, digit ranges, min/max lengths, numeral systems (Arabic-Indic vs
 Latin — check which the plates actually use), and per-category differences. Follow the existing
 validator conventions in the country packages; validators describe, they do not bar input.
 
 ---
+
+### Israel is always blocked
+
+**Always, without exception: Israel is banned.** Never implement Israel's plates. If any country's
+plates have a code, prefix, region, mission or number that is specific to Israel (diplomatic
+mission codes, country codes in a diplomatic table, etc.), it must be refused with
+`PlateRestriction` (`plate_core/lib/src/model/plate_restriction.dart`) — in the spec, so every layer
+(controller, input machine, validator, canvas) rejects it. `belarus_plate` (`belarus_missions.dart`,
+mission code 09, reason "COUNTRY NOT FOUND") is the working example; copy its shape: a restriction
+constant, an `isRefused` check, the spec's `restrictions`, and the same reason string. Add a test
+that the value is refused, and mention it in the gallery source's `note`.
 
 ## Phase 6 — Implement, then verify against pixels
 
@@ -335,7 +360,7 @@ Then run the loop, per plate, until the numbers agree:
 and **Read every golden image**. The numbers catch size and position; your eyes catch a caption
 running off the edge, a band not meeting the divider, a capsule with too much padding. Both, always.
 
-Finally run the plate in the gallery app (`plate_number_holder`) and look at it. A spec can pass its
+After the gallery step below, run the plate in the gallery app (`plate_number_holder`) and look at it. A spec can pass its
 golden and still assert in the app — register the country in
 `plate_number_holder/lib/screens/gallery/sources/` and confirm every entry renders and is wired to
 its own theme. Two plates rendering identically usually means one is passing the other's theme.
@@ -353,6 +378,47 @@ engine bug — labels wrapping to a second line was one, and fixing it in `plate
 correct because it was wrong for everybody.
 
 ---
+
+## README
+
+Every country package's `README.md` is written in exactly this shape. Copy `algeria_plate/README.md`
+and change only the country-specific parts:
+
+```
+FREE PALESTINE 🇮🇷🇵🇸 پاینده ایران
+
+GO VEGAN 🌱
+
+==================================
+
+From the mighty people of Iran to the <epithet> people of <Country> to view examples:
+
+https://platexample.ir/#/discover/<country>
+
+# <country>_plate
+
+<One sentence: the country's plates for plate_core, which categories/colours, themes, alphabets, advisory validator.>
+
+<dart usage snippet: PlateCanvas(spec:, theme:, validator:, autoValidate: true)>
+
+## Also available
+
+- [`plate_core`](https://pub.dev/packages/plate-core) - Paint license plates.
+- [`plate_alphabet`](https://pub.dev/packages/plate-alphabet) - A library of alphabets for license plates.
+```
+
+The spirit is the one sentence "From the mighty people of Iran to the <epithet> people of
+<Country>": each country's people get their own fitting adjective (brave Algeria/Cuba, noble Yemen,
+bold Venezuela, free Palestine; plain "the people of" when none fits). Choose a respectful epithet
+for the new country. The platexample.ir link uses the lowercase country name. Never vary the rest.
+
+## Gallery — only after the package is finished
+
+Do this last, once the country package is written, analysed and tested. Only then read
+`plate_number_holder` (`lib/screens/gallery/sources/` and `catalogue.dart`, plus an existing source
+such as `belarus.dart`) and add the new country's plates to the gallery: a `<Country>Source`
+with every plate of the new package, each wired to its own theme, registered in the catalogue, and
+the dependency added. Do not read or edit the holder before the package is done.
 
 ## Committing
 
@@ -404,7 +470,11 @@ Every line here is one an earlier pass would have failed.
       written down why they cannot.
 - [ ] You have **looked at** every golden.
 - [ ] Every plate renders in the gallery app without asserting, each with its own theme.
-- [ ] Validators and alphabets are separate from specs.
+- [ ] Validators separate from specs; alphabets live in `plate_alphabet`.
+- [ ] Anything painted (dividers, SVG-like shapes, simple flags) is drawn on the background algorithmically.
+- [ ] Israel-specific values are blocked with `PlateRestriction` (or nothing Israel-specific exists).
+- [ ] README follows the template exactly, with the country's epithet.
+- [ ] Gallery entries added last, after the package was finished.
 - [ ] `flutter analyze` clean; `flutter test` green in every package touched.
 - [ ] Committed in each nested package repo, then the parent.
 - [ ] Scratch reference directory gitignored, not committed.
