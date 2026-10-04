@@ -1,4 +1,4 @@
-name: core_plate_example
+name: plate_core_example
 description: Minimal example — a bare PlateCanvas, which needs nothing above it.
 publish_to: none
 version: 1.0.0
@@ -12,9 +12,9 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.5.0
+  plate_core: ^0.5.0
   # TODO(P10): this example imports iran_plate, which makes the engine's own
-  # example depend on a country package — exactly what core_plate.dart forbids.
+  # example depend on a country package — exactly what plate_core.dart forbids.
   # P10 rewrites the example's Dart to render a spec defined in the example
   # itself; until then the iran_plate dependency stays so the example compiles.
   iran_plate: ^0.1.0

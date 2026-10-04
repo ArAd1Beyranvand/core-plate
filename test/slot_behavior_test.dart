@@ -1,5 +1,5 @@
-import 'package:core_plate/core_plate.dart';
-import 'package:core_plate/src/model/slot_behavior.dart';
+import 'package:plate_core/plate_core.dart';
+import 'package:plate_core/src/model/slot_behavior.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
