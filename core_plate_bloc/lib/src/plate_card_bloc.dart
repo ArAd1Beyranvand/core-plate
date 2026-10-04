@@ -14,6 +14,13 @@ class PlateCardBloc extends Bloc<PlateCardEvent, PlateCardState> {
       }
       final values = List<String?>.of(state.plateNumber.values)
         ..[event.index] = event.value;
+      // Restricted values are refused here too, so a host that drives the
+      // bloc directly cannot store what the controller would refuse.
+      final broken = state.spec.restrictionViolatedBy(values);
+      if (broken != null) {
+        emit(state.copyWith(plateNumber: state.plateNumber, rejection: broken));
+        return;
+      }
       emit(state.copyWith(plateNumber: PlateNumber(values: values)));
     });
     on<SpecIsChanged>((SpecIsChanged event, Emitter<PlateCardState> emit) {
