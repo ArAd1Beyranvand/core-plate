@@ -4,35 +4,25 @@ GO VEGAN 🌱
 
 ==================================
 
-From the mighty people of Iran to the brave people of Cuba to view examples:
+From the mighty people of Iran to the people of Niger to view examples:
 
-https://platexample.ir/#/discover/cuba
+https://platexample.ir/#/discover/niger
 
-# cuba_plate
+# niger_plate
 
-Cuba's 2013 licence plates for [`plate_core`](https://pub.dev/packages/plate_core).
+Niger's licence plates for [`plate_core`](https://pub.dev/packages/plate_core) — the 2005 series (region digit, series letter, four-digit serial, country map and RN) in its private and commercial liveries, with themes, alphabets and advisory validators.
 
-| Spec | Size (mm) | Format | Notes |
-|---|---|---|---|
-| `CubaPlates.car` | 420 × 110 | `P 025 245` | Natural persons: white CUBA strip, ruled off |
-| `CubaPlates.carLegalEntity` | 420 × 110 | `T 003 526` | Legal entities: blue CUBA strip |
-| `CubaPlates.motorcycle` | 200 × 140 | `P` / `28588` | CUBA in a ruled box top-left |
+```dart
+import 'package:plate_core/plate_core.dart';
+import 'package:niger_plate/niger_plate.dart';
 
-Every plate is black on white, so there is one theme, `CubaThemes.standard`.
-`CubaValidator` is advisory: it checks the series letter (I, O, Q, S, W, Z are
-not issued) and that the serial fills every cell.
-
-## Sources and accuracy
-
-Measured from the photographs on Wikipedia's *Vehicle registration plates of
-Cuba*, each normalised to the documented millimetres. Positions match the
-references to within ~2 mm. **The serials are smaller than the real ones:**
-car ink is ~66% of reference height and motorcycle ink ~70–76%, because
-`plate_core` paints a glyph at about half its slot height and a slot cannot
-exceed the canvas. Colours marked `// CALIBRATE` are from photographs.
-
-Not implemented: the 2002–2013 colour-coded series and earlier, and the small
-laser-printed control number.
+PlateCanvas(
+  spec: NigerPlates.privatePlate,
+  theme: NigerThemes.standard,
+  validator: const NigerValidator(),
+  autoValidate: true,
+);
+```
 
 ## Also available
 
@@ -43,6 +33,7 @@ laser-printed control number.
 - [`algeria_plate`](https://pub.dev/packages/algeria-plate) - Algeria's licence plates.
 - [`bolivia_plate`](https://pub.dev/packages/bolivia-plate) - Bolivia's licence plates.
 - [`colombia_plate`](https://pub.dev/packages/colombia-plate) - Colombia's licence plates.
+- [`cuba_plate`](https://pub.dev/packages/cuba-plate) - Cuba's licence plates.
 - [`germany_plate`](https://pub.dev/packages/germany-plate) - Germany's licence plates.
 - [`india_plate`](https://pub.dev/packages/india-plate) - India's licence plates.
 - [`indonesia_plate`](https://pub.dev/packages/indonesia-plate) - Indonesia's licence plates.
@@ -51,9 +42,8 @@ laser-printed control number.
 - [`lebanon_plate`](https://pub.dev/packages/lebanon-plate) - Lebanon's licence plates.
 - [`malaysia_plate`](https://pub.dev/packages/malaysia-plate) - Malaysia's licence plates.
 - [`mali_plate`](https://pub.dev/packages/mali-plate) - Mali's licence plates.
-- [`niger_plate`](https://pub.dev/packages/niger-plate) - Niger's licence plates.
 - [`palestine_plate`](https://pub.dev/packages/palestine-plate) - Palestine's licence plates.
 - [`sudan_plate`](https://pub.dev/packages/sudan-plate) - Sudan's licence plates.
 - [`tunisia_plate`](https://pub.dev/packages/tunisia-plate) - Tunisia's licence plates.
-- [`venezuela_plate`](https://pub.dev/packages/venezuela-plate) - venezuela_ licence plates.
+- [`venezuela_plate`](https://pub.dev/packages/venezuela-plate) - Venezuela's licence plates.
 - [`yemen_plate`](https://pub.dev/packages/yemen-plate) - Yemen's licence plates.

@@ -7,15 +7,13 @@ environment:
   sdk: '>=3.10.0 <4.0.0'
   flutter: ">=1.17.0"
 
-resolution: workspace
 
 dependencies:
   flutter:
     sdk: flutter
   plate_core: ^0.11.0
   # Shared alphabet definitions.
-  plate_alphabet:
-    path: ../plate_alphabet
+  plate_alphabet: ^0.1.0
 
 dev_dependencies:
   flutter_test:
