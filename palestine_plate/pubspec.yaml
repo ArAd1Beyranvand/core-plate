@@ -2,6 +2,7 @@ name: palestine_plate
 description: "Palestine's licence plates for the plate_core library — the West Bank and Gaza specs, the alphabets, the usage themes and the advisory validators."
 version: 0.3.0
 homepage: https://github.com/ArAd1Beyranvand/plate-palestine
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

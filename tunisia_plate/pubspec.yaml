@@ -1,6 +1,7 @@
 name: tunisia_plate
 description: "Tunisia's licence plates for the plate_core library — the `NNN تونس NNNN` plate in one and two lines, rental, government, diplomatic, military and temporary plates, with their themes, alphabets and advisory validators."
 version: 0.1.0
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

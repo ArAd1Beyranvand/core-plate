@@ -1,0 +1,15 @@
+Resolving dependencies...
+Because cuba_plate depends on plate_alphabet any which doesn't exist (could not find package plate_alphabet at https://pub.dev), version solving failed.
+Failed to update packages.
+✓ cuba_plate - OK
+
+Resolving dependencies...
+Because cuba_plate depends on plate_alphabet any which doesn't exist (could not find package plate_alphabet at https://pub.dev), version solving failed.
+Failed to update packages.
+✓ cuba_plate - OK
+
+Resolving dependencies...
+Because cuba_plate depends on plate_alphabet any which doesn't exist (could not find package plate_alphabet at https://pub.dev), version solving failed.
+Failed to update packages.
+✓ cuba_plate - OK
+

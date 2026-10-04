@@ -2,6 +2,7 @@ name: lebanon_plate
 description: "Lebanon's licence plates for the plate_core library — the one-line and two-line specs, the letter and digit alphabets, the eight usage colour themes and the advisory validator."
 version: 0.1.0
 homepage: https://github.com/ArAd1Beyranvand/plate-lebanon
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

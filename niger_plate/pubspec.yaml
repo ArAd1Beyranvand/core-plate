@@ -1,6 +1,7 @@
 name: niger_plate
 description: "Niger's licence plates for the plate_core library — the 2005 series (region digit, series letter, four-digit serial, country map and RN) in its private and commercial liveries, with themes, alphabets and advisory validators."
 version: 0.1.0
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

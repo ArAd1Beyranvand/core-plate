@@ -1,6 +1,7 @@
 name: indonesia_plate
 description: "Indonesia's licence plates for the plate_core library — the 2023 FE-Schrift car plate, the motorcycle plate and the diplomatic plate, with their usage and EV liveries, alphabets and advisory validators."
 version: 0.1.0
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

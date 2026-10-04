@@ -1,6 +1,7 @@
 name: sudan_plate
 description: "Sudan's licence plates for the plate_core library — the bilingual 2009 plate (class digit, state code, serial in Arabic over a Latin echo) in its private, bus-and-taxi and commercial liveries, with themes, alphabets and advisory validators."
 version: 0.1.0
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

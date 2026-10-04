@@ -1,6 +1,7 @@
 name: algeria_plate
 description: "Algeria's licence plates for the plate_core library — the all-digit single-line and two-line plates (white front, yellow rear), the diplomatic and army plates, with their themes, alphabets and advisory validator."
 version: 0.1.0
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

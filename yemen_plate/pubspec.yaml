@@ -2,6 +2,7 @@ name: yemen_plate
 description: "Yemen's licence plates for the plate_core library — the 2026 unified specs, the 1993 northern specs, the alphabets, the usage themes and the advisory validators."
 version: 0.3.0
 homepage: https://github.com/ArAd1Beyranvand/plate-yemen
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'
