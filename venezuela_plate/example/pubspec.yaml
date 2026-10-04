@@ -12,7 +12,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.11.2
+  plate_core: ^0.11.2
   venezuela_plate: ^0.1.0
 
 dev_dependencies:

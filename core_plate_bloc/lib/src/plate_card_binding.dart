@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

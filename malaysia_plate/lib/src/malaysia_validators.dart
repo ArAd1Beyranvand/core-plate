@@ -1,4 +1,4 @@
-import 'package:plate_core/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 
 /// Judges a Malaysian registration on a `MalaysiaPlates.singleRow`, `twoRow`
 /// or `ev` spec. Reports, never bars a keystroke.

@@ -1,4 +1,4 @@
-import 'package:plate_core/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 
 /// Advisory validator for Mali plates. Mali plates follow the simple
 /// format: 2 letters, 4 digits, 2 letters (XX #### XX).

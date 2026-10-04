@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 
 part 'plate_card_event.dart';
 

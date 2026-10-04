@@ -1,4 +1,4 @@
-import 'package:plate_core/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 
 /// The vehicle classes the first digit of the `type` group names, by digit.
 /// From the article's list (its source: the 2021 plate standard).

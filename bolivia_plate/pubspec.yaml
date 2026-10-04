@@ -1,7 +1,6 @@
 name: bolivia_plate
 description: "Bolivia's licence plates for the plate_core library — the blue-on-white `1234ABC` plate with its department box, the diplomatic and consular `12-CD-34` plates and the Mercosur `AB 12345` plate, with their themes, alphabets and advisory validators."
 version: 0.1.0
-publish_to: none
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

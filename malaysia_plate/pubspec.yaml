@@ -1,7 +1,6 @@
 name: malaysia_plate
 description: "Malaysia's licence plates for the plate_core library — the single-row and two-row JPJ plates, the diplomatic plate and the JPJePlate, with their themes, alphabets and advisory validator."
 version: 0.1.0
-publish_to: none
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

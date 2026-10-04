@@ -1,4 +1,4 @@
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 import 'package:core_plate_bloc/core_plate_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

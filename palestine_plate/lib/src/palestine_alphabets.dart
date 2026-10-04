@@ -1,4 +1,4 @@
-import 'package:plate_core/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 import 'package:plate_alphabet/plate_alphabet.dart';
 
 /// Character sets for Palestinian plate slots. Each alphabet has a unique id

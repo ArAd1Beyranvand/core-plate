@@ -1,4 +1,4 @@
-import 'package:plate_core/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 
 /// The alphabets of a 2008 plate: six serial cells that take a letter or a
 /// digit, then the state letter, and the state name echoed under the serial.

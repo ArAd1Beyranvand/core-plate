@@ -1,7 +1,6 @@
 name: mali_plate
 description: "Mali's licence plates for the plate_core library — the simple current series, all black on white."
 version: 0.1.0
-publish_to: none
 
 environment:
   sdk: '>=3.10.0 <4.0.0'

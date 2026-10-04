@@ -1,4 +1,4 @@
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 import 'package:flutter/material.dart';
 import 'package:lebanon_plate/lebanon_plate.dart';
 

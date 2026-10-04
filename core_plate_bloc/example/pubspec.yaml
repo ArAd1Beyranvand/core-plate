@@ -1,4 +1,4 @@
-name: core_plate_bloc_example
+name: plate_core_bloc_example
 description: Minimal example — a PlateController and a PlateCardBinding, with a BlocBuilder reading the value back out.
 publish_to: none
 version: 1.0.0
@@ -12,8 +12,8 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.11.0
-  core_plate_bloc: ^0.2.0
+  plate_core: ^0.11.0
+  plate_core_bloc: ^0.2.0
   flutter_bloc: ^9.1.1
 
 dev_dependencies:
