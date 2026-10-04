@@ -238,3 +238,31 @@ abstract final class PlateAlphabetKorea {
     isNumeric: false,
   );
 }
+
+/// Namibia: the letters the town codes use, and the personalised plates'
+/// letters-and-digits set.
+abstract final class PlateAlphabetNamibia {
+  /// Every letter appearing in a town code on the article's list (`W`, `WB`,
+  /// `KM`, `SH`, …). Advisory: the code itself is checked by the validator.
+  static const PlateAlphabet region = PlateAlphabet(
+    id: 'na.region',
+    characters: <String>[
+      'A', 'B', 'C', 'D', 'E', 'G', 'H', 'J', 'K', 'L', //
+      'M', 'N', 'O', 'P', 'R', 'S', 'T', 'U', 'V', 'W',
+    ],
+    input: AlphabetInput.typed,
+    isNumeric: false,
+  );
+
+  /// A personalised plate's characters: up to seven letters or digits.
+  static const PlateAlphabet personalised = PlateAlphabet(
+    id: 'na.personalised',
+    characters: <String>[
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', //
+      'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', //
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    ],
+    input: AlphabetInput.typed,
+    isNumeric: false,
+  );
+}
