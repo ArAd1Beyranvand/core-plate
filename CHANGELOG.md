@@ -1,3 +1,7 @@
+## 0.11.4
+
+Maintenance release. No breaking changes.
+
 ## 0.9.0
 
 **`PlateTextRow` and `noCharacterChooser`.** The plain-text rendering of a
