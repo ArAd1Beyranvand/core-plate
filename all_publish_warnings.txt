@@ -3,3 +3,6 @@
 ====== Checking plate_keypad ======
 ====== Checking algeria_plate ======
 ====== Checking bolivia_plate ======
+====== Checking colombia_plate ======
+====== Checking cuba_plate ======
+====== Checking germany_plate ======

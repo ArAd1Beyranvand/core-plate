@@ -41,3 +41,49 @@ Publishing bolivia_plate 0.1.0 to https://pub.dev:
 
 Total compressed archive size: 236 KB.
 Validating package...
+Package validation found the following 4 potential issues:
+* `dart analyze` found the following issue(s):
+  Analyzing lib, pubspec.yaml...
+  
+    error - lib/src/bolivia_plates.dart:102:6 - The name 'PlateBand' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'PlateBand'. - non_type_as_type_argument
+    error - lib/src/bolivia_plates.dart:104:11 - The name 'PlateBand' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'PlateBand'. - non_type_as_type_argument
+   [...]d_identifier
+    error - lib/src/bolivia_plates.dart:350:5 - The named parameter 'bands' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'bands'. - undefined_named_parameter
+    error - lib/src/bolivia_plates.dart:356:9 - The named parameter 'color' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'color'. - undefined_named_parameter
+  
+  20 issues found.
+  
+
+* 2 checked-in files are ignored by a `.gitignore`.
+  Previous versions of Pub would include those in the published package.
+  
+  Consider adjusting your `.gitignore` files to not ignore those files, and if you do not wish to
+  publish these files use `.pubignore`. See also dart.dev/go/pubignore
+  
+  Files that are checked in while gitignored:
+  
+  .dart_tool/package_config.json
+  pubspec.lock
+  
+  
+
+* 1 checked-in file is modified in git.
+  
+  Usually you want to publish from a clean git state.
+  
+  Consider committing these files or reverting the changes.
+  
+  Modified files:
+  
+  pubspec.yaml
+  
+  Run `git status` for more information.
+  
+
+* It's strongly recommended to include a "homepage" or "repository" field in your pubspec.yaml
+The server may enforce additional checks.
+
+Package has 4 warnings.
+Failed to update packages.
+✓ bolivia_plate - OK
+

@@ -1,0 +1,88 @@
+Resolving dependencies in `/home/aradbeyranvand/StudioProjects/plate`...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.14 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies in `/home/aradbeyranvand/StudioProjects/plate`!
+3 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Publishing colombia_plate 0.1.0 to https://pub.dev:
+├── CHANGELOG.md (<1 KB)
+├── LICENSE (1 KB)
+├── README.md (2 KB)
+├── all_publish_warnings.txt (<1 KB)
+├── analysis_options.yaml (<1 KB)
+├── lib
+│   ├── colombia_plate.dart (<1 KB)
+│   └── src
+│       ├── colombia_alphabets.dart (<1 KB)
+│       ├── colombia_colors.dart (2 KB)
+│       ├── colombia_country.dart (<1 KB)
+│       ├── colombia_plates.dart (16 KB)
+│       ├── colombia_serial_generator.dart (<1 KB)
+│       ├── colombia_themes.dart (2 KB)
+│       └── colombia_validators.dart (2 KB)
+├── pubspec.yaml (<1 KB)
+└── test
+    ├── golden_test.dart (5 KB)
+    └── goldens
+        ├── co_antique.png (32 KB)
+        ├── co_at.png (27 KB)
+        ├── co_cc.png (26 KB)
+        ├── co_commercial.png (26 KB)
+        ├── co_diplomatic.png (21 KB)
+        ├── co_mototaxi.png (20 KB)
+        ├── co_official.png (24 KB)
+        ├── co_oi.png (26 KB)
+        ├── co_police.png (27 KB)
+        ├── co_private.png (20 KB)
+        ├── co_tank.png (16 KB)
+        └── co_trailer.png (20 KB)
+
+Total compressed archive size: 259 KB.
+Validating package...
+Package validation found the following 4 potential issues:
+* `dart analyze` found the following issue(s):
+  Analyzing lib, pubspec.yaml...
+  
+    error - lib/src/colombia_plates.dart:108:12 - The name 'PlateBand' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'PlateBand'. - non_type_as_type_argument
+    error - lib/src/colombia_plates.dart:108:33 - The name 'PlateBand' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'PlateBand'. - non_type_as_type_argumen[...]sting method, or defining a method named 'PlatePart'. - undefined_method
+    error - lib/src/colombia_plates.dart:431:17 - Undefined name 'PlateSection'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+    error - lib/src/colombia_plates.dart:454:9 - The named parameter 'color' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'color'. - undefined_named_parameter
+  
+  29 issues found.
+  
+
+* 2 checked-in files are ignored by a `.gitignore`.
+  Previous versions of Pub would include those in the published package.
+  
+  Consider adjusting your `.gitignore` files to not ignore those files, and if you do not wish to
+  publish these files use `.pubignore`. See also dart.dev/go/pubignore
+  
+  Files that are checked in while gitignored:
+  
+  .dart_tool/package_config.json
+  pubspec.lock
+  
+  
+
+* 1 checked-in file is modified in git.
+  
+  Usually you want to publish from a clean git state.
+  
+  Consider committing these files or reverting the changes.
+  
+  Modified files:
+  
+  pubspec.yaml
+  
+  Run `git status` for more information.
+  
+
+* It's strongly recommended to include a "homepage" or "repository" field in your pubspec.yaml
+The server may enforce additional checks.
+
+Package has 4 warnings.
+Failed to update packages.
+✓ colombia_plate - OK
+

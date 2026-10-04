@@ -1,0 +1,70 @@
+Resolving dependencies in `/home/aradbeyranvand/StudioProjects/plate`...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.14 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies in `/home/aradbeyranvand/StudioProjects/plate`!
+3 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Publishing cuba_plate 0.1.0 to https://pub.dev:
+├── CHANGELOG.md (<1 KB)
+├── LICENSE (1 KB)
+├── README.md (3 KB)
+├── all_publish_warnings.txt (<1 KB)
+├── analysis_options.yaml (<1 KB)
+├── example
+│   ├── analysis_options.yaml (<1 KB)
+│   ├── lib
+│   │   └── main.dart (<1 KB)
+│   └── pubspec.yaml (<1 KB)
+├── lib
+│   ├── cuba_plate.dart (<1 KB)
+│   └── src
+│       ├── cuba_alphabets.dart (1 KB)
+│       ├── cuba_colors.dart (1 KB)
+│       ├── cuba_country.dart (<1 KB)
+│       ├── cuba_plates.dart (8 KB)
+│       ├── cuba_themes.dart (1 KB)
+│       └── cuba_validators.dart (1 KB)
+├── pubspec.yaml (<1 KB)
+└── test
+    ├── cuba_specs_test.dart (1 KB)
+    ├── golden_test.dart (2 KB)
+    └── goldens
+        ├── cu_car.png (14 KB)
+        ├── cu_car_legal_entity.png (14 KB)
+        └── cu_motorcycle.png (19 KB)
+
+Total compressed archive size: 50 KB.
+Validating package...
+Package validation found the following 2 potential issues:
+* `dart analyze` found the following issue(s):
+  Analyzing lib, pubspec.yaml...
+  
+    error - lib/src/cuba_plates.dart:97:18 - Undefined name 'PlateSection'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+    error - lib/src/cuba_plates.dart:97:40 - The name 'PlatePart' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'PlatePart'. - non_type_as_type_argument
+    error - lib/src/cuba_plates.dart:98:7 - The method 'PlatePart' isn't[...] an existing named parameter's name, or defining a named parameter with the name 'lineHeight'. - undefined_named_parameter
+     info - lib/src/cuba_validators.dart:27:7 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
+     info - lib/src/cuba_validators.dart:36:7 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
+  
+  39 issues found.
+  
+
+* 1 checked-in file is modified in git.
+  
+  Usually you want to publish from a clean git state.
+  
+  Consider committing these files or reverting the changes.
+  
+  Modified files:
+  
+  pubspec.yaml
+  
+  Run `git status` for more information.
+  
+The server may enforce additional checks.
+
+Package has 2 warnings.
+Failed to update packages.
+✓ cuba_plate - OK
+
