@@ -1,6 +1,7 @@
 export 'src/plate_alphabet.dart';
 export 'src/countries/algeria_alphabets.dart';
 export 'src/countries/bolivia_alphabets.dart';
+export 'src/countries/brazil_alphabets.dart';
 export 'src/countries/colombia_alphabets.dart';
 export 'src/countries/cuba_alphabets.dart';
 export 'src/countries/germany_alphabets.dart';
@@ -16,6 +17,7 @@ export 'src/countries/lebanon_alphabets.dart';
 export 'src/countries/malaysia_alphabets.dart';
 export 'src/countries/mali_alphabets.dart';
 export 'src/countries/niger_alphabets.dart';
+export 'src/countries/oman_alphabets.dart';
 export 'src/countries/palestine_alphabets.dart';
 export 'src/countries/sudan_alphabets.dart';
 export 'src/countries/tunisia_alphabets.dart';
