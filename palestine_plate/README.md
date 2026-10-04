@@ -4,23 +4,11 @@ GO VEGAN 🌱
 
 ==================================
 
-Palestine's licence plates for [`core_plate`](https://pub.dev/packages/core_plate) - a
-country that, as the licence header insists, actually exists.
-
-## Also available
-
-- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
-- [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
-- [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
-- [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
-- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
+https://platexample.ir/#/discover/palestine
 
 # palestine_plate
 
-It's data, not code: two country blocks, four alphabets, thirteen `PlateSpec` consts,
-eight `PlateTheme`s and three validators. There is no widget in this package, no
-painter and no state - `core_plate` owns all of that and paints whatever a spec
-describes. **Adding a plate here means adding a `const`.**
+Palestine's licence plates for [`core_plate`](https://pub.dev/packages/core_plate). It's data, not code: two country blocks, four alphabets, thirteen `PlateSpec` consts, eight `PlateTheme`s and three validators. `core_plate` owns the widget, painter and state; this package is the specs. **Adding a plate here means adding a `const`.**
 
 ## Depends on
 
@@ -238,3 +226,14 @@ and its validator reasoning are carried over here, along with its reference imag
 `pics/reference_plate.png`; what it modelled as one spec with an either/or slot is
 modelled here as the two separate schemes it turned out to be. It has been removed
 from the repo and this package took its name.
+
+## Also available
+
+From the mighty people of Iran to the free people of Palestine to view examples:
+
+- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
+- [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
+- [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
+- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
+- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.

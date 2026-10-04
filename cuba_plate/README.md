@@ -1,6 +1,14 @@
+FREE PALESTINE 🇮🇷🇵🇸 پاینده ایران
+
+GO VEGAN 🌱
+
+==================================
+
+https://platexample.ir/#/discover/cuba
+
 # cuba_plate
 
-Cuba's 2013 licence plates for [core_plate](../core_plate).
+Cuba's 2013 licence plates for [`core_plate`](https://pub.dev/packages/core_plate).
 
 | Spec | Size (mm) | Format | Notes |
 |---|---|---|---|
@@ -23,3 +31,15 @@ exceed the canvas. Colours marked `// CALIBRATE` are from photographs.
 
 Not implemented: the 2002–2013 colour-coded series and earlier, and the small
 laser-printed control number.
+
+## Also available
+
+From the mighty people of Iran to the brave people of Cuba to view examples:
+
+- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
+- [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
+- [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
+- [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
+- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
+- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.

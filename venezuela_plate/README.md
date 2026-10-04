@@ -1,6 +1,14 @@
+FREE PALESTINE 🇮🇷🇵🇸 پاینده ایران
+
+GO VEGAN 🌱
+
+==================================
+
+https://platexample.ir/#/discover/venezuela
+
 # venezuela_plate
 
-Venezuela's 2008 licence plate for [core_plate](../core_plate).
+Venezuela's 2008 licence plate for [`core_plate`](https://pub.dev/packages/core_plate).
 
 | Spec | Size (mm) | Format | Notes |
 |---|---|---|---|
@@ -38,3 +46,15 @@ Trujillo, AE328KG Carabobo), each perspective-corrected to 300 × 150.
 Not implemented: the pre-2008 series; the motorcycle plate (smaller, size not
 documented); the yellow provisional and Free Port plates; the eight stars, the
 microprint.
+
+## Also available
+
+From the mighty people of Iran to the bold people of Venezuela to view examples:
+
+- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
+- [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
+- [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
+- [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
+- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
+- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.

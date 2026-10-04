@@ -1,7 +1,14 @@
+FREE PALESTINE 🇮🇷🇵🇸 پاینده ایران
+
+GO VEGAN 🌱
+
+==================================
+
+https://platexample.ir/#/discover/india
+
 # india_plate
 
-India's current licence plates for [`core_plate`](../core_plate): the 1989
-format on the HSRP plate, in every colour class.
+India's current licence plates for [`core_plate`](https://pub.dev/packages/core_plate) — the 1989 format on the HSRP plate, in every colour class.
 
 ## What is here
 
@@ -55,3 +62,15 @@ that, and changing `glyphStyle` would move every country.
   Each of these needs a different number of cells.
 - The laser-etched serial under IND, and the hologram's shimmer.
 - Two-wheeler and commercial-vehicle plate sizes.
+
+## Also available
+
+From the mighty people of Iran to the people of India to view examples:
+
+- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
+- [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
+- [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
+- [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
+- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
+- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.

@@ -4,25 +4,11 @@ GO VEGAN 🌱
 
 ==================================
 
-Lebanon's licence plates for [`core_plate`](https://pub.dev/packages/core_plate) -
-a country with two plate shapes and a great many plate colours.
-
-## Also available
-
-- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
-- [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
-- [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
-- [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
-- [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
-- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
-- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.
+https://platexample.ir/#/discover/lebanon
 
 # lebanon_plate
 
-It's data, not code: 2 standard `PlateSpec`s (12 counting the short-number
-variants), one country family, two alphabets, eight themes, one advisory
-validator and one seeded generator. `core_plate` paints all of it. There is not
-a widget in this package.
+Lebanon's licence plates for [`core_plate`](https://pub.dev/packages/core_plate) — two plate shapes, many plate colours. It's data, not code: 2 standard `PlateSpec`s (12 with short-number variants), one country family, two alphabets, eight themes, one validator and one generator. `core_plate` paints everything.
 
 A usage class is **not** a spec. It is a `PlateTheme` (the field colour) and a
 `PlateCountry` (the Arabic word on the band), and both are handed to the canvas
@@ -161,3 +147,15 @@ value, and none of them is a measurement.
 **The diplomatic numbering.** A `D` plate's number encodes a country code and a
 car number rather than being a plain serial. This package draws it as six
 digits and says nothing about the encoding.
+
+## Also available
+
+From the mighty people of Iran to the people of Lebanon to view examples:
+
+- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
+- [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
+- [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
+- [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
+- [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
+- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.
