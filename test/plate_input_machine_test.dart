@@ -1,5 +1,5 @@
-import 'package:core_plate/core_plate.dart';
-import 'package:core_plate/src/input/plate_input_machine.dart';
+import 'package:plate_core/core_plate.dart';
+import 'package:plate_core/src/input/plate_input_machine.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,4 +1,4 @@
-name: core_plate
+name: plate_core
 description: "The backbone of license plate packages for countries that actually exist (we checked)."
 version: 0.11.3
 homepage: https://github.com/ArAd1Beyranvand/core-plate

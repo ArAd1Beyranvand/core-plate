@@ -69,7 +69,7 @@ second theme per plate, which would have recoloured the digits too.
 **`PlateTextRow` and `noCharacterChooser`.** The plain-text rendering of a
 plate — each effective text group rendered through its slots' alphabets, laid
 out in the plate's reading direction — is now one exported widget instead of
-30 identical lines in both `PlateTextView` and `core_plate_bloc`'s `PlateText`.
+30 identical lines in both `PlateTextView` and `plate_core_bloc`'s `PlateText`.
 `PlateTextView` builds a `PlateTextRow` off its controller; the bloc package
 builds the same off its state. `noCharacterChooser` — the required-but-never-
 called chooser for `PlateMode.display` — is likewise promoted from a private
@@ -178,7 +178,7 @@ No behaviour change: this is a rename and a merge.
 ## 0.4.0
 
 **Breaking. The bloc has left this package, and a plate now owns its own
-characters.** `core_plate` no longer depends on `flutter_bloc` or `bloc` — a
+characters.** `plate_core` no longer depends on `flutter_bloc` or `bloc` — a
 `grep` for either in `pubspec.yaml` returns nothing — and no longer decides how
 you manage state.
 
@@ -205,17 +205,17 @@ Under the hood a keystroke now rebuilds one slot instead of the whole plate:
 each slot, each `PlateMirror` and the frame subscribe to just the listenable
 they render.
 
-### The bloc moved to `core_plate_bloc`
+### The bloc moved to `plate_core_bloc`
 
 **Removed from this package** — they are now in the new sibling package
-`core_plate_bloc`, unchanged in behaviour:
+`plate_core_bloc`, unchanged in behaviour:
 
 `PlateCardBloc`, `PlateCardEvent`, `ValueIsChanged`, `RemovePlateCard`,
 `SpecIsChanged`, `PlateCardState`, `PlateCardBinding`, `ShowPlate`, `PlateText`.
 
-**Migration for a bloc host, in one line:** add `core_plate_bloc` to your
-pubspec, import `package:core_plate_bloc/core_plate_bloc.dart` alongside
-`package:core_plate/core_plate.dart`, and put a `PlateCardBinding(controller: …)`
+**Migration for a bloc host, in one line:** add `plate_core_bloc` to your
+pubspec, import `package:plate_core_bloc/plate_core_bloc.dart` alongside
+`package:plate_core/plate_core.dart`, and put a `PlateCardBinding(controller: …)`
 where your `BlocProvider<PlateCardBloc>` was:
 
 ```dart
@@ -251,13 +251,13 @@ will appear not to update the bloc. Wrap it in a `PlateCardBinding`.
 | `ShowPlate(emptyPlate: …)` | `PlateView(controller: …, theme: …, emptyPlate: …)` |
 | `PlateText(emptyPlate: …, textStyle: …)` | `PlateTextView(controller: …, emptyPlate: …, textStyle: …)` |
 
-Both are in `core_plate` and need no provider above them. `PlateView` also takes
+Both are in `plate_core` and need no provider above them. `PlateView` also takes
 a `PlateTheme`, which `ShowPlate` never did — that is why hosts drawing plates
 in several liveries had their own reimplementations of it. One behaviour
 difference: `PlateView`'s `emptyPlate` defaults to drawing the blank plate (a
 controller always knows its spec), where `ShowPlate` rendered nothing; pass
 `emptyPlate: const SizedBox.shrink()` for the old behaviour. `ShowPlate` and
-`PlateText` still exist, in `core_plate_bloc`, for hosts that keep a bloc.
+`PlateText` still exist, in `plate_core_bloc`, for hosts that keep a bloc.
 
 ### Breaking: swapping `spec:` now keeps the value
 
@@ -296,9 +296,9 @@ Purely additive: every existing spec compiles unchanged.
 
 ## 0.1.0
 
-First pub.dev release. The four packages (`core_plate`, `iran_plate`,
+First pub.dev release. The four packages (`plate_core`, `iran_plate`,
 `germany_plate`, `plate_keypad`) are now published with versioned
-dependencies — the country and keypad packages depend on `core_plate: ^0.1.0`
+dependencies — the country and keypad packages depend on `plate_core: ^0.1.0`
 rather than a sibling `path:`.
 
 - `PlateCanvas` now wraps its face in a `Material`, so it renders outside a
@@ -309,23 +309,23 @@ rather than a sibling `path:`.
 
 ### P9 — the rename, and the split settles
 
-The package is now **`core_plate`** (was `plate_number`); its directory is
+The package is now **`plate_core`** (was `plate_number`); its directory is
 **`core-plate/`** (was `plate-core/`); its barrel is
-**`package:core_plate/core_plate.dart`** (was `package:plate_number/plate_number.dart`).
+**`package:plate_core/plate_core.dart`** (was `package:plate_number/plate_number.dart`).
 The `lib/src/model/plate_number.dart` file — the `PlateNumber` entered-value type — keeps
 its name; it is a domain type, not the package.
 
 **Upgrading from `plate_number` 0.1.0 — every breaking change across P1–P9, in one place:**
 
 - **The import.** `package:plate_number/plate_number.dart` →
-  `package:core_plate/core_plate.dart`. Path dependency
-  `plate_number: {path: ../plate-core}` → `core_plate: {path: ../core-plate}`. These
+  `package:plate_core/plate_core.dart`. Path dependency
+  `plate_number: {path: ../plate-core}` → `plate_core: {path: ../core-plate}`. These
   packages are path-only; they are not published to pub.dev (`docs/split/PLAN.md` §6.6).
 - **The `plate_number` facade is retired, not replaced.** There is no meta-package that
   re-exports the four. A consumer imports exactly what it uses. The four imports that
   replace the old single import:
   ```dart
-  import 'package:core_plate/core_plate.dart';     // always
+  import 'package:plate_core/plate_core.dart';     // always
   import 'package:iran_plate/iran_plate.dart';      // if you draw Iranian plates
   import 'package:germany_plate/germany_plate.dart';// if you draw German plates
   import 'package:plate_keypad/plate_keypad.dart';  // if you want the on-screen keypad
@@ -357,7 +357,7 @@ its name; it is a domain type, not the package.
 - **Keypad grids collapsed** (P4). One `_KeyGrid` for both pads; `_buildDigitKey` /
   `_buildLettersLayer` gone. Internal, but it is why the keypad shrank ~90 lines.
 - **Public surface is now a decision** (P5). `lib/src/` holds the implementation;
-  `core_plate.dart` exports a chosen list, not every file. Anything under `src/` the
+  `plate_core.dart` exports a chosen list, not every file. Anything under `src/` the
   barrel does not name is not API.
 - **Dead weight removed** (P6). `PlateKeypadTheme.copyWith` (unused), the `args`
   dependency, and doc comments that described "a real Iranian licence plate" for
