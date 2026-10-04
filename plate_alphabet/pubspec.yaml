@@ -2,6 +2,7 @@ name: plate_alphabet
 description: "Ready-made digit and letter alphabets for licence plate keypads — shared across countries, subset by each as needed."
 version: 0.1.0
 homepage: https://github.com/ArAd1Beyranvand/plate
+resolution: workspace
 
 environment:
   sdk: '>=3.10.0 <4.0.0'
