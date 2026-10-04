@@ -1,5 +1,5 @@
 name: malaysia_plate
-description: "Malaysia's licence plates for the core_plate library — the single-row and two-row JPJ plates, the diplomatic plate and the JPJePlate, with their themes, alphabets and advisory validator."
+description: "Malaysia's licence plates for the plate_core library — the single-row and two-row JPJ plates, the diplomatic plate and the JPJePlate, with their themes, alphabets and advisory validator."
 version: 0.1.0
 publish_to: none
 
@@ -12,7 +12,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.11.0
+  plate_core: ^0.11.0
   plate_alphabet:
     path: ../plate_alphabet
 

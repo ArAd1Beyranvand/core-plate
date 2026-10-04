@@ -1,5 +1,5 @@
 name: tunisia_plate
-description: "Tunisia's licence plates for the core_plate library — the `NNN تونس NNNN` plate in one and two lines, rental, government, diplomatic, military and temporary plates, with their themes, alphabets and advisory validators."
+description: "Tunisia's licence plates for the plate_core library — the `NNN تونس NNNN` plate in one and two lines, rental, government, diplomatic, military and temporary plates, with their themes, alphabets and advisory validators."
 version: 0.1.0
 publish_to: none
 
@@ -12,7 +12,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.11.3
+  plate_core: ^0.11.3
   plate_alphabet:
     path: ../plate_alphabet
 

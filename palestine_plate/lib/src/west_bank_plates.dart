@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/core_plate.dart';
 
 import 'palestine_alphabets.dart';
 import 'palestine_country.dart';

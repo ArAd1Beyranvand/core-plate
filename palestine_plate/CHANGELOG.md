@@ -52,7 +52,7 @@
   initialised lazily once per isolate, so this changes no behaviour — but a
   const-context use (`const spec = …`) must become `final spec = …`, as the
   examples and validator tests now do.
-- Requires `core_plate: ^0.6.0` for `plateRegister`.
+- Requires `plate_core: ^0.6.0` for `plateRegister`.
 - **Gaza car plates: vertical flag only.** Removed `PSGazaPlates.car2021`, the
   one-line design with the flag the right way up and a watermark — a Gaza car
   plate now only ever renders as `car2012`, with the flag turned a quarter
@@ -79,7 +79,7 @@
 
 First release.
 
-- Contains Palestine's plate data as `const`s for `core_plate: ^0.1.0`, and
+- Contains Palestine's plate data as `const`s for `plate_core: ^0.1.0`, and
   depends on nothing else. No widget, no painter, no bloc: `PlateCanvas` and
   `ShowPlate` render every spec here.
 
@@ -130,9 +130,9 @@ First release.
   the `ف / P` block. Its measured geometry, sampled green and validator
   reasoning carry over. `palestine_plate` is untouched on disk.
 
-### Known `core_plate` limitations
+### Known `plate_core` limitations
 
-None of these were worked around by editing `core_plate`:
+None of these were worked around by editing `plate_core`:
 
 - `PlateDecal` takes an `ImageProvider`, not a `PlateAsset`, and paints at full
   opacity — so the Gaza watermark ships as a pre-faded PNG rather than an SVG.

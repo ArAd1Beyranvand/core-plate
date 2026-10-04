@@ -1,5 +1,5 @@
 name: colombia_plate
-description: "Colombia's licence plates for the core_plate library — the `ABC·123` plate in its private, public-service, official, antique, mototaxi, trailer, tank-truck and diplomatic-staff liveries, the new diplomatic-corps plate and the National Police plate, with their themes, alphabets and advisory validators."
+description: "Colombia's licence plates for the plate_core library — the `ABC·123` plate in its private, public-service, official, antique, mototaxi, trailer, tank-truck and diplomatic-staff liveries, the new diplomatic-corps plate and the National Police plate, with their themes, alphabets and advisory validators."
 version: 0.1.0
 publish_to: none
 
@@ -12,7 +12,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.11.0
+  plate_core: ^0.11.0
   plate_alphabet:
     path: ../plate_alphabet
 

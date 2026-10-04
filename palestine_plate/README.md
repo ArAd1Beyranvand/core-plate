@@ -8,17 +8,17 @@ https://platexample.ir/#/discover/palestine
 
 # palestine_plate
 
-Palestine's licence plates for [`core_plate`](https://pub.dev/packages/core_plate). It's data, not code: two country blocks, four alphabets, thirteen `PlateSpec` consts, eight `PlateTheme`s and three validators. `core_plate` owns the widget, painter and state; this package is the specs. **Adding a plate here means adding a `const`.**
+Palestine's licence plates for [`plate_core`](https://pub.dev/packages/plate_core). It's data, not code: two country blocks, four alphabets, thirteen `PlateSpec` consts, eight `PlateTheme`s and three validators. `plate_core` owns the widget, painter and state; this package is the specs. **Adding a plate here means adding a `const`.**
 
 ## Depends on
 
-`core_plate` alone - not `iran_plate`, not `germany_plate`, not `plate_keypad`, not
-`core_plate_bloc`, and not in `example/` either.
+`plate_core` alone - not `iran_plate`, not `germany_plate`, not `plate_keypad`, not
+`plate_core_bloc`, and not in `example/` either.
 
 ## Use
 
 ```dart
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 import 'package:palestine_plate/palestine_plate.dart';
 
 PlateCanvas(
@@ -82,7 +82,7 @@ final gaza  = PSThemes.forGazaUsageCode('12');           // green glyphs, white 
 ```
 
 `PlateSpec` carries **no theme field** - a spec is geometry, a theme is colour, and
-`core_plate` keeps them apart deliberately - so a theme cannot be attached to a spec
+`plate_core` keeps them apart deliberately - so a theme cannot be attached to a spec
 and picked up for you. Pass `theme:` or wrap the canvas in a `PlateThemeScope`.
 
 The legacy scheme encodes usage in its last two digits and Gaza's does the same, so
@@ -115,7 +115,7 @@ them out afterwards.
 ## Switching spec carries the value across
 
 `PlateCanvas` reacts to a changed `spec.id` under `PlateValuePreservation.byGroupKey`
-(the default since `core_plate` 0.4.0): it copies each register to the same-keyed
+(the default since `plate_core` 0.4.0): it copies each register to the same-keyed
 register on the new spec and truncates only what no longer fits, instead of emptying
 the plate. **So swapping scheme or form factor mid-entry keeps what still makes
 sense** - a five-digit serial survives the jump from `modernCar` to `modernMoto`, the
@@ -158,7 +158,7 @@ directly. That is what the serial generator and the tests call.
 
 **No fonts.** The plate prints `ف`, `اختبار` and `במבחן`, and none of those are on a
 stock Android or a bare CI runner. `PlateTheme.glyphStyle` names no font family and
-`core_plate` offers no hook to give one to a label, so a font bundled here could not
+`plate_core` offers no hook to give one to a label, so a font bundled here could not
 be applied to the glyphs that need it. Supplying a face to the subtree is the host's
 job, through its own `Theme` or `DefaultTextStyle`. (`assets/fonts/` holds the
 licence notices and the faces the watermark artwork was rasterised from - provenance,
@@ -189,10 +189,10 @@ of the width, 2:1 - not traced from a plate. The watermark is set in Vazirmatn a
 rasterised; it is legible, correctly shaped Arabic, but it is *not* the face a Gaza
 plate is actually printed in. See `assets/marks/PROVENANCE.md`.
 
-## `core_plate` limitations this package works around
+## `plate_core` limitations this package works around
 
 Reported rather than patched around, and none of them were fixed by editing
-`core_plate`:
+`plate_core`:
 
 - **`PlateDecal` takes an `ImageProvider`, not a `PlateAsset`.** So the Gaza watermark
   ships as a PNG through `AssetImage` rather than the SVG its layout calls for.
@@ -231,9 +231,9 @@ from the repo and this package took its name.
 
 From the mighty people of Iran to the free people of Palestine to view examples:
 
-- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_core`](https://pub.dev/packages/plate_core) - Paint license plates.
 - [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
 - [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
-- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.
+- [`plate_core_bloc`](https://pub.dev/packages/plate_core_bloc) - The optional bloc layer for `plate_core`.

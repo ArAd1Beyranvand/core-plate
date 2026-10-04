@@ -1,4 +1,4 @@
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/core_plate.dart';
 
 /// Judges an ordinary registration on `TunisiaPlates.standard` or `square`.
 /// Reports, never bars a keystroke.

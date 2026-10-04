@@ -8,14 +8,14 @@ https://platexample.ir/#/discover/venezuela
 
 # venezuela_plate
 
-Venezuela's 2008 licence plate for [`core_plate`](https://pub.dev/packages/core_plate).
+Venezuela's 2008 licence plate for [`plate_core`](https://pub.dev/packages/plate_core).
 
 | Spec | Size (mm) | Format | Notes |
 |---|---|---|---|
 | `VenezuelaPlates.car` | 300 × 150 | `AB174SK` | Navy on the flag; the last letter is the state |
 
 The flag is the background: white, then yellow, blue and red bands rising
-5.7° to the right, painted with `PlateFill.stripes` (core_plate 0.11.2). The
+5.7° to the right, painted with `PlateFill.stripes` (plate_core 0.11.2). The
 state name under the serial is a mirror of the last cell through
 `VenezuelaAlphabets.stateName`, so it follows whatever letter is typed.
 
@@ -32,10 +32,10 @@ Trujillo, AE328KG Carabobo), each perspective-corrected to 300 × 150.
 - Positions match to ~2 mm: caption x 30.5..273.2 against 31.2..272.8; flag
   boundaries within 2 mm at both ends; the state name at the measured height.
 - **The serial is about 55% of reference height** (40 against 74 mm). The real
-  face is very condensed; `core_plate` scales each glyph down to its cell
+  face is very condensed; `plate_core` scales each glyph down to its cell
   width, and the fallback font is too wide to stand 74 mm tall in a 38.9 mm
   cell. The caption is ~60% for the same reason. A condensed font in the theme
-  would fix both; core_plate has no per-theme font today.
+  would fix both; plate_core has no per-theme font today.
 - The real bands fan and wave slightly; one angle is the fit.
 - The white airbrushing is a `PlateFog`: saturated colours at the ends, pale
   in the middle. The photographs' fade is sharper at the red band's ends than
@@ -51,10 +51,10 @@ microprint.
 
 From the mighty people of Iran to the bold people of Venezuela to view examples:
 
-- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_core`](https://pub.dev/packages/plate_core) - Paint license plates.
 - [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
 - [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
 - [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
-- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.
+- [`plate_core_bloc`](https://pub.dev/packages/plate_core_bloc) - The optional bloc layer for `plate_core`.

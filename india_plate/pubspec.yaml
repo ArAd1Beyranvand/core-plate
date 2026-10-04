@@ -1,5 +1,5 @@
 name: india_plate
-description: "India's licence plates for the core_plate library — the HSRP car plate in every colour class, with the Bharat, vintage, armed-forces, diplomatic, temporary and trade formats."
+description: "India's licence plates for the plate_core library — the HSRP car plate in every colour class, with the Bharat, vintage, armed-forces, diplomatic, temporary and trade formats."
 version: 0.1.0
 homepage: https://github.com/ArAd1Beyranvand/plate-india
 
@@ -12,7 +12,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.11.2
+  plate_core: ^0.11.2
 
 dev_dependencies:
   flutter_test:

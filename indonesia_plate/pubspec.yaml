@@ -1,5 +1,5 @@
 name: indonesia_plate
-description: "Indonesia's licence plates for the core_plate library — the 2023 FE-Schrift car plate, the motorcycle plate and the diplomatic plate, with their usage and EV liveries, alphabets and advisory validators."
+description: "Indonesia's licence plates for the plate_core library — the 2023 FE-Schrift car plate, the motorcycle plate and the diplomatic plate, with their usage and EV liveries, alphabets and advisory validators."
 version: 0.1.0
 publish_to: none
 
@@ -12,7 +12,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  core_plate: ^0.11.0
+  plate_core: ^0.11.0
   plate_alphabet:
     path: ../plate_alphabet
 

@@ -1,4 +1,4 @@
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/core_plate.dart';
 import 'package:plate_alphabet/plate_alphabet.dart';
 
 /// The two alphabets of a 2013 plate: one series letter, then Latin digits.

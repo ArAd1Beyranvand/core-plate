@@ -8,7 +8,7 @@ https://platexample.ir/#/discover/india
 
 # india_plate
 
-India's current licence plates for [`core_plate`](https://pub.dev/packages/core_plate) — the 1989 format on the HSRP plate, in every colour class.
+India's current licence plates for [`plate_core`](https://pub.dev/packages/plate_core) — the 1989 format on the HSRP plate, in every colour class.
 
 ## What is here
 
@@ -52,7 +52,7 @@ police use the artwork's own red, `DB351F`.
 The plate's face is a tall condensed one. Each cell is 41.4 wide. A cell scales
 down any glyph wider than itself, and the fallback bold M is about 0.86 em, so
 55 is the largest slot where every capital keeps the same height. Getting to
-78.7 would need a condensed face in the theme. `core_plate` has no hook for
+78.7 would need a condensed face in the theme. `plate_core` has no hook for
 that, and changing `glyphStyle` would move every country.
 
 ## Not implemented
@@ -67,10 +67,10 @@ that, and changing `glyphStyle` would move every country.
 
 From the mighty people of Iran to the people of India to view examples:
 
-- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_core`](https://pub.dev/packages/plate_core) - Paint license plates.
 - [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
 - [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
 - [`yemen_plate`](https://pub.dev/packages/yemen_plate) - Yemen's plates.
-- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.
+- [`plate_core_bloc`](https://pub.dev/packages/plate_core_bloc) - The optional bloc layer for `plate_core`.

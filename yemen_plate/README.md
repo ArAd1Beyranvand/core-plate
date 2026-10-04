@@ -8,7 +8,7 @@ https://platexample.ir/#/discover/yemen
 
 # yemen_plate
 
-Yemen's licence plates for [`core_plate`](https://pub.dev/packages/core_plate) — two plate systems in force at the same time, in different halves of the country. It's data, not code: 11 `PlateSpec`s, two country families, two digit alphabets, seven themes, two validators and two generators. `core_plate` paints everything.
+Yemen's licence plates for [`plate_core`](https://pub.dev/packages/plate_core) — two plate systems in force at the same time, in different halves of the country. It's data, not code: 11 `PlateSpec`s, two country families, two digit alphabets, seven themes, two validators and two generators. `plate_core` paints everything.
 
 A usage class is **not** a spec. It is a `PlateCountry` (the usage word, or the
 two caption lines of System A's blue panel) and a `PlateTheme` (System B's field
@@ -43,13 +43,13 @@ knows that and reaches for one namespace.
 
 ## Depends on
 
-`core_plate` alone - not `plate_keypad`, not `iran_plate`, not `palestine_plate`,
-not `core_plate_bloc`. `plate_keypad` appears only in `example/`.
+`plate_core` alone - not `plate_keypad`, not `iran_plate`, not `palestine_plate`,
+not `plate_core_bloc`. `plate_keypad` appears only in `example/`.
 
 ## Use
 
 ```dart
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 import 'package:yemen_plate/yemen_plate.dart';
 
 // System A: a private car with a five-digit number.
@@ -95,7 +95,7 @@ usage as a `country:`, exactly as a host does.
 Every *layout* is a separate spec, because the number of cells differs - and
 nothing else is, because nothing else changes a cell. Swapping
 `spec:` on a live `PlateCanvas` carries the value across by group key (the
-`core_plate` default): a shared register survives, a digit that no longer fits is
+`plate_core` default): a shared register survives, a digit that no longer fits is
 truncated. It no longer empties the plate - but a governorate serial reinterpreted
 under a different length is still rarely what the user meant, so present the system,
 usage and register lengths first, then the plate. Pass `onSpecChange:` for `byIndex`
@@ -109,7 +109,7 @@ private one. `YemenThemes.forNorthernUsage(usage)` is the way to get the right
 one without naming a colour anywhere in your code.
 
 The specs themselves carry no colour at all - a spec is geometry, a theme is
-colour, and `core_plate` keeps them apart. A spec does name a `country`, but
+colour, and `plate_core` keeps them apart. A spec does name a `country`, but
 only as the default for a caller that passes none: every spec here defaults to
 private. The northern usage word rides on `PlateCountry.captionLines` over a fully
 **transparent** panel: transparent rather than the field colour, so that pairing
@@ -162,7 +162,7 @@ past the measured run and centred on it, and the motorcycle's — which has no
 spare field to widen into — has its glyph height cut instead.
 
 Fixing both properly needs a `fontFamily` on `PlateTheme.glyphStyle` (or a
-`TextStyle` hook on `PlateSpec`) in `core_plate`. With the plate's own faces
+`TextStyle` hook on `PlateSpec`) in `plate_core`. With the plate's own faces
 installed, these boxes would go back to their measured sizes.
 
 ## Contains
@@ -244,9 +244,9 @@ table.
 
 From the mighty people of Iran to the noble people of Yemen to view examples:
 
-- [`core_plate`](https://pub.dev/packages/core_plate) - Paint license plates.
+- [`plate_core`](https://pub.dev/packages/plate_core) - Paint license plates.
 - [`plate_keypad`](https://pub.dev/packages/plate_keypad) - A character picker for license plates.
 - [`iran_plate`](https://pub.dev/packages/iran_plate) - Iran's plates.
 - [`germany_plate`](https://pub.dev/packages/germany_plate) - Germany's plates.
 - [`palestine_plate`](https://pub.dev/packages/palestine_plate) - Palestine's plates.
-- [`core_plate_bloc`](https://pub.dev/packages/core_plate_bloc) - The optional bloc layer for `core_plate`.
+- [`plate_core_bloc`](https://pub.dev/packages/plate_core_bloc) - The optional bloc layer for `plate_core`.

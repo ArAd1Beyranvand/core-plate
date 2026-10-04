@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/core_plate.dart';
 import 'package:flutter/widgets.dart';
 
 import 'venezuela_alphabets.dart';

@@ -1,4 +1,4 @@
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/core_plate.dart';
 
 /// The area codes the article lists as in use, by police region. Non-motorised
 /// codes (SB, YB, YK, KS) are included: they are issued plates.

@@ -1,4 +1,4 @@
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/core_plate.dart';
 import 'package:flutter/widgets.dart';
 
 import 'yemen_colors.dart';

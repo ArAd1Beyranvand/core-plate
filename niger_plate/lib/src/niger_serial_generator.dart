@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/core_plate.dart';
 
 /// Generates plausible values for fixtures and demos. Pure Dart.
 abstract final class NigerSerialGenerator {

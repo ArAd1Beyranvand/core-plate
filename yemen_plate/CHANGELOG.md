@@ -1,7 +1,7 @@
 ## 0.3.0
 
 **Breaking. A usage class no longer selects a spec.** It selects a country block
-and a theme, and `core_plate` 0.6.0 takes both at render time. So the 55 specs
+and a theme, and `plate_core` 0.6.0 takes both at render time. So the 55 specs
 this package shipped — four northern car layouts and one motorcycle layout
 crossed with five usages, six unified geometries crossed with five — are now
 **11**, one per geometry, and 44 of them were clones that differed only in `id`
@@ -111,7 +111,7 @@ fails to compile rather than silently changing meaning.
   `const` constructor cannot run a loop. `PlateSpec` equality is over `id` alone
   and a `static final` is initialised lazily once per isolate, so this changes
   no behaviour.
-- Requires `core_plate` 0.6.0 for `plateRegister` / `plateRegisterAcross` /
+- Requires `plate_core` 0.6.0 for `plateRegister` / `plateRegisterAcross` /
   `plateEcho` / `plateStipple`, and for `PlateCanvas.country` /
   `PlateView.country`.
 - The package's first tests, now `test/yemen_specs_test.dart` — see **Added**
@@ -132,16 +132,16 @@ fails to compile rather than silently changing meaning.
   `PlateMode.input` the big row still shows ASCII under the caret — core's
   typed field paints the controller's text without rendering it through the
   alphabet (core's `TODO(national-numerals)`).
-- Requires `core_plate: ^0.2.0` for `PlateMirror`.
+- Requires `plate_core: ^0.2.0` for `PlateMirror`.
 
 ## 0.1.0
 
 First release.
 
-- Contains Yemen's plate data for `core_plate`: `YemenUsage`,
+- Contains Yemen's plate data for `plate_core`: `YemenUsage`,
   `YemenGovernorate`, `YemenColors`, `YemenAlphabets`, `YemenCountry`,
   `YemenThemes`, `YemenUnifiedPlates`, `YemenNorthernPlates`, the two
-  validators and the two seeded generators. Depends on `core_plate: ^0.1.0` and
+  validators and the two seeded generators. Depends on `plate_core: ^0.1.0` and
   nothing else.
 
 - **Two systems, both current, in two namespaces.** `YemenUnifiedPlates` is the
@@ -177,5 +177,5 @@ First release.
 
 - Ships no assets. A Yemeni plate carries no flag, and the unified plate's eagle
   emblem was not available at a resolution worth shipping. Ships no font either,
-  and a host cannot supply one - see "Fonts" in the README for the `core_plate`
+  and a host cannot supply one - see "Fonts" in the README for the `plate_core`
   limitation behind that.

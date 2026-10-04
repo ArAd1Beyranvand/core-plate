@@ -53,4 +53,4 @@
 
 1. **iran_plate, yemen_plate, lebanon_plate** — Same pattern: remove verbose introduction essays, keep measurements and non-obvious constraints. Expect 100–150 lines removed per package.
 2. **plate_keypad** — Custom widget likely has explanatory docs about input handling; same delete-don't-rewrite approach applies.
-3. **core_plate's large widgets** — `plate_canvas.dart` and `plate_slot_item.dart` likely have long methods with inline comments. Read in full before trimming; keep comments that explain surprising invariants.
+3. **plate_core's large widgets** — `plate_canvas.dart` and `plate_slot_item.dart` likely have long methods with inline comments. Read in full before trimming; keep comments that explain surprising invariants.

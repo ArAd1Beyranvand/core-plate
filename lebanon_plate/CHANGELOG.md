@@ -37,6 +37,6 @@ First release.
 - **No cedar.** The emblem in the middle of the band is not shipped; see "What
   it does not ship" in the README.
 - **The band's text runs horizontally.** On a real one-line plate it is rotated
-  ninety degrees, and `core_plate` has no rotation.
+  ninety degrees, and `plate_core` has no rotation.
 - **Most coloured classes have no attested Arabic word**, so their band carries
   لبنان alone rather than a word this package invented.

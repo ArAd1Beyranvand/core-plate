@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:colombia_plate/colombia_plate.dart';
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/core_plate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
