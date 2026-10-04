@@ -1,0 +1,89 @@
+Resolving dependencies in `/home/aradbeyranvand/StudioProjects/plate`...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.14 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies in `/home/aradbeyranvand/StudioProjects/plate`!
+3 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Publishing niger_plate 0.1.0 to https://pub.dev:
+├── CHANGELOG.md (<1 KB)
+├── LICENSE (1 KB)
+├── README.md (2 KB)
+├── all_publish_warnings.txt (<1 KB)
+├── analysis_options.yaml (<1 KB)
+├── assets
+│   └── maps
+│       ├── niger_flag.svg (<1 KB)
+│       ├── niger_map.svg (2 KB)
+│       └── niger_map_flag.svg (6 KB)
+├── lib
+│   ├── niger_plate.dart (<1 KB)
+│   └── src
+│       ├── niger_alphabets.dart (<1 KB)
+│       ├── niger_colors.dart (1 KB)
+│       ├── niger_country.dart (1 KB)
+│       ├── niger_other_plates.dart (4 KB)
+│       ├── niger_plates.dart (4 KB)
+│       ├── niger_serial_generator.dart (<1 KB)
+│       ├── niger_themes.dart (1 KB)
+│       ├── niger_usage.dart (<1 KB)
+│       └── niger_validators.dart (2 KB)
+├── pubspec.yaml (<1 KB)
+└── test
+    ├── golden_test.dart (3 KB)
+    └── goldens
+        ├── ne_commercial.png (16 KB)
+        ├── ne_diplomatic_cd.png (17 KB)
+        ├── ne_diplomatic_cmd.png (17 KB)
+        ├── ne_military.png (14 KB)
+        ├── ne_private.png (21 KB)
+        └── ne_state.png (22 KB)
+
+Total compressed archive size: 111 KB.
+Validating package...
+Package validation found the following 4 potential issues:
+* `dart analyze` found the following issue(s):
+  Analyzing lib, pubspec.yaml...
+  
+    error - lib/src/niger_other_plates.dart:159:7 - The named parameter 'noPanel' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'noPanel'. - undefined_named_parameter
+    error - lib/src/niger_plates.dart:99:5 - The named parameter 'bands' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'bands'. - undefined_named_parameter
+    error - lib/src/niger_plates.dart:99:13 - The name 'PlateBand' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'PlateBand'. - non_type_as_type_argument
+    error - lib/src/niger_plates.dart:100:7 - The method 'PlateBand' isn't defined for the type 'NigerPlates'. Try correcting the name to the name of an existing method, or defining a method named 'PlateBand'. - undefined_method
+  
+  4 issues found.
+  
+
+* 2 checked-in files are ignored by a `.gitignore`.
+  Previous versions of Pub would include those in the published package.
+  
+  Consider adjusting your `.gitignore` files to not ignore those files, and if you do not wish to
+  publish these files use `.pubignore`. See also dart.dev/go/pubignore
+  
+  Files that are checked in while gitignored:
+  
+  .dart_tool/package_config.json
+  pubspec.lock
+  
+  
+
+* 1 checked-in file is modified in git.
+  
+  Usually you want to publish from a clean git state.
+  
+  Consider committing these files or reverting the changes.
+  
+  Modified files:
+  
+  pubspec.yaml
+  
+  Run `git status` for more information.
+  
+
+* It's strongly recommended to include a "homepage" or "repository" field in your pubspec.yaml
+The server may enforce additional checks.
+
+Package has 4 warnings.
+Failed to update packages.
+✓ niger_plate - OK
+
