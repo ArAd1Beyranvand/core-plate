@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'indonesia_alphabets.dart';
 import 'indonesia_colors.dart';
 import 'indonesia_country.dart';
+import 'indonesia_services.dart';
 
 /// Where the ink sits on an Indonesian plate, in millimetres.
 ///
@@ -97,6 +98,53 @@ abstract final class _Layout {
   /// The dot is 3 mm of ink.
   static const double dotGlyph = 14;
   static const double dotWidth = 10;
+
+  // Military and police, 460×138. See `IndonesiaPlates.military`.
+  static const double serviceHeight = 138;
+  static const double servicePitch = 37;
+
+  /// Last digit centre to first suffix centre is ~71 on every plate: a
+  /// pitch for the dash and this much more.
+  static const double dashGap = 34;
+  static const double dashWidth = 30;
+
+  /// The serial is 62.8 mm of ink centred at y 90.3 (Army); 94 is as tall as
+  /// the plate allows about that centre.
+  ///
+  /// Measured off the goldens (DejaVu Bold): Army serial ink y 69.5–109.3,
+  /// x 149–435 against 58.9–121.8, x ~142–438; police serial y 79.3–116.4
+  /// against 75.6–124.7, region y 17.7–50.5 against 15.3–55.7. Centres and
+  /// widths agree within ~2 mm; the heights are 63–81% because the bold face
+  /// is width-limited in a 37 mm cell, as on the civilian plates.
+  static const double milSlotTop = 44;
+  static const double milSlotHeight = 94;
+
+  /// The mark: Army star y 19.9–56.3, Navy anchor y 14.7–57.3, both ~40 wide
+  /// and centred over the serial.
+  static const double markTop = 16;
+  static const double markWidth = 42;
+  static const double markHeight = 41;
+
+  /// The crest sits inside its square with this much clear on every side.
+  static const double emblemMargin = 6;
+
+  static const double policePitch = 35.5;
+  static const double policeRim = 6.5;
+  static const double policeDividerCentre = 136.4;
+  static const double policeDividerWidth = 6.4;
+
+  /// Horizontal divider y 61.1–65.0.
+  static const double policeRuleCentre = 63;
+  static const double policeRuleWidth = 4;
+
+  /// Region numeral ink y 15.3–55.7: a 71 mm slot from the top.
+  static const double regionTop = 0;
+  static const double regionHeight = 71;
+  static const double regionWidth = 160;
+
+  /// Serial ink y 75.6–124.7 (49 mm, centre 100); 76 mm reaches the bottom.
+  static const double policeSlotTop = 62;
+  static const double policeSlotHeight = 76;
 }
 
 /// One registration's shape: 1–2 area letters, 1–4 digits, 0–3 suffix
@@ -116,12 +164,39 @@ typedef IndonesiaFormat = ({int prefix, int digits, int suffix});
 /// free-trade zone — are themes on the same spec.
 ///
 /// Text groups: `prefix`, `number`, `suffix` (if any), `month`, `year`;
-/// diplomatic: `mission`, `country`, `serial`, `month`, `year`.
+/// diplomatic: `mission`, `country`, `serial`, `month`, `year`; military:
+/// `number`, `suffix`; police: `region`, `number`, `suffix`.
 ///
-/// Not implemented: the former (pre-2023) designs; the military, police,
-/// prosecution-service and House plates, which carry emblems and are known
-/// only from photographs; the red-on-white dealer plate, which has no
-/// reference artwork. The faint Korlantas watermark at bottom left is omitted.
+/// ## Military and police
+///
+/// No artwork exists — Commons has photographs only — so these are measured
+/// off photographs, each normalised to 460 mm wide. No size is documented:
+/// the civilian width is kept and the height is the median measured aspect
+/// (3.31, 3.37, 3.14, 3.41, 3.29), 460×138.
+///
+/// * [military] — a yellow rim; on the left a red square with the TNI crest
+///   in yellow, closed by a yellow upright running rim to rim; the service's
+///   field with its mark centred at the top and the serial `NNNNN-SS` in
+///   yellow below. The square and upright are background columns. Army:
+///   square to x 123, upright 123–137, star x 262–301, serial centres 160
+///   196 233.5 271 308, dash 343.5, suffix 379.5 422. Navy: upright
+///   115–124, anchor x 270–308. Content is centred on the field.
+/// * [police] — the same frame on near-black, the square left in the field
+///   colour with the Polri crest; the field is split by a 4 mm yellow rule at
+///   y 63 into the region numeral (ink y 15–56, centre x 298) over the
+///   serial (ink y 76–125, centres 190.5 226 261.5 297, dash 332, suffix 368
+///   404). Upright 133–140.
+///
+/// The crests are PNG decals cut from the Commons insignia SVGs and recoloured
+/// yellow; the star, anchor and roundel are drawn shapes, shipped as PNGs
+/// because a decal is the only way to put an image above the background.
+/// The Air Force roundel's height is estimated: its photograph is skewed.
+///
+/// Not implemented: the former (pre-2023) designs; the Ministry of Defence,
+/// prosecution-service, House and `RI`/`INDONESIA` plates, known only from
+/// photographs too poor to measure; the Navy plate with an expiry row; the
+/// red-on-white dealer plate, which has no reference artwork. The faint
+/// Korlantas watermark at bottom left is omitted.
 abstract final class IndonesiaPlates {
   static const List<int> prefixLengths = <int>[1, 2];
   static const List<int> digitLengths = <int>[1, 2, 3, 4];
@@ -167,6 +242,216 @@ abstract final class IndonesiaPlates {
     return _dip[(countryDigits, serialDigits)] ??= _diplomaticSpec(
       countryDigits,
       serialDigits,
+    );
+  }
+
+  static const List<int> serviceDigitLengths = <int>[4, 5];
+
+  static final Map<(IndonesiaService, int), PlateSpec> _mil =
+      <(IndonesiaService, int), PlateSpec>{};
+  static final Map<int, PlateSpec> _police = <int, PlateSpec>{};
+
+  /// A TNI plate for [service], with a [digits]-digit number (4 or 5).
+  static PlateSpec military(IndonesiaService service, {int digits = 5}) {
+    _checkService(digits);
+    return _mil[(service, digits)] ??= _militarySpec(service, digits);
+  }
+
+  /// A Polri plate with a [digits]-digit number (4 or 5).
+  static PlateSpec police({int digits = 4}) {
+    _checkService(digits);
+    return _police[digits] ??= _policeSpec(digits);
+  }
+
+  static void _checkService(int digits) {
+    if (!serviceDigitLengths.contains(digits)) {
+      throw ArgumentError(
+        'A military or police number is 4 or 5 digits (got $digits).',
+      );
+    }
+  }
+
+  static PlateDecal _asset(String file, PlateBox box) => PlateDecal(
+    image: AssetImage('assets/$file', package: 'indonesia_plate'),
+    box: box,
+  );
+
+  /// The crest inside the square left of an upright at [dividerStart].
+  static PlateDecal _emblem(String file, double rim, double dividerStart) {
+    const double m = _Layout.emblemMargin;
+    return _asset(
+      file,
+      PlateBox(
+        rim + m,
+        rim + m,
+        dividerStart - rim - 2 * m,
+        _Layout.serviceHeight - 2 * rim - 2 * m,
+      ),
+    );
+  }
+
+  /// `NNNNN-SS` centred on [centre], from [top]: slots, the dash and groups
+  /// starting at slot [first].
+  static ({List<PlateSlot> slots, PlateLabel dash, List<PlateTextGroup> groups})
+  _serviceSerial({
+    required int digits,
+    required double centre,
+    required double top,
+    required double height,
+    required double pitch,
+    int first = 0,
+  }) {
+    final double left = centre - ((digits + 2) * pitch + _Layout.dashGap) / 2;
+    final double numberRight = left + digits * pitch;
+    final double suffixLeft = numberRight + _Layout.dashGap;
+    final double dashCentre = (numberRight + suffixLeft) / 2;
+    return (
+      slots: <PlateSlot>[
+        ...plateRegister(
+          alphabet: IndonesiaAlphabets.digits,
+          count: digits,
+          left: left,
+          top: top,
+          width: pitch,
+          height: height,
+        ),
+        ...plateRegister(
+          alphabet: IndonesiaAlphabets.digits,
+          count: 2,
+          left: suffixLeft,
+          top: top,
+          width: pitch,
+          height: height,
+        ),
+      ],
+      dash: PlateLabel(
+        text: '-',
+        box: PlateBox(
+          dashCentre - _Layout.dashWidth / 2,
+          top,
+          _Layout.dashWidth,
+          height,
+        ),
+        glyphHeight: height,
+      ),
+      groups: <PlateTextGroup>[
+        PlateTextGroup(<int>[
+          for (int i = first; i < first + digits; i++) i,
+        ], key: 'number'),
+        PlateTextGroup(<int>[
+          first + digits,
+          first + digits + 1,
+        ], key: 'suffix'),
+      ],
+    );
+  }
+
+  static PlateSpec _militarySpec(IndonesiaService s, int digits) {
+    final double dividerStart = s.dividerCentre - s.dividerWidth / 2;
+    final double fieldCentre =
+        (s.dividerCentre + s.dividerWidth / 2 + _Layout.carWidth - s.rim) / 2;
+    final serial = _serviceSerial(
+      digits: digits,
+      centre: fieldCentre,
+      top: _Layout.milSlotTop,
+      height: _Layout.milSlotHeight,
+      pitch: _Layout.servicePitch,
+    );
+    return PlateSpec(
+      id: 'id.military.${s.id}.$digits',
+      country: IndonesiaCountry.indonesia,
+      canvasWidth: _Layout.carWidth,
+      canvasHeight: _Layout.serviceHeight,
+      noPanel: true,
+      panel: const PlatePanel(box: PlateBox(0, 0, 0, _Layout.serviceHeight)),
+      background: PlateSection.columns(<PlatePart>[
+        PlatePart(
+          const PlateSection.fill(PlateFill.color(IndonesiaColors.serviceRed)),
+          end: s.dividerCentre,
+          divider: s.dividerWidth,
+        ),
+        const PlatePart(PlateSection.plain),
+      ]),
+      slots: serial.slots,
+      labels: <PlateLabel>[serial.dash],
+      decals: <PlateDecal>[
+        _emblem('tni_emblem.png', s.rim, dividerStart),
+        if (s.mark case final String mark)
+          _asset(
+            mark,
+            PlateBox(
+              fieldCentre - _Layout.markWidth / 2,
+              _Layout.markTop,
+              _Layout.markWidth,
+              _Layout.markHeight,
+            ),
+          ),
+      ],
+      textGroups: serial.groups,
+    );
+  }
+
+  static PlateSpec _policeSpec(int digits) {
+    const double dividerEnd =
+        _Layout.policeDividerCentre + _Layout.policeDividerWidth / 2;
+    const double fieldCentre =
+        (dividerEnd + _Layout.carWidth - _Layout.policeRim) / 2;
+    final serial = _serviceSerial(
+      digits: digits,
+      centre: fieldCentre,
+      top: _Layout.policeSlotTop,
+      height: _Layout.policeSlotHeight,
+      pitch: _Layout.policePitch,
+      first: 1,
+    );
+    return PlateSpec(
+      id: 'id.police.$digits',
+      country: IndonesiaCountry.indonesia,
+      canvasWidth: _Layout.carWidth,
+      canvasHeight: _Layout.serviceHeight,
+      noPanel: true,
+      panel: const PlatePanel(box: PlateBox(0, 0, 0, _Layout.serviceHeight)),
+      background: const PlateSection.columns(<PlatePart>[
+        PlatePart(
+          PlateSection.plain,
+          end: _Layout.policeDividerCentre,
+          divider: _Layout.policeDividerWidth,
+        ),
+        PlatePart(
+          PlateSection.rows(<PlatePart>[
+            PlatePart(
+              PlateSection.plain,
+              end: _Layout.policeRuleCentre,
+              divider: _Layout.policeRuleWidth,
+            ),
+            PlatePart(PlateSection.plain),
+          ]),
+        ),
+      ]),
+      slots: <PlateSlot>[
+        const PlateSlot(
+          alphabet: IndonesiaAlphabets.policeRegions,
+          box: PlateBox(
+            fieldCentre - _Layout.regionWidth / 2,
+            _Layout.regionTop,
+            _Layout.regionWidth,
+            _Layout.regionHeight,
+          ),
+        ),
+        ...serial.slots,
+      ],
+      labels: <PlateLabel>[serial.dash],
+      decals: <PlateDecal>[
+        _emblem(
+          'polri_emblem.png',
+          _Layout.policeRim,
+          _Layout.policeDividerCentre - _Layout.policeDividerWidth / 2,
+        ),
+      ],
+      textGroups: <PlateTextGroup>[
+        const PlateTextGroup(<int>[0], key: 'region'),
+        ...serial.groups,
+      ],
     );
   }
 

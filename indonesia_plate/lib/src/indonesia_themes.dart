@@ -107,4 +107,34 @@ abstract final class IndonesiaThemes {
     inactive: IndonesiaColors.inactiveOnDark,
     band: IndonesiaColors.evBlue,
   );
+
+  /// Yellow on a service colour, yellow rim and divider. [rim] is the
+  /// service's measured rim on the 138 mm plate, which is also its
+  /// `IndonesiaService.rim`, so the emblem's margin follows the border.
+  static PlateTheme _service(Color field, double rim) => PlateTheme(
+    plateBackground: field,
+    plateBorder: IndonesiaColors.serviceYellow,
+    ink: IndonesiaColors.serviceYellow,
+    dividerColor: IndonesiaColors.serviceYellow,
+    borderWidthRatio: rim / 138,
+    plateRadiusRatio: _plateRadiusRatio,
+    activeColor: IndonesiaColors.serviceYellow,
+    inactiveColor: IndonesiaColors.inactiveOnDark,
+    alertColor: const Color(0xFFD32F2F),
+  );
+
+  /// Army (TNI-AD): a 14 mm rim, twice the other services'.
+  static final PlateTheme army = _service(IndonesiaColors.armyGreen, 14);
+
+  /// Navy (TNI-AL).
+  static final PlateTheme navy = _service(IndonesiaColors.navyBlue, 9);
+
+  /// Air Force (TNI-AU).
+  static final PlateTheme airForce = _service(IndonesiaColors.airForceBlue, 9);
+
+  /// TNI headquarters: the field is the crest square's red.
+  static final PlateTheme armedForces = _service(IndonesiaColors.serviceRed, 9);
+
+  /// National Police (Polri).
+  static final PlateTheme police = _service(IndonesiaColors.policeBlack, 6.5);
 }

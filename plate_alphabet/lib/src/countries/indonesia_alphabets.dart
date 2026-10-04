@@ -24,4 +24,18 @@ abstract final class IndonesiaAlphabets {
     input: AlphabetInput.chosen,
     isNumeric: false,
   );
+
+  /// The police-region numeral over the serial of a Polri plate: the
+  /// Roman numbers I to XXXV, one per regional command.
+  static const PlateAlphabet policeRegions = PlateAlphabet(
+    id: 'id.policeRegions',
+    characters: <String>[
+      'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', //
+      'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII',
+      'XIX', 'XX', 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII',
+      'XXVIII', 'XXIX', 'XXX', 'XXXI', 'XXXII', 'XXXIII', 'XXXIV', 'XXXV',
+    ],
+    input: AlphabetInput.chosen,
+    isNumeric: false,
+  );
 }

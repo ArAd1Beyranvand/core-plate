@@ -1,4 +1,5 @@
 import 'package:plate_core/plate_core.dart';
+import 'package:plate_alphabet/plate_alphabet.dart' show IndonesiaAlphabets;
 
 /// The area codes the article lists as in use, by police region. Non-motorised
 /// codes (SB, YB, YK, KS) are included: they are issued plates.
@@ -94,6 +95,39 @@ class IndonesiaDiplomaticValidator extends GatedPlateValidator {
     }
     if (!isDigits(entry.group('country')) || !isDigits(entry.group('serial'))) {
       return const PlateValidation.invalid(reasonDigits);
+    }
+    return const PlateValidation.valid();
+  }
+}
+
+/// Judges an `IndonesiaPlates.military` or `police` value: a 1–99999 number
+/// with no leading zero, a two-digit suffix and, on a police plate, a region
+/// numeral the alphabet lists.
+class IndonesiaServiceValidator extends GatedPlateValidator {
+  const IndonesiaServiceValidator();
+
+  @override
+  String get gateGroup => 'number';
+
+  static const String reasonNumber = 'The number is 1 to 99999.';
+  static const String reasonSuffix = 'The suffix is two digits.';
+  static const String reasonRegion = 'Not a police region numeral.';
+
+  @override
+  PlateValidation judge(PlateEntry entry) {
+    final String number = entry.group('number');
+    if (number.isEmpty || !isDigits(number) || number.startsWith('0')) {
+      return const PlateValidation.invalid(reasonNumber);
+    }
+    final String suffix = entry.group('suffix');
+    if (suffix.length != 2 || !isDigits(suffix)) {
+      return const PlateValidation.invalid(reasonSuffix);
+    }
+    if (entry.spec.textGroups.any((g) => g.key == 'region') &&
+        !IndonesiaAlphabets.policeRegions.characters.contains(
+          entry.group('region'),
+        )) {
+      return const PlateValidation.invalid(reasonRegion);
     }
     return const PlateValidation.valid();
   }

@@ -22,6 +22,27 @@ abstract final class IndonesiaColors {
   /// The electric-vehicle band behind the expiry row.
   static const Color evBlue = Color(0xFF00AAEE);
 
+  // The military and police plates have no artwork; these are the modal
+  // pixels of photographs (see `IndonesiaPlates.military`).
+
+  /// The rim, divider, serial and crest of every TNI and Polri plate. Studio
+  /// photograph of a Navy plate.
+  static const Color serviceYellow = Color(0xFFFEB705);
+
+  /// The square behind the TNI crest, and the field of a TNI headquarters
+  /// plate. Same Navy photograph.
+  static const Color serviceRed = Color(0xFFDA0000);
+
+  /// Army. Sunlit plate; a shaded one reads 2A4336.
+  static const Color armyGreen = Color(0xFF32664D);
+
+  static const Color navyBlue = Color(0xFF0148B0);
+
+  static const Color airForceBlue = Color(0xFF13254C);
+
+  /// Police: a near-black with a blue cast, not [black].
+  static const Color policeBlack = Color(0xFF2A2930);
+
   /// Placeholder ink for an empty slot on a dark field.
   static const Color inactiveOnDark = Color(0xFF8A8A8A);
 

@@ -54,6 +54,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    // The crest and mark decals decode off the real event loop, which fake
+    // time does not advance; runAsync gives them a real slice of time.
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await tester.pumpAndSettle();
     await expectLater(
       find.byType(PlateView),
       matchesGoldenFile('goldens/$name.png'),
@@ -250,6 +256,60 @@ void main() {
       values: 'CD 1 2 3 1 2 3 0 8 2 8',
       name: 'id_diplomatic_ev',
     );
+  });
+
+  for (final (IndonesiaService service, PlateTheme theme)
+      in <(IndonesiaService, PlateTheme)>[
+        (IndonesiaService.army, IndonesiaThemes.army),
+        (IndonesiaService.navy, IndonesiaThemes.navy),
+        (IndonesiaService.airForce, IndonesiaThemes.airForce),
+        (IndonesiaService.armedForces, IndonesiaThemes.armedForces),
+      ]) {
+    testWidgets('military ${service.name}', (tester) async {
+      await render(
+        tester,
+        spec: IndonesiaPlates.military(service),
+        theme: theme,
+        values: '7 5 3 5 9 0 0',
+        name: 'id_military_${service.id}',
+      );
+    });
+  }
+
+  testWidgets('military, four digits', (tester) async {
+    await render(
+      tester,
+      spec: IndonesiaPlates.military(IndonesiaService.navy, digits: 4),
+      theme: IndonesiaThemes.navy,
+      values: '8 1 9 1 0 0',
+      name: 'id_military_navy_4',
+    );
+  });
+
+  testWidgets('police', (tester) async {
+    await render(
+      tester,
+      spec: IndonesiaPlates.police(),
+      theme: IndonesiaThemes.police,
+      values: 'XXXIII 3 7 0 5 4 0',
+      name: 'id_police',
+    );
+  });
+
+  test('service validator', () {
+    PlateValidation judge(PlateSpec spec, String values) =>
+        const IndonesiaServiceValidator().judge(
+          PlateEntry(spec: spec, values: values.split(' ')),
+        );
+    final PlateSpec police = IndonesiaPlates.police();
+    final PlateSpec army = IndonesiaPlates.military(IndonesiaService.army);
+    expect(judge(police, 'XV 3 7 0 5 4 0'), const PlateValidation.valid());
+    expect(
+      judge(police, 'XL 3 7 0 5 4 0'),
+      isNot(const PlateValidation.valid()),
+    );
+    expect(judge(army, '7 5 3 5 9 0 0'), const PlateValidation.valid());
+    expect(judge(army, '0 5 3 5 9 0 0'), isNot(const PlateValidation.valid()));
   });
 
   test('validator', () {

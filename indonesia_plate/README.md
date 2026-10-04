@@ -10,7 +10,7 @@ https://platexample.ir/#/discover/indonesia
 
 # indonesia_plate
 
-Indonesia's licence plates for [`plate_core`](https://pub.dev/packages/plate_core) — the 2023 FE-Schrift car plate, the motorcycle plate and the diplomatic plate, with their usage and EV liveries, alphabets and advisory validators.
+Indonesia's licence plates for [`plate_core`](https://pub.dev/packages/plate_core) — the 2023 FE-Schrift car plate, the motorcycle plate, the diplomatic plate and the armed-forces and police plates, with their usage and EV liveries, alphabets and advisory validators.
 
 ```dart
 import 'package:plate_core/plate_core.dart';
