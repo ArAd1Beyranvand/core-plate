@@ -1,0 +1,27 @@
+Resolving dependencies in `/home/aradbeyranvand/StudioProjects/plate`...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.14 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies in `/home/aradbeyranvand/StudioProjects/plate`!
+3 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Publishing plate_alphabet 0.1.0 to https://pub.dev:
+├── CHANGELOG.md (<1 KB)
+├── LICENSE (1 KB)
+├── README.md (2 KB)
+├── all_publish_warnings.txt (<1 KB)
+├── lib
+│   ├── plate_alphabet.dart (<1 KB)
+│   └── src
+│       └── plate_alphabet.dart (3 KB)
+├── pubspec.yaml (<1 KB)
+└── test
+
+Total compressed archive size: 3 KB.
+Validating package...
+The server may enforce additional checks.
+
+Package has 0 warnings.
+✓ plate_alphabet - OK
+

@@ -1,0 +1,5 @@
+====== Checking plate_core ======
+====== Checking plate_alphabet ======
+====== Checking plate_keypad ======
+====== Checking algeria_plate ======
+====== Checking bolivia_plate ======

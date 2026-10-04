@@ -1,0 +1,72 @@
+Resolving dependencies in `/home/aradbeyranvand/StudioProjects/plate`...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.14 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies in `/home/aradbeyranvand/StudioProjects/plate`!
+3 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Publishing algeria_plate 0.1.0 to https://pub.dev:
+├── CHANGELOG.md (<1 KB)
+├── LICENSE (1 KB)
+├── README.md (2 KB)
+├── all_publish_warnings.txt (<1 KB)
+├── analysis_options.yaml (<1 KB)
+├── assets
+│   ├── dz_roundel.png (17 KB)
+│   └── flags
+│       └── Flag_of_Algeria.svg (<1 KB)
+├── lib
+│   ├── algeria_plate.dart (<1 KB)
+│   └── src
+│       ├── algeria_alphabets.dart (<1 KB)
+│       ├── algeria_colors.dart (1 KB)
+│       ├── algeria_country.dart (<1 KB)
+│       ├── algeria_plates.dart (8 KB)
+│       ├── algeria_serial_generator.dart (1 KB)
+│       ├── algeria_themes.dart (1 KB)
+│       └── algeria_validators.dart (4 KB)
+├── pubspec.yaml (<1 KB)
+└── test
+    ├── golden_test.dart (3 KB)
+    └── goldens
+        ├── dz_army.png (15 KB)
+        ├── dz_diplomatic.png (10 KB)
+        ├── dz_front.png (12 KB)
+        ├── dz_rear.png (14 KB)
+        └── dz_two_line.png (21 KB)
+
+Total compressed archive size: 88 KB.
+Validating package...
+Package validation found the following 3 potential issues:
+* `dart analyze` found the following issue(s):
+  Analyzing lib, pubspec.yaml...
+  
+    error - lib/src/algeria_plates.dart:123:7 - The named parameter 'noPanel' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'noPanel'. - undefined_named_parameter
+    error - lib/src/algeria_plates.dart:152:7 - The named parameter 'noPanel' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'noPanel'. - undefined_named_parameter
+    error - lib/src/algeria_plates.dart:183:7 - The named parameter 'noPanel' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'noPanel'. - undefined_named_parameter
+    error - lib/src/algeria_plates.dart:218:5 - The named parameter 'noPanel' isn't defined. Try correcting the name to an existing named parameter's name, or defining a named parameter with the name 'noPanel'. - undefined_named_parameter
+  
+  4 issues found.
+  
+
+* 1 checked-in file is modified in git.
+  
+  Usually you want to publish from a clean git state.
+  
+  Consider committing these files or reverting the changes.
+  
+  Modified files:
+  
+  pubspec.yaml
+  
+  Run `git status` for more information.
+  
+
+* It's strongly recommended to include a "homepage" or "repository" field in your pubspec.yaml
+The server may enforce additional checks.
+
+Package has 3 warnings.
+Failed to update packages.
+✓ algeria_plate - OK
+

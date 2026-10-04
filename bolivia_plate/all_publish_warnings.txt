@@ -1,0 +1,43 @@
+Resolving dependencies in `/home/aradbeyranvand/StudioProjects/plate`...
+Downloading packages...
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.12 (0.7.14 available)
+  xml 7.0.1 (7.1.0 available)
+Got dependencies in `/home/aradbeyranvand/StudioProjects/plate`!
+3 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Publishing bolivia_plate 0.1.0 to https://pub.dev:
+├── CHANGELOG.md (<1 KB)
+├── LICENSE (1 KB)
+├── README.md (2 KB)
+├── all_publish_warnings.txt (<1 KB)
+├── analysis_options.yaml (<1 KB)
+├── assets
+│   └── flags
+│       └── Flag_of_Bolivia_state.svg (248 KB)
+├── lib
+│   ├── bolivia_plate.dart (<1 KB)
+│   └── src
+│       ├── bolivia_alphabets.dart (<1 KB)
+│       ├── bolivia_colors.dart (2 KB)
+│       ├── bolivia_country.dart (<1 KB)
+│       ├── bolivia_plates.dart (12 KB)
+│       ├── bolivia_serial_generator.dart (1 KB)
+│       ├── bolivia_themes.dart (2 KB)
+│       └── bolivia_validators.dart (2 KB)
+├── pubspec.yaml (<1 KB)
+└── test
+    ├── golden_test.dart (4 KB)
+    └── goldens
+        ├── bo_mercosur.png (21 KB)
+        ├── bo_special_cc.png (21 KB)
+        ├── bo_special_cd.png (19 KB)
+        ├── bo_special_mi.png (18 KB)
+        ├── bo_special_oi.png (20 KB)
+        ├── bo_standard_3.png (21 KB)
+        ├── bo_standard_gov.png (19 KB)
+        ├── bo_standard_priv.png (19 KB)
+        └── bo_standard_pub.png (19 KB)
+
+Total compressed archive size: 236 KB.
+Validating package...
