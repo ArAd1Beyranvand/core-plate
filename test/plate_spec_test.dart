@@ -17,8 +17,8 @@ const _digits = PlateAlphabet.latinDigits;
 
 /// Digits stored as ASCII but printed as Eastern Arabic numerals — the
 /// storage-vs-glyph split [PlateSpec.renderGroup] renders through.
-const _easternDigits = PlateAlphabet(
-  id: 'zz.eastern',
+const _iranianDigits = PlateAlphabet(
+  id: 'zz.iranian',
   characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
   input: AlphabetInput.typed,
   isNumeric: false,
@@ -127,7 +127,7 @@ void main() {
   group('renderGroup', () {
     test('applies each slot\'s own alphabet and prepends the prefix', () {
       final spec = _spec(
-        alphabets: const [_digits, _easternDigits, _digits],
+        alphabets: const [_digits, _iranianDigits, _digits],
         textGroups: const [
           PlateTextGroup([0, 1, 2], prefix: 'ZZ-'),
         ],
@@ -169,7 +169,7 @@ void main() {
   group('valueOfGroup', () {
     test('returns storage form, not glyphs', () {
       final spec = _spec(
-        alphabets: const [_easternDigits, _easternDigits, _easternDigits],
+        alphabets: const [_iranianDigits, _iranianDigits, _iranianDigits],
         textGroups: const [
           PlateTextGroup([0, 1, 2], prefix: 'ZZ-', key: 'serial'),
         ],
@@ -256,8 +256,8 @@ void main() {
       expect(_digits.accepts('4'), isTrue);
       expect(_digits.accepts('A'), isFalse);
       expect(_digits.render('4'), '4', reason: 'no glyphs: display == storage');
-      expect(_easternDigits.render('4'), '٤');
-      expect(_easternDigits.render('x'), 'x', reason: 'falls back to itself');
+      expect(_iranianDigits.render('4'), '٤');
+      expect(_iranianDigits.render('x'), 'x', reason: 'falls back to itself');
 
       // Ids are the identity: same id, different content, still equal — which
       // is exactly why debugValidateSpec polices ids against content.
@@ -269,7 +269,7 @@ void main() {
       );
       expect(_digits, equals(twin));
       expect(_digits.hashCode, twin.hashCode);
-      expect(_digits, isNot(equals(_easternDigits)));
+      expect(_digits, isNot(equals(_iranianDigits)));
       expect(_digits, equals(_digits));
     });
 

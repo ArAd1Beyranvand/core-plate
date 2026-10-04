@@ -17,22 +17,10 @@ import 'plate_frame.dart';
 import 'plate_selector.dart';
 import 'plate_slot_item.dart';
 
-/// The editable plate for a [PlateSpec].
-///
-/// **Needs nothing above it.** The canvas holds the plate's characters in a
-/// [PlateController] — its own, or the one you pass as [controller] if you want
-/// to read or write them. A bare `PlateCanvas(spec: …)` is a complete,
-/// working plate. If you change [spec] on a live canvas, the characters already
-/// entered are carried across to the new spec as [onSpecChange] directs.
-///
-/// **Needs no state management.** The canvas reads and writes one thing, its
-/// controller. It does not look for a provider above it. A host with
-/// bloc-shaped code around the plate wraps the subtree in `PlateCardBinding`
-/// from the `core_plate_bloc` package, which provides a `PlateCardBloc`
-/// mirrored onto that same controller.
-///
-/// `PlateCanvas` provides its own [Material], so it renders correctly without a
-/// [Scaffold] ancestor.
+/// The editable plate for a [PlateSpec], holding characters in a
+/// [PlateController] (its own or passed via [controller]). Provides its own
+/// [Material], needs no state management, and preserves characters when [spec]
+/// changes per [onSpecChange].
 class PlateCanvas extends StatefulWidget {
   const PlateCanvas({
     super.key,
@@ -53,46 +41,28 @@ class PlateCanvas extends StatefulWidget {
   final PlateMode mode;
   final PlateTheme? theme;
 
-  /// The country block to paint, overriding [PlateSpec.country].
-  ///
-  /// A spec is geometry; which country block sits in the panel is a render-time
-  /// choice, exactly as [theme] is. A design whose panel text or ink varies with
-  /// something the spec does not encode — a vehicle's usage class, say — passes
-  /// the block here instead of minting a second spec that differs in one field.
-  ///
-  /// Null keeps [PlateSpec.country], so every existing call site is unaffected.
+  /// Override [PlateSpec.country] at render time, like [theme]. Null keeps
+  /// [PlateSpec.country].
   final PlateCountry? country;
 
   final PlateInputSource? inputSource;
 
-  /// Presents a character chooser for a `chosen`-alphabet slot and returns the
-  /// picked character, or null if dismissed. Required: core ships no built-in
-  /// chooser — the `plate_keypad` package's `PlateCharacterPicker.show` is the
-  /// usual value, but any modal that resolves to a `String?` works.
+  /// Shows a character chooser for a chosen slot; required.
   final Future<String?> Function(PlateAlphabet alphabet) onChooseCharacter;
   final ValueChanged<int?>? onActiveIndexChanged;
 
-  /// The handle that owns this plate's characters and drives its focus. Pass
-  /// one to read or write the value, track the active slot, or feed characters
-  /// from your own keypad. Omit it and the canvas makes a private one.
+  /// Owns the plate's characters and focus. Omit to use a private controller.
   final PlateController? controller;
 
-  /// The rule this plate is judged against. Never prevents input; see
-  /// [autoValidate] for when it is consulted.
+  /// Rule to judge the plate. Never prevents input.
   final PlateValidator? validator;
 
-  /// When true, the canvas validates after every committed value and paints
-  /// the invalid state itself. When false (the default), [validator] is
-  /// consulted only when the host asks — read [PlateController.validation] and
-  /// decide your own timing.
+  /// When true, canvas validates after every commit. When false (default), read
+  /// [PlateController.validation] and validate on your timing.
   final bool autoValidate;
 
-  /// What becomes of the characters already entered when [spec] is swapped on a
-  /// live canvas. Defaults to [PlateValuePreservation.byGroupKey] as of 0.4.0
-  /// (it was [PlateValuePreservation.none] before): a change of scheme or
-  /// serial length keeps the registers that still fit, matched by group key,
-  /// and truncates only what no longer does. Pass
-  /// [PlateValuePreservation.none] for the old behaviour of clearing the plate.
+  /// What becomes of entered characters when [spec] is swapped. Defaults to
+  /// [PlateValuePreservation.byGroupKey] (keeps matching registers).
   final PlateValuePreservation onSpecChange;
 
   @override
@@ -100,22 +70,43 @@ class PlateCanvas extends StatefulWidget {
 }
 
 class _PlateCanvasState extends State<PlateCanvas> {
-  /// Focus, active-slot tracking and navigation for [PlateCanvas.spec]. Rebuilt
-  /// whenever that spec changes; see [_installMachine].
+  /// Focus and slot navigation; rebuilt when spec changes.
   late PlateInputMachine _machine;
 
-  /// The plate's characters, and the canvas's writer of record: every commit
-  /// the machine makes, and every character the picker returns, lands here.
-  ///
-  /// This is what takes [BuildContext] out of the long-lived closures the
-  /// machine holds. They used to read the bloc off `context` on every commit —
-  /// a context captured by the build that installed the machine and then kept
-  /// for the machine's whole life.
+  /// The canvas's writer of record; takes [BuildContext] out of long-lived
+  /// closures the machine holds.
   late PlateController _controller;
 
-  /// Whether [_controller] is ours to dispose. False when the host passed one
-  /// as [PlateCanvas.controller]: that one outlives us.
+  /// Whether [_controller] is ours to dispose.
   bool _ownsController = false;
+
+  /// Cached selection theme, rebuilt only when verdict flips.
+  ThemeData? _selectionTheme;
+  Color? _selectionThemeColor;
+
+  /// Cached face clip.
+  _PlateFaceClipper? _faceClipper;
+
+  ThemeData _selectionThemeFor(Color active) {
+    final cached = _selectionTheme;
+    if (cached != null && _selectionThemeColor == active) return cached;
+    _selectionThemeColor = active;
+    return _selectionTheme = ThemeData.light().copyWith(
+      textSelectionTheme: TextSelectionThemeData(
+        selectionColor: active.withValues(alpha: 0.3),
+        cursorColor: active,
+        selectionHandleColor: active,
+      ),
+    );
+  }
+
+  _PlateFaceClipper _faceClipperFor(double border, double radius) {
+    final cached = _faceClipper;
+    if (cached != null && cached.border == border && cached.radius == radius) {
+      return cached;
+    }
+    return _faceClipper = _PlateFaceClipper(border: border, radius: radius);
+  }
 
   @override
   void initState() {
@@ -181,18 +172,12 @@ class _PlateCanvasState extends State<PlateCanvas> {
     stoodDown?.dispose();
   }
 
-  /// Builds the machine for the current spec, hands the host's controller to
-  /// it, and reports the seeded active slot. Everything a fresh mount does —
-  /// which is exactly what a spec change needs too.
+  /// Builds the machine for the current spec and seeded active slot.
   void _installMachine() {
     assert(debugValidateSpec(widget.spec));
     final machine = PlateInputMachine(
       spec: widget.spec,
       inputSource: _resolveInputSource(),
-      // Read through the field, not a tear-off of the controller we hold right
-      // now: these closures live as long as the machine, and a host swapping
-      // `controller:` replaces `_controller` underneath them without the
-      // machine being rebuilt.
       readValues: () => _controller.values,
       commit: _commit,
       onActiveIndexChanged: _reportActiveIndex,
@@ -201,10 +186,6 @@ class _PlateCanvasState extends State<PlateCanvas> {
     widget.controller?.attach(machine);
     widget.controller?.installValidation(_probeValidation);
     if (machine.activeIndex != null) {
-      // The machine's seeded slot (see its constructor) is announced from here,
-      // after the frame, so listeners are attached; a later focus change
-      // overrides it. Guarded on the machine still being the current one, since
-      // another spec change can land before the callback runs.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !identical(_machine, machine)) return;
         _reportActiveIndex(machine.activeIndex);
@@ -217,17 +198,12 @@ class _PlateCanvasState extends State<PlateCanvas> {
     widget.controller?.notifyActiveSlotChanged();
   }
 
-  /// The plate as it stands, for a validator to judge. [values] is passed in
-  /// rather than read here so the auto-validating path can take it from the
-  /// value it is already subscribed to.
   PlateEntry _entryFor(List<String?> values) => PlateEntry(
     spec: widget.spec,
     values: values,
     activeIndex: _machine.activeIndex,
   );
 
-  /// Backs [PlateController.validation]. Null when there is no validator,
-  /// which is what makes that getter null for a host that set none.
   PlateValidation? _probeValidation() {
     final entry = _entryFor(_controller.values);
     final restricted = restrictionVerdict(entry);
@@ -246,9 +222,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     return stored;
   }
 
-  /// Publishes an auto-validated verdict to the host's controller. Deferred to
-  /// after the frame because it runs from a build (see [_ValidationBinding])
-  /// and notifying a listener that calls `setState` mid-build is an error.
+  /// Publishes verdict after the frame (called from build).
   void _publishVerdict(PlateValidation verdict) {
     final controller = widget.controller;
     if (controller == null) return;
@@ -261,9 +235,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     return widget.inputSource ?? defaultInputSource();
   }
 
-  /// Presents the character picker for a chosen slot. Stays here rather than in
-  /// the machine: it needs a [BuildContext] and a modal route, and the machine
-  /// never presents UI.
+  /// Presents the character picker for a chosen slot.
   Future<void> _openPicker(int index) async {
     final slot = widget.spec.slots[index];
     final chosen = await widget.onChooseCharacter(slot.alphabet);
@@ -280,6 +252,17 @@ class _PlateCanvasState extends State<PlateCanvas> {
     var theme = widget.theme ?? PlateTheme.of(context);
     if (spec.borderWidthRatioOverride != null) {
       theme = theme.copyWith(borderWidthRatio: spec.borderWidthRatioOverride!);
+    }
+    if (spec.inkOverride != null) {
+      // The whole monochrome set, as [PlateSpec.inkOverride] documents: a plate
+      // printed in green has a green rim and green rules, not black ones.
+      final ink = spec.inkOverride!;
+      theme = theme.copyWith(
+        ink: ink,
+        plateBorder: ink,
+        dividerColor: ink,
+        activeColor: ink,
+      );
     }
     // PlateMode.display renders inert, picker-like slots regardless of the
     // configured source, so force [PlateInputSource.system] there.
@@ -301,15 +284,10 @@ class _PlateCanvasState extends State<PlateCanvas> {
 
     // The plate's face is always white, so its cursor and text-selection
     // colours are pinned to a light Material theme regardless of the host
-    // app's brightness. Built once per canvas build and scoped over the whole
-    // slot list, instead of each typed slot constructing its own.
-    final selectionTheme = ThemeData.light().copyWith(
-      textSelectionTheme: TextSelectionThemeData(
-        selectionColor: theme.activeColor.withValues(alpha: 0.3),
-        cursorColor: theme.activeColor,
-        selectionHandleColor: theme.activeColor,
-      ),
-    );
+    // app's brightness. Cached against the one colour it derives from (see
+    // [_selectionThemeFor]) and scoped over the whole slot list, instead of
+    // each typed slot constructing its own.
+    final selectionTheme = _selectionThemeFor(theme.activeColor);
 
     // NOTE: this build deliberately does NOT watch the plate value.
     //
@@ -341,100 +319,40 @@ class _PlateCanvasState extends State<PlateCanvas> {
     final outerRadius = theme.plateRadiusRatio * spec.canvasHeight;
     final innerRadius = (outerRadius - border).clamp(0.0, outerRadius);
 
-    Widget buildFace(PlateTheme theme) => FittedBox(
-      fit: BoxFit.contain,
-      child: SizedBox(
-        width: spec.canvasWidth,
-        height: spec.canvasHeight,
-        child: Directionality(
-          textDirection: spec.textDirection,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: _FrameBinding(theme: theme, controller: _controller),
-              ),
-              Positioned.fill(
-                child: ClipRRect(
-                  clipper: _PlateFaceClipper(
-                    border: border,
-                    radius: innerRadius,
-                  ),
-                  child: Stack(
-                    children: [
-                      _Placed(
-                        box: spec.panel.box,
-                        child: CountryPanel(
-                          country: country,
-                          theme: theme,
-                          panel: spec.panel,
-                        ),
-                      ),
-                      for (final r in spec.rules)
-                        _Placed(
-                          box: r.box,
-                          child: ColoredBox(color: theme.dividerColor),
-                        ),
-                      for (final l in spec.labels)
-                        _Placed(
-                          box: l.box,
-                          child: Text(
-                            l.text,
-                            textAlign: TextAlign.center,
-                            style: theme.glyphStyle(l.glyphHeight, theme.ink),
-                          ),
-                        ),
-                      for (final d in spec.decals)
-                        _Placed(
-                          box: d.box,
-                          child: Image(image: d.image, fit: BoxFit.contain),
-                        ),
-                      for (final m in spec.mirrors)
-                        _Placed(
-                          box: m.box,
-                          child: _MirrorBinding(
-                            mirror: m,
-                            alphabet:
-                                m.alphabet ?? spec.slots[m.source].alphabet,
-                            theme: theme,
-                            controller: _controller,
-                          ),
-                        ),
-                      for (var i = 0; i < spec.slots.length; i++)
-                        _Placed(
-                          box: spec.slots[i].box,
-                          child: Center(
-                            child: _SlotBinding(
-                              index: i,
-                              slot: spec.slots[i],
-                              behavior: behaviors[i],
-                              theme: theme,
-                              machine: _machine,
-                              controller: _controller,
-                              commit: _commit,
-                              onCompleted: widget.mode == PlateMode.input
-                                  ? () => _machine.advanceFrom(i)
-                                  : null,
-                              onPressed: behaviors[i] == SlotBehavior.sheet
-                                  ? () => _openPicker(i)
-                                  : null,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned.fill(
-                child: _RestrictionBanner(
-                  controller: _controller,
-                  theme: theme,
-                  canvasHeight: spec.canvasHeight,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final clipper = _faceClipperFor(border, innerRadius);
+
+    // THE FACE IS TWO LAYERS, AND THAT IS THE WHOLE POINT.
+    //
+    // Every typed slot is a TextField, and EditableText wraps itself in
+    // `CompositedTransformTarget`s — real composited layers. A composited layer
+    // anywhere beneath a FittedBox forces that FittedBox to stop applying its
+    // scale to the canvas and push a TransformLayer instead. That takes the
+    // plate out of the vector pass: the face is recorded in plate coordinates
+    // and handed to the compositor to scale, which makes it a raster-cache
+    // candidate — and the engine takes it, after a few still frames. That is
+    // why the plate looks right the moment it appears and softens a beat
+    // later, why it churns while anything upstream keeps invalidating the
+    // cache, and why the first thing to go is the country flag's emblem, which
+    // is only a few device pixels across.
+    //
+    // So the printed furniture — frame, country panel and flag, rules, labels,
+    // decals — gets a FittedBox of its own with no TextField anywhere under it.
+    // Nothing in that subtree composites, so its scale stays on the canvas and
+    // the flag is drawn as vector at device resolution on every frame it
+    // paints. It cannot be dirtied by a keystroke either: the live characters
+    // live in the layer above it.
+    //
+    // [StackFit.passthrough] is what holds the two in register. It hands both
+    // layers this canvas's own constraints unchanged, so both FittedBoxes
+    // derive the same size, scale and alignment from the same plate-space
+    // [SizedBox] — the geometry is identical to the single FittedBox this
+    // replaced, and the stack sizes exactly as that one did.
+    final artwork = _PlateArtwork(
+      spec: spec,
+      theme: theme,
+      country: country,
+      controller: _controller,
+      clipper: clipper,
     );
 
     // The alert. With autoValidate on, the canvas judges the plate itself and
@@ -442,8 +360,13 @@ class _PlateCanvasState extends State<PlateCanvas> {
     // and nothing else: no dialog, no exception, and above all no rejected
     // keystroke. With it off the validator is never called from here; a host
     // that wants its own timing reads PlateController.validation.
+    //
+    // Only the input layer is inside the binding: a verdict flips
+    // `activeColor`, which recolours slot underlines and nothing else, so the
+    // artwork no longer rebuilds when the plate crosses between valid and
+    // invalid.
     final validator = widget.validator;
-    final Widget face = widget.autoValidate && validator != null
+    final Widget inputs = widget.autoValidate && validator != null
         ? _ValidationBinding(
             controller: _controller,
             validate: (values) {
@@ -451,13 +374,36 @@ class _PlateCanvasState extends State<PlateCanvas> {
               return restrictionVerdict(entry) ?? validator.validate(entry);
             },
             onVerdict: _publishVerdict,
-            builder: (verdict) => buildFace(
-              verdict.isValid
+            builder: (verdict) => _PlateInputs(
+              spec: spec,
+              theme: verdict.isValid
                   ? theme
                   : theme.copyWith(activeColor: theme.alertColor),
+              behaviors: behaviors,
+              machine: _machine,
+              controller: _controller,
+              mode: widget.mode,
+              onPick: _openPicker,
+              commit: _commit,
+              clipper: clipper,
             ),
           )
-        : buildFace(theme);
+        : _PlateInputs(
+            spec: spec,
+            theme: theme,
+            behaviors: behaviors,
+            machine: _machine,
+            controller: _controller,
+            mode: widget.mode,
+            onPick: _openPicker,
+            commit: _commit,
+            clipper: clipper,
+          );
+
+    final Widget face = Stack(
+      fit: StackFit.passthrough,
+      children: [artwork, inputs],
+    );
 
     // Wrap in a Material so the typed slots' TextFields have the Material
     // ancestor they require. Without this a consumer must place PlateCanvas
@@ -471,13 +417,230 @@ class _PlateCanvasState extends State<PlateCanvas> {
   }
 }
 
-/// The plate's face, subscribed to the verdict on the typed value rather than
-/// to the value itself.
+/// Painted furniture (frame, country panel, rules, labels, decals).
 ///
-/// The [PlateSelector] folds the controller's value down to a [PlateValidation],
-/// which compares by reason, so the subtree rebuilds when the plate crosses
-/// between valid and invalid and not once per keystroke — the property the
-/// showcase used to maintain by hand.
+/// **No TextField may ever appear in this subtree** — nothing here composites,
+/// so the flag is drawn at device resolution, not rasterised and resampled.
+/// Static between spec changes except the frame, which follows [_FrameBinding].
+class _PlateArtwork extends StatelessWidget {
+  const _PlateArtwork({
+    required this.spec,
+    required this.theme,
+    required this.country,
+    required this.controller,
+    required this.clipper,
+  });
+
+  final PlateSpec spec;
+  final PlateTheme theme;
+  final PlateCountry country;
+  final PlateController controller;
+
+  /// Shared clip geometry with [_PlateInputs].
+  final _PlateFaceClipper clipper;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: SizedBox(
+        width: spec.canvasWidth,
+        height: spec.canvasHeight,
+        child: Directionality(
+          textDirection: spec.textDirection,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: _FrameBinding(
+                  theme: theme,
+                  controller: controller,
+                  background: spec.background,
+                  panelColor: country.panelColor,
+                ),
+              ),
+              Positioned.fill(
+                child: ClipRRect(
+                  clipper: clipper,
+                  child: Stack(
+                    children: [
+                      if (!spec.noPanel)
+                        _Placed(
+                          box: spec.panel.box,
+                          child: CountryPanel(
+                            country: country,
+                            theme: theme,
+                            panel: spec.panel,
+                            paintBlock: !spec.background.paintsPanel,
+                          ),
+                        ),
+                      // Under the rules, labels and decals: a band is the field
+                      // the ink is printed on, not something printed over them.
+                      for (final band in spec.bands)
+                        _Placed(
+                          box: band.box,
+                          child: _Band(band: band),
+                        ),
+                      for (final r in spec.rules)
+                        _Placed(
+                          box: r.box,
+                          child: ColoredBox(color: theme.dividerColor),
+                        ),
+                      for (final l in spec.labels)
+                        _Placed(
+                          box: l.box,
+                          child: Center(
+                            child: RotatedBox(
+                              quarterTurns: l.rotated ? 3 : 0,
+                              child: Text(
+                                l.text,
+                                textAlign: TextAlign.center,
+                                // A label is placed by its box, not laid out
+                                // by it: a caption too long for its box must
+                                // overflow, never reflow onto a second line.
+                                maxLines: '\n'.allMatches(l.text).length + 1,
+                                softWrap: false,
+                                overflow: TextOverflow.visible,
+                                style: theme
+                                    .glyphStyle(
+                                      l.glyphHeight,
+                                      l.color ?? theme.ink,
+                                    )
+                                    .copyWith(
+                                      height: l.lineHeight,
+                                      fontFamily: l.fontFamily,
+                                      package: l.fontPackage,
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      for (final d in spec.decals)
+                        _Placed(
+                          box: d.box,
+                          child: Image(image: d.image, fit: BoxFit.contain),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Live characters: typed slots and mirrors. TextFields composite here; a
+/// keystroke repaints only this layer, not the flag above.
+class _PlateInputs extends StatelessWidget {
+  const _PlateInputs({
+    required this.spec,
+    required this.theme,
+    required this.behaviors,
+    required this.machine,
+    required this.controller,
+    required this.mode,
+    required this.onPick,
+    required this.commit,
+    required this.clipper,
+  });
+
+  final PlateSpec spec;
+  final PlateTheme theme;
+  final List<SlotBehavior> behaviors;
+  final PlateInputMachine machine;
+  final PlateController controller;
+  final PlateMode mode;
+  final void Function(int index) onPick;
+  final bool Function(int index, String value) commit;
+  final _PlateFaceClipper clipper;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: SizedBox(
+        width: spec.canvasWidth,
+        height: spec.canvasHeight,
+        child: Directionality(
+          textDirection: spec.textDirection,
+          child: ClipRRect(
+            clipper: clipper,
+            child: Stack(
+              children: [
+                for (var mi = 0; mi < spec.mirrors.length; mi++)
+                  _Placed(
+                    box: spec.mirrors[mi].box,
+                    child:
+                        mode == PlateMode.input &&
+                            spec.mirrors[mi].editable &&
+                            machine.mirrorControllerAt(mi) != null
+                        ? Center(
+                            child: _EditableMirrorBinding(
+                              mirrorIndex: mi,
+                              mirror: spec.mirrors[mi],
+                              alphabet:
+                                  spec.mirrors[mi].alphabet ??
+                                  spec.slots[spec.mirrors[mi].source].alphabet,
+                              behavior: behaviors[spec.mirrors[mi].source],
+                              theme: theme,
+                              machine: machine,
+                              controller: controller,
+                              onCompleted: mode == PlateMode.input
+                                  ? () => machine.advanceFrom(
+                                      spec.mirrors[mi].source,
+                                    )
+                                  : null,
+                            ),
+                          )
+                        : _MirrorBinding(
+                            mirror: spec.mirrors[mi],
+                            alphabet:
+                                spec.mirrors[mi].alphabet ??
+                                spec.slots[spec.mirrors[mi].source].alphabet,
+                            theme: theme,
+                            controller: controller,
+                          ),
+                  ),
+                for (var i = 0; i < spec.slots.length; i++)
+                  _Placed(
+                    box: spec.slots[i].box,
+                    child: Center(
+                      child: _SlotBinding(
+                        index: i,
+                        slot: spec.slots[i],
+                        behavior: behaviors[i],
+                        theme: theme,
+                        machine: machine,
+                        controller: controller,
+                        commit: commit,
+                        onCompleted: mode == PlateMode.input
+                            ? () => machine.advanceFrom(i)
+                            : null,
+                        onPressed: behaviors[i] == SlotBehavior.sheet
+                            ? () => onPick(i)
+                            : null,
+                      ),
+                    ),
+                  ),
+                Positioned.fill(
+                  child: _RestrictionBanner(
+                    controller: controller,
+                    theme: theme,
+                    canvasHeight: spec.canvasHeight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Subscribed to verdict, not value, so rebuilds only on valid/invalid flip.
 class _ValidationBinding extends StatelessWidget {
   const _ValidationBinding({
     required this.controller,
@@ -493,14 +656,6 @@ class _ValidationBinding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A `PlateSelector` folds the controller's value down to the verdict;
-    // because `PlateValidation` compares by reason, the builder runs only when
-    // the plate crosses between valid and invalid, not once per keystroke.
-    //
-    // The verdict is handed to `_VerdictListener`, which publishes it from its
-    // own lifecycle callbacks (`initState` / `didUpdateWidget`) rather than
-    // from `build`. `build` here no longer notifies anyone, and a rebuild that
-    // leaves the verdict unchanged publishes nothing.
     return PlateSelector<PlateValidation>(
       controller: controller,
       selector: (c) => validate(c.values),
@@ -513,8 +668,7 @@ class _ValidationBinding extends StatelessWidget {
   }
 }
 
-/// Publishes [verdict] to [onVerdict] from lifecycle callbacks — never from
-/// `build` — so the side effect fires exactly once per verdict flip.
+/// Publishes verdict from lifecycle callbacks (not build).
 class _VerdictListener extends StatefulWidget {
   const _VerdictListener({
     required this.verdict,
@@ -605,8 +759,7 @@ class _RestrictionBanner extends StatelessWidget {
   }
 }
 
-/// Positions a child in plate-space from a [PlateBox]. The one place the four
-/// `left/top/width/height` literals turn into a [Positioned].
+/// Positions a child from a [PlateBox].
 class _Placed extends StatelessWidget {
   const _Placed({required this.box, required this.child});
 
@@ -623,34 +776,35 @@ class _Placed extends StatelessWidget {
   );
 }
 
-/// The plate's border and white face, subscribed only to whether the plate is
-/// complete.
-///
-/// [PlateFrame] repaints for exactly one reason — the border shifts ~2% when
-/// the last slot fills — so watching a bool means a keystroke that does not
-/// complete the plate leaves the frame entirely alone.
+/// Border and face, subscribed to completion (repaints only when last slot fills).
 class _FrameBinding extends StatelessWidget {
-  const _FrameBinding({required this.theme, required this.controller});
+  const _FrameBinding({
+    required this.theme,
+    required this.controller,
+    required this.background,
+    required this.panelColor,
+  });
 
   final PlateTheme theme;
   final PlateController controller;
+  final PlateSection background;
+  final Color panelColor;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
       valueListenable: controller.completed,
-      builder: (context, isCompleted, _) =>
-          PlateFrame(isCompleted: isCompleted, theme: theme),
+      builder: (context, isCompleted, _) => PlateFrame(
+        isCompleted: isCompleted,
+        theme: theme,
+        background: background,
+        panelColor: panelColor,
+      ),
     );
   }
 }
 
-/// One slot, subscribed to its OWN character rather than to the whole plate.
-///
-/// This is what keeps a keystroke local: the [ValueListenableBuilder] watches
-/// `controller.slot(index)`, a `ValueListenable<String?>`, so only the slot
-/// whose character actually changed rebuilds. The other seven, the country
-/// panel, the rules, the labels and the decals are untouched.
+/// One slot, subscribed only to its own character (keeps keystrokes local).
 class _SlotBinding extends StatelessWidget {
   const _SlotBinding({
     required this.index,
@@ -668,13 +822,7 @@ class _SlotBinding extends StatelessWidget {
   final PlateSlot slot;
   final SlotBehavior behavior;
   final PlateTheme theme;
-
-  /// Owns this slot's focus node and text controller. Read here rather than
-  /// passed in, so a new machine (after a spec change) reaches every slot.
   final PlateInputMachine machine;
-
-  /// The canvas's writer of record. This slot subscribes to its own position
-  /// through [PlateController.slot], and commits through [PlateController.setAt].
   final PlateController controller;
 
   /// The canvas's guarded write: refuses what the controller refuses and puts
@@ -688,12 +836,7 @@ class _SlotBinding extends StatelessWidget {
     return ValueListenableBuilder<String?>(
       valueListenable: controller.slot(index),
       builder: (context, value, _) {
-        // Keep the field's text in step with the controller, as the canvas used
-        // to do for every slot at once. This runs before this slot's own
-        // TextField builds in the same frame, so notifying its controller here
-        // is safe.
         machine.syncController(index, value);
-
         return PlateSlotItem(
           slot: slot,
           behavior: behavior,
@@ -703,6 +846,7 @@ class _SlotBinding extends StatelessWidget {
           focusNode: machine.focusNodeAt(index),
           onChanged: (v) => commit(index, v),
           onCompleted: onCompleted,
+          onBackspace: machine.backspaceCharacter,
           onPressed: onPressed,
         );
       },
@@ -710,12 +854,7 @@ class _SlotBinding extends StatelessWidget {
   }
 }
 
-/// One mirror: a read-only echo of a slot's character, subscribed to that ONE
-/// character exactly as [_SlotBinding] is.
-///
-/// It owns no focus node and no controller — a mirror is a presentation of a
-/// value, not a place to type — so it never touches the input machine and has
-/// no `syncController` call.
+/// Read-only echo of a slot's character (no focus, no controller).
 class _MirrorBinding extends StatelessWidget {
   const _MirrorBinding({
     required this.mirror,
@@ -725,13 +864,8 @@ class _MirrorBinding extends StatelessWidget {
   });
 
   final PlateMirror mirror;
-
-  /// Resolved by the canvas: the mirror's own alphabet, or the source slot's.
   final PlateAlphabet alphabet;
   final PlateTheme theme;
-
-  /// The canvas's writer of record; the mirror watches its source position
-  /// through [PlateController.slot].
   final PlateController controller;
 
   @override
@@ -749,9 +883,54 @@ class _MirrorBinding extends StatelessWidget {
   }
 }
 
-/// Clips plate content to the white face's rounded rectangle: the plate rect
-/// inset by the border thickness, rounded by the inner corner radius. Geometry
-/// mirrors [PlateFrame]'s painter so the clip and the painted face stay aligned.
+/// Editable mirror: a second input field bound to the source slot's value.
+class _EditableMirrorBinding extends StatelessWidget {
+  const _EditableMirrorBinding({
+    required this.mirrorIndex,
+    required this.mirror,
+    required this.alphabet,
+    required this.behavior,
+    required this.theme,
+    required this.machine,
+    required this.controller,
+    required this.onCompleted,
+  });
+
+  final int mirrorIndex;
+  final PlateMirror mirror;
+  final PlateAlphabet alphabet;
+  final SlotBehavior behavior;
+  final PlateTheme theme;
+  final PlateInputMachine machine;
+  final PlateController controller;
+  final VoidCallback? onCompleted;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String?>(
+      valueListenable: controller.slot(mirror.source),
+      builder: (context, value, _) {
+        machine.syncMirrorController(mirrorIndex, alphabet, value);
+        return PlateSlotItem(
+          slot: PlateSlot(
+            alphabet: alphabet,
+            box: PlateBox(0, 0, mirror.box.width, mirror.glyphHeight),
+          ),
+          behavior: behavior,
+          theme: theme,
+          value: value,
+          controller: machine.mirrorControllerAt(mirrorIndex),
+          focusNode: machine.mirrorFocusNodeAt(mirrorIndex)!,
+          onChanged: (v) => controller.setAt(mirror.source, v),
+          onCompleted: onCompleted,
+          onBackspace: machine.backspaceCharacter,
+        );
+      },
+    );
+  }
+}
+
+/// Clips to white face's rounded rect; geometry mirrors [PlateFrame].
 class _PlateFaceClipper extends CustomClipper<RRect> {
   const _PlateFaceClipper({required this.border, required this.radius});
 
@@ -778,4 +957,27 @@ class _PlateFaceClipper extends CustomClipper<RRect> {
   @override
   bool shouldReclip(_PlateFaceClipper old) =>
       old.border != border || old.radius != radius;
+}
+
+/// A [PlateBand]'s fill, rounded per [PlateBand.topCornerRadius] and
+/// [PlateBand.bottomCornerRadius]. A `BoxDecoration` border radius rather than
+/// a `ClipPath` — the clip-based version left a seam where it met the plate's
+/// own rounded corner.
+class _Band extends StatelessWidget {
+  const _Band({required this.band});
+
+  final PlateBand band;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: band.color,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(band.topCornerRadius),
+          bottom: Radius.circular(band.bottomCornerRadius),
+        ),
+      ),
+    );
+  }
 }

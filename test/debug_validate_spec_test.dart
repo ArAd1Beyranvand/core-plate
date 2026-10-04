@@ -13,9 +13,9 @@ const _panel = PlatePanel(box: PlateBox(0, 0, 10, 40));
 const _digits = PlateAlphabet.latinDigits;
 
 /// Same accepted characters as [_digits], different rendering, different id —
-/// the legal pair `yemen_plate`'s `ye.digits` / `ye.easternDigits` depends on.
-const _easternDigits = PlateAlphabet(
-  id: 'zz.eastern',
+/// the legal pair `yemen_plate`'s `ye.digits` / `ye.iranianDigits` depends on.
+const _iranianDigits = PlateAlphabet(
+  id: 'zz.iranian',
   characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
   input: AlphabetInput.typed,
   isNumeric: false,
@@ -36,6 +36,7 @@ const _easternDigits = PlateAlphabet(
 PlateSpec _spec({
   List<PlateSlot> slots = const [],
   List<PlateMirror> mirrors = const [],
+  PlateSection background = PlateSection.plain,
 }) => PlateSpec(
   id: 'zz.test',
   country: _country,
@@ -49,6 +50,7 @@ PlateSpec _spec({
         ]
       : slots,
   mirrors: mirrors,
+  background: background,
 );
 
 PlateSlot _slotAt(PlateBox box) => PlateSlot(alphabet: _digits, box: box);
@@ -183,7 +185,7 @@ void main() {
       final spec = _spec(
         slots: const [
           PlateSlot(alphabet: _digits, box: PlateBox(20, 5, 20, 30)),
-          PlateSlot(alphabet: _easternDigits, box: PlateBox(50, 5, 20, 30)),
+          PlateSlot(alphabet: _iranianDigits, box: PlateBox(50, 5, 20, 30)),
         ],
       );
       expect(debugValidateSpec(spec), isTrue);
@@ -217,8 +219,101 @@ void main() {
     );
 
     test('a mirror rendering through a different numeral system is legal', () {
-      final spec = _spec(mirrors: [_mirrorAt(alphabet: _easternDigits)]);
+      final spec = _spec(mirrors: [_mirrorAt(alphabet: _iranianDigits)]);
       expect(debugValidateSpec(spec), isTrue);
+    });
+  });
+
+  group('background sections', () {
+    const strip = PlateSection.fill(PlateFill.panel);
+
+    test('a left strip with a divider is well formed', () {
+      final spec = _spec(
+        background: const PlateSection.columns([
+          PlatePart(strip, end: 40, divider: 3),
+          PlatePart(PlateSection.plain),
+        ]),
+      );
+      expect(debugValidateSpec(spec), isTrue);
+      expect(spec.background.paintsPanel, isTrue);
+      expect(PlateSection.plain.paintsPanel, isFalse);
+    });
+
+    test('an end past the parent throws', () {
+      final spec = _spec(
+        background: const PlateSection.columns([
+          PlatePart(strip, end: 400),
+          PlatePart(PlateSection.plain),
+        ]),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
+    });
+
+    test('a nested end outside its own region throws', () {
+      final spec = _spec(
+        background: const PlateSection.rows([
+          PlatePart(PlateSection.plain, end: 50),
+          PlatePart(
+            PlateSection.rows([
+              PlatePart(strip, end: 40),
+              PlatePart(PlateSection.plain),
+            ]),
+          ),
+        ]),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
+    });
+
+    test('an end on the last part throws', () {
+      final spec = _spec(
+        background: const PlateSection.columns([
+          PlatePart(strip, end: 40),
+          PlatePart(PlateSection.plain, end: 400),
+        ]),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
+    });
+
+    test('stripes with one stop between each pair are well formed', () {
+      final spec = _spec(
+        background: const PlateSection.fill(
+          PlateFill.stripes(
+            [
+              PlateFill.field,
+              PlateFill.color(Color(0xFFFFCC00)),
+              PlateFill.panel,
+            ],
+            stops: [40, 70],
+            angle: 0.1,
+          ),
+        ),
+      );
+      expect(debugValidateSpec(spec), isTrue);
+      expect(spec.background.paintsPanel, isTrue);
+    });
+
+    test('stripes without a stop between each pair throw', () {
+      final spec = _spec(
+        background: const PlateSection.fill(
+          PlateFill.stripes(
+            [PlateFill.field, PlateFill.panel],
+            stops: [40, 70],
+          ),
+        ),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
+    });
+
+    test('stripes with stops out of order throw', () {
+      final spec = _spec(
+        background: const PlateSection.fill(
+          PlateFill.stripes(
+            [PlateFill.field, PlateFill.panel, PlateFill.divider],
+            stops: [70, 40],
+          ),
+        ),
+      );
+      expect(() => debugValidateSpec(spec), throwsAssertionError);
     });
   });
 }

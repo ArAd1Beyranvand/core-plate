@@ -1,16 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-/// The visual styling of a licence plate: chrome colours and the ratios that
-/// scale it.
+/// Visual styling: chrome colours and ratios. All chrome colours are fixed to
+/// values sampled from real plates and must never be tinted by a caller's
+/// accent colour. Only [activeColor] / [inactiveColor] vary and are used solely
+/// for input-mode field outlines.
 ///
-/// This is a pure data class — no widgets. All chrome colours are fixed to the
-/// values sampled from real plate photos and must never be tinted by a caller's
-/// accent colour. Only [activeColor] / [inactiveColor] are meant to vary, and
-/// they are used solely for input-mode field outlines.
-///
-/// The `*Ratio` fields are all expressed as a fraction of the plate HEIGHT (not
-/// absolute pixels), so a plate scales cleanly at any size.
+/// The `*Ratio` fields are fractions of the plate HEIGHT, so it scales cleanly.
 @immutable
 class PlateTheme {
   const PlateTheme({
@@ -25,34 +21,21 @@ class PlateTheme {
     this.alertColor = const Color(0xFFF87171),
   });
 
-  /// Plate background (the white field digits sit on).
   final Color plateBackground;
-
-  /// Outer plate border/edge colour.
   final Color plateBorder;
-
-  /// Ink colour for digits and the letter.
   final Color ink;
-
-  /// The vertical rule left of the province code.
   final Color dividerColor;
-
-  /// Outer border width, as a fraction of plate height.
   final double borderWidthRatio;
-
-  /// Corner radius, as a fraction of plate height.
   final double plateRadiusRatio;
 
-  /// Outline colour for a completed input field. Input-mode only — never used
-  /// for plate chrome.
+  /// Outline colour for a completed input field; input-mode only.
   final Color activeColor;
 
-  /// Outline colour for an empty/in-progress input field. Input-mode only.
+  /// Outline colour for an empty/in-progress input field; input-mode only.
   final Color inactiveColor;
 
-  /// Outline colour a [PlateCanvas] paints its completed fields when it is
-  /// validating (`autoValidate: true`) and the plate is invalid. Input-mode
-  /// only; an alert colour is theme data, not a widget literal.
+  /// Outline colour a [PlateCanvas] paints when validating and the plate is
+  /// invalid; input-mode only.
   final Color alertColor;
 
   /// Standard white-face / black-frame plate theme, sampled from real plate
@@ -70,17 +53,12 @@ class PlateTheme {
     );
   }
 
-  /// A plate printed in one ink on one field: the shape every country theme in
-  /// this workspace actually has.
+  /// A plate printed in one ink on one field. [ink] is the border, glyphs,
+  /// rules and completed-field outline — a real plate does not print its
+  /// divider in a different colour from its digits.
   ///
-  /// [ink] is the border, the glyphs, the rules and the completed-field
-  /// outline — a real plate does not print its divider in a different colour
-  /// from its digits, and writing those four out separately means a
-  /// recalibration can move three of them and miss the fourth.
-  ///
-  /// [inactive] is input chrome only: the outline core paints under an empty
-  /// field. It is never printed, so it takes no default — a dark field needs a
-  /// light outline and a grey one vanishes.
+  /// [inactive] is input chrome only: the outline under an empty field. It is
+  /// never printed, so it takes no default.
   const PlateTheme.monochrome({
     required Color field,
     required Color ink,

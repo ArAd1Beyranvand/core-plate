@@ -1,11 +1,13 @@
 import 'package:plate_core/plate_core.dart';
+import 'package:flutter/painting.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
 
 const _digits = PlateAlphabet.latinDigits;
 const _letters = PlateAlphabet.latinUppercase;
 
-List<double> _lefts(Iterable<dynamic> items) =>
-    [for (final i in items) (i.box as PlateBox).left];
+List<double> _lefts(Iterable<dynamic> items) => [
+  for (final i in items) (i.box as PlateBox).left,
+];
 
 void main() {
   group('plateRegister', () {
@@ -21,7 +23,10 @@ void main() {
 
       expect(_lefts(cells), [140, 218, 296, 374, 452]);
       expect(cells.every((c) => c.box.width == 78), isTrue);
-      expect(cells.every((c) => c.box.top == 60 && c.box.height == 120), isTrue);
+      expect(
+        cells.every((c) => c.box.top == 60 && c.box.height == 120),
+        isTrue,
+      );
       expect(cells.every((c) => c.alphabet == _digits), isTrue);
     });
 
@@ -48,6 +53,41 @@ void main() {
       );
       expect(_lefts(gapped), [0, 55, 110]);
       expect(gapped.every((c) => c.box.width == 40), isTrue);
+    });
+
+    test('color reaches every cell, and defaults to the theme ink', () {
+      const white = Color(0xFFFFFFFF);
+      final coloured = plateRegister(
+        alphabet: _digits,
+        count: 3,
+        left: 0,
+        top: 0,
+        width: 10,
+        height: 10,
+        color: white,
+      );
+      expect(coloured.every((c) => c.color == white), isTrue);
+
+      final across = plateRegisterAcross(
+        alphabet: _digits,
+        count: 2,
+        left: 0,
+        right: 20,
+        top: 0,
+        height: 10,
+        color: white,
+      );
+      expect(across.every((c) => c.color == white), isTrue);
+
+      final plain = plateRegister(
+        alphabet: _digits,
+        count: 2,
+        left: 0,
+        top: 0,
+        width: 10,
+        height: 10,
+      );
+      expect(plain.every((c) => c.color == null), isTrue);
     });
 
     test('degenerate counts', () {
@@ -184,23 +224,26 @@ void main() {
       expect(echo.every((m) => m.alphabet == _digits), isTrue);
     });
 
-    test('glyphHeight and alphabet are overridable; pitch defaults to width', () {
-      final echo = plateEcho(
-        sources: [0, 1],
-        left: 0,
-        top: 0,
-        width: 30,
-        height: 40,
-        pitch: 50,
-        glyphHeight: 25,
-      );
+    test(
+      'glyphHeight and alphabet are overridable; pitch defaults to width',
+      () {
+        final echo = plateEcho(
+          sources: [0, 1],
+          left: 0,
+          top: 0,
+          width: 30,
+          height: 40,
+          pitch: 50,
+          glyphHeight: 25,
+        );
 
-      expect(_lefts(echo), [0, 50]);
-      expect(echo.every((m) => m.glyphHeight == 25), isTrue);
-      // Null alphabet renders through the source slot's own — the PlateMirror
-      // default, preserved rather than substituted here.
-      expect(echo.every((m) => m.alphabet == null), isTrue);
-    });
+        expect(_lefts(echo), [0, 50]);
+        expect(echo.every((m) => m.glyphHeight == 25), isTrue);
+        // Null alphabet renders through the source slot's own — the PlateMirror
+        // default, preserved rather than substituted here.
+        expect(echo.every((m) => m.alphabet == null), isTrue);
+      },
+    );
 
     test('an empty source list yields no mirrors', () {
       expect(

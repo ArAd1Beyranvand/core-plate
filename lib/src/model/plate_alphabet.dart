@@ -24,41 +24,46 @@ class PlateAlphabet {
   /// picker presents them in.
   final List<String> characters;
 
-  /// How the user supplies a character from this alphabet.
   final AlphabetInput input;
 
-  /// Storage form -> display form. Empty means display == storage.
-  /// This is where national numerals live.
+  /// Storage form -> display form; empty means the two are the same. This is
+  /// where national numerals live.
   final Map<String, String> glyphs;
 
-  /// Reading direction for this alphabet's characters. A property of the
-  /// script, not something to infer by comparing alphabet constants.
+  /// A property of the script, not something to infer from the characters.
   final TextDirection direction;
 
-  /// Glyph shown in an empty chosen slot. Defaults to an ASCII question mark;
-  /// a script with its own question mark declares it here.
+  /// Glyph shown in an empty chosen slot. A script with its own question mark
+  /// declares it here.
   final String placeholder;
 
-  bool accepts(String value) => characters.contains(value);
+  /// Whether [value] is legal in either form — storage (`'5'`) or display
+  /// glyph (`'۵'`). Someone typing on a national keyboard sends the glyph.
+  bool accepts(String value) => characters.contains(canonical(value));
+
+  /// [value] folded back to storage form (`'۵' -> '5'`); the inverse of [render]
+  /// over [glyphs]. Anything that is not a glyph of this alphabet is returned
+  /// unchanged, except that a lowercase letter whose uppercase form is legal
+  /// folds to that uppercase form (`'a' -> 'A'`).
+  String canonical(String value) {
+    if (characters.contains(value)) return value;
+    for (final entry in glyphs.entries) {
+      // A glyph shared by two storage chars (e.g. Afghan `P`/`D` both printing
+      // `ش`) folds to the one declared first, matching the order [characters]
+      // lists them in.
+      if (entry.value == value) return entry.key;
+    }
+    final upper = value.toUpperCase();
+    if (upper != value && characters.contains(upper)) return upper;
+    return value;
+  }
 
   /// The display form of [value]; falls back to [value] itself.
   String render(String value) => glyphs[value] ?? value;
 
-  /// The canonical (storage) form of [value]. If [value] is a display form
-  /// from [glyphs], returns the canonical character; otherwise assumes it's
-  /// already canonical.
-  String canonical(String value) {
-    for (final entry in glyphs.entries) {
-      if (entry.value == value) return entry.key;
-    }
-    return value;
-  }
-
-  /// True when every legal character is a single ASCII digit 0-9. Drives the
-  /// numeric keyboard, and lets hosts decide digit-pad vs letters-pad without
-  /// re-deriving it from [characters]. Declared explicitly per alphabet rather
-  /// than walked on every access — these are all `const`, so a `const`
-  /// constructor cannot compute it, and it was on [PlateSlotItem]'s build path.
+  /// True when every legal character is an ASCII digit; picks the numeric
+  /// keyboard. Declared rather than derived from [characters] because a `const`
+  /// constructor cannot compute it and this sits on the slot build path.
   final bool isNumeric;
 
   @override

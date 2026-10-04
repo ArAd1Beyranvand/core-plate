@@ -14,8 +14,8 @@ const _panel = PlatePanel(box: PlateBox(0, 0, 10, 40));
 const _digits = PlateAlphabet.latinDigits;
 const _letters = PlateAlphabet.latinUppercase;
 
-const _eastern = PlateAlphabet(
-  id: 'zz.eastern',
+const _iranian = PlateAlphabet(
+  id: 'zz.iranian',
   characters: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
   input: AlphabetInput.typed,
   isNumeric: false,
@@ -351,7 +351,7 @@ void main() {
     test('joins the effective groups with the separator, through glyphs', () {
       final c = PlateController(
         spec: _spec(
-          alphabets: const [_digits, _digits, _eastern, _eastern],
+          alphabets: const [_digits, _digits, _iranian, _iranian],
           textGroups: const [
             PlateTextGroup([0, 1]),
             PlateTextGroup([2, 3], prefix: 'ZZ-'),

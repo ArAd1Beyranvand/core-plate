@@ -12,23 +12,22 @@ const _panel = PlatePanel(box: PlateBox(0, 0, 10, 40));
 
 /// A spec with one digit slot per key in [keys], one single-slot group per key.
 PlateSpec _spec(List<String> keys) => PlateSpec(
-      id: 'stub-${keys.join()}',
-      country: _country,
-      canvasWidth: 400,
-      canvasHeight: 100,
-      panel: _panel,
-      slots: [
-        for (var i = 0; i < keys.length; i++)
-          PlateSlot(
-            alphabet: PlateAlphabet.latinDigits,
-            box: PlateBox(20 + i * 25.0, 5, 20, 30),
-          ),
-      ],
-      textGroups: [
-        for (var i = 0; i < keys.length; i++)
-          PlateTextGroup([i], key: keys[i]),
-      ],
-    );
+  id: 'stub-${keys.join()}',
+  country: _country,
+  canvasWidth: 400,
+  canvasHeight: 100,
+  panel: _panel,
+  slots: [
+    for (var i = 0; i < keys.length; i++)
+      PlateSlot(
+        alphabet: PlateAlphabet.latinDigits,
+        box: PlateBox(20 + i * 25.0, 5, 20, 30),
+      ),
+  ],
+  textGroups: [
+    for (var i = 0; i < keys.length; i++) PlateTextGroup([i], key: keys[i]),
+  ],
+);
 
 class _StubGated extends GatedPlateValidator {
   const _StubGated(this._gate);
@@ -53,7 +52,7 @@ void main() {
       expect(isDigits('0123456789'), isTrue);
     });
 
-    test('false for empty, letters, signs, spaces, eastern glyphs', () {
+    test('false for empty, letters, signs, spaces, iranian glyphs', () {
       expect(isDigits(''), isFalse);
       expect(isDigits('1a'), isFalse);
       expect(isDigits('+9'), isFalse);
@@ -91,13 +90,16 @@ void main() {
       expect(_StubGated.judgeCalls, 1);
     });
 
-    test('a gate key no group carries leaves the validator permanently quiet', () {
-      final spec = _spec(['a', 'b']);
-      final entry = PlateEntry(spec: spec, values: ['1', '2']);
-      final v = const _StubGated('nonesuch').validate(entry);
-      expect(v.isValid, isTrue);
-      expect(_StubGated.judgeCalls, 0);
-    });
+    test(
+      'a gate key no group carries leaves the validator permanently quiet',
+      () {
+        final spec = _spec(['a', 'b']);
+        final entry = PlateEntry(spec: spec, values: ['1', '2']);
+        final v = const _StubGated('nonesuch').validate(entry);
+        expect(v.isValid, isTrue);
+        expect(_StubGated.judgeCalls, 0);
+      },
+    );
   });
 
   group('PlateValidation equality', () {
@@ -107,7 +109,8 @@ void main() {
         const PlateValidation.invalid('x'),
       );
       expect(
-        const PlateValidation.invalid('x') == const PlateValidation.invalid('y'),
+        const PlateValidation.invalid('x') ==
+            const PlateValidation.invalid('y'),
         isFalse,
       );
       expect(

@@ -17,10 +17,8 @@ enum PlateInputSource {
   host,
 }
 
-/// The default [PlateInputSource] for the current platform: [PlateInputSource.hardwareKeyboard]
-/// on desktop (windows, linux, macOS), [PlateInputSource.system] everywhere
-/// else. On web, [defaultTargetPlatform] reflects the underlying OS, so this
-/// switch covers web correctly too.
+/// Hardware keyboard on desktop, the system IME everywhere else. Web falls out
+/// correctly because [defaultTargetPlatform] there reports the underlying OS.
 PlateInputSource defaultInputSource() {
   switch (defaultTargetPlatform) {
     case TargetPlatform.windows:

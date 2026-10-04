@@ -97,27 +97,28 @@ void main() {
       );
     });
 
-    testWidgets('reaches the panel even when it compares equal to the spec\'s', (
-      tester,
-    ) async {
-      // The whole point of the override: `_sameCodeOtherInk == _specCountry`,
-      // so a spec could never distinguish them — but the renderer must.
-      expect(_sameCodeOtherInk, _specCountry);
+    testWidgets(
+      'reaches the panel even when it compares equal to the spec\'s',
+      (tester) async {
+        // The whole point of the override: `_sameCodeOtherInk == _specCountry`,
+        // so a spec could never distinguish them — but the renderer must.
+        expect(_sameCodeOtherInk, _specCountry);
 
-      await tester.pumpWidget(
-        _host(
-          const PlateCanvas(
-            spec: _spec,
-            mode: PlateMode.display,
-            country: _sameCodeOtherInk,
-            onChooseCharacter: _noChooser,
+        await tester.pumpWidget(
+          _host(
+            const PlateCanvas(
+              spec: _spec,
+              mode: PlateMode.display,
+              country: _sameCodeOtherInk,
+              onChooseCharacter: _noChooser,
+            ),
           ),
-        ),
-      );
+        );
 
-      final panel = tester.widget<CountryPanel>(find.byType(CountryPanel));
-      expect(panel.country.panelTextColor, const Color(0xFF00FF00));
-    });
+        final panel = tester.widget<CountryPanel>(find.byType(CountryPanel));
+        expect(panel.country.panelTextColor, const Color(0xFF00FF00));
+      },
+    );
 
     testWidgets('changes nothing but the panel', (tester) async {
       Future<void> pumpWith(PlateCountry? country) => tester.pumpWidget(
@@ -230,9 +231,7 @@ void main() {
       addTearDown(controller.dispose);
 
       await tester.pumpWidget(
-        _host(
-          PlateView(controller: controller, country: _overrideCountry),
-        ),
+        _host(PlateView(controller: controller, country: _overrideCountry)),
       );
 
       expect(

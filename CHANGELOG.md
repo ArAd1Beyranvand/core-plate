@@ -26,12 +26,78 @@ Specs without restrictions behave exactly as before.
 
 Maintenance release. No breaking changes.
 
+## 0.11.3
+
+**`PlateLabel.fontFamily`.** A label may name its own face, with
+`fontPackage` for a font bundled by the country package; null keeps the
+theme's, so every existing label is unchanged. The case is Tunisia's تونس,
+stamped in a Naskh hand the digits' sans-serif cannot imitate.
+
+## 0.11.2
+
+**`PlateFill.stripes`.** A background leaf can be parallel bands tilted by an
+angle, each band itself a fill — the flag Venezuela prints under its
+characters. Stops are where each boundary crosses the leaf's vertical
+centreline, so a band's thickness reads straight off a photograph. Purely
+additive: no existing fill or spec changes. `debugValidateSpec` checks there is
+one stop between each pair of stripes and that stops ascend. An optional
+`PlateFog` airbrushes the theme's field over the stripes — an ellipse held at
+an opacity to a plateau and fading to its edge — for a flag that is printed
+pale behind the characters and full colour only at the ends.
+
+## 0.11.1
+
+**`PlateSlot.color`.** A slot may name the ink its character is printed in;
+null keeps `PlateTheme.ink`, so every existing slot is unchanged. The case is
+`PlateLabel.color`'s, for a character the user types: Abu Dhabi prints its
+emirate code white on a red column of the background, and the theme carries one
+ink. `plateRegister` and `plateRegisterAcross` take a `color` for all their
+cells.
+
+## 0.11.0
+
+**Breaking: the plate background is sectioned.** `PlateSpec.background` is a
+tree of `PlateSection`s — columns and rows whose leaves are a `PlateFill`
+(the theme's field, the country's panel colour, the divider colour for a
+strip that runs to the edge, or a colour of the design's own) — with `PlatePart.divider` rules between regions. The frame paints the
+regions, then the dividers, then the border over all of it, in one painter.
+
+A coloured strip used to be a box on the white face, inset to the border's
+inner edge. Two anti-aliased edges met there and the face showed through as a
+light seam; and because the box was positioned against the border, any theme
+with a different border width moved it. A region now runs out under the
+border, and its edges are plate coordinates that ignore the border entirely.
+
+- `PlateSpec.leftBand`, `rightBand` and `innerBand` are removed. A strip that
+  divides the plate is a section; a block floating on the face is an entry in
+  the new `PlateSpec.bands` list.
+- `CountryPanel.paintBlock`: when the background paints a `PlateFill.panel`
+  region the panel lays out only its flag and wording.
+- `PlateRule` is for marks that do not divide the plate; an edge-to-edge line
+  is a divider.
+
+## 0.9.1
+
+**`PlateLabel.color`.** A label may now name the ink it is printed in; null
+keeps `PlateTheme.ink`, so every existing label is unchanged. A caption that
+sits on a coloured block rather than on the plate's field — reversed out white
+over a diplomatic plate's green band, say — is printed in an ink the field's
+ink cannot express, and that is data about the label. The alternative was a
+second theme per plate, which would have recoloured the digits too.
+
 ## 0.9.0
+
+**Breaking: removed deprecated symbols.**
+
+- `PlateInputController` (typedef) — use `PlateController`.
+- `PlateController.activeSlotIn(spec)` — use `PlateController.activeSlot`, which
+  resolves against the controller's own spec.
+
 
 **`PlateTextRow` and `noCharacterChooser`.** The plain-text rendering of a
 plate — each effective text group rendered through its slots' alphabets, laid
 out in the plate's reading direction — is now one exported widget instead of
-30 identical lines in both `PlateTextView` and `core_plate_bloc`'s `PlateText`.
+30 identical lines in both `PlateTextView` and `plate_core_bloc`'s `PlateText`.
 `PlateTextView` builds a `PlateTextRow` off its controller; the bloc package
 builds the same off its state. `noCharacterChooser` — the required-but-never-
 called chooser for `PlateMode.display` — is likewise promoted from a private
@@ -140,7 +206,7 @@ No behaviour change: this is a rename and a merge.
 ## 0.4.0
 
 **Breaking. The bloc has left this package, and a plate now owns its own
-characters.** `core_plate` no longer depends on `flutter_bloc` or `bloc` — a
+characters.** `plate_core` no longer depends on `flutter_bloc` or `bloc` — a
 `grep` for either in `pubspec.yaml` returns nothing — and no longer decides how
 you manage state.
 
@@ -167,17 +233,17 @@ Under the hood a keystroke now rebuilds one slot instead of the whole plate:
 each slot, each `PlateMirror` and the frame subscribe to just the listenable
 they render.
 
-### The bloc moved to `core_plate_bloc`
+### The bloc moved to `plate_core_bloc`
 
 **Removed from this package** — they are now in the new sibling package
-`core_plate_bloc`, unchanged in behaviour:
+`plate_core_bloc`, unchanged in behaviour:
 
 `PlateCardBloc`, `PlateCardEvent`, `ValueIsChanged`, `RemovePlateCard`,
 `SpecIsChanged`, `PlateCardState`, `PlateCardBinding`, `ShowPlate`, `PlateText`.
 
-**Migration for a bloc host, in one line:** add `core_plate_bloc` to your
-pubspec, import `package:core_plate_bloc/core_plate_bloc.dart` alongside
-`package:core_plate/core_plate.dart`, and put a `PlateCardBinding(controller: …)`
+**Migration for a bloc host, in one line:** add `plate_core_bloc` to your
+pubspec, import `package:plate_core_bloc/plate_core_bloc.dart` alongside
+`package:plate_core/plate_core.dart`, and put a `PlateCardBinding(controller: …)`
 where your `BlocProvider<PlateCardBloc>` was:
 
 ```dart
@@ -213,13 +279,13 @@ will appear not to update the bloc. Wrap it in a `PlateCardBinding`.
 | `ShowPlate(emptyPlate: …)` | `PlateView(controller: …, theme: …, emptyPlate: …)` |
 | `PlateText(emptyPlate: …, textStyle: …)` | `PlateTextView(controller: …, emptyPlate: …, textStyle: …)` |
 
-Both are in `core_plate` and need no provider above them. `PlateView` also takes
+Both are in `plate_core` and need no provider above them. `PlateView` also takes
 a `PlateTheme`, which `ShowPlate` never did — that is why hosts drawing plates
 in several liveries had their own reimplementations of it. One behaviour
 difference: `PlateView`'s `emptyPlate` defaults to drawing the blank plate (a
 controller always knows its spec), where `ShowPlate` rendered nothing; pass
 `emptyPlate: const SizedBox.shrink()` for the old behaviour. `ShowPlate` and
-`PlateText` still exist, in `core_plate_bloc`, for hosts that keep a bloc.
+`PlateText` still exist, in `plate_core_bloc`, for hosts that keep a bloc.
 
 ### Breaking: swapping `spec:` now keeps the value
 
@@ -258,9 +324,9 @@ Purely additive: every existing spec compiles unchanged.
 
 ## 0.1.0
 
-First pub.dev release. The four packages (`core_plate`, `iran_plate`,
+First pub.dev release. The four packages (`plate_core`, `iran_plate`,
 `germany_plate`, `plate_keypad`) are now published with versioned
-dependencies — the country and keypad packages depend on `core_plate: ^0.1.0`
+dependencies — the country and keypad packages depend on `plate_core: ^0.1.0`
 rather than a sibling `path:`.
 
 - `PlateCanvas` now wraps its face in a `Material`, so it renders outside a
@@ -271,23 +337,23 @@ rather than a sibling `path:`.
 
 ### P9 — the rename, and the split settles
 
-The package is now **`core_plate`** (was `plate_number`); its directory is
+The package is now **`plate_core`** (was `plate_number`); its directory is
 **`core-plate/`** (was `plate-core/`); its barrel is
-**`package:core_plate/core_plate.dart`** (was `package:plate_number/plate_number.dart`).
+**`package:plate_core/plate_core.dart`** (was `package:plate_number/plate_number.dart`).
 The `lib/src/model/plate_number.dart` file — the `PlateNumber` entered-value type — keeps
 its name; it is a domain type, not the package.
 
 **Upgrading from `plate_number` 0.1.0 — every breaking change across P1–P9, in one place:**
 
 - **The import.** `package:plate_number/plate_number.dart` →
-  `package:core_plate/core_plate.dart`. Path dependency
-  `plate_number: {path: ../plate-core}` → `core_plate: {path: ../core-plate}`. These
+  `package:plate_core/plate_core.dart`. Path dependency
+  `plate_number: {path: ../plate-core}` → `plate_core: {path: ../core-plate}`. These
   packages are path-only; they are not published to pub.dev (`docs/split/PLAN.md` §6.6).
 - **The `plate_number` facade is retired, not replaced.** There is no meta-package that
   re-exports the four. A consumer imports exactly what it uses. The four imports that
   replace the old single import:
   ```dart
-  import 'package:core_plate/core_plate.dart';     // always
+  import 'package:plate_core/plate_core.dart';     // always
   import 'package:iran_plate/iran_plate.dart';      // if you draw Iranian plates
   import 'package:germany_plate/germany_plate.dart';// if you draw German plates
   import 'package:plate_keypad/plate_keypad.dart';  // if you want the on-screen keypad
@@ -319,7 +385,7 @@ its name; it is a domain type, not the package.
 - **Keypad grids collapsed** (P4). One `_KeyGrid` for both pads; `_buildDigitKey` /
   `_buildLettersLayer` gone. Internal, but it is why the keypad shrank ~90 lines.
 - **Public surface is now a decision** (P5). `lib/src/` holds the implementation;
-  `core_plate.dart` exports a chosen list, not every file. Anything under `src/` the
+  `plate_core.dart` exports a chosen list, not every file. Anything under `src/` the
   barrel does not name is not API.
 - **Dead weight removed** (P6). `PlateKeypadTheme.copyWith` (unused), the `args`
   dependency, and doc comments that described "a real Iranian licence plate" for
