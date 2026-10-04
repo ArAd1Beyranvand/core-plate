@@ -44,6 +44,16 @@ class PlateAlphabet {
   /// The display form of [value]; falls back to [value] itself.
   String render(String value) => glyphs[value] ?? value;
 
+  /// The canonical (storage) form of [value]. If [value] is a display form
+  /// from [glyphs], returns the canonical character; otherwise assumes it's
+  /// already canonical.
+  String canonical(String value) {
+    for (final entry in glyphs.entries) {
+      if (entry.value == value) return entry.key;
+    }
+    return value;
+  }
+
   /// True when every legal character is a single ASCII digit 0-9. Drives the
   /// numeric keyboard, and lets hosts decide digit-pad vs letters-pad without
   /// re-deriving it from [characters]. Declared explicitly per alphabet rather
