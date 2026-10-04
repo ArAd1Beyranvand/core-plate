@@ -52,7 +52,9 @@ class PlateInputMachine implements PlateInputTarget {
   final List<String?> Function() readValues;
 
   /// Writes one slot's character back to the host; '' clears the slot.
-  final void Function(int index, String value) commit;
+  /// Returns whether the value was stored: a controller refuses a value that
+  /// breaks a spec's restriction, and focus must not move past a refusal.
+  final bool Function(int index, String value) commit;
 
   /// Where characters come from. Mutable because the canvas re-resolves it per
   /// build — [PlateMode.display] forces [PlateInputSource.system].
@@ -148,7 +150,7 @@ class PlateInputMachine implements PlateInputTarget {
   void submitCharacter(String c) {
     final index = _activeIndex;
     if (index == null || !spec.slots[index].alphabet.accepts(c)) return;
-    commit(index, c);
+    if (!commit(index, c)) return;
     advanceFrom(index);
   }
 

@@ -13,7 +13,8 @@
 ///   standing proof, so keep it that way: a country name in this package, even
 ///   in a comment, is the bug.
 /// - **It does not police input.** A [PlateValidator] answers "is this plate
-///   valid?" and never bars a keystroke.
+///   valid?" and never bars a keystroke. The one exception is a
+///   [PlateRestriction] a spec declares, which is refused everywhere.
 /// - **It does not own your keyboard.** [PlateInputSource] lets the host
 ///   supply characters from its own UI through a [PlateController].
 /// - **It does not choose your state management.** A plate holds its own
@@ -39,6 +40,10 @@ export 'src/model/plate_box.dart';
 /// The spec itself and everything that composes into one, plus the
 /// `assert`-only consistency check for spec authors.
 export 'src/model/plate_spec.dart';
+
+/// Register values a spec refuses in every layer — the one exception to
+/// "does not police input" below, and opt-in per spec.
+export 'src/model/plate_restriction.dart';
 
 /// Constructors for the regular parts of a face: a register of equal cells, an
 /// echo band, a stipple. A plate is registers, not rectangles — and a register

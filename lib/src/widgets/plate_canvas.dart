@@ -7,6 +7,7 @@ import '../model/plate_box.dart';
 import '../model/plate_country.dart';
 import '../model/plate_input_source.dart';
 import '../model/plate_number.dart';
+import '../model/plate_restriction.dart';
 import '../model/plate_spec.dart';
 import '../model/slot_behavior.dart';
 import '../theme/plate_theme.dart';
@@ -193,7 +194,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
       // `controller:` replaces `_controller` underneath them without the
       // machine being rebuilt.
       readValues: () => _controller.values,
-      commit: (index, value) => _controller.setAt(index, value),
+      commit: _commit,
       onActiveIndexChanged: _reportActiveIndex,
     )..onSheetRequested = _openPicker;
     _machine = machine;
@@ -228,9 +229,21 @@ class _PlateCanvasState extends State<PlateCanvas> {
   /// Backs [PlateController.validation]. Null when there is no validator,
   /// which is what makes that getter null for a host that set none.
   PlateValidation? _probeValidation() {
+    final entry = _entryFor(_controller.values);
+    final restricted = restrictionVerdict(entry);
+    if (restricted != null) return restricted;
     final validator = widget.validator;
     if (validator == null) return null;
-    return validator.validate(_entryFor(_controller.values));
+    return validator.validate(entry);
+  }
+
+  /// Stores [value] at [index]; when the controller refuses it, puts the slot's
+  /// field back to the stored value so the refused character does not linger
+  /// on screen.
+  bool _commit(int index, String value) {
+    final stored = _controller.setAt(index, value);
+    if (!stored) _machine.syncController(index, _controller.valueAt(index));
+    return stored;
   }
 
   /// Publishes an auto-validated verdict to the host's controller. Deferred to
@@ -255,7 +268,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
     final slot = widget.spec.slots[index];
     final chosen = await widget.onChooseCharacter(slot.alphabet);
     if (chosen == null) return;
-    _controller.setAt(index, chosen);
+    if (!_controller.setAt(index, chosen)) return;
     final next = widget.spec.nextIndex(index);
     if (next != null) _machine.focusSlot(next);
   }
@@ -397,6 +410,7 @@ class _PlateCanvasState extends State<PlateCanvas> {
                               theme: theme,
                               machine: _machine,
                               controller: _controller,
+                              commit: _commit,
                               onCompleted: widget.mode == PlateMode.input
                                   ? () => _machine.advanceFrom(i)
                                   : null,
@@ -408,6 +422,13 @@ class _PlateCanvasState extends State<PlateCanvas> {
                         ),
                     ],
                   ),
+                ),
+              ),
+              Positioned.fill(
+                child: _RestrictionBanner(
+                  controller: _controller,
+                  theme: theme,
+                  canvasHeight: spec.canvasHeight,
                 ),
               ),
             ],
@@ -425,7 +446,10 @@ class _PlateCanvasState extends State<PlateCanvas> {
     final Widget face = widget.autoValidate && validator != null
         ? _ValidationBinding(
             controller: _controller,
-            validate: (values) => validator.validate(_entryFor(values)),
+            validate: (values) {
+              final entry = _entryFor(values);
+              return restrictionVerdict(entry) ?? validator.validate(entry);
+            },
             onVerdict: _publishVerdict,
             builder: (verdict) => buildFace(
               verdict.isValid
@@ -525,6 +549,62 @@ class _VerdictListenerState extends State<_VerdictListener> {
   Widget build(BuildContext context) => widget.child;
 }
 
+/// The error a refused write leaves, painted over the plate face: a band in
+/// the theme's alert colour carrying the restriction's reason. Watches
+/// [PlateController.rejection] alone, so it appears on the refusal and goes
+/// with the next stored write without rebuilding anything else.
+///
+/// Also shown when the values themselves break a restriction — a value can
+/// reach a controller only refused, but a spec swap clears rather than
+/// refuses, and the band says why the register emptied.
+class _RestrictionBanner extends StatelessWidget {
+  const _RestrictionBanner({
+    required this.controller,
+    required this.theme,
+    required this.canvasHeight,
+  });
+
+  final PlateController controller;
+  final PlateTheme theme;
+  final double canvasHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<PlateRestriction?>(
+      valueListenable: controller.rejection,
+      builder: (context, rejection, _) {
+        if (rejection == null) return const SizedBox.shrink();
+        return IgnorePointer(
+          child: Center(
+            child: Container(
+              key: const ValueKey<String>('plate-restriction-banner'),
+              width: double.infinity,
+              height: canvasHeight * 0.42,
+              color: theme.alertColor,
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(horizontal: canvasHeight * 0.1),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  rejection.reason,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                    color: const Color(0xFFFFFFFF),
+                    fontWeight: FontWeight.w800,
+                    fontSize: canvasHeight * 0.26,
+                    height: 1.0,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 /// Positions a child in plate-space from a [PlateBox]. The one place the four
 /// `left/top/width/height` literals turn into a [Positioned].
 class _Placed extends StatelessWidget {
@@ -579,6 +659,7 @@ class _SlotBinding extends StatelessWidget {
     required this.theme,
     required this.machine,
     required this.controller,
+    required this.commit,
     required this.onCompleted,
     required this.onPressed,
   });
@@ -595,6 +676,10 @@ class _SlotBinding extends StatelessWidget {
   /// The canvas's writer of record. This slot subscribes to its own position
   /// through [PlateController.slot], and commits through [PlateController.setAt].
   final PlateController controller;
+
+  /// The canvas's guarded write: refuses what the controller refuses and puts
+  /// the field back.
+  final bool Function(int index, String value) commit;
   final VoidCallback? onCompleted;
   final VoidCallback? onPressed;
 
@@ -616,7 +701,7 @@ class _SlotBinding extends StatelessWidget {
           value: value,
           controller: machine.controllerAt(index),
           focusNode: machine.focusNodeAt(index),
-          onChanged: (v) => controller.setAt(index, v),
+          onChanged: (v) => commit(index, v),
           onCompleted: onCompleted,
           onPressed: onPressed,
         );

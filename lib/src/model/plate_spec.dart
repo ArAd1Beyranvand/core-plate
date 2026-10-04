@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'plate_alphabet.dart';
 import 'plate_box.dart';
 import 'plate_country.dart';
+import 'plate_restriction.dart';
 
 /// One editable position on a plate. [box].height doubles as the slot height
 /// passed to the glyph style — do not add a separate field for it.
@@ -148,6 +149,7 @@ class PlateSpec {
     this.textDirection = TextDirection.ltr,
     this.borderWidthRatioOverride,
     this.textGroups = const <PlateTextGroup>[],
+    this.restrictions = const <PlateRestriction>[],
   });
 
   /// Stable identifier, e.g. 'xx.car'. Used for equality and persistence.
@@ -176,6 +178,11 @@ class PlateSpec {
   /// in [textDirection] reading order. Empty means each slot is its own
   /// group, in index order.
   final List<PlateTextGroup> textGroups;
+
+  /// Register values this plate refuses outright; see [PlateRestriction].
+  /// Each must name a keyed group in [textGroups] — [debugValidateSpec]
+  /// asserts it, since a restriction on a missing group would never fire.
+  final List<PlateRestriction> restrictions;
 
   /// How many values this plate stores. Derived, never hard-coded.
   int get slotCount => slots.length;
@@ -264,6 +271,22 @@ class PlateSpec {
     return const <int>[];
   }
 
+  /// The first of [restrictions] that [values] break, or null.
+  PlateRestriction? restrictionViolatedBy(List<String?> values) {
+    for (final r in restrictions) {
+      if (r.matches(valueOfGroup(r.group, values))) return r;
+    }
+    return null;
+  }
+
+  /// Throws [PlateRestrictionException] when [values] break a restriction.
+  /// For code that takes a plate value from somewhere other than a controller
+  /// — a database row, a scan — and must not carry a refused one further.
+  void checkRestrictions(List<String?> values) {
+    final r = restrictionViolatedBy(values);
+    if (r != null) throw PlateRestrictionException(r);
+  }
+
   @override
   bool operator ==(Object other) => other is PlateSpec && other.id == id;
 
@@ -333,6 +356,14 @@ bool debugValidateSpec(PlateSpec spec) {
         'plateRegisterAcross rather than cell by cell.',
       );
     }
+  }
+
+  for (final r in spec.restrictions) {
+    assert(
+      spec.textGroups.any((g) => g.key == r.group),
+      'Restriction "${r.reason}" in spec "${spec.id}" watches group '
+      '"${r.group}", which no text group carries — it would never fire.',
+    );
   }
 
   // Alphabet ids must be a stable key for *rendered* character content: within

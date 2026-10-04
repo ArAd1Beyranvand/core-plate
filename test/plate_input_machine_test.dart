@@ -55,6 +55,7 @@ class _Harness {
       commit: (index, value) {
         commits.add((index, value));
         this.values[index] = value.isEmpty ? null : value;
+        return true;
       },
       inputSource: inputSource,
       onActiveIndexChanged: activeChanges.add,

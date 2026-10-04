@@ -45,8 +45,9 @@ class PlateSlotItem extends StatelessWidget {
 
   final FocusNode focusNode;
 
-  /// Commits a canonical character, or '' to clear.
-  final ValueChanged<String> onChanged;
+  /// Commits a canonical character, or '' to clear. Returns whether it was
+  /// stored — false for a value that breaks a spec restriction.
+  final bool Function(String value) onChanged;
 
   /// Fires after a non-empty commit.
   final VoidCallback? onCompleted;
@@ -190,7 +191,7 @@ class _TypedField extends StatelessWidget {
   final SlotBehavior behavior;
   final TextEditingController controller;
   final FocusNode focusNode;
-  final ValueChanged<String> onChanged;
+  final bool Function(String value) onChanged;
   final VoidCallback? onCompleted;
   final PlateTheme theme;
 
@@ -239,7 +240,7 @@ class _TypedField extends StatelessWidget {
           ),
           onChanged: (typed) {
             if (slot.alphabet.accepts(typed)) {
-              onChanged(typed);
+              if (!onChanged(typed)) return;
               if (typed != '') {
                 if (onCompleted != null) onCompleted!();
               }
@@ -283,7 +284,7 @@ class _ChosenSlot extends StatelessWidget {
   final SlotBehavior behavior;
   final String? value;
   final FocusNode focusNode;
-  final ValueChanged<String> onChanged;
+  final bool Function(String value) onChanged;
   final VoidCallback? onPressed;
   final PlateTheme theme;
 

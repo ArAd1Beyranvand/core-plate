@@ -1,3 +1,27 @@
+## 0.11.5
+
+**`PlateRestriction`: register values a spec refuses in every layer.** The
+first thing core bars rather than judges, and only where a spec opts in with
+`PlateSpec.restrictions`:
+
+- `PlateController.setAt` / `setValues` / `setGroup` refuse a write that would
+  complete a restricted register value, and publish the broken restriction on
+  the new `rejection` listenable. They now return `bool` (stored or not) — a
+  source-compatible change for callers. `fromValues`, `fromText` and
+  `adoptSpec` are handed whole values, so they empty the offending register
+  instead.
+- `PlateController.validation` reports a pending rejection first.
+- `restrictionVerdict(entry)` — and with it every `GatedPlateValidator` and the
+  canvas's own validation — reports the restriction before any gate or rule.
+- `PlateCanvas` does not advance focus past a refused keystroke, puts the
+  refused character back out of the field, and paints the reason over the
+  plate in the theme's `alertColor`.
+- `PlateSpec.checkRestrictions` throws `PlateRestrictionException`, for values
+  that never pass through a controller; `debugValidateSpec` asserts every
+  restriction names a real group.
+
+Specs without restrictions behave exactly as before.
+
 ## 0.11.4
 
 Maintenance release. No breaking changes.

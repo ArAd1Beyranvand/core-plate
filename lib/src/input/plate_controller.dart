@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../model/plate_number.dart';
+import '../model/plate_restriction.dart';
 import '../model/plate_spec.dart';
 import '../validators/plate_validator.dart';
 import 'plate_input_controller.dart';
@@ -41,8 +42,10 @@ class PlateController extends ChangeNotifier {
         _values[i] = _sanitize(spec, i, values[i]);
       }
     }
+    final refused = _clearRestricted(spec, _values);
     _foundSlots();
     _completed = ValueNotifier<bool>(_computeCompleted());
+    _rejection = ValueNotifier<PlateRestriction?>(refused);
   }
 
   /// The plate as [values] describes it, characters the slots refuse dropped.
@@ -69,6 +72,7 @@ class PlateController extends ChangeNotifier {
   late List<String?> _values;
   late List<ValueNotifier<String?>> _slots;
   late final ValueNotifier<bool> _completed;
+  late final ValueNotifier<PlateRestriction?> _rejection;
 
   /// The plate this controller holds a value for. Changed only through
   /// [adoptSpec], which decides what happens to the characters.
@@ -86,26 +90,39 @@ class PlateController extends ChangeNotifier {
   /// The character at [index]; '' or null clears the slot. A character the
   /// slot's alphabet refuses is a no-op — the controller stores plates that
   /// could exist, and never bars a keystroke by way of an exception.
-  void setAt(int index, String? value) {
-    if (index < 0 || index >= _values.length) return;
+  ///
+  /// A write that would complete a [PlateSpec.restrictions] value is refused
+  /// too, and published on [rejection]. Returns whether the write was stored.
+  bool setAt(int index, String? value) {
+    if (index < 0 || index >= _values.length) return false;
     final next = _sanitize(_spec, index, value);
-    if (next == null && value != null && value.isNotEmpty) return;
+    if (next == null && value != null && value.isNotEmpty) return false;
+    if (_refuse(List<String?>.of(_values)..[index] = next)) return false;
     _values[index] = next;
     _slots[index].value = next;
     _completed.value = _computeCompleted();
+    _rejection.value = null;
     notifyListeners();
+    return true;
   }
 
   /// Every slot at once, in index order, as [PlateController.new] reads them.
-  /// Notifies once for the whole write rather than once per slot.
-  void setValues(List<String?> values) {
+  /// Notifies once for the whole write rather than once per slot. A write that
+  /// breaks a restriction is refused whole; returns whether it was stored.
+  bool setValues(List<String?> values) {
+    final candidate = [
+      for (var i = 0; i < _values.length; i++)
+        i < values.length ? _sanitize(_spec, i, values[i]) : null,
+    ];
+    if (_refuse(candidate)) return false;
     for (var i = 0; i < _values.length; i++) {
-      final next = i < values.length ? _sanitize(_spec, i, values[i]) : null;
-      _values[i] = next;
-      _slots[i].value = next;
+      _values[i] = candidate[i];
+      _slots[i].value = candidate[i];
     }
     _completed.value = _computeCompleted();
+    _rejection.value = null;
     notifyListeners();
+    return true;
   }
 
   /// Empty every slot.
@@ -126,18 +143,27 @@ class PlateController extends ChangeNotifier {
   /// per slot in group order, stopping at the shorter of the two. Characters
   /// the target slot refuses clear it rather than being forced in. No-op when
   /// no group carries that key.
-  void setGroup(String key, String value) {
+  ///
+  /// Refused whole when it breaks a restriction; returns whether it was stored.
+  bool setGroup(String key, String value) {
     final group = _groupNamed(_spec, key);
-    if (group == null) return;
+    if (group == null) return false;
     final characters = value.characters;
+    final candidate = List<String?>.of(_values);
     for (var n = 0; n < group.indices.length; n++) {
       final index = group.indices[n];
       final character = n < characters.length ? characters[n] : '';
-      _values[index] = _sanitize(_spec, index, character);
+      candidate[index] = _sanitize(_spec, index, character);
+    }
+    if (_refuse(candidate)) return false;
+    for (final index in group.indices) {
+      _values[index] = candidate[index];
       _slots[index].value = _values[index];
     }
     _completed.value = _computeCompleted();
+    _rejection.value = null;
     notifyListeners();
+    return true;
   }
 
   /// Whether every slot holds a character.
@@ -163,6 +189,11 @@ class PlateController extends ChangeNotifier {
   /// on the keystrokes in between.
   ValueListenable<bool> get completed => _completed;
 
+  /// The restriction the last refused write broke, or null once a write has
+  /// been stored since. What a host shows as the error; the canvas paints its
+  /// reason over the plate.
+  ValueListenable<PlateRestriction?> get rejection => _rejection;
+
   /// Swaps the plate under the value, carrying the characters across as
   /// [preserve] directs, and notifies once.
   ///
@@ -174,8 +205,10 @@ class PlateController extends ChangeNotifier {
     PlateValuePreservation preserve = PlateValuePreservation.byGroupKey,
   }) {
     final migrated = _migrate(_spec, next, _values, preserve);
+    final refused = _clearRestricted(next, migrated);
     _spec = next;
     _values = migrated;
+    _rejection.value = refused;
     for (final slot in _slots) {
       slot.dispose();
     }
@@ -204,7 +237,14 @@ class PlateController extends ChangeNotifier {
   /// Computed on demand, so it is meaningful whether or not the canvas runs
   /// `autoValidate`: a host that validates on submit only pays for exactly the
   /// validations it asks for.
-  PlateValidation? get validation => _probe?.call();
+  ///
+  /// A refused write outranks everything: while [rejection] holds one, the
+  /// verdict is its reason, with or without a canvas or validator.
+  PlateValidation? get validation {
+    final refused = _rejection.value;
+    if (refused != null) return PlateValidation.invalid(refused.reason);
+    return _probe?.call();
+  }
 
   /// Called by PlateCanvas. Do not call from app code.
   ///
@@ -295,6 +335,7 @@ class PlateController extends ChangeNotifier {
       slot.dispose();
     }
     _completed.dispose();
+    _rejection.dispose();
     super.dispose();
   }
 
@@ -303,6 +344,35 @@ class PlateController extends ChangeNotifier {
       for (var i = 0; i < _spec.slotCount; i++)
         ValueNotifier<String?>(_values[i]),
     ];
+  }
+
+  /// Whether [candidate] breaks a restriction; if so, publishes it on
+  /// [rejection] and notifies, so a listener shows the error even though the
+  /// value did not change.
+  bool _refuse(List<String?> candidate) {
+    final broken = _spec.restrictionViolatedBy(candidate);
+    if (broken == null) return false;
+    _rejection.value = broken;
+    notifyListeners();
+    return true;
+  }
+
+  /// Empties, in place, every register of [values] that breaks one of
+  /// [spec]'s restrictions — for paths that are handed a whole value rather
+  /// than asked to write one. Returns the last restriction broken, or null.
+  static PlateRestriction? _clearRestricted(
+    PlateSpec spec,
+    List<String?> values,
+  ) {
+    PlateRestriction? broken;
+    for (final r in spec.restrictions) {
+      if (!r.matches(spec.valueOfGroup(r.group, values))) continue;
+      for (final i in spec.indicesOfGroup(r.group)) {
+        if (i < values.length) values[i] = null;
+      }
+      broken = r;
+    }
+    return broken;
   }
 
   bool _computeCompleted() =>

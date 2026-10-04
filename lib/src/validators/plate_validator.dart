@@ -76,6 +76,14 @@ abstract class PlateValidator {
   PlateValidation validate(PlateEntry entry);
 }
 
+/// The verdict a spec's restrictions give on [entry], or null when none is
+/// broken. Every judge in core asks this first — a restricted value is
+/// invalid whatever a validator says, and whether or not it is gated.
+PlateValidation? restrictionVerdict(PlateEntry entry) {
+  final broken = entry.spec.restrictionViolatedBy(entry.values);
+  return broken == null ? null : PlateValidation.invalid(broken.reason);
+}
+
 /// A [PlateValidator] that stays quiet until one named register has something
 /// in it.
 ///
@@ -96,7 +104,9 @@ abstract class GatedPlateValidator extends PlateValidator {
   PlateValidation judge(PlateEntry entry);
 
   @override
-  PlateValidation validate(PlateEntry entry) => entry.group(gateGroup).isEmpty
-      ? const PlateValidation.valid()
-      : judge(entry);
+  PlateValidation validate(PlateEntry entry) =>
+      restrictionVerdict(entry) ??
+      (entry.group(gateGroup).isEmpty
+          ? const PlateValidation.valid()
+          : judge(entry));
 }
