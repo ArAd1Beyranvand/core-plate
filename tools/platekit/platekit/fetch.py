@@ -35,6 +35,30 @@ def _get(url: str, tries: int = 5) -> bytes:
             time.sleep(float(e.headers.get('Retry-After') or 0) or 2 ** (i + 1))
 
 
+def country_from_url(url: str) -> str:
+    """`…/Vehicle_registration_plates_of_the_Gambia` -> `Gambia`."""
+    m = re.search(r'/wiki/Vehicle_registration_plates_of_([^#?]+)', url)
+    if not m:
+        raise ValueError(f'not a Vehicle_registration_plates_of_… article: {url}')
+    name = urllib.parse.unquote(m.group(1)).replace('_', ' ')
+    return re.sub(r'^the ', '', name, flags=re.I)
+
+
+def iso2(country: str) -> str | None:
+    """The ISO 3166-1 alpha-2 code (Wikidata P297), lower case — the
+    gallery's id prefix and the golden file prefix."""
+    q = urllib.parse.urlencode({'action': 'wbgetentities', 'sites': 'enwiki', 'titles': f'{country}|The {country}',
+                                'props': 'claims', 'format': 'json', 'redirects': 'yes'})
+    try:
+        data = json.loads(_get(f'https://www.wikidata.org/w/api.php?{q}'))
+        for e in data.get('entities', {}).values():
+            for c in e.get('claims', {}).get('P297', []):
+                return c['mainsnak']['datavalue']['value'].lower()
+    except Exception:
+        pass
+    return None
+
+
 def article_url(country: str) -> str:
     return f'{WIKI}/wiki/Vehicle_registration_plates_of_{country.replace(" ", "_")}'
 

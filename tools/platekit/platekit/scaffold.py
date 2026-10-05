@@ -264,8 +264,8 @@ def package(root: Path, country: str, code: str, *, epithet: str = '', summary: 
         written.append(f'{pkg}/.gitignore')
 
     summary = summary or 'TODO one sentence: categories, colours, themes, alphabets, advisory validator.'
-    cats = categories or [{'id': 'private', 'getter': 'private', 'theme': 'standard', 'value': ''}]
-    first = cats[0]
+    cats = categories or []
+    first = cats[0] if cats else {'getter': 'private', 'theme': 'private'}
     put('pubspec.yaml', PUBSPEC.format(pkg=pkg, Country=country, summary=summary))
     put(f'lib/{pkg}.dart', LIBRARY.format(Country=country, summary=summary, s=s, P=P))
     readme = README.format(epithet=(epithet + ' ') if epithet else '', Country=country, slug=s.replace('_', ''),
@@ -278,7 +278,8 @@ def package(root: Path, country: str, code: str, *, epithet: str = '', summary: 
         fonts='\n'.join(f"      '{f}'," for f in fonts),
         cases='\n'.join(
             f"    '{c['id']}': ({P}Plates.{c['getter']}, {P}Themes.{c['theme']}, '{c['value']}'),"
-            for c in cats)))
+            for c in cats) or f"    // One per category, e.g.\n"
+                               f"    // 'private': ({P}Plates.private, {P}Themes.private, 'A B 1 2 3 4'),"))
     return written
 
 

@@ -14,6 +14,9 @@
     pk.py commits                       dirty repos, innermost first
     pk.py all      Laos la              fetch → photos → ask → brief
 
+    pk.py before   <wikipedia url>      everything before Claude Code (see README)
+    pk.py after    <wikipedia url>      everything after it
+
 Run from the workspace root. Nothing here edits Dart beyond the scaffold.
 """
 from __future__ import annotations
@@ -204,6 +207,139 @@ def cmd_all(a):
     cmd_brief(a)
 
 
+def _resolve(a) -> tuple[str, str, str]:
+    """country, code, package for a `before`/`after` url."""
+    country = fetch.country_from_url(a.url)
+    code = a.code or _saved_code(country) or fetch.iso2(country) or scaffold.snake(country)[:2]
+    return country, code, f'{scaffold.snake(country)}_plate'
+
+
+def _saved_code(country: str) -> str | None:
+    for f in (ROOT / '.plateref').glob('*/facts.json'):
+        if json.loads(f.read_text()).get('country') == country:
+            return f.parent.name
+    return None
+
+
+def _step(title: str) -> None:
+    print(f'\n== {title}', flush=True)
+
+
+def cmd_before(a):
+    """fetch → photos → ask → brief → package skeleton → workspace member
+    → the prompt to paste into Claude Code."""
+    from platekit import local_llm
+    country, code, pkg = _resolve(a)
+    work = ROOT / '.plateref' / code
+    a.country, a.code, a.work, a.again = country, code, str(work), False
+    print(f'{country} · code {code} · package {pkg} · work {work.relative_to(ROOT)}')
+
+    _step('1/6 fetch the article and photos')
+    cmd_fetch(a)
+    _step('2/6 fit, flatten, measure the photos')
+    cmd_photos(a)
+    _step('3/6 local model')
+    if a.no_ask:
+        print('skipped (--no-ask)')
+    elif not local_llm.available():
+        print('ollama is not running; skipped (start it and run: pk.py ask ' + str(work.relative_to(ROOT)) + ')')
+    else:
+        cmd_ask(a)
+    _step('4/6 brief')
+    cmd_brief(a)
+    _step(f'5/6 package skeleton {pkg}/')
+    written = scaffold.package(ROOT, country, code, epithet=a.epithet,
+                               summary=a.summary, fonts=a.font or None)
+    print('\n'.join(written) or 'already there, nothing overwritten')
+    _step('6/6 workspace member + pub get')
+    if scaffold._register(ROOT / 'pubspec.yaml', r'  - \w+_plate$', f'  - {pkg}'):
+        print(f'pubspec.yaml: added {pkg}')
+    print(logfilter.run(['flutter', 'pub', 'get'], ROOT).strip().splitlines()[-1])
+
+    prompt = (f'/plate_creator {a.url}\n\n'
+              f'The offline stage already ran (tools/platekit). Read '
+              f'.plateref/{code}/brief.md and .plateref/{code}/sheet_flat.png first, '
+              f'instead of the article and the photos; open other images only where '
+              f'the brief says CHECK. The package skeleton {pkg}/ exists. Follow '
+              f'"What is left for you" at the end of the brief and stop there; '
+              f'registration, goldens, tests and the commit plan are done afterwards '
+              f'by `pk.py after`.')
+    (work / 'claude_prompt.txt').write_text(prompt + '\n')
+    print(f'\nDone. Now start Claude Code in {ROOT} and paste '
+          f'.plateref/{code}/claude_prompt.txt:\n\n{prompt}\n')
+
+
+def cmd_after(a):
+    """gallery registration → pub get → format → goldens → analyze + test
+    (package, gallery) → commit plan. Exit 1 with a short report if
+    anything fails; the report is written for pasting back into Claude."""
+    country, code, pkg = _resolve(a)
+    work = ROOT / '.plateref' / code
+    s = scaffold.snake(country)
+    holder = ROOT / 'plate_number_holder'
+    report: list[str] = []
+    print(f'{country} · code {code} · package {pkg}')
+    if not (ROOT / pkg / 'lib').exists():
+        sys.exit(f'{pkg}/ does not exist — run `pk.py before {a.url}` first')
+
+    _step('1/6 gallery registration')
+    if (holder / 'lib/screens/gallery/sources' / f'{s}.dart').exists():
+        print('\n'.join(scaffold.register(ROOT, country, code)) or 'already registered')
+    else:
+        report.append(f'gallery source plate_number_holder/lib/screens/gallery/sources/{s}.dart is missing')
+        print(report[-1])
+    _step('2/6 pub get + format')
+    print(logfilter.run(['flutter', 'pub', 'get'], ROOT).strip().splitlines()[-1])
+    logfilter.run(['dart', 'format', 'lib', 'test'], ROOT / pkg)
+
+    _step('3/6 analyze')
+    for d in (pkg, 'plate_number_holder'):
+        issues = [i for i in logfilter.analyze(logfilter.run(['flutter', 'analyze'], ROOT / d))
+                  if not i.startswith('info') or d == pkg]
+        print(f'{d}: ' + (f'{len(issues)} issues' if issues else 'clean'))
+        report += [f'{d}: {i}' for i in issues]
+
+    _step('4/6 goldens')
+    gold = ROOT / pkg / 'test' / 'goldens'
+    if (ROOT / pkg / 'test' / 'golden_test.dart').exists():
+        log = logfilter.run(['flutter', 'test', '--update-goldens', 'test/golden_test.dart'], ROOT / pkg)
+        t = logfilter.tests(log)
+        pngs = sorted(gold.glob('*.png'))
+        print(f'{len(pngs)} goldens written')
+        if t['failures']:
+            report.append(f'{pkg} goldens: ' + logfilter.render(t))
+        if pngs:
+            vision.contact_sheet(pngs, work / 'goldens_sheet.png', crop_content=True)
+            print(f'compare {work.relative_to(ROOT)}/goldens_sheet.png with sheet_flat.png')
+
+    _step('5/6 tests')
+    t = logfilter.tests(logfilter.run(['flutter', 'test'], ROOT / pkg))
+    print(f'{pkg}: ' + logfilter.render(t).splitlines()[0])
+    if t['failures']:
+        report.append(f'{pkg}: ' + logfilter.render(t))
+    gtest = holder / 'test' / f'{s}_gallery_render_test.dart'
+    if gtest.exists():
+        args = [str(gtest.relative_to(holder))]
+        if a.full:
+            args = []
+        t = logfilter.tests(logfilter.run(['flutter', 'test', *args], holder))
+        print('plate_number_holder: ' + logfilter.render(t).splitlines()[0])
+        if t['failures']:
+            report.append('plate_number_holder: ' + logfilter.render(t))
+
+    _step('6/6 commit plan')
+    print(gitplan.render(gitplan.plan(ROOT)))
+
+    out = work / 'after_report.md'
+    if report:
+        out.write_text('`pk.py after` found these; fix them and stop:\n\n' + '\n'.join(report) + '\n')
+        print(f'\nFAILED — {len(report)} problem(s). Paste {out.relative_to(ROOT)} into Claude Code, '
+              f'then run `pk.py after` again.')
+        sys.exit(1)
+    out.unlink(missing_ok=True)
+    print('\nAll checks pass. Look at the goldens sheet, then commit in the order above.')
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest='cmd', required=True)
@@ -232,6 +368,18 @@ def main():
     s = sub.add_parser('test'); s.add_argument('package'); s.add_argument('args', nargs='*'); s.set_defaults(f=cmd_test)
     s = sub.add_parser('analyze'); s.add_argument('package'); s.set_defaults(f=cmd_analyze)
     s = sub.add_parser('commits'); s.set_defaults(f=cmd_commits)
+    s = sub.add_parser('before', help='everything before Claude Code')
+    s.add_argument('url'); s.add_argument('--code', help='two-letter code (default: Wikidata ISO code)')
+    s.add_argument('--size', nargs=2, type=float, help='plate width height, overrides the infobox')
+    s.add_argument('--no-ask', action='store_true', help='skip the local model')
+    s.add_argument('--epithet', default='', help='README: "the <epithet> people of …"')
+    s.add_argument('--summary', default='', help='one sentence for README, pubspec, library doc')
+    s.add_argument('--font', action='append', help='extra font for the goldens (repeatable)')
+    s.set_defaults(f=cmd_before)
+    s = sub.add_parser('after', help='everything after Claude Code')
+    s.add_argument('url'); s.add_argument('--code')
+    s.add_argument('--full', action='store_true', help='run the whole gallery test suite')
+    s.set_defaults(f=cmd_after)
     s = sub.add_parser('all'); s.add_argument('country'); s.add_argument('code')
     s.add_argument('--no-ask', action='store_true'); s.set_defaults(f=cmd_all)
 

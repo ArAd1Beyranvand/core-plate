@@ -11,8 +11,15 @@ its fit says CHECK or the numbers contradict the article.
    one builder per design, glyph sizes from ink heights (glyph ≈ ink / 0.72).
 3. Write the validators' rules from the table's format column.
 4. Write the gallery labels and section notes.
-5. Then run, in order: `pk.py analyze`, `pk.py test`, `pk.py goldens` —
-   each prints only what failed.
+5. Write the gallery source `plate_number_holder/lib/screens/gallery/sources/{country}.dart`
+   and fill the cases map in `test/golden_test.dart` (one line per category).
 
-Already done, do not redo: README, pubspec, library export, golden test
-harness, workspace and gallery registration (`pk.py scaffold --register`).
+Already done, do not redo: pubspec, LICENSE, analysis_options, README
+(only fix its summary line and the usage example), library export, the
+golden test harness.
+
+Done afterwards by `pk after`, do not do: gallery registration, the
+gallery render test, goldens, the full test runs, the commit plan. To
+check your code while writing, `python3 tools/platekit/pk.py analyze
+<package>` is enough. Stop when the code above is written and analyzes
+clean.
