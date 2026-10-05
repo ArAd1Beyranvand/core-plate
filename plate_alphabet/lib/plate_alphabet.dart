@@ -3,6 +3,7 @@ export 'src/countries/algeria_alphabets.dart';
 export 'src/countries/bolivia_alphabets.dart';
 export 'src/countries/brazil_alphabets.dart';
 export 'src/countries/colombia_alphabets.dart';
+export 'src/countries/comoros_alphabets.dart';
 export 'src/countries/mauritania_alphabets.dart';
 export 'src/countries/cuba_alphabets.dart';
 export 'src/countries/germany_alphabets.dart';
