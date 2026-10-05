@@ -17,6 +17,7 @@ export 'src/countries/iraq_alphabets.dart';
 export 'src/countries/tajikistan_alphabets.dart';
 export 'src/countries/uae_alphabets.dart';
 export 'src/countries/vietnam_alphabets.dart';
+export 'src/countries/laos_alphabets.dart';
 export 'src/countries/lebanon_alphabets.dart';
 export 'src/countries/libya_alphabets.dart';
 export 'src/countries/malaysia_alphabets.dart';
