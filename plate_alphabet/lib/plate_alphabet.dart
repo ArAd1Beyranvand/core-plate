@@ -20,6 +20,7 @@ export 'src/countries/lebanon_alphabets.dart';
 export 'src/countries/libya_alphabets.dart';
 export 'src/countries/malaysia_alphabets.dart';
 export 'src/countries/mali_alphabets.dart';
+export 'src/countries/maldives_alphabets.dart';
 export 'src/countries/niger_alphabets.dart';
 export 'src/countries/oman_alphabets.dart';
 export 'src/countries/palestine_alphabets.dart';
