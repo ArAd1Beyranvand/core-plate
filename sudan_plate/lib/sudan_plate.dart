@@ -1,4 +1,4 @@
-/// Sudan's licence plates for the `core_plate` library.
+/// Sudan's licence plates for the `plate_core` library.
 ///
 /// The 2009 bilingual plate: SUDAN / السودان over a rule, then a class digit
 /// and state code beside a four- or five-digit serial, each printed in Arabic
