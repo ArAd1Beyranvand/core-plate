@@ -1,0 +1,20 @@
+name: laos_plate
+description: "Laos's licence plates for the plate_core library — the 2001 series: the two-row provincial plates (private, government, company and taxable company, with the 2024 EV badge), the temporary plate, and the international-organisation, police and defence plates, with their themes and an advisory validator."
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  plate_core: ^0.11.5
+  plate_alphabet: ^0.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
