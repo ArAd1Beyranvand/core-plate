@@ -133,8 +133,8 @@ class App(tk.Tk):
         self.url = tk.Entry(top, bg=CARD, fg=FG, insertbackground=FG, relief='flat', font=MONO)
         self.url.insert(0, 'https://en.wikipedia.org/wiki/Vehicle_registration_plates_of_')
         self.url.pack(side='left', fill='x', expand=True, padx=8, ipady=6)
-        self.flags = tk.Entry(top, bg=CARD, fg=FG, insertbackground=FG, relief='flat', font=MONO, width=22)
-        self.flags.insert(0, '--no-ask')
+        self.flags = tk.Entry(top, bg=CARD, fg=FG, insertbackground=FG, relief='flat', font=MONO, width=30)
+        self.flags.insert(0, '--no-ask --github --push')
         self.flags.pack(side='left', ipady=6)
         self.buttons = [
             ttk.Button(top, text='Before', style='Accent.TButton', command=lambda: self.pk('before')),
@@ -164,7 +164,11 @@ class App(tk.Tk):
     # --------------------------------------------------------------- running
     def pk(self, stage: str):
         url = self.url.get().strip()
-        self.run([sys.executable, '-u', str(PK), stage, url, *self.flags.get().split()],
+        before_only = {'--no-ask', '--github', '--public'}
+        after_only = {'--push', '--full'}
+        drop = after_only if stage == 'before' else before_only
+        flags = [f for f in self.flags.get().split() if f not in drop]
+        self.run([sys.executable, '-u', str(PK), stage, url, *flags],
                  f'pk {stage}', watch=True)
 
     def shell(self, line: str):
