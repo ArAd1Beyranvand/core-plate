@@ -29,7 +29,7 @@ from pathlib import Path
 import cv2
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from platekit import brief, fetch, gitplan, logfilter, scaffold, vision  # noqa: E402
+from platekit import brief, fetch, github, gitplan, logfilter, scaffold, vision  # noqa: E402
 
 ROOT = Path.cwd()
 
@@ -104,11 +104,16 @@ def cmd_photos(a):
         cv2.imwrite(str(work / f'flat_{name}.png'), flat)
         entry['measure'] = vision.measure(flat, cw, ch)
         entry['colours'] = vision.colours(flat)
+        entry['zones'] = vision.zones(flat, cw, ch)
+        entry['dividers'] = vision.dividers(flat, cw, ch, entry['measure']['rows'])
+        entry['ocr'] = vision.ocr_rows(flat, entry['measure']['rows'], cw, ch)
         if not found['confident']:
             vision.corner_sheet(im, found['corners'], work / f'corners_{name}.png')
         print(f"{name}: {'ok' if found['confident'] else 'CHECK ' + found.get('why', '')} "
               f"aspect {found['aspect']:.2f} field {entry['colours']['field']} "
-              f"ink {entry['colours']['ink']} rows {len(entry['measure']['rows'])}")
+              f"ink {entry['colours']['ink']} rows {len(entry['measure']['rows'])} "
+              f"zones {len(entry['zones'])} dividers {len(entry['dividers'])} "
+              f"ocr {[o['text'] for o in entry['ocr']]}")
     photos_path.write_text(json.dumps(photos, ensure_ascii=False, indent=1))
     flats = sorted(work.glob('flat_*.png'))
     if flats:
@@ -255,6 +260,10 @@ def cmd_before(a):
     if scaffold._register(ROOT / 'pubspec.yaml', r'  - \w+_plate$', f'  - {pkg}'):
         print(f'pubspec.yaml: added {pkg}')
     print(logfilter.run(['flutter', 'pub', 'get'], ROOT).strip().splitlines()[-1])
+    if a.github:
+        _step('github repo')
+        why = github.ready()
+        print(why or github.create(ROOT / pkg, public=a.public))
 
     prompt = (f'/plate_creator {a.url}\n\n'
               f'The offline stage already ran (tools/platekit). Read '
@@ -327,6 +336,16 @@ def cmd_after(a):
         if t['failures']:
             report.append('plate_number_holder: ' + logfilter.render(t))
 
+    if a.push and not report:
+        _step('push to github')
+        why = github.ready()
+        try:
+            print(why or github.push(ROOT / pkg, a.message or f'{country} licence plates'))
+        except RuntimeError as e:
+            report.append(f'push failed: {e}')
+    elif a.push:
+        print('\nnot pushed: checks failed')
+
     _step('6/6 commit plan')
     print(gitplan.render(gitplan.plan(ROOT)))
 
@@ -375,10 +394,14 @@ def main():
     s.add_argument('--epithet', default='', help='README: "the <epithet> people of …"')
     s.add_argument('--summary', default='', help='one sentence for README, pubspec, library doc')
     s.add_argument('--font', action='append', help='extra font for the goldens (repeatable)')
+    s.add_argument('--github', action='store_true', help='create a GitHub repo named after the package')
+    s.add_argument('--public', action='store_true', help='with --github: public instead of private')
     s.set_defaults(f=cmd_before)
     s = sub.add_parser('after', help='everything after Claude Code')
     s.add_argument('url'); s.add_argument('--code')
     s.add_argument('--full', action='store_true', help='run the whole gallery test suite')
+    s.add_argument('--push', action='store_true', help='commit the package and push it when all checks pass')
+    s.add_argument('--message', help='commit message for --push')
     s.set_defaults(f=cmd_after)
     s = sub.add_parser('all'); s.add_argument('country'); s.add_argument('code')
     s.add_argument('--no-ask', action='store_true'); s.set_defaults(f=cmd_all)

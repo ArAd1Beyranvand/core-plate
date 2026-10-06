@@ -343,3 +343,81 @@ def calibrate(glyph: float, measured_span: float, target_span: float) -> float:
 
 def found_dict(f: Found) -> dict:
     return asdict(f)
+
+
+# ------------------------------------------------------------ structure --
+
+def zones(im: np.ndarray, cw: float, ch: float, min_frac: float = 0.004, far: float = 35) -> list[dict]:
+    """Coloured regions that are neither field nor ink: bands, badges,
+    flags, a differently coloured section. Solid blocks only. Plate units."""
+    H, W = im.shape[:2]
+    small = cv2.resize(im, (W // 2, H // 2))
+    lab = cv2.cvtColor(small, cv2.COLOR_BGR2LAB).astype(np.float32)
+    ink = cv2.resize(ink_mask(im).astype(np.uint8), (W // 2, H // 2)).astype(bool)
+    f, i = np.median(lab[~ink], 0), np.median(lab[ink], 0)
+    other = (np.linalg.norm(lab - f, axis=2) > far) & (np.linalg.norm(lab - i, axis=2) > far)
+    mask = cv2.morphologyEx(other.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+    n, lbl, stats, _ = cv2.connectedComponentsWithStats(mask)
+    rgb = cv2.cvtColor(small, cv2.COLOR_BGR2RGB)
+    sx, sy = cw / lab.shape[1], ch / lab.shape[0]
+    out = []
+    for c in range(1, n):
+        x, y, w, h, area = stats[c]
+        if area < min_frac * mask.size or area / (w * h) < 0.6:
+            continue
+        out.append({'x': [round(x * sx, 1), round((x + w) * sx, 1)],
+                    'y': [round(y * sy, 1), round((y + h) * sy, 1)],
+                    'colour': _hex(np.median(rgb[lbl == c], 0)), 'fill': round(float(area / (w * h)), 2)})
+    return sorted(out, key=lambda z: z['x'][0])
+
+
+def dividers(im: np.ndarray, cw: float, ch: float, runs: list | None = None) -> list[dict]:
+    """Thin straight lines inside the plate: vertical separators between
+    sections and horizontal rules between rows (not the border)."""
+    H, W = im.shape[:2]
+    ink = ink_mask(im).astype(np.uint8)
+    out = []
+    for axis, kern, span in (('vertical', (1, int(H * .7)), H), ('horizontal', (int(W * .5), 1), W)):
+        lines = cv2.morphologyEx(ink, cv2.MORPH_OPEN, np.ones(kern[::-1], np.uint8))
+        glyphs = [r for row in (runs or []) for r in row['runs']]
+        n, _, stats, _ = cv2.connectedComponentsWithStats(lines)
+        for x, y, w, h, _ in stats[1:]:
+            thick, pos = (w, x + w / 2) if axis == 'vertical' else (h, y + h / 2)
+            limit = W if axis == 'vertical' else H
+            if thick > 0.015 * limit or pos < 0.04 * limit or pos > 0.96 * limit:
+                continue  # glyph stem or the border
+            u = cw / W if axis == 'vertical' else ch / H
+            if axis == 'vertical' and any(a - 1 <= pos * u <= b + 1 for a, b in glyphs):
+                continue  # inside a character
+            out.append({'axis': axis, 'at': round(pos * u, 1), 'thickness': round(thick * u, 1)})
+    return out
+
+
+def ocr_rows(im: np.ndarray, rows: list[dict], cw: float, ch: float) -> list[dict]:
+    """tesseract per measured row. Languages: every installed one that is
+    not osd; the result says which, so a Latin-only read of Lao is visible."""
+    import shutil
+    import subprocess
+    import tempfile
+    if not shutil.which('tesseract'):
+        return []
+    langs = [l for l in subprocess.run(['tesseract', '--list-langs'], capture_output=True,
+                                       text=True).stdout.split()[1:] if l not in ('osd', 'snum')]
+    lang = '+'.join(langs) or 'eng'
+    H, W = im.shape[:2]
+    out = []
+    for r in rows:
+        y0, y1 = int(r['y'][0] / ch * H), int(r['y'][1] / ch * H)
+        x0, x1 = int(r['x'][0] / cw * W), int(r['x'][1] / cw * W)
+        crop = cv2.cvtColor(im[max(0, y0 - 4):y1 + 4, max(0, x0 - 4):x1 + 4], cv2.COLOR_BGR2GRAY)
+        crop = cv2.threshold(cv2.resize(crop, None, fx=2, fy=2), 0, 255,
+                             cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+        if crop.mean() < 127:
+            crop = 255 - crop
+        with tempfile.NamedTemporaryFile(suffix='.png') as f:
+            cv2.imwrite(f.name, crop)
+            text = subprocess.run(['tesseract', f.name, '-', '--psm', '7', '-l', lang],
+                                  capture_output=True, text=True).stdout.strip()
+        out.append({'y': r['y'], 'text': text, 'lang': lang})
+    return out

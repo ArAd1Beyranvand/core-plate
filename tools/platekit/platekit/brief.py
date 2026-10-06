@@ -62,6 +62,14 @@ def photo_section(photos: dict) -> str:
         a = ', '.join(f'{k}={v}' for k, v in p.get('ask', {}).items() if v != 'unknown')
         lines.append(f"| {name} | {fit} | {f.get('aspect', 0):.2f} | "
                      f"{c.get('field', '?')} | {c.get('ink', '?')} | {rows} | {a} |")
+    lines += ['', '### Structure per photo (plate units)', '']
+    for name, p in photos.items():
+        z = '; '.join(f"{q['colour']} x {q['x'][0]:g}–{q['x'][1]:g} y {q['y'][0]:g}–{q['y'][1]:g}"
+                      for q in p.get('zones', [])) or 'none'
+        d = '; '.join(f"{q['axis']} at {q['at']:g}" for q in p.get('dividers', [])) or 'none'
+        o = ' / '.join(f"{q['text']!r}" for q in p.get('ocr', []))
+        lang = p['ocr'][0]['lang'] if p.get('ocr') else '-'
+        lines.append(f'- {name}: zones {z}; dividers {d}; ocr ({lang}, unreliable for non-Latin) {o}')
     if flagged:
         lines += ['', 'Look at these yourself (corner sheets in `corners_<photo>.png`): '
                   + ', '.join(flagged)]

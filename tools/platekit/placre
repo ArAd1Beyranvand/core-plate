@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# platekit GUI launcher. Install system-wide (survives restarts):
+#   sudo ln -sf ~/StudioProjects/plate/tools/platekit/placre /usr/local/bin/placre
+here="$(dirname "$(readlink -f "$0")")"
+cd "$here/../.." && exec python3 tools/platekit/gui.py "$@"
