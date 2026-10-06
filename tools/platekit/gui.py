@@ -146,6 +146,18 @@ class App(tk.Tk):
         self.stop_btn = ttk.Button(top, text='Stop', command=self.stop)
         self.stop_btn.pack(side='left', padx=(8, 0))
 
+        bar = tk.Frame(self, bg=BG)
+        bar.pack(fill='x', padx=14)
+        style.configure('P.Horizontal.TProgressbar', troughcolor=CARD, background=ACCENT,
+                        bordercolor=CARD, lightcolor=ACCENT, darkcolor=ACCENT, thickness=8)
+        self.prog = ttk.Progressbar(bar, style='P.Horizontal.TProgressbar', maximum=1000)
+        self.prog.pack(fill='x')
+        self.status = tk.Label(bar, text='idle', fg=DIM, bg=BG, font=('Sans', 9), anchor='w')
+        self.status.pack(fill='x', pady=(2, 0))
+        self.step = (0, 1, '')   # n, total, title
+        self.started = 0.0
+        self.after(500, self.tick)
+
         self.tl = Timeline(self)
         self.tl.pack(fill='both', expand=True, pady=4)
 
@@ -202,6 +214,18 @@ class App(tk.Tk):
             self.q.put(('images', since))
         self.q.put(('end', code))
 
+    def set_progress(self, sub: float):
+        n, total, _ = self.step
+        if n:
+            self.prog.configure(value=1000 * ((n - 1) + sub) / total)
+
+    def tick(self):
+        if self.started:
+            n, total, title = self.step
+            where = f'step {n}/{total} · {title}' if n else title
+            self.status.configure(text=f'{where} · {time.time() - self.started:.0f}s', fg=FG)
+        self.after(500, self.tick)
+
     def stop(self):
         if self.proc and self.proc.poll() is None:
             self.proc.terminate()
@@ -215,8 +239,20 @@ class App(tk.Tk):
                     if getattr(self, 'current', None):
                         self.current.done(True)
                     self.current = self.tl.card(val)
+                    m = re.match(r'(\d+)/(\d+)\s*(.*)', val)
+                    if m:
+                        self.step = (int(m.group(1)), int(m.group(2)), m.group(3))
+                        self.set_progress(0)
+                    elif not val.startswith(('pk ', '$ ')):
+                        self.step = (self.step[0], self.step[1], val)
+                    else:
+                        self.step, self.started = (0, 1, val), time.time()
+                        self.prog.configure(value=0)
                 elif kind == 'line':
                     self.current.write(val)
+                    m = re.match(r'\[(\d+)/(\d+)\]', val)
+                    if m:
+                        self.set_progress((int(m.group(1)) - 1) / int(m.group(2)))
                     for m in re.finditer(r'(\S+\.(?:png|jpe?g|webp))', val):
                         p = (ROOT / m.group(1)).resolve()
                         if p.exists():
@@ -227,6 +263,11 @@ class App(tk.Tk):
                 elif kind == 'end':
                     self.current.write(f'exit {val}')
                     self.current.done(val == 0)
+                    self.prog.configure(value=1000)
+                    self.status.configure(text=f"{'done' if val == 0 else 'FAILED'} in "
+                                               f"{time.time() - self.started:.0f}s",
+                                          fg=OK if val == 0 else BAD)
+                    self.started = 0.0
                     self.current = None
         except queue.Empty:
             pass

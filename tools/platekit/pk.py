@@ -103,7 +103,8 @@ def cmd_photos(a):
                 f['confident'] = False
                 f['why'] = f'aspect {f["aspect"]:.2f} vs median {median:.2f}'
 
-    for name, im in images.items():
+    for n, (name, im) in enumerate(images.items(), 1):
+        print(f'[{n}/{len(images)}] {name}', flush=True)
         entry = photos[name]
         found = entry['found']
         flat = vision.flatten(im, found['corners'], cw, cw / ch)
@@ -135,7 +136,8 @@ def cmd_ask(a):
     work = Path(a.work)
     photos_path = work / 'photos.json'
     photos = json.loads(photos_path.read_text())
-    for name, entry in photos.items():
+    for n, (name, entry) in enumerate(photos.items(), 1):
+        print(f'[{n}/{len(photos)}] asking about {name}', flush=True)
         img = work / f'flat_{name}.png'
         if not img.exists():
             continue
