@@ -64,7 +64,7 @@ def photo_section(photos: dict) -> str:
                      f"{c.get('field', '?')} | {c.get('ink', '?')} | {rows} | {a} |")
     lines += ['', '### Structure per photo (plate units)', '']
     for name, p in photos.items():
-        z = '; '.join(f"{q['colour']} x {q['x'][0]:g}–{q['x'][1]:g} y {q['y'][0]:g}–{q['y'][1]:g}"
+        z = '; '.join(f"{q.get('kind', 'zone')} {q['colour']} x {q['x'][0]:g}–{q['x'][1]:g} y {q['y'][0]:g}–{q['y'][1]:g}"
                       for q in p.get('zones', [])) or 'none'
         d = '; '.join(f"{q['axis']} at {q['at']:g}" for q in p.get('dividers', [])) or 'none'
         o = ' / '.join(f"{q['text']!r}" for q in p.get('ocr', []))

@@ -52,6 +52,12 @@ def _plate_size(work: Path, override=None) -> tuple[float, float]:
     return tuple(f['size_mm']) if f.get('size_mm') else (520.0, 110.0)
 
 
+def _used_size(work: Path) -> tuple[float, float]:
+    """The plate size the flats were made with (after any infobox fix)."""
+    c = work / 'size_conflict.json'
+    return tuple(json.loads(c.read_text())['used']) if c.exists() else _plate_size(work)
+
+
 def cmd_photos(a):
     """Two passes: fit every photo, then flatten all of them to one aspect.
 
@@ -136,7 +142,24 @@ def cmd_ask(a):
         if 'ask' in entry and not a.again:
             continue
         entry['ask'] = local_llm.ask_named('layout', [img])
+        entry['ask'].update(local_llm.ask_named('structure', [img]))
         print(name, entry['ask'], flush=True)
+        # each pixel-found zone, cropped with a margin, labelled by the model
+        flat = cv2.imread(str(img))
+        H, W = flat.shape[:2]
+        pw, ph = _used_size(work)
+        sx, sy = W / pw, H / ph
+        for i, z in enumerate(entry.get('zones', [])):
+            x0, x1 = int(z['x'][0] * sx), int(z['x'][1] * sx)
+            y0, y1 = int(z['y'][0] * sy), int(z['y'][1] * sy)
+            m = 6
+            crop = flat[max(0, y0 - m):y1 + m, max(0, x0 - m):x1 + m]
+            if crop.size == 0:
+                continue
+            path = work / f'zone_{name}_{i}.png'
+            cv2.imwrite(str(path), crop)
+            z.update(local_llm.ask_named('zone', [path]))
+            print(f'  zone {i} {z["colour"]}: {z.get("kind")}', flush=True)
         # saved per photo: a killed run keeps what it already paid for
         photos_path.write_text(json.dumps(photos, ensure_ascii=False, indent=1))
 
