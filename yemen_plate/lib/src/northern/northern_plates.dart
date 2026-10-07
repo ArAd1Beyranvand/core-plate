@@ -1,8 +1,8 @@
 import 'package:plate_core/plate_core.dart';
 import 'package:flutter/widgets.dart';
 
-import 'yemen_alphabets.dart';
-import 'yemen_country.dart';
+import '../common/yemen_alphabets.dart';
+import '../common/yemen_country.dart';
 
 /// System B — the 1993 format, still the larger share of the fleet. A top band
 /// (اليمن + usage word) over a left/right split (governorate code + serial).

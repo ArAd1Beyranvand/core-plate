@@ -60,6 +60,13 @@ off the article's artwork:
 Validate them with `YemenSouthernValidator`. Their digits are ~80-87% of the
 reference height (the tallest box that fits); the doc comments give the numbers.
 
+**Riyadh - `RiyadhPlates`.** Three letters and up to four digits, each printed
+twice (Arabic above, Latin below), in the US and EU sizes; five categories
+(private, public transport, commercial, temporary, diplomatic) told apart by
+the strip colour, which rides on `RiyadhCountry.byCategory`. Theme
+`RiyadhThemes.standard`, validator `RiyadhValidator`, alphabets
+`RiyadhAlphabets` (from `plate_alphabet`).
+
 ## Depends on
 
 `plate_core` alone - not `plate_keypad`, not `iran_plate`, not `palestine_plate`,

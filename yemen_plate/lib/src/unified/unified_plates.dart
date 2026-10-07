@@ -1,8 +1,8 @@
 import 'package:plate_core/plate_core.dart';
 import 'package:flutter/widgets.dart';
 
-import 'yemen_alphabets.dart';
-import 'yemen_country.dart';
+import '../common/yemen_alphabets.dart';
+import '../common/yemen_country.dart';
 
 /// System A — the unified plate. White for every usage; colour-coding lives in
 /// [YemenThemes]. Usage varies the blue panel captions (country block), passed at render time.

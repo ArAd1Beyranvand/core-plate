@@ -1,8 +1,8 @@
 import 'package:plate_core/plate_core.dart';
 import 'package:flutter/widgets.dart';
 
-import 'yemen_alphabets.dart';
-import 'yemen_country.dart';
+import '../common/yemen_alphabets.dart';
+import '../common/yemen_country.dart';
 
 /// Where the ink sits on the Hadhramaut / Al Mahrah / Shabwah / Marib plates,
 /// in the artwork's own pixels with the frame's outer edge at 0. The article

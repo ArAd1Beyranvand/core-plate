@@ -27,6 +27,7 @@ export 'src/countries/niger_alphabets.dart';
 export 'src/countries/oman_alphabets.dart';
 export 'src/countries/palestine_alphabets.dart';
 export 'src/countries/somalia_alphabets.dart';
+export 'src/countries/riyadh_alphabets.dart';
 export 'src/countries/sudan_alphabets.dart';
 export 'src/countries/tunisia_alphabets.dart';
 export 'src/countries/turkey_alphabets.dart';

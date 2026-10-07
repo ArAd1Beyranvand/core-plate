@@ -1,8 +1,8 @@
 import 'package:plate_core/plate_core.dart';
 import 'package:flutter/widgets.dart';
 
-import 'yemen_alphabets.dart';
-import 'yemen_country.dart';
+import '../common/yemen_alphabets.dart';
+import '../common/yemen_country.dart';
 
 /// Aden City's plates: black on white, عدن over ADEN, the Ras Marshag
 /// lighthouse, and a four-digit number. Two sizes, both documented in mm.
@@ -27,7 +27,7 @@ import 'yemen_country.dart';
 /// shape an algorithm can paint.
 abstract final class YemenAdenPlates {
   static const AssetImage _lighthouse = AssetImage(
-    'assets/aden_lighthouse.png',
+    'assets/southern/aden_lighthouse.png',
     package: 'yemen_plate',
   );
 
