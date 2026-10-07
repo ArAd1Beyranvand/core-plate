@@ -146,5 +146,64 @@ abstract final class YemenCountry {
     YemenUsage.police => northernGovernment,
   };
 
+  // The southern governorates: the usage colour is the strip (and Marib's top
+  // band), painted as `PlateFill.panel`, so it rides on the country block.
+
+  /// Private: blue strip.
+  static const PlateCountry southernPrivate = PlateCountry(
+    code: 'ye',
+    captionLines: <String>[],
+    panelColor: YemenColors.southernBlue,
+    panelTextColor: YemenColors.southernInk,
+  );
+
+  /// Taxis and buses: yellow strip. Also Marib's motorcycle band.
+  static const PlateCountry southernForHire = PlateCountry(
+    code: 'ye',
+    captionLines: <String>[],
+    panelColor: YemenColors.southernYellow,
+    panelTextColor: YemenColors.southernInk,
+  );
+
+  /// Trucks and vans: red strip.
+  static const PlateCountry southernCommercial = PlateCountry(
+    code: 'ye',
+    captionLines: <String>[],
+    panelColor: YemenColors.southernRed,
+    panelTextColor: YemenColors.southernInk,
+  );
+
+  /// Government: green strip.
+  static const PlateCountry southernGovernment = PlateCountry(
+    code: 'ye',
+    captionLines: <String>[],
+    panelColor: YemenColors.southernGreen,
+    panelTextColor: YemenColors.southernInk,
+  );
+
+  /// Temporary and police: the blue of the private strip, on the right-hand
+  /// مؤقت strip and the الشرطة band.
+  static const PlateCountry southernTemporary = southernPrivate;
+  static const PlateCountry southernPolice = southernPrivate;
+
+  /// The southern strip colour for [usage]. Military is not issued in the
+  /// south; it falls back to private, as [unifiedFor] falls back to blank.
+  static PlateCountry southernFor(YemenUsage usage) => switch (usage) {
+    YemenUsage.private => southernPrivate,
+    YemenUsage.forHire => southernForHire,
+    YemenUsage.transport => southernCommercial,
+    YemenUsage.government => southernGovernment,
+    YemenUsage.police => southernPolice,
+    YemenUsage.military => southernPrivate,
+  };
+
+  /// Aden and Taiz print no country block.
+  static const PlateCountry plain = PlateCountry(
+    code: 'ye',
+    captionLines: <String>[],
+    panelColor: _transparent,
+    panelTextColor: YemenColors.southernInk,
+  );
+
   static const Color _transparent = Color(0x00000000);
 }

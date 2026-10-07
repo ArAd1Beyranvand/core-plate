@@ -43,6 +43,23 @@ runtime, because there is no before-and-after to select: which system a plate
 belongs to is a fact about where the vehicle was registered. A host normally
 knows that and reaches for one namespace.
 
+**The south's own plates.** Some southern authorities issue their own, measured
+off the article's artwork:
+
+- `YemenGovernoratePlates` - Hadhramaut (H), Al Mahrah (M), Shabwah (W) and
+  Marib (M): a coloured strip with the governorate letter, the name over the
+  number. The strip colour is the usage - blue private, yellow for hire, red
+  commercial, green government - and rides on `YemenCountry.southernFor`.
+  Temporary (مؤقت strip on the right), police (الشرطة band, `HP`/`WP` prefix)
+  and motorcycle layouts where the article shows them.
+- `YemenAdenPlates` - Aden's black-on-white lighthouse plate, 520 x 110 and
+  335 x 170.
+- `YemenTaizPlates.temporary` - Taiz's ج-ي / مؤقت-تعز plate; the class is the
+  theme (`YemenThemes.taizPrivate` blue, `taizCommercial` red).
+
+Validate them with `YemenSouthernValidator`. Their digits are ~80-87% of the
+reference height (the tallest box that fits); the doc comments give the numbers.
+
 ## Depends on
 
 `plate_core` alone - not `plate_keypad`, not `iran_plate`, not `palestine_plate`,
@@ -179,8 +196,11 @@ installed, these boxes would go back to their measured sizes.
 - `YemenUnifiedPlates` - 6 specs: car and motorcycle x 4/5/6 number digits.
 - `YemenNorthernPlates` - 4 car specs, plus 1 motorcycle spec marked
   `@Deprecated`.
-- `YemenUnifiedValidator` / `YemenNorthernValidator` - advisory, never bar a
-  keystroke.
+- `YemenGovernoratePlates`, `YemenAdenPlates`, `YemenTaizPlates` - the
+  southern plates, plus `YemenThemes.southern` / `aden` / `taizPrivate` /
+  `taizCommercial` and `YemenCountry.southern*` / `plain`.
+- `YemenUnifiedValidator` / `YemenNorthernValidator` / `YemenSouthernValidator`
+  - advisory, never bar a keystroke.
 - `YemenUnifiedSerialGenerator` / `YemenNorthernSerialGenerator` - seeded, pure
   Dart, for demos and fixtures.
 

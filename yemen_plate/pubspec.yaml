@@ -21,11 +21,14 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
-# No `flutter:` assets block, and that is deliberate. A Yemeni plate carries no
-# flag, so there is no flag image to ship; the eagle emblem on the 2026 unified
-# plate was not sourced at a resolution worth shipping, and drawing an
-# approximation of a state emblem and shipping it as the real thing is not
-# something this package will do. See "What it does not ship" in the README.
+# One asset: Aden's lighthouse, cropped from the CC0 Wikipedia artwork
+# (User:BasilLeaf). `YemenAdenPlates` names it with `package: 'yemen_plate'`,
+# so the literal and this block move together. A Yemeni plate carries no flag,
+# and the eagle emblem on the 2026 unified plate is still not shipped — see
+# "What it does not ship" in the README.
+flutter:
+  assets:
+    - assets/aden_lighthouse.png
 #
 # No font either. Both systems are set in faces this package does not have the
 # rights to redistribute — see the README's "Fonts". The example bundles a

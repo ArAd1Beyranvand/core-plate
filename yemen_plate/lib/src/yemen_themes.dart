@@ -98,4 +98,44 @@ abstract final class YemenThemes {
 
   /// The unified theme, whatever the usage. System A never recolours by usage.
   static PlateTheme forUnifiedUsage(YemenUsage usage) => unified;
+
+  /// Hadhramaut, Al Mahrah, Shabwah and Marib: black on white. The usage
+  /// colour is the strip, which the country block carries. Frame 5 and corner
+  /// 14 on the 276-tall artwork.
+  static const PlateTheme southern = PlateTheme.monochrome(
+    field: YemenColors.southernField,
+    ink: YemenColors.southernInk,
+    inactive: YemenColors.inactiveOnLight,
+    borderWidthRatio: 5 / 276,
+    plateRadiusRatio: 14 / 276,
+  );
+
+  /// Aden: black on white. Frame 4.2 and corner 6.8 on the 110 mm plate; the
+  /// 170 mm plate overrides the frame in its spec.
+  static const PlateTheme aden = PlateTheme.monochrome(
+    field: YemenColors.southernField,
+    ink: YemenColors.southernInk,
+    inactive: YemenColors.inactiveOnLight,
+    borderWidthRatio: 4.2 / 110,
+    plateRadiusRatio: 6.8 / 110,
+  );
+
+  /// Taiz temporary, first class (private and for hire): black on blue.
+  /// Frame 10 and corner 20 on the 288-tall artwork.
+  static const PlateTheme taizPrivate = PlateTheme.monochrome(
+    field: YemenColors.southernBlue,
+    ink: YemenColors.southernInk,
+    inactive: YemenColors.inactiveOnDark,
+    borderWidthRatio: 10 / 288,
+    plateRadiusRatio: 20 / 288,
+  );
+
+  /// Taiz temporary, second class (commercial): black on red.
+  static const PlateTheme taizCommercial = PlateTheme.monochrome(
+    field: YemenColors.southernRed,
+    ink: YemenColors.southernInk,
+    inactive: YemenColors.inactiveOnDark,
+    borderWidthRatio: 10 / 288,
+    plateRadiusRatio: 20 / 288,
+  );
 }

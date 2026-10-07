@@ -135,3 +135,39 @@ class YemenNorthernValidator extends GatedPlateValidator {
     return const PlateValidation.valid();
   }
 }
+
+/// Judges a southern plate's number: the strip plates of Hadhramaut, Al Mahrah,
+/// Shabwah and Marib, Aden's and Taiz's. Gated on the serial. The artwork shows
+/// three to five digits; nothing more of the grammar is published.
+class YemenSouthernValidator extends GatedPlateValidator {
+  /// A stateless rule; hold one as a `const`.
+  const YemenSouthernValidator();
+
+  @override
+  String get gateGroup => 'serial';
+
+  /// Reported when the serial holds something other than digits.
+  static const String reasonSerialNotNumeric = 'The number is digits only.';
+
+  /// Reported when the serial is shorter than three or longer than five digits.
+  static const String reasonSerialLength =
+      'The number is three to five digits.';
+
+  /// The shortest and longest number the artwork shows.
+  static const int minSerialLength = 3;
+  static const int maxSerialLength = 5;
+
+  @override
+  PlateValidation judge(PlateEntry entry) =>
+      validateFields(serial: entry.group('serial'));
+
+  static PlateValidation validateFields({required String serial}) {
+    if (serial.length < minSerialLength || serial.length > maxSerialLength) {
+      return const PlateValidation.invalid(reasonSerialLength);
+    }
+    if (!isDigits(serial)) {
+      return const PlateValidation.invalid(reasonSerialNotNumeric);
+    }
+    return const PlateValidation.valid();
+  }
+}

@@ -35,4 +35,14 @@ abstract final class YemenColors {
   static const Color inactiveOnDark = Color(
     0x66FFFFFF,
   ); // CALIBRATE (outline, dark field)
+
+  // The southern governorates (Hadhramaut, Al Mahrah, Shabwah, Marib, Taiz).
+  // Modal pixels of the Wikipedia artwork, identical across governorates —
+  // not calibration targets like the rest of this file.
+  static const Color southernBlue = Color(0xFF0079C1);
+  static const Color southernYellow = Color(0xFFFFC913);
+  static const Color southernRed = Color(0xFFED1C24);
+  static const Color southernGreen = Color(0xFF01A06A);
+  static const Color southernInk = Color(0xFF000000);
+  static const Color southernField = Color(0xFFFFFFFF);
 }

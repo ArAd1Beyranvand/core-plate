@@ -7,6 +7,10 @@
 /// The two are separate namespaces; usage picks a country block and a theme at render
 /// time.
 ///
+/// The south issues its own: Aden's lighthouse plate, Taiz's temporary plate,
+/// and the coloured-strip plates of Hadhramaut, Al Mahrah, Shabwah and Marib.
+/// Those are measured off the Wikipedia artwork; the rest is not:
+///
 /// Every dimension and colour is marked `// CALIBRATE` — proportioned from photographs,
 /// not measured from a standard.
 library;
@@ -41,6 +45,13 @@ export 'src/unified_plates.dart';
 /// System B: four car specs, plus one motorcycle spec whose geometry is
 /// unverified and marked `@Deprecated` because of it.
 export 'src/northern_plates.dart';
+
+/// Hadhramaut, Al Mahrah, Shabwah and Marib: the coloured-strip plates, one
+/// spec per governorate and layout, the strip colour on the country block.
+export 'src/governorate_plates.dart';
+
+/// Aden's two sizes and Taiz's temporary plate.
+export 'src/aden_taiz_plates.dart';
 
 /// The two advisory validators — one per system, neither of which bars a
 /// keystroke.
