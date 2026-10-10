@@ -6,11 +6,9 @@ void main() => runApp(const ExampleApp());
 /// A plate to type into.
 ///
 /// **This package ships no country and borrows none** — a country name here,
-/// even in an example, is the bug `core_plate.dart` describes. So the example
+/// even in an example, is the bug `plate_core.dart` describes. So the example
 /// draws its own four-slot spec: two Latin letters, two digits, a plain blue
-/// panel. `core_plate_bloc/example` defines the same spec for the same reason;
-/// duplicating thirty lines across two examples is correct, because neither
-/// package may depend on the other.
+/// panel.
 const _spec = PlateSpec(
   id: 'example.plate',
   country: PlateCountry(

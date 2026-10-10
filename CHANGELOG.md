@@ -338,7 +338,7 @@ rather than a sibling `path:`.
 ### P9 — the rename, and the split settles
 
 The package is now **`plate_core`** (was `plate_number`); its directory is
-**`core-plate/`** (was `plate-core/`); its barrel is
+**`plate-core/`** (was `plate-core/`); its barrel is
 **`package:plate_core/plate_core.dart`** (was `package:plate_number/plate_number.dart`).
 The `lib/src/model/plate_number.dart` file — the `PlateNumber` entered-value type — keeps
 its name; it is a domain type, not the package.
@@ -347,7 +347,7 @@ its name; it is a domain type, not the package.
 
 - **The import.** `package:plate_number/plate_number.dart` →
   `package:plate_core/plate_core.dart`. Path dependency
-  `plate_number: {path: ../plate-core}` → `plate_core: {path: ../core-plate}`. These
+  `plate_number: {path: ../plate-core}` → `plate_core: {path: ../plate-core}`. These
   packages are path-only; they are not published to pub.dev (`docs/split/PLAN.md` §6.6).
 - **The `plate_number` facade is retired, not replaced.** There is no meta-package that
   re-exports the four. A consumer imports exactly what it uses. The four imports that

@@ -5,17 +5,17 @@ GO VEGAN 🌱
 ==================================
 
 
-# core_plate example
+# plate_core example
 
-The smallest thing that renders. `core_plate` ships no country and borrows none — a
-country name here, even in an example, is the bug `core_plate.dart` describes. So the
+The smallest thing that renders. `plate_core` ships no country and borrows none — a
+country name here, even in an example, is the bug `plate_core.dart` describes. So the
 example declares its own four-slot spec: two Latin letters, two digits, a plain blue
 panel.
 
 Run it with `flutter run` from this directory.
 
 ```dart
-import 'package:core_plate/core_plate.dart';
+import 'package:plate_core/plate_core.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(const ExampleApp());
@@ -71,6 +71,3 @@ it to `PlateCharacterPicker.show` from `plate_keypad` if you want the real wheel
 For a real plate, add one of the repo's country packages and pass its spec instead;
 this example deliberately names none of them. `plate_gallery/` draws every plate all
 four of them ship, in one place.
-
-If the code around your plate is bloc-shaped, the `core_plate_bloc` package provides a
-`PlateCardBloc` mirrored onto the canvas's controller — see its example.
